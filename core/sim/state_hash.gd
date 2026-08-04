@@ -75,6 +75,46 @@ static func _feed_int(h: int, value: int) -> int:
 		h = (h ^ byte) * PRIME  # débordement enroulant voulu (cf. en-tête)
 	return h
 
+## Empreinte de la dynamique : identique à hash_state mais SANS le tick.
+## Usage : détection de cycle du validateur (DT-16 étage 2) — si le couple
+## (dynamics_hash, tick mod ppcm des périodes de cycle) se répète, la
+## simulation boucle et n'atteindra jamais un objectif ; l'empreinte
+## complète, elle, ne se répète jamais puisque le tick y est absorbé.
+## max_ticks et outcome restent inclus : constants ou monotones, ils ne
+## faussent pas la détection et gardent le parcours aligné sur hash_state.
+static func dynamics_hash(state: SimState) -> int:
+	var h: int = OFFSET_BASIS
+
+	h = _feed_int(h, state.outcome)
+	h = _feed_int(h, state.max_ticks)
+
+	h = _feed_int(h, state.agents.size())
+	for agent in state.agents:
+		h = _feed_int(h, agent.id)
+		h = _feed_int(h, agent.pos.x)
+		h = _feed_int(h, agent.pos.y)
+		h = _feed_int(h, agent.dir)
+		h = _feed_int(h, agent.flags)
+
+	h = _feed_int(h, state.grid.size.x)
+	h = _feed_int(h, state.grid.size.y)
+	for c in state.grid.cells:
+		h = _feed_int(h, c)
+	for p in state.grid.pheromone:
+		h = _feed_int(h, p)
+	for ci in state.grid.cycle_index:
+		h = _feed_int(h, ci)
+	h = _feed_int(h, state.grid.cycles.size())
+	for cycle in state.grid.cycles:
+		h = _feed_int(h, cycle.period)
+		h = _feed_int(h, cycle.active_ticks)
+
+	h = _feed_int(h, state.counters.exited)
+	h = _feed_int(h, state.counters.lost)
+	h = _feed_int(h, state.counters.delivered)
+
+	return h
+
 ## Représentation hexadécimale non signée sur 16 caractères, pour l'affichage
 ## et l'archivage des empreintes d'or (stable quel que soit le signe). Formatée
 ## en deux moitiés de 32 bits masquées, toujours positives : le formatage

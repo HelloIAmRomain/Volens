@@ -24,6 +24,11 @@ var max_ticks: int = 0
 ## immuable, jamais mutée pendant un tick, donc pas besoin d'être clonée.
 var rule_params: RuleParams
 
+## Objectifs du niveau [RG-15], configuration immuable partagée par
+## référence (comme rule_params) et exclue de l'empreinte : leurs effets
+## s'observent dans counters et outcome.
+var objectives: Array[ObjectiveDef] = []
+
 ## Copie profonde explicite pour le double tampon (T-010) : `state` (t) reste
 ## en lecture seule pendant tout le tick pendant que `step()` construit t+1
 ## à partir de cette copie (DT-08).
@@ -38,4 +43,5 @@ func clone() -> SimState:
 	copy.outcome = outcome
 	copy.max_ticks = max_ticks
 	copy.rule_params = rule_params
+	copy.objectives = objectives
 	return copy

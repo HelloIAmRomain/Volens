@@ -15,7 +15,16 @@ static func load_level(level_data: Dictionary, rule_params: RuleParams) -> SimSt
 	state.counters = Counters.new()
 	state.grid = _load_grid(level_data.get("grid", {}))
 	state.agents = _load_agents(level_data.get("agents", []))
+	state.objectives = _load_objectives(level_data.get("objectives", []), state.grid)
 	return state
+
+static func _load_objectives(objectives_arr: Array, grid: GridState) -> Array[ObjectiveDef]:
+	var out: Array[ObjectiveDef] = []
+	for entry in objectives_arr:
+		var obj := ObjectiveDef.from_dict(entry, grid)
+		if obj != null:
+			out.append(obj)
+	return out
 
 static func _load_grid(grid_data: Dictionary) -> GridState:
 	var grid := GridState.new()
@@ -222,14 +231,96 @@ static func _evaporate_pheromones(next_state: SimState) -> void:
 		if p[i] > 0:
 			p[i] -= 1
 
-## Étape 7 — évaluation des objectifs (RG-09). Ce lot n'implémente que
-## l'échec par dépassement de la limite de ticks : les conditions de victoire
-## (extraction/collecte/préservation/célérité/interdiction) dépendent d'un
-## modèle d'objectifs de niveau non encore défini — hors périmètre du lot S2.
-## Un état WON ou LOST déjà atteint ne revient jamais en arrière (RG-09 :
-## un niveau se termine).
+## Étape 7 — évaluation des objectifs (RG-09, RG-15). Un état WON ou LOST
+## déjà atteint ne revient jamais en arrière (un niveau se termine).
+##
+## Ordre d'évaluation, fixe et documenté :
+##   1. contraintes violées (préservation, interdiction, célérité) -> LOST —
+##      une violation est irrémédiable, elle prime sur tout le reste ;
+##   2. inatteignabilité mathématique des accomplissements -> LOST (RG-09) ;
+##   3. tous les accomplissements satisfaits (et il en existe au moins un)
+##      -> WON ;
+##   4. limite de ticks du niveau atteinte -> LOST.
+## Un niveau sans accomplissement n'est jamais gagné : défaut de conception,
+## que le validateur signalera (zéro pile gagnante -> rejeté, CDC §12.2).
 static func _evaluate_outcome(next_state: SimState) -> void:
 	if next_state.outcome != SimState.Outcome.RUNNING:
 		return
+
+	# 1. Contraintes.
+	for obj in next_state.objectives:
+		match obj.type:
+			ObjectiveDef.Type.PRESERVATION:
+				if next_state.counters.lost > obj.max_lost:
+					next_state.outcome = SimState.Outcome.LOST
+					return
+			ObjectiveDef.Type.INTERDICTION:
+				if _any_present_agent_on_cells(next_state, obj.cells):
+					next_state.outcome = SimState.Outcome.LOST
+					return
+			ObjectiveDef.Type.CELERITY:
+				if next_state.tick >= obj.max_ticks:
+					next_state.outcome = SimState.Outcome.LOST
+					return
+
+	# 2. Inatteignabilité, 3. accomplissements — en un seul parcours.
+	var total_agents: int = next_state.agents.size()
+	var present: int = _count_present(next_state)
+	var achievement_count := 0
+	var all_achieved := true
+	for obj in next_state.objectives:
+		match obj.type:
+			ObjectiveDef.Type.EXTRACTION:
+				achievement_count += 1
+				# Comparaisons en centièmes entiers : jamais de division.
+				if (next_state.counters.exited + present) * 100 < obj.percent * total_agents:
+					next_state.outcome = SimState.Outcome.LOST  # plus assez d'agents
+					return
+				if next_state.counters.exited * 100 < obj.percent * total_agents:
+					all_achieved = false
+			ObjectiveDef.Type.COLLECT:
+				achievement_count += 1
+				if next_state.counters.delivered + _collectable_remaining(next_state) < obj.count:
+					next_state.outcome = SimState.Outcome.LOST
+					return
+				if next_state.counters.delivered < obj.count:
+					all_achieved = false
+
+	if achievement_count > 0 and all_achieved:
+		next_state.outcome = SimState.Outcome.WON
+		return
+
+	# 4. Limite de ticks du niveau.
 	if next_state.max_ticks > 0 and next_state.tick >= next_state.max_ticks:
 		next_state.outcome = SimState.Outcome.LOST
+
+static func _any_present_agent_on_cells(state: SimState, cells: PackedInt32Array) -> bool:
+	for agent in state.agents:
+		if not agent.is_present():
+			continue
+		var idx: int = state.grid.index_of(agent.pos)
+		for forbidden in cells:
+			if idx == forbidden:
+				return true
+	return false
+
+static func _count_present(state: SimState) -> int:
+	var n := 0
+	for agent in state.agents:
+		if agent.is_present():
+			n += 1
+	return n
+
+## Ressources encore livrables : cases RESOURCE restantes + agents porteurs.
+## Tant que R11/R12 (chapitre 4) n'existent pas, delivered ne progresse pas
+## et cette borne rend l'objectif COLLECT correctement inatteignable quand
+## le stock est insuffisant.
+static func _collectable_remaining(state: SimState) -> int:
+	var n := 0
+	for c in state.grid.cells:
+		if c == GridState.CellType.RESOURCE:
+			n += 1
+	for agent in state.agents:
+		if agent.is_present() and (agent.flags & AgentState.PORTEUR) != 0:
+			n += 1
+	return n
