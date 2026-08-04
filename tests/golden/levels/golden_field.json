@@ -1,0 +1,31 @@
+{
+  "_comment": "Fixture d'or — champ 8x8 : deux lumières opposées, dangers statiques en diagonale, murs, une sortie. Fixture technique de non-régression, pas un niveau de jeu.",
+  "max_ticks": 300,
+  "allowed_rules": [1, 2, 3],
+  "grid": {
+    "size": [8, 8],
+    "cells": [
+      9, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 1, 0, 0,
+      0, 0, 0, 3, 0, 0, 0, 0,
+      0, 0, 0, 0, 3, 0, 0, 0,
+      0, 0, 1, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      2, 0, 0, 0, 0, 0, 0, 9
+    ],
+    "cycle_index": [],
+    "cycles": []
+  },
+  "agents": [
+    { "pos": [6, 1] },
+    { "pos": [1, 6] },
+    { "pos": [6, 6] },
+    { "pos": [4, 1] },
+    { "pos": [1, 3] },
+    { "pos": [5, 5] }
+  ],
+  "objectives": [
+    { "type": "extraction", "percent": 50 }
+  ]
+}

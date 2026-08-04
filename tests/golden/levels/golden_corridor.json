@@ -1,0 +1,44 @@
+{
+  "_comment": "Fixture d'or — couloir 3x10 : lumière au nord, sortie sur le chemin, danger cyclique au milieu. Fixture technique de non-régression, pas un niveau de jeu.",
+  "max_ticks": 300,
+  "allowed_rules": [1, 2, 3],
+  "grid": {
+    "size": [3, 10],
+    "cells": [
+      0, 9, 0,
+      0, 0, 0,
+      0, 2, 0,
+      0, 0, 0,
+      1, 0, 0,
+      0, 4, 0,
+      0, 0, 1,
+      0, 0, 0,
+      0, 0, 0,
+      0, 0, 0
+    ],
+    "cycle_index": [
+      -1, -1, -1,
+      -1, -1, -1,
+      -1, -1, -1,
+      -1, -1, -1,
+      -1, -1, -1,
+      -1, 0, -1,
+      -1, -1, -1,
+      -1, -1, -1,
+      -1, -1, -1,
+      -1, -1, -1
+    ],
+    "cycles": [{ "period": 6, "active_ticks": 3 }]
+  },
+  "agents": [
+    { "pos": [0, 9] },
+    { "pos": [1, 9] },
+    { "pos": [2, 9] },
+    { "pos": [0, 8] },
+    { "pos": [2, 8] }
+  ],
+  "objectives": [
+    { "type": "extraction", "percent": 60 },
+    { "type": "preservation", "max_lost": 2 }
+  ]
+}

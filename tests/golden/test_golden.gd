@@ -1,0 +1,24 @@
+extends GutTest
+## Tests d'or (T-021, DCT §11.2) : rejoue chaque recette archivée et compare
+## les empreintes aux ticks de contrôle. Toute divergence est une régression
+## du déterminisme — bloquante, à corriger, jamais à « mettre à jour »
+## (docs/ARCHITECTURE.md règle 1). Version GUT du contrôle ; le script autonome est
+## tools/check_golden.gd, les deux partagent GoldenRunner.
+
+func test_all_golden_recipes_match_their_archived_hashes() -> void:
+	var golden := GoldenRunner.load_json(GoldenRunner.GOLDEN_PATH)
+	assert_false(golden.is_empty(), "tests/golden/golden.json introuvable ou invalide")
+
+	var recipes: Array = golden.get("recipes", [])
+	assert_gte(recipes.size(), 10, "le corpus doit compter au moins 10 recettes (T-021)")
+
+	var checkpoints: Array = golden.get("checkpoints", [])
+	for recipe in recipes:
+		var level_path: String = recipe["level"]
+		var expected: Dictionary = recipe.get("hashes", {})
+		assert_false(expected.is_empty(), "recette sans empreintes archivées : %s" % level_path)
+
+		var got := GoldenRunner.run_recipe(level_path, recipe["stack"], checkpoints)
+		for cp in got.keys():
+			assert_eq(str(got[cp]), str(expected.get(cp, "(absent)")),
+				"RÉGRESSION DU DÉTERMINISME — %s pile=%s t=%s" % [level_path, str(recipe["stack"]), cp])
