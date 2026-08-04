@@ -1,6 +1,6 @@
 # Volens — Cahier des charges fonctionnel
 
-**Version 2.0 — 2 août 2026**
+**Version 2.1 — 4 août 2026**
 *Document de spécification — jeu mobile de puzzle systémique*
 
 ---
@@ -50,8 +50,8 @@ Il manque une expérience **profonde mais interruptible**, exigeante intellectue
 | Rôle | Titulaire |
 |---|---|
 | Porteur, concepteur, réalisateur | Développeur solo (maîtrise d'œuvre et d'ouvrage confondues) |
-| Testeurs | Panel de 5 à 8 personnes par campagne, recrutées dans l'entourage élargi et en ligne |
-| Plateformes de distribution | Google Play, Apple App Store |
+| Testeurs | Panel de 5 à 8 personnes pour les campagnes 1 et 2 ; **15 à 18** pour la campagne 3, fusionnée avec le test fermé Google Play *(v2.1, §13.3)* |
+| Plateformes de distribution | **Google Play (Android uniquement en v1.0)** *(v2.1)* ; portage iOS envisagé en évolution post-v1.0 (§17) |
 
 Le cumul maîtrise d'ouvrage / maîtrise d'œuvre est un risque identifié (perte de recul) : ce document sert précisément de garde-fou, et les décisions d'arbitrage devront pouvoir être justifiées par référence à ses principes (§4).
 
@@ -63,7 +63,7 @@ Le cumul maîtrise d'ouvrage / maîtrise d'œuvre est un risque identifié (pert
 
 - Le jeu complet solo hors ligne : 6 chapitres, 70 niveaux minimum, 16 règles de comportement.
 - L'interface portrait une main, l'accessibilité de base, la localisation français et anglais.
-- La distribution sur Android et iOS en modèle *free-to-try* avec déblocage unique.
+- La distribution sur **Android** en modèle *free-to-try* avec déblocage unique *(v2.1 : iOS retiré de la v1.0, voir §2.2 et §17)*.
 - L'outillage interne de validation des niveaux (exigence de qualité, voir §12.3).
 
 ### 2.2 Exclu de la v1.0
@@ -72,6 +72,7 @@ Exclusions **fermes**, destinées à protéger le calendrier et la cohérence du
 
 | Exclusion | Motif |
 |---|---|
+| **Version iOS** *(v2.1, nouveau)* | Cohérence avec le choix technique du DCT (Android uniquement en v1.0) : concentrer le calendrier de 30 semaines sur une seule chaîne de publication (compte, signature, conformité). Portage envisagé en évolution si la trajectoire commerciale le justifie (§17) — Godot exporte nativement vers iOS, aucun choix technique actuel ne le condamne |
 | Multijoueur, classements en ligne, comptes utilisateur | Contredit le principe hors ligne et explose la charge |
 | Éditeur de niveaux accessible aux joueurs | Reporté en évolution (§17), candidat prioritaire |
 | Narration, personnages, dialogues, univers scénarisé | Contredit la direction artistique abstraite |
@@ -93,6 +94,8 @@ Joueuse de puzzles exigeants (Baba Is You, Opus Magnum). Cherche l'élégance de
 
 **Contre-persona — joueur casual de gratification immédiate.**
 Volens lui demandera une minute d'observation avant sa première récompense. Il décrochera, et **le produit ne doit pas être déformé pour le retenir**. Ce renoncement est une décision de conception, opposable à toute demande future de simplification.
+
+**Conséquence de `minSdk` 33 *(v2.1, B4)*.** Le jeu ne sera pas installable sur les appareils antérieurs à Android 13 (sortie fin 2022) — choix cohérent avec un public équipé récent comme Karim et Léa, mais qui réduit mécaniquement le parc adressable par rapport à un `minSdk` plus bas ; l'ampleur de cette réduction est à quantifier avant J-4 (DCT §13.1).
 
 ### 3.2 Contexte d'usage nominal
 
@@ -536,6 +539,8 @@ Vérifie : la courbe de difficulté (QN-05 mesuré sur de vrais joueurs), la lis
 
 Vérifie : la durée de vie réelle, les pics de difficulté non détectés par l'outil de validation (l'outil mesure l'espace des solutions, pas la capacité humaine à les trouver — les deux doivent être confrontés), l'usure éventuelle du plaisir sur 8-12 heures, l'usage réel des indices (EF-30).
 
+**Fusion avec le test fermé Google Play *(v2.1, B2).*** Cette campagne est confondue avec la piste de test fermé exigée par Google Play (§14.4) : elle requiert **15 à 18 testeurs recrutés**, une marge délibérée au-dessus du minimum de 12 imposé par la plateforme — un désistement en cours de période fait sinon repartir le compteur de 14 jours consécutifs à zéro.
+
 ### 13.4 Test en conditions réelles — obligatoire à chaque campagne
 
 À mener **réellement en bus ou en métro**, pas en simulation :
@@ -547,7 +552,7 @@ Vérifie : la durée de vie réelle, les pics de difficulté non détectés par 
 
 ### 13.5 Vérifications de conformité continue
 
-À chaque étape de production : reproduction déterministe d'un jeu de parties de référence sur au moins trois appareils physiques distincts des deux plateformes (ENF-05) ; contrôle d'accessibilité (ENF-20 à ENF-25) ; contrôle du budget de poids et de performance (ENF-10 à ENF-14).
+À chaque étape de production : reproduction déterministe d'un jeu de parties de référence sur **deux architectures CPU distinctes — arm64 (appareil physique) et x86_64 (émulateur, CI)** *(v2.1, reformulé — voir §16 et DCT §11.2, A6)* ; contrôle d'accessibilité (ENF-20 à ENF-25) ; contrôle du budget de poids et de performance (ENF-10 à ENF-14).
 
 ---
 
@@ -579,9 +584,10 @@ Le marché impose la lucidité : plus de 1,4 million d'applications sont sorties
 
 | Obligation | Contenu | Échéance |
 |---|---|---|
-| Exigence de niveau d'API Google Play | Toute nouvelle application doit cibler **Android 16 (API 36)** | **31 août 2026** — à intégrer dès le premier livrable technique |
-| Comptes développeur | Apple (99 $/an), Google (25 $ une fois) | Avant soumission |
-| Déclarations de confidentialité des stores | Data Safety (Google), Privacy Manifest et fiche confidentialité (Apple) — triviales ici grâce à ENF-30 | Avant soumission |
+| Exigence de niveau d'API Google Play | Toute nouvelle application doit cibler **Android 16 (API 36)**, `minSdk` **33** *(v2.1)* | **31 août 2026** — à intégrer dès le premier livrable technique |
+| Compte développeur *(v2.1)* | Google (25 $ une fois) — **déjà réglé et vérifié**, avant l'engagement de la production. Apple hors périmètre v1.0 (§2.2) | — |
+| Test fermé Google Play *(v2.1, nouveau — A4)* | **12 testeurs minimum, inscrits 14 jours consécutifs**, préalable obligatoire à la demande d'accès production (comptes personnels créés après le 13/11/2023) | Avant la demande d'accès production |
+| Déclarations de confidentialité des stores | Data Safety (Google) — triviale ici grâce à ENF-30 | Avant soumission |
 | Politique de confidentialité publique | Une page, conforme ENF-33 | Avant soumission |
 | Déclaration de contenu généré par IA (Google Play) | Applicable si des contenus livrés sont générés par IA | Avant soumission |
 | RGPD | Position « aucune collecte » (ENF-30) : pas de traitement de données personnelles hors achat, géré par les stores | Continu |
@@ -619,17 +625,18 @@ La version 1.0 est livrable quand **chacun** de ces points est constaté :
 - [ ] Les trois campagnes de test réalisées, critères de la campagne 1 archivés
 
 **Expérience**
-- [ ] Reprise après fermeture brutale : état identique, en moins de 3 s (EF-20/21), constaté sur les deux plateformes
+- [ ] Reprise après fermeture brutale : état identique, en moins de 3 s (EF-20/21), constaté sur l'appareil de référence *(v2.1 : « les deux plateformes » retiré — Android uniquement en v1.0, §2.2)*
 - [ ] Parcours complet réalisable : une main, portrait, son coupé, hors ligne, du premier lancement au dernier niveau
 - [ ] Zéro notification, zéro minuterie réelle, zéro sollicitation d'achat hors EF-41
 - [ ] Test en transport réel (§13.4) validé sur la version candidate
 
-**Technique et conformité**
-- [ ] Déterminisme constaté sur trois appareils physiques minimum, deux plateformes (ENF-05)
-- [ ] 60 images/s sur l'appareil de référence ; < 60 Mo ; lancement < 3 s (ENF-10/11/13)
+**Technique et conformité** *(v2.1, B1 — cibles avec marge : l'appareil de référence est un flagship, les seuils bruts n'y sont pas informatifs)*
+- [ ] **60 i/s à 4× le nombre d'agents cible** ; temps d'image **< 4 ms** ; démarrage à froid **< 1,5 s** ; reprise **< 1,5 s** ; poids **< 60 Mo** (ENF-10/11/13)
+- [ ] Sobriété (ENF-12) mesurée en **écart** de consommation simulation/pause, jamais en autonomie absolue
+- [ ] Déterminisme constaté sur **deux architectures CPU distinctes** — arm64 (appareil de référence) et x86_64 (émulateur + CI) — complété par la collecte manuelle d'empreintes du parc de testeurs lors du test fermé (ENF-05, DCT §11.2/§13.3 bis)
 - [ ] Accessibilité ENF-20 à ENF-25 vérifiée
 - [ ] Français et anglais complets à parité (ENF-40)
-- [ ] API 36, déclarations de confidentialité des deux stores, politique de confidentialité en ligne, classification d'âge obtenue
+- [ ] API 36, `minSdk` 33, déclaration de confidentialité Google Play, politique de confidentialité en ligne, classification d'âge obtenue
 
 ---
 
@@ -642,6 +649,7 @@ Par ordre de priorité pressenti, sans engagement :
 3. **Pack de chapitres additionnels** (contenu payant, jamais d'avantage) — si le scénario commercial nominal est atteint.
 4. **Défis hebdomadaires hors ligne** — un niveau commun préchargé, sans classement en ligne ni date limite réelle, pour ne pas contredire EF-24.
 5. Langues supplémentaires (le coût est structurellement faible, ENF-41).
+6. **Portage iOS** *(v2.1, nouveau)* — retiré de la v1.0 pour concentrer le calendrier sur une seule chaîne de publication (§2.2) ; aucun choix technique actuel ne le condamne (DCT §1.6), à réévaluer si le scénario commercial nominal est atteint.
 
 ---
 
@@ -692,4 +700,11 @@ Par ordre de priorité pressenti, sans engagement :
 
 ---
 
-*Fin du document — v2.0. Toute modification des principes (§4) ou des règles de gestion (§6) exige une révision de version majeure de ce cahier des charges.*
+## Historique des révisions *(v2.1)*
+
+| Version | Date | Changements | Motif |
+|---|---|---|---|
+| 2.0 | 2 août 2026 | Version de référence | — |
+| 2.1 | 4 août 2026 | Retrait d'iOS du périmètre v1.0 (§1.4, §2.1, §2.2, §14.4, §16, §17 — cohérence avec le choix technique déjà tranché par le DCT, Android uniquement) ; testeurs de la campagne 3 portés à 15-18 et fusion avec le test fermé Google Play (§1.4, §13.3, §14.4) ; obligation de test fermé documentée (§14.4) ; compte développeur Google Play déjà réglé (§14.4) ; `minSdk` 33 et conséquence sur le parc adressable (§3.1, §14.4) ; critères d'acceptation §16 réécrits avec marge (60 i/s à 4×, temps d'image < 4 ms, sobriété en écart) et critère de déterminisme reformulé en deux architectures CPU plutôt qu'en appareils physiques/plateformes (§13.5, §16) | Série de décisions de cadrage prises entre J0 et le début de S2 ; contradiction Android/iOS relevée et tranchée en faveur du DCT (déjà Android uniquement) plutôt que silencieusement ignorée |
+
+*Fin du document — v2.1. Toute modification des principes (§4) ou des règles de gestion (§6) exige une révision de version majeure de ce cahier des charges.*
