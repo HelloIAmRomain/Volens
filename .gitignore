@@ -1,4 +1,5 @@
 .godot/
+.import/
 /android/
 /build/
 export_presets.cfg
