@@ -1,0 +1,61 @@
+# CI Volens [DT-19] : à chaque poussée — tests unitaires, tests
+# d'architecture, tests d'or (dès qu'ils existent, découverte par
+# sous-répertoires), et double exécution de la simulation de fumée pour
+# constater le déterminisme sur x86_64.
+#
+# La CI ne signe ni ne publie rien : aucun secret de production (DT-19).
+
+name: CI
+
+on:
+  push:
+  pull_request:
+
+env:
+  GODOT_VERSION: 4.7.1
+  GODOT_BIN: Godot_v4.7.1-stable_linux.x86_64
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Dépôt
+        uses: actions/checkout@v4
+
+      - name: Cache Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: ~/godot-bin
+          key: godot-${{ env.GODOT_VERSION }}-linux-x86_64
+
+      - name: Télécharger Godot ${{ env.GODOT_VERSION }}
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/godot-bin
+          curl -sSL -o /tmp/godot.zip \
+            "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/${GODOT_BIN}.zip"
+          unzip -q /tmp/godot.zip -d ~/godot-bin
+          chmod +x ~/godot-bin/${GODOT_BIN}
+
+      - name: Importer le projet (enregistrement des class_name)
+        run: ~/godot-bin/${GODOT_BIN} --headless --path . --import
+
+      - name: Tests (unitaires + architecture + or)
+        run: |
+          ~/godot-bin/${GODOT_BIN} --headless --path . \
+            -s addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit \
+            | tee /tmp/gut.log
+          grep -q -- "---- All tests passed! ----" /tmp/gut.log
+
+      - name: Déterminisme x86_64 — deux exécutions, empreintes identiques
+        run: |
+          run_hash() {
+            ~/godot-bin/${GODOT_BIN} --headless --path . \
+              --script res://tools/run_sim.gd -- --level=test_smoke --ticks=300 \
+              | grep "empreinte finale" | awk '{print $3}'
+          }
+          H1=$(run_hash); H2=$(run_hash)
+          echo "empreintes : $H1 / $H2"
+          test -n "$H1" && test "$H1" = "$H2"
