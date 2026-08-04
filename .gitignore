@@ -6,3 +6,11 @@ export_presets.cfg
 *.keystore
 *.jks
 *.translation
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
