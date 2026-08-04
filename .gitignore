@@ -2,6 +2,7 @@
 .import/
 /android/
 /build/
+/reports/
 export_presets.cfg
 *.keystore
 *.jks
