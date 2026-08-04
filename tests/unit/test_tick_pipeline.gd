@@ -1,7 +1,7 @@
 extends GutTest
-## Tests unitaires du pipeline de tick (T-011). Étape 2 est encore au palier
-## « à vide » (tout agent présent reste immobile) : ces tests couvrent la
-## charpente des sept étapes, pas la cascade de règles (T-012).
+## Tests unitaires du pipeline de tick (T-011) : la charpente des sept
+## étapes, testée avec une pile vide. La cascade de règles est couverte par
+## test_rules_chapter_1.gd (T-012).
 
 func _make_empty_grid(width: int, height: int) -> GridState:
 	var grid := GridState.new()
@@ -67,11 +67,11 @@ func test_step_never_mutates_the_input_state() -> void:
 	assert_eq(next_state.tick, 1)
 	assert_ne(state, next_state, "step() renvoie un nouvel objet, jamais l'entrée mutée")
 
-func test_step_leaves_agents_immobile_at_the_empty_stage() -> void:
+func test_step_with_empty_stack_leaves_agents_immobile() -> void:
 	var state := _make_state(3, 3, [Vector2i(1, 1)])
 	var next_state := SimCore.step(state, [])
 
-	assert_eq(next_state.agents[0].pos, Vector2i(1, 1), "T-011 : étape 2 renvoie systématiquement l'immobilité")
+	assert_eq(next_state.agents[0].pos, Vector2i(1, 1), "pile vide : aucune règle applicable, immobilité (RG-05)")
 
 func test_two_successive_runs_produce_the_same_positions() -> void:
 	var state_a := _make_state(4, 4, [Vector2i(0, 0), Vector2i(3, 3)])

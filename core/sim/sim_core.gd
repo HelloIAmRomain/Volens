@@ -85,16 +85,31 @@ static func step(state: SimState, stack: Array[int]) -> SimState:
 static func _update_cycles(_state: SimState) -> void:
 	pass
 
-## Étape 2 — T-011 : palier « à vide ». Aucune règle n'est encore câblée ;
-## chaque agent présent reste immobile. Remplacé par la cascade de règles
-## en T-012 (première règle non-ABSTAIN de la pile, docs/ARCHITECTURE.md §règle d'or).
-static func _decide_agents(state: SimState, _stack: Array[int]) -> Array[Vector2i]:
+## Étape 2 — cascade de règles (T-012) : pour chaque agent présent, la
+## première règle non-ABSTAIN de la pile l'emporte (RG-05, règle d'or). Lit
+## exclusivement `state` (t), jamais l'état en cours de construction (RG-07).
+static func _decide_agents(state: SimState, stack: Array[int]) -> Array[Vector2i]:
 	var n := state.agents.size()
 	var directions: Array[Vector2i] = []
 	directions.resize(n)
 	for i in range(n):
-		directions[i] = Vector2i.ZERO
+		var agent := state.agents[i]
+		directions[i] = _decide_one(agent, state, stack) if agent.is_present() else Vector2i.ZERO
 	return directions
+
+## Emplacement vide (RuleRegistry.EMPTY) : ignoré, la cascade continue.
+## Aucune règle applicable : immobile (RG-05).
+static func _decide_one(agent: AgentState, state: SimState, stack: Array[int]) -> Vector2i:
+	for rule_id in stack:
+		if rule_id == RuleRegistry.EMPTY:
+			continue
+		var rule := RuleRegistry.get_rule(rule_id)
+		if rule == null:
+			continue
+		var result: Vector2i = rule.evaluate(agent, state, state.rule_params)
+		if result != Rule.ABSTAIN:
+			return result
+	return Vector2i.ZERO
 
 ## Étape 3 — résolution des conflits de case (RG-06/RG-01).
 ##
