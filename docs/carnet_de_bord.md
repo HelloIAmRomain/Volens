@@ -70,26 +70,63 @@ piles, chacune stable entre exécutions).
 
 ---
 
-## Reste à faire — prochaines étapes (S3, plan §6)
+## Fait — Lot S3 : verrouillage du déterminisme et validateur (4 août 2026, session autonome)
 
-| ID | Tâche | Détail |
+| ID | Contenu livré | Tests |
 |---|---|---|
-| T-020 | ~~Tests unitaires des 3 règles~~ | **Déjà couvert en S2** (27 tests, dans le même commit que les règles, conformément à docs/ARCHITECTURE.md) — la charge S3 correspondante est libérée |
-| T-021 | **Tests d'or** | Corpus de 10 recettes, empreintes archivées à t=50/150/300, dans `tests/golden/` ; script `tools/check_golden.gd` |
-| T-022 | **Tests d'architecture** | Analyse statique : interdits de dépendance (`core/` ↛ `game/`, `core/sim/` autonome, `tools/` → `core/`+`data/`) et interdits lexicaux dans `core/` (float, aléatoire, horloge, `delta`) — en excluant les commentaires |
-| T-023 | **CI GitHub Actions** | Godot 4.7.1 headless en cache ; exécution des trois familles de tests à chaque poussée |
-| T-024 | **Validateur v1** | Énumération des piles, verdict de victoire, rapport CSV (`tools/validate/`) |
-| — | **Test du dispositif** | Un commit introduisant volontairement un `randf()` dans `core/sim/` doit faire échouer la CI — à exécuter réellement (définition de fini S3) |
+| T-020 | Déjà couvert en S2 (tests dans le même commit que les règles) | — |
+| T-022 | `tests/arch/test_architecture.gd` : analyse statique avec retrait des commentaires — interdits lexicaux de `core/` (aléatoire, delta/horloge/OS, float/sqrt/sin/cos/pow, littéraux flottants, preload/load/res://, FileAccess/JSON, extends Node), `core/sim/` sans référence Replay*, `tools/` sans game/ ni addons/ ; auto-test du scanner | 5 |
+| T-023 | `.github/workflows/ci.yml` : Godot 4.7.1 en cache, import, GUT sur `res://tests` avec sous-répertoires, double exécution de fumée avec comparaison d'empreintes | — |
+| — | **Dispositif exercé réellement** : `randf()` injecté dans `agent_state.gd` → détecté à la ligne exacte par le test d'architecture → retiré, retour au vert. Définition de fini S3 satisfaite (localement ; le premier passage CI en ligne reste à observer) | — |
+| RG-15 | **Objectifs de niveau** (prérequis de T-024) : extraction/preservation/celerity/interdiction/collect ; accomplissements vs contraintes ; inatteignabilité mathématique (RG-09) ; arithmétique 100 % entière ; exclus de l'empreinte (configuration, comme rule_params) — empreinte de fumée inchangée ; `dynamics_hash` (sans tick) pour la détection de cycle | 17 |
+| T-021 | Corpus de **10 recettes d'or** (`tests/golden/golden.json`), empreintes à t=50/150/300 ; 2 fixtures techniques (couloir cyclique, champ 8x8) ; `GoldenRunner` partagé entre test GUT et `tools/check_golden.gd` ; `--write` réservé aux gestes humains (création initiale faite ce jour, c'est le geste fondateur de T-021) | 1 (×30 assertions) |
+| T-024 | **Validateur v1** : `StackEnumerator` (arrangements distincts 0-4, auto-contrôle P(12,·)=13 345), `ValidateLib` (même SimCore que le jeu — DT-15 ; coupes DT-16 : arrêt sur outcome + boucle détectée par (dynamics_hash, tick mod ppcm)), classes structurelles par empreinte finale, étalon min_ticks (QN-04), verdict QN-01 ; CLI `tools/validate/run.gd` → CSV + JSON dans `reports/validate/` (gitignoré) | 9 |
 
-Puis S4-S5 : prototype jouable (premier rendu autorisé en S4), niveaux du
-chapitre 1, campagne de test 1, décision J-1 (6 sept. 2026).
+**Total après S3 : 92 tests, 268 assertions, tous verts.**
 
-**Rappels d'invariants pour la S3** : les conditions de victoire (objectifs
-extraction/collecte/…) ne sont **pas encore implémentées** — `outcome` ne
-connaît que LOST par dépassement de ticks. Les types de case RESOURCE,
-DROPOFF, PRESSURE_DOOR, ONE_WAY sont reconnus mais inertes (chapitres 2/4).
-`SimCore.explain` (EF-05) reste à écrire. `export_presets.cfg` (minSdk 33,
-targetSdk 36) sera créé avec la chaîne d'export en S9.
+Décisions supplémentaires (S3) :
+
+8. **Sémantique des objectifs** — deux familles : accomplissements
+   (extraction, collect — le niveau est gagné quand tous sont satisfaits) et
+   contraintes (préservation, célérité, interdiction — violation
+   irrémédiable = défaite immédiate). Ordre d'évaluation fixe : contraintes >
+   inatteignabilité > victoire > limite de ticks. La contrainte prime au
+   tick d'égalité. Un niveau sans accomplissement n'est jamais gagné.
+9. **Objectifs exclus de l'empreinte** (configuration, même principe que
+   rule_params) — c'est ce qui a permis d'ajouter RG-15 sans casser les
+   empreintes S2.
+10. **`collect` évalué mais inatteignable** tant que R11/R12 (chapitre 4)
+    n'existent pas — documenté dans `ObjectiveDef`.
+11. **Fixtures d'or ≠ niveaux jouables** : les deux fixtures d'or sont
+    insolubles en tant que niveaux (verdict validateur « insoluble », attendu),
+    elles archivent des dynamiques, pas du game design. L'IA ne conçoit pas
+    les niveaux (DCT §12.4) : les 5 niveaux du chapitre 1 (T-040) relèvent
+    du concepteur.
+
+## Reste à faire
+
+**S3 — reliquat :**
+- Observer le **premier passage de la CI en ligne** (poussée du 4 août) et
+  corriger le cas échéant — seul point S3 non constatable hors ligne.
+
+**S4-S5 (plan §6) — nécessite des décisions du concepteur :**
+- T-030→T-033 : prototype jouable — **premier rendu autorisé** (S4), pilotage,
+  pile de règles UI, clichés-clés/remontée du temps (`core/replay/`).
+- T-040→T-045 : les 5 niveaux du chapitre 1 (conception humaine), validation,
+  test des quatre piles (EQ-05), sauvegarde minimale, campagne 1, transport.
+- Décision J-1 (6 sept. 2026) : GO / PIVOT / STOP.
+
+**Toujours ouverts, à la charge du porteur :** T-003 (appareil de référence),
+T-004 (chaîne complète — Android SDK prévu S9), T-006 (clé de signature,
+deux sauvegardes hors dépôt), T-008 (recrutement testeurs — **bloque J-1**).
+
+**Rappels d'invariants pour la suite** : les types de case RESOURCE, DROPOFF,
+PRESSURE_DOOR, ONE_WAY sont reconnus mais inertes (chapitres 2/4).
+`SimCore.explain` (EF-05) reste à écrire (T-065, S8). `export_presets.cfg`
+(minSdk 33, targetSdk 36) sera créé avec la chaîne d'export en S9. Toute
+divergence d'empreinte d'or est une régression à corriger, jamais une valeur
+à mettre à jour (la commande `--write` de `check_golden.gd` exige une
+décision humaine consignée ici).
 
 ---
 
@@ -98,6 +135,8 @@ targetSdk 36) sera créé avec la chaîne d'export en S9.
 | Mesure | Valeur | Date |
 |---|---|---|
 | Empreinte de fumée (test_smoke, 200 ticks, pile 1,2,3,0) | `c8a7cc2c73394949` | 4 août 2026 |
-| Tests unitaires | 61/61 (121 assertions), ~0,4 s | 4 août 2026 |
+| Tests (unitaires + architecture + or) | 92/92 (268 assertions), ~0,7 s | 4 août 2026 (S3) |
+| Recettes d'or | 10/10 concordantes, doublement vérifiées | 4 août 2026 |
+| Coupe de boucle du validateur | simulation statique tranchée en ~7 ticks au lieu de 300 | 4 août 2026 |
 | Godot | 4.7.1-stable, standard (pas .NET), Linux x86_64 | 4 août 2026 |
 | GUT | 9.6.1 | 4 août 2026 |
