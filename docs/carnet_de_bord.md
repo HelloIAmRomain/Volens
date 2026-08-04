@@ -84,6 +84,16 @@ piles, chacune stable entre exécutions).
 
 **Total après S3 : 92 tests, 268 assertions, tous verts.**
 
+### Fait — pris d'avance sur S4 (pur, sans rendu) : T-033
+
+`core/replay/replay_session.gd` [DT-11, DT-12] : clichés-clés tous les
+25 ticks (⚙️ configurable), `seek(t)` par restauration du cliché ≤ t puis
+re-simulation, `reset()` (EF-04), pile figée à la création (RG-10), copies
+défensives. 11 tests — le contrat central est vérifié à l'empreinte près :
+remonter le temps est indiscernable d'une avance directe. Aucun rendu,
+aucune interface : la partie visuelle de S4 reste entièrement à faire.
+**Total : 103 tests, 285 assertions, tous verts.**
+
 Décisions supplémentaires (S3) :
 
 8. **Sémantique des objectifs** — deux familles : accomplissements
@@ -110,8 +120,9 @@ Décisions supplémentaires (S3) :
   corriger le cas échéant — seul point S3 non constatable hors ligne.
 
 **S4-S5 (plan §6) — nécessite des décisions du concepteur :**
-- T-030→T-033 : prototype jouable — **premier rendu autorisé** (S4), pilotage,
-  pile de règles UI, clichés-clés/remontée du temps (`core/replay/`).
+- T-030→T-032 : prototype jouable — **premier rendu autorisé** (S4), pilotage,
+  pile de règles UI. (T-033 `core/replay/` : **déjà fait**, voir ci-dessus —
+  il ne reste que son branchement à l'interface.)
 - T-040→T-045 : les 5 niveaux du chapitre 1 (conception humaine), validation,
   test des quatre piles (EQ-05), sauvegarde minimale, campagne 1, transport.
 - Décision J-1 (6 sept. 2026) : GO / PIVOT / STOP.
