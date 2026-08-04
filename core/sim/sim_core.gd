@@ -61,6 +61,10 @@ static func _load_agents(agents_arr: Array) -> Array[AgentState]:
 		agents.append(agent)
 	return agents
 
+## Empreinte de l'état [DCT §4.2, DT-09] — délègue à StateHash (T-013).
+static func hash_state(state: SimState) -> int:
+	return StateHash.hash_state(state)
+
 ## Transition pure d'un tick [DCT §4.4] : lit `state` (t) en lecture seule du
 ## début à la fin, construit et renvoie un état neuf (t+1). Mêmes entrées,
 ## mêmes sorties, toujours (DT-10 §2.1 / invariant n°10 docs/ARCHITECTURE.md).
