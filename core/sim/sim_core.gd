@@ -194,7 +194,7 @@ static func _apply_movements(next_state: SimState, granted_dirs: Array[Vector2i]
 
 static func _direction_index_of(dir: Vector2i) -> int:
 	for d in Directions.ORDER:
-		if Directions.delta(d) == dir:
+		if Directions.offset(d) == dir:
 			return d
 	return Directions.NORTH  # inatteignable pour un vecteur de déplacement valide
 

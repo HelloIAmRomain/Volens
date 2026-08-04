@@ -48,7 +48,7 @@ func test_toward_light_moves_closer_nominal() -> void:
 	var rule := RuleTowardLight.new()
 
 	# Lumière au nord : Nord réduit la distance et est premier dans l'ordre.
-	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.delta(Directions.NORTH))
+	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.offset(Directions.NORTH))
 
 func test_toward_light_tie_break_follows_north_east_order() -> void:
 	var state := _make_state(5, 5, [Vector2i(2, 2)])
@@ -57,7 +57,7 @@ func test_toward_light_tie_break_follows_north_east_order() -> void:
 	_set_cell(state, Vector2i(4, 0), GridState.CellType.LIGHT_SOURCE)
 	var rule := RuleTowardLight.new()
 
-	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.delta(Directions.NORTH))
+	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.offset(Directions.NORTH))
 
 func test_toward_light_picks_nearest_of_two_lights() -> void:
 	var state := _make_state(7, 1, [Vector2i(2, 0)])
@@ -65,7 +65,7 @@ func test_toward_light_picks_nearest_of_two_lights() -> void:
 	_set_cell(state, Vector2i(6, 0), GridState.CellType.LIGHT_SOURCE)  # distance 4
 	var rule := RuleTowardLight.new()
 
-	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.delta(Directions.WEST))
+	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.offset(Directions.WEST))
 
 func test_toward_light_abstains_without_any_light() -> void:
 	var state := _make_state(3, 3, [Vector2i(1, 1)])
@@ -87,7 +87,7 @@ func test_toward_light_at_grid_edge_skips_blocked_directions() -> void:
 	_set_cell(state, Vector2i(2, 0), GridState.CellType.LIGHT_SOURCE)
 	var rule := RuleTowardLight.new()
 
-	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.delta(Directions.EAST))
+	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.offset(Directions.EAST))
 
 func test_toward_light_abstains_when_walled_in() -> void:
 	# Couloir 1 case : l'agent est emmuré, aucune direction franchissable ne
@@ -108,7 +108,7 @@ func test_flee_danger_moves_away_nominal() -> void:
 	var rule := RuleFleeDanger.new()
 
 	# Danger au sud, à portée (d²=4 ≤ 25) : Nord éloigne et est premier.
-	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.delta(Directions.NORTH))
+	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.offset(Directions.NORTH))
 
 func test_flee_danger_abstains_when_danger_is_out_of_range() -> void:
 	var state := _make_state(20, 1, [Vector2i(0, 0)])
@@ -130,7 +130,7 @@ func test_flee_danger_perceives_inactive_cyclic_danger() -> void:
 	_set_cell(state, Vector2i(0, 0), GridState.CellType.CYCLIC_DANGER)
 	var rule := RuleFleeDanger.new()
 
-	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.delta(Directions.EAST))
+	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.offset(Directions.EAST))
 
 func test_flee_danger_range_boundary_is_inclusive() -> void:
 	_params.flee_perception_range_sq = 4
@@ -139,7 +139,7 @@ func test_flee_danger_range_boundary_is_inclusive() -> void:
 	var rule := RuleFleeDanger.new()
 
 	# Perçu (d² == portée², borne incluse) et la fuite vers l'ouest est libre.
-	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.delta(Directions.WEST), "d² == portée² : encore perçu")
+	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.offset(Directions.WEST), "d² == portée² : encore perçu")
 
 func test_flee_danger_abstains_just_beyond_the_range_boundary() -> void:
 	_params.flee_perception_range_sq = 4
@@ -157,7 +157,7 @@ func test_flee_danger_at_grid_corner_takes_the_first_walkable_escape() -> void:
 	_set_cell(state, Vector2i(1, 0), GridState.CellType.STATIC_DANGER)
 	var rule := RuleFleeDanger.new()
 
-	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.delta(Directions.SOUTH))
+	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.offset(Directions.SOUTH))
 
 func test_flee_danger_abstains_when_cornered_with_no_escape() -> void:
 	# Cul-de-sac 2×1 : le danger occupe l'autre case, tout le reste est
@@ -176,7 +176,7 @@ func test_stay_grouped_moves_toward_the_barycenter_nominal() -> void:
 
 	# Agent 0 en (1,3) ; voisins perçus (rayon²=16) : (4,3) d²=9, (4,5) d²=13.
 	# Barycentre (4,4) : Est réduit la distance mise à l'échelle, Nord non.
-	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.delta(Directions.EAST))
+	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.offset(Directions.EAST))
 
 func test_stay_grouped_abstains_when_alone() -> void:
 	var state := _make_state(5, 5, [Vector2i(2, 2)])
@@ -212,7 +212,7 @@ func test_stay_grouped_integer_barycenter_no_float_drift() -> void:
 	var state := _make_state(6, 1, [Vector2i(3, 0), Vector2i(0, 0), Vector2i(1, 0)])
 	var rule := RuleStayGrouped.new()
 
-	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.delta(Directions.WEST))
+	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.offset(Directions.WEST))
 
 # --- Cascade de la pile (règle d'or) -----------------------------------------
 
@@ -224,7 +224,7 @@ func test_stack_first_applicable_rule_wins() -> void:
 
 	var flee_first: Array[int] = [RuleRegistry.R02_FLEE_DANGER, RuleRegistry.R01_TOWARD_LIGHT]
 	var dirs := SimCore._decide_agents(state, flee_first)
-	assert_eq(dirs[0], Directions.delta(Directions.NORTH), "R02 s'applique en premier")
+	assert_eq(dirs[0], Directions.offset(Directions.NORTH), "R02 s'applique en premier")
 
 func test_stack_falls_through_an_abstaining_rule() -> void:
 	# Aucun danger : R02 s'abstient, R01 prend la main.
@@ -233,7 +233,7 @@ func test_stack_falls_through_an_abstaining_rule() -> void:
 
 	var stack: Array[int] = [RuleRegistry.R02_FLEE_DANGER, RuleRegistry.R01_TOWARD_LIGHT]
 	var dirs := SimCore._decide_agents(state, stack)
-	assert_eq(dirs[0], Directions.delta(Directions.SOUTH), "R02 abstenue, R01 décide")
+	assert_eq(dirs[0], Directions.offset(Directions.SOUTH), "R02 abstenue, R01 décide")
 
 func test_stack_order_changes_behavior() -> void:
 	# La leçon centrale du jeu (CDC §8.5 niveau 2) : inverser deux règles
@@ -248,8 +248,8 @@ func test_stack_order_changes_behavior() -> void:
 	var flee_dirs := SimCore._decide_agents(state, flee_first)
 	var light_dirs := SimCore._decide_agents(state, light_first)
 
-	assert_eq(flee_dirs[0], Directions.delta(Directions.NORTH), "prudent : fuit le danger")
-	assert_eq(light_dirs[0], Directions.delta(Directions.SOUTH), "pressé : fonce vers la lumière")
+	assert_eq(flee_dirs[0], Directions.offset(Directions.NORTH), "prudent : fuit le danger")
+	assert_eq(light_dirs[0], Directions.offset(Directions.SOUTH), "pressé : fonce vers la lumière")
 	assert_ne(flee_dirs[0], light_dirs[0], "l'ordre change tout")
 
 func test_stack_with_empty_slots_and_no_applicable_rule_stays_still() -> void:

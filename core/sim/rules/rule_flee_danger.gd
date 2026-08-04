@@ -27,9 +27,9 @@ func evaluate(agent: AgentState, state: SimState, params: RuleParams) -> Vector2
 
 	var current_dist: int = _manhattan(agent.pos, target)
 	for dir in Directions.ORDER:
-		var candidate: Vector2i = agent.pos + Directions.delta(dir)
+		var candidate: Vector2i = agent.pos + Directions.offset(dir)
 		if state.grid.is_walkable(candidate) and _manhattan(candidate, target) > current_dist:
-			return Directions.delta(dir)
+			return Directions.offset(dir)
 	return ABSTAIN  # aucune direction franchissable n'éloigne (coincé)
 
 static func _manhattan(a: Vector2i, b: Vector2i) -> int:

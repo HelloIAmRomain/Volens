@@ -14,12 +14,12 @@ const WEST: int = 3
 ## Toute itération sur les directions candidates suit cet ordre.
 const ORDER: Array[int] = [NORTH, EAST, SOUTH, WEST]
 
-const _DELTAS: Array[Vector2i] = [
+const _OFFSETS: Array[Vector2i] = [
 	Vector2i(0, -1), # NORTH
 	Vector2i(1, 0),  # EAST
 	Vector2i(0, 1),  # SOUTH
 	Vector2i(-1, 0), # WEST
 ]
 
-static func delta(dir: int) -> Vector2i:
-	return _DELTAS[dir]
+static func offset(dir: int) -> Vector2i:
+	return _OFFSETS[dir]

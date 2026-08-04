@@ -4,7 +4,7 @@ extends RefCounted
 ##
 ## Chaque règle évalue un agent sur `state` (cliché du début de tick, lecture
 ## seule) et renvoie soit un vecteur de déplacement unitaire
-## (Directions.delta(...)), soit ABSTAIN si elle ne s'applique pas — auquel
+## (Directions.offset(...)), soit ABSTAIN si elle ne s'applique pas — auquel
 ## cas la cascade (SimCore._decide_one) passe à la règle suivante de la pile
 ## (règle d'or : la première règle applicable l'emporte, RG-05).
 ##
