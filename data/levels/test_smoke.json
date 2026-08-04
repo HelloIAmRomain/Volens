@@ -2,6 +2,7 @@
   "_comment": "Niveau minimal de test technique — PAS un niveau de jeu. Grille 6x8, 4 agents, une lumière au nord, un danger statique au centre, un mur. Sert au critère de fin du lot S2 et aux futures recettes d'or.",
   "max_ticks": 300,
   "stack": [1, 2, 3, 0],
+  "allowed_rules": [1, 2, 3],
   "grid": {
     "size": [6, 8],
     "_legend": "0 vide, 1 mur, 2 sortie, 3 danger statique, 4 danger cyclique, 9 lumière",

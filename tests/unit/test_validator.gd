@@ -1,0 +1,102 @@
+extends GutTest
+## Tests unitaires du validateur v1 (T-024) : énumération de l'espace des
+## piles et verdicts sur une fixture connue.
+
+# --- énumération ---------------------------------------------------------------
+
+func test_enumerate_counts_match_the_closed_formula() -> void:
+	var three: Array[int] = [1, 2, 3]
+	var stacks := StackEnumerator.enumerate(three)
+	# P(3,0)+P(3,1)+P(3,2)+P(3,3) = 1+3+6+6 = 16
+	assert_eq(stacks.size(), 16)
+	assert_eq(stacks.size(), StackEnumerator.expected_count(3))
+
+func test_enumerate_scales_like_the_dct_estimate() -> void:
+	# DCT §8.3 : 12 règles -> 11 880 piles complètes, ~13 400 avec partielles.
+	assert_eq(StackEnumerator.expected_count(12), 13345)
+
+func test_enumerate_has_no_duplicate_and_no_repeated_rule() -> void:
+	var three: Array[int] = [1, 2, 3]
+	var stacks := StackEnumerator.enumerate(three)
+	var seen: Dictionary = {}
+	for stack in stacks:
+		var key := str(stack)
+		assert_false(seen.has(key), "pile en double : %s" % key)
+		seen[key] = true
+		var used: Dictionary = {}
+		for rule_id in stack:
+			assert_false(used.has(rule_id), "règle répétée dans %s" % key)
+			used[rule_id] = true
+
+func test_enumerate_is_deterministic() -> void:
+	var three: Array[int] = [1, 2, 3]
+	assert_eq(str(StackEnumerator.enumerate(three)), str(StackEnumerator.enumerate(three)))
+	# Premier = pile vide, dernier = plus longue en ordre lexicographique inverse.
+	var stacks := StackEnumerator.enumerate(three)
+	assert_eq(stacks[0], [])
+	assert_eq(stacks[stacks.size() - 1], [3, 2, 1])
+
+# --- validation d'une fixture connue ----------------------------------------------
+
+func _corridor_level() -> Dictionary:
+	# Couloir 5x1 : agent, sortie, lumière derrière — R01 en tête gagne,
+	# pile vide perd par limite de ticks.
+	return {
+		"max_ticks": 30,
+		"allowed_rules": [1, 2, 3],
+		"grid": {"size": [5, 1], "cells": [0, 0, 2, 0, 9]},
+		"agents": [{"pos": [0, 0]}],
+		"objectives": [{"type": "extraction", "percent": 100}],
+	}
+
+func test_validate_level_finds_wins_and_losses() -> void:
+	var report := ValidateLib.validate_level(_corridor_level(), RuleParams.new())
+	var summary: Dictionary = report["summary"]
+
+	assert_eq(summary["n_stacks"], 16)
+	assert_gt(int(summary["n_win"]), 0, "R01 en tête doit gagner")
+	assert_lt(int(summary["n_win"]), 16, "la pile vide doit perdre")
+	assert_eq(int(summary["min_ticks"]), 2, "2 pas jusqu'à la sortie")
+
+func test_simulate_stack_win_row_is_coherent() -> void:
+	var stack: Array[int] = [1]
+	var row := ValidateLib.simulate_stack(_corridor_level(), RuleParams.new(), stack)
+
+	assert_eq(row["outcome"], SimState.Outcome.WON)
+	assert_eq(row["exited"], 1)
+	assert_eq(row["ticks"], 2)
+	assert_false(row["looped"])
+
+func test_simulate_stack_empty_stack_loses_by_tick_limit() -> void:
+	var stack: Array[int] = []
+	var row := ValidateLib.simulate_stack(_corridor_level(), RuleParams.new(), stack)
+
+	assert_eq(row["outcome"], SimState.Outcome.LOST)
+	assert_eq(row["exited"], 0)
+
+func test_loop_detection_cuts_a_static_simulation_short() -> void:
+	# Sans limite basse de ticks (300 par défaut), un agent immobile boucle :
+	# la coupe DT-16 doit trancher bien avant les 300 ticks.
+	var level := _corridor_level()
+	level["max_ticks"] = 300
+	var stack: Array[int] = []
+	var row := ValidateLib.simulate_stack(level, RuleParams.new(), stack)
+
+	assert_true(row["looped"], "immobilité totale = boucle détectée")
+	assert_eq(row["outcome"], SimState.Outcome.LOST)
+	assert_lt(int(row["ticks"]), 10, "coupé en quelques ticks, pas 300")
+
+func test_insoluble_level_is_rejected() -> void:
+	# Aucune lumière, extraction exigée : aucune pile ne peut gagner.
+	var level := {
+		"max_ticks": 20,
+		"allowed_rules": [1, 2, 3],
+		"grid": {"size": [3, 1], "cells": [0, 0, 0]},
+		"agents": [{"pos": [0, 0]}],
+		"objectives": [{"type": "extraction", "percent": 100}],
+	}
+	var report := ValidateLib.validate_level(level, RuleParams.new())
+	var summary: Dictionary = report["summary"]
+
+	assert_eq(int(summary["n_win"]), 0)
+	assert_string_contains(String(summary["qn01_verdict"]), "insoluble")
