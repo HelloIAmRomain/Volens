@@ -1,7 +1,7 @@
 # VOLENS — Dossier de conception technique
 
-**Version 1.0 — 3 août 2026**
-*Réponse technique au cahier des charges fonctionnel v2.0 du projet nom commercial : Volens*
+**Version 1.1 — 4 août 2026**
+*Réponse technique au cahier des charges fonctionnel v2.1 du projet nom commercial : Volens*
 
 ---
 
@@ -97,35 +97,44 @@ Rien dans DT-01 ne condamne iOS ou PC : Godot exporte vers les deux, et l'isolat
 ### 2.1 Principe directeur
 
 > **DT-03. Le cœur de simulation est un module pur, sans aucune dépendance au moteur de rendu ni à la scène.** Il ne connaît ni nœuds, ni écrans, ni temps réel. Il expose une unique fonction de transition d'état. Tout le reste du programme — rendu, interface, audio, sauvegarde — est un **consommateur** de ce module. *(RG-03, EQ-01, ENF-05 ; conditionne DT-02 et DT-20.)*
+>
+> Ce principe se traduit en **trois règles de dépendance testables** *(v1.1)* :
+> 1. `core/` n'importe jamais `game/`. Aucune exception, jamais « temporairement ».
+> 2. `core/sim/` n'importe que `core/sim/`. Pas même `core/replay/`.
+> 3. `tools/` n'importe que `core/` et `data/`.
 
-Ce principe a une conséquence vérifiable : le module doit s'exécuter tel quel en mode headless, sans fenêtre. C'est le **test d'architecture n°1**, automatisé en CI (§11.3) : tout import du module `sim/` vers `view/`, `ui/` ou `audio/` fait échouer l'intégration.
+Ce principe a une conséquence vérifiable : le module doit s'exécuter tel quel en mode headless, sans fenêtre. C'est le **test d'architecture n°1**, automatisé en CI (§11.3) : tout import remontant vers `core/` depuis `game/` fait échouer l'intégration.
 
 ### 2.2 Découpage en modules
 
-```
-volens/
-├── sim/          Cœur de simulation (pur, headless, déterministe)
-│   ├── état, transition de tick, règles de comportement,
-│   ├── chargement de niveau, vérification d'objectifs,
-│   └── empreinte d'état (hash)
-├── replay/       Recette, clichés-clés, remontée du temps
-├── view/         Rendu de la grille et de la nuée, interpolation, effets
-├── ui/           Écrans, pile de règles, HUD, bilan, réglages
-├── audio/        Moteur sonore génératif
-├── meta/         Progression, défis, déblocages
-├── save/         Persistance atomique, schémas versionnés
-├── platform/     Cycle de vie Android, haptique, achat (J5)
-├── data/         Niveaux, définitions de règles, thèmes (données pures)
-└── tools/        Validateur headless, éditeur de niveaux, scripts CI
-```
-
-Dépendances autorisées (sens unique, du haut vers le bas) :
+*(v1.1 — arborescence à deux étages, qui rend la règle de dépendance ci-dessus directement visible et testable.)*
 
 ```
-ui → view → replay → sim
-ui → meta → save
-audio → replay (lecture seule des événements)
-tools → sim (exclusivement)
+res://
+├── core/          # pur, headless, déterministe — zéro dépendance au rendu
+│   ├── sim/       #   état, transition de tick, règles de comportement,
+│   │              #   chargement de niveau, vérification d'objectifs,
+│   │              #   empreinte d'état (hash)
+│   └── replay/    #   recette, clichés-clés, remontée du temps
+├── game/          # tout ce qui touche au runtime Godot (nœuds, scènes, ressources)
+│   ├── view/      #   rendu de la grille et de la nuée, interpolation, effets
+│   ├── ui/        #   écrans, pile de règles, HUD, bilan, réglages
+│   ├── audio/     #   moteur sonore génératif
+│   ├── meta/      #   progression, défis, déblocages
+│   ├── save/      #   persistance atomique, schémas versionnés
+│   └── platform/  #   cycle de vie Android, haptique, achat (J5)
+├── data/          # niveaux, définitions de règles, thèmes (données pures)
+├── tools/         # validateur headless, éditeur de niveaux, scripts CI
+└── tests/         # unit/  golden/  arch/
+```
+
+Dépendances autorisées (sens unique, jamais remontant) :
+
+```
+game/ui → game/view → core/replay → core/sim
+game/ui → game/meta → game/save
+game/audio → core/replay (lecture seule des événements)
+tools → core/ (exclusivement, + data/)
 ```
 
 ### 2.3 Flux principal d'une partie
@@ -374,7 +383,7 @@ L'indice structurel (« une règle présente dans au moins une solution ») est 
 | Tests d'architecture | Interdits de dépendance (DT-03) et interdits lexicaux (DT-04 : flottants/aléatoire dans `sim/`) | Script d'analyse statique en CI |
 | Tests de schéma | Migration des sauvegardes, recette corrompue → repli propre (DT-14) | GUT |
 | Validation de contenu | Rapports QN-01→05 à jour pour tout niveau « livrable » (EQ-02) | Validateur §8 |
-| Tests sur appareil | Déterminisme réel (empreintes croisées sur ≥ 2 appareils physiques + émulateur), reprise après arrêt forcé, performance | Manuel scripté, à chaque jalon (ENF-05, §13.5 CDC) |
+| Tests sur appareil *(v1.1, A6)* | Déterminisme réel vérifié sur **deux architectures CPU distinctes** — **arm64** (Galaxy S23 Ultra) et **x86_64** (AVD API 36 + CI) — complétées par la **collecte manuelle d'empreintes** (DT-22) auprès du parc de testeurs pendant le test fermé ; reprise après arrêt forcé ; performance. C'est un test plus sévère que deux téléphones ARM : deux appareils physiques peuvent partager le même jeu d'instructions et masquer un écart d'arrondi ou d'ordonnancement propre au compilateur, alors qu'arm64 et x86_64 divergent structurellement | Manuel scripté, à chaque jalon (ENF-05, §13.5 CDC) |
 
 ### 11.3 Intégration continue
 
@@ -405,11 +414,19 @@ Règles d'usage, tirées des risques identifiés en amont du projet :
 | Paramètre | Valeur | Justification |
 |---|---|---|
 | API cible | **36 (Android 16)** | Obligation Google Play au 31 août 2026 [CDC §14.4] |
-| API minimale | **26 (Android 8.0)** | Couvre ≈ 97 % du parc actif ; en deçà, coût de test disproportionné pour un public visé équipé récent |
+| API minimale | **33 (Android 13)** *(v1.1, était 26)* | Décision assumée de ne pas supporter d'antérieur : l'appareil de développement est lui-même sous Android 13. Bénéfice : suppression d'une large surface de test et des branches de compatibilité héritées. Coût : perte d'une part du parc, **à quantifier avant J-4** via le tableau de distribution des versions d'Android Studio |
 | Architectures | arm64-v8a (+ armeabi-v7a si le poids le permet) | arm64 requis par Play ; v7a optionnel, à arbitrer contre ENF-11 |
 | Format | **AAB** (Android App Bundle) | Exigé par Google Play |
 | Orientation | Portrait verrouillé | ENF-01 |
 | Permissions | **Aucune** | ENF-30 ; l'absence de permission est vérifiée dans le manifeste en CI |
+| Identifiant d'application *(v1.1)* | **`com.volensgame.volens`** | Irréversible après le premier envoi sur Play ; figé (remplace le gabarit `com.<éditeur>.volens` de §0.2) |
+| Nom de développeur Play *(v1.1)* | **Draille** | Nom sous lequel l'application sera publiée sur la fiche Google Play |
+
+> **Avertissement de couverture *(v1.1, A7)*.** L'appareil de référence (Galaxy S23 Ultra) tourne sous **Android 13** : viser l'API 36 n'y déclenche **aucun** des changements de comportement propres aux API 35/36 (bord à bord obligatoire, retour prédictif, nouvelles règles de notification). L'AVD API 36 n'est donc pas un complément de test mais **le seul moyen** d'observer ces comportements tant que l'appareil physique n'est pas mis à jour.
+
+### 13.1 bis Obligation de test fermé *(v1.1, nouveau — A4)*
+
+Les comptes développeur Google Play personnels créés après le **13 novembre 2023** sont soumis à une obligation de test préalable à l'accès production : une piste de **test fermé** (*closed testing*, jamais *internal testing*) avec **au moins 12 testeurs inscrits pendant 14 jours consécutifs**, revue de la demande annoncée à 7 jours ou moins par Google. Conséquence technique directe : les pistes Production et Préinscription de la Play Console **restent désactivées** jusqu'à l'issue de cette période. Voir DT-22 (§13.3 bis) pour le dispositif qui accompagne cette obligation sans dépendre d'un second appareil physique.
 
 ### 13.2 Cycle de vie
 
@@ -417,11 +434,15 @@ Règles d'usage, tirées des risques identifiés en amont du projet :
 
 ### 13.3 Signature et distribution — calendrier des paiements
 
-> **DT-21.** Conformément au cadrage « aucun paiement prématuré » :
-> — **Phases J0→J4 : coût zéro.** Développement, tests sur appareils physiques par installation directe (APK signé en debug via USB), distribution aux testeurs par APK signé d'une **clé de release auto-générée et archivée de façon sécurisée dès J1** (la clé d'upload définitive, elle, sera gérée par Play App Signing).
-> — **Jalon J5 uniquement :** création du compte développeur Google Play (**25 $, unique**) ; c'est le premier et seul paiement obligatoire du projet. Prévoir le délai de vérification d'identité (jusqu'à quelques semaines) : ouvrir le compte **au début de J4**, pas la veille de la publication — l'engagement de paiement reste ainsi aligné sur une version quasi finale.
+> **DT-21 *(v1.1, réécrite — A3, caduque en l'état).*** Le compte développeur Google Play est **déjà créé et vérifié** (25 $ réglés) ; l'application, elle, n'est pas encore créée dans la console. Conséquence : le risque T8 (délai de vérification du compte, §15) est **éteint** — il n'y a plus de délai d'identité à absorber avant publication.
+> — **Phases J0→J4 : coût zéro** pour tout le reste. Développement, tests sur appareils physiques par installation directe (APK signé en debug via USB), distribution aux testeurs par APK signé d'une **clé de release auto-générée et archivée de façon sécurisée dès J1** (la clé d'upload définitive, elle, sera gérée par Play App Signing).
+> — **Reste à faire, sans paiement supplémentaire :** créer l'application dans la Play Console (avant l'ouverture du test fermé, §13.1 bis) et lancer la piste de test fermé.
 > — Achat intégré (déblocage EF-41) : intégration de la facturation Google Play **en J4/J5 seulement**, derrière une interface interne `platform/purchase` neutralisée jusque-là (le chapitre 1 gratuit ne l'exige pas).
-> — Dépenses non engagées et non nécessaires : domaine web (optionnel, à décider avec le devlog), compte Apple (hors périmètre).
+> — Dépenses non engagées et non nécessaires : domaine web (optionnel, à décider avec le devlog), compte Apple (hors périmètre v1.0, cf. CDC §2.2).
+
+### 13.3 bis Auto-vérification d'empreinte *(v1.1, nouveau — A5)*
+
+> **DT-22.** Les builds de test embarquent un **écran caché** qui rejoue les recettes d'or (§11.2) et affiche un **code court** dérivé des empreintes obtenues (DT-09). Le testeur **recopie manuellement** ce code dans le canal de retour convenu (formulaire, message) ; il n'existe **aucune transmission automatique**, condition nécessaire au respect d'ENF-30 (aucune collecte). C'est le dispositif qui remplace l'achat d'un second appareil physique pour la vérification multi-architecture (§11.2, A6) : le parc réel des testeurs, recruté pour le test fermé (§13.1 bis), joue ce rôle sans coût et sans compromettre le positionnement vie privée du produit.
 
 ### 13.4 Conformité (rappel d'implémentation)
 
@@ -487,7 +508,7 @@ Couverture exhaustive ; « — » signale un point de pure conduite de projet sa
 | T5 | Démarrage à froid > 3 s sur l'appareil de référence | Faible | Boot minimal spécifié (§7.3) ; mesure dès J1, pas à J4 |
 | T6 | Poids AAB > 60 Mo | Faible | Visuel/audio procéduraux ; arbitrage v7a (§13.1) en dernier recours |
 | T7 | Godot 4.7.x : régression sur correctif | Faible | Version épinglée, montée de version testée sur branche dédiée |
-| T8 | Délai de vérification du compte Google Play | Moyenne | Ouverture anticipée au début de J4 (DT-21) |
+| T8 | ~~Délai de vérification du compte Google Play~~ | — | **Éteint *(v1.1, A3)*** : compte créé et vérifié avant J0. Reste à créer : l'application dans la console (DT-21) |
 
 ---
 
@@ -503,8 +524,15 @@ Couverture exhaustive ; « — » signale un point de pure conduite de projet sa
 | Appareil de référence | Android milieu de gamme ~2022 déjà possédé (à défaut : occasion, seule dépense éventuelle à arbitrer) | 0 € |
 | Distribution testeurs | APK direct (USB / lien privé) | 0 € |
 | Page de confidentialité + devlog | GitHub Pages | 0 € |
-| **Différé à J4/J5** | Compte Google Play | **25 $ (unique)** |
+| Compte développeur Google Play *(v1.1)* | **Déjà réglé** — création et vérification effectuées avant J0 (DT-21) | **25 $ (déjà dépensés)** |
 
 ---
 
-*Fin du document — DCT v1.0. Toute décision DT ne peut être révisée qu'avec mise à jour de la matrice §14 ; les décisions DT-03, DT-04 et DT-15 sont structurantes et leur révision équivaut à une refonte.*
+## Historique des révisions *(v1.1)*
+
+| Version | Date | Changements | Motif |
+|---|---|---|---|
+| 1.0 | 3 août 2026 | Version initiale | Réponse au CDC v2.0 |
+| 1.1 | 4 août 2026 | Arborescence à deux étages `core/`·`game/` et trois règles de dépendance testables (§2.2, remplace l'invariant DT-03) ; `minSdk` 26→33, identifiant `com.volensgame.volens` et nom Play « Draille » figés (§13.1) ; DT-21 réécrite (compte Google Play déjà créé et vérifié, risque T8 éteint) ; nouvelle obligation de test fermé documentée (§13.1 bis) ; nouveau DT-22, écran caché d'auto-vérification d'empreinte (§13.3 bis) ; vérification du déterminisme reformulée en deux architectures CPU (arm64/x86_64) plutôt qu'en nombre d'appareils physiques (§11.2, A6) ; avertissement sur l'écart de couverture Android 13/API 36 (§13.1, A7) | Série de décisions de cadrage prises entre J0 et le début de S2 ; les documents étaient périmés sur ces points |
+
+*Fin du document — DCT v1.1. Toute décision DT ne peut être révisée qu'avec mise à jour de la matrice §14 ; les décisions DT-03, DT-04 et DT-15 sont structurantes et leur révision équivaut à une refonte.*

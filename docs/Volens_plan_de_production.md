@@ -1,7 +1,7 @@
 # VOLENS — Plan de production
 
-**Version 1.0 — 3 août 2026**
-*Planning détaillé du projet Volens (ESSAIM), en réponse au CDC v2.0 et au DCT v1.0*
+**Version 1.1 — 4 août 2026**
+*Planning détaillé du projet Volens (ESSAIM), en réponse au CDC v2.1 et au DCT v1.1*
 
 ---
 
@@ -101,8 +101,8 @@ Ces créneaux sont intégrés au planning ; les jalons ont été positionnés po
 | **L-12** | Accessibilité, localisation, optimisation | 26 h | S24-S27 | L-7 |
 | **L-13** | Conformité et publication | 18 h | S28-S30 | L-12 |
 | **L-14** | Visibilité et devlog | 30 h | S6-S30 (continu) | — |
-| **L-15** | Campagnes de test 2 et 3 | 18 h | S13, S23-S26 | L-6, L-10 |
-| | **Total** | **≈ 368 h** | | |
+| **L-15** | Campagnes de test 2 et 3, **test fermé fusionné** *(v1.1, C2)* | 18 h + ≈9 h | S13, S23-**S28** | L-6, L-10 |
+| | **Total** | **≈ 368 h** *(à re-totaliser au prochain jalon, §13.3 — le test fermé ajoute ≈9 h non comptées ci-dessus)* | | |
 
 *Écart avec la charge affectée (330 h) : la visibilité (L-14) déborde volontairement sur la période post-publication et n'est pas intégralement consommée avant J-5.*
 
@@ -114,18 +114,18 @@ Ces créneaux sont intégrés au planning ; les jalons ont été positionnés po
 
 | ID | Tâche | Charge | Détail |
 |---|---|---|---|
-| T-001 | Recherche d'antériorité « Volens » | 2 h | Bases INPI et EUIPO (classes 9 et 41), recherche Google Play / App Store / Steam / itch.io, disponibilité du domaine et des pseudonymes (Mastodon, Bluesky, Reddit, YouTube). **Verdict écrit, archivé.** |
-| T-002 | Figer l'identifiant d'application | 30 min | `com.<éditeur>.volens` — **irréversible après le premier envoi sur Play** ; choisir le segment éditeur avec soin (nom durable, pas un pseudo jetable) |
+| T-001 | ~~Recherche d'antériorité « Volens »~~ **Clos** *(v1.1, C1)* | 2 h | Bases INPI et EUIPO (classes 9 et 41), recherche Google Play / App Store / Steam / itch.io, disponibilité du domaine et des pseudonymes (Mastodon, Bluesky, Reddit, YouTube). **Verdict :** aucune mention de « Volens » à l'INPI ni à l'EUIPO en classes 9 et 41 ; risque de référencement accepté vis-à-vis de l'éditeur Steam « Volens Nolens Games » ; aucun dépôt de marque engagé |
+| T-002 | ~~Figer l'identifiant d'application~~ **Clos** *(v1.1, C1)* | 30 min | Identifiant figé : **`com.volensgame.volens`** — irréversible après le premier envoi sur Play |
 | T-003 | Désigner l'appareil de référence | 1 h | Android milieu de gamme ~2022 ; noter modèle, version d'Android, définition, densité, fréquence d'écran. Toutes les cibles ENF-10→14 s'y rapportent |
 | T-004 | Installer la chaîne de développement | 3 h | Godot 4.7.x, OpenJDK 17, Android SDK command-line tools + plateforme API 36, débogage USB. **Critère de fin : un projet vide s'exécute sur l'appareil de référence** |
-| T-005 | Créer le dépôt Git et son squelette | 2 h | Arborescence du DCT §2.2, `.gitignore` Godot, branche `main` protégée, modèle de message de commit |
+| T-005 | Créer le dépôt Git et son squelette | 2 h | Arborescence du DCT §2.2 *(v1.1 : deux étages `core/`·`game/`)*, `.gitignore` Godot, branche `main` protégée, modèle de message de commit |
 | T-006 | Générer et sécuriser la clé de signature | 1 h | Clé de release auto-générée `[DT-21]`, **sauvegardée en deux emplacements distincts hors du dépôt**. Une clé perdue interdit toute mise à jour ultérieure de l'application |
 | T-007 | Ouvrir le carnet de bord du projet | 30 min | Un fichier unique : décisions prises, écarts au plan, mesures. C'est la mémoire du projet et la matière première du devlog |
-| T-008 | Pré-recruter les testeurs | 2 h | Solliciter 10-12 personnes pour en retenir 5-8 `[CDC §13.1]`. **À faire maintenant : le recrutement est le poste le plus souvent sous-estimé et il bloque J-1** |
+| T-008 | Pré-recruter les testeurs | 2 h | Solliciter 10-12 personnes pour en retenir 5-8 pour la campagne 1 `[CDC §13.1]`. **À faire maintenant : le recrutement est le poste le plus souvent sous-estimé et il bloque J-1.** *(v1.1, C5)* Un second recrutement, distinct et plus large (**15 à 18 personnes**), sera nécessaire avant S25 pour la campagne 3 / test fermé `[CDC §13.3]` — à anticiper mais pas à lancer maintenant |
 
 **Livrables J-0 :** verdict d'antériorité écrit · dépôt initialisé avec CI vide qui passe · APK vide installé sur l'appareil de référence · liste de testeurs pré-engagés.
 
-**Point d'arrêt :** si « Volens » s'avère déposé en classe 9 ou 41, la question du nom se rouvre **maintenant** — coût : une demi-journée. La même découverte en janvier coûterait l'identité visuelle, la page de store et le référencement déjà construits.
+**Point d'arrêt *(v1.1 : franchi, T-001 clos sans réserve)*.** Le risque était : si « Volens » s'avérait déposé en classe 9 ou 41, la question du nom se rouvrait **avant** tout travail d'identité visuelle — coût alors : une demi-journée, contre l'identité visuelle, la page de store et le référencement déjà construits si la découverte était venue en janvier. Le verdict T-001 lève ce risque : aucun dépôt trouvé, seul le risque de référencement mineur vis-à-vis de « Volens Nolens Games » (Steam) est accepté.
 
 ---
 
@@ -304,19 +304,23 @@ Ces créneaux sont intégrés au planning ; les jalons ont été positionnés po
 
 ## 9. Phase 4 — Finition (S24-S28 : 11 janv. - 14 févr. 2027)
 
+*(v1.1, C2 — réorganisée autour de l'obligation de test fermé Google Play : le contenu est déjà gelé à J-3 [S23], un build fonctionnel de test fermé existe dès S24, les 14 jours consécutifs de test courent de S25 à S27, la demande d'accès production part en S28. `T-104` [§10] est fusionnée ici.)*
+
 | Semaine | Travaux | Charge |
 |---|---|---|
-| S24 | Campagne de test 3 (bêta de contenu) : durée de vie réelle, pics de difficulté, usure du plaisir, usage des indices | 12 h |
-| S25 | Accessibilité complète : vérification daltonisme (3 dyschromatopsies), contraste, animations réduites, taille de police, haptique désactivable `[ENF-20→25]` | 12 h |
-| S26 | Localisation français/anglais complète et relue ; corrections issues de la campagne 3 | 12 h |
-| S27 | Optimisation : profilage, budget de poids, consommation en pause, démarrage à froid ; **vérification du déterminisme sur ≥ 2 appareils physiques + émulateur** `[ENF-05]` | 12 h |
-| S28 | Correction des derniers défauts, revue complète de la liste d'acceptation `[CDC §16]`, gel de version | 12 h |
+| S24 | Campagne de test 3 (bêta de contenu) : durée de vie réelle, pics de difficulté, usure du plaisir, usage des indices (10 h) ; création de l'application dans la Play Console et upload du premier AAB de test fermé — **build fonctionnel prêt en fin de semaine** `[DT-21]` (2 h) | 12 h |
+| S25 | **Lancement du test fermé** *(v1.1)* : piste de test fermé Google Play (jamais interne), 15-18 testeurs inscrits, ouverture du compteur de 14 jours consécutifs `[CDC §14.4]` (2 h) ; accessibilité complète : vérification daltonisme (3 dyschromatopsies), contraste, animations réduites, taille de police, haptique désactivable `[ENF-20→25]` (10 h) | 12 h |
+| S26 | Localisation français/anglais complète et relue ; corrections issues de la campagne 3 (10 h) ; **suivi du test fermé** — inscriptions, relances pour prévenir tout désistement `[C3]` (2 h) | 12 h |
+| S27 | Optimisation : profilage, budget de poids, consommation en pause, démarrage à froid (8 h) ; **vérification du déterminisme sur deux architectures CPU distinctes — arm64 (appareil de référence) et x86_64 (émulateur + CI)** `[ENF-05]` (2 h) ; **clôture des 14 jours du test fermé** et dépouillement des codes courts d'auto-vérification d'empreinte remontés par les testeurs `[DT-22]` — aucun appareil supplémentaire acheté (2 h) | 12 h |
+| S28 | Correction des derniers défauts, revue complète de la liste d'acceptation `[CDC §16]`, gel de version (11 h) ; **demande d'accès production** Google Play, une fois les 14 jours validés (1 h) | 12 h |
+
+**Charge du test fermé *(v1.1, C2)* : ≈ 9 h réparties sur S24-S28**, pas les 3 h forfaitaires de l'ancien `T-104` — le suivi quotidien des inscriptions et les relances contre le désistement (§12) sont un travail réel, pas une formalité.
 
 ### ▲ J-4 — Version candidate (fin S28, 14 février 2027)
 
 La liste d'acceptation v1.0 du CDC §16 est passée **point par point**, avec une preuve pour chacun (mesure, capture, rapport). Un point non prouvé est un point non acquis.
 
-> **Action à ne pas différer, à engager dès le début de S24 :** ouverture du compte développeur Google Play (25 $ — le seul paiement obligatoire du projet). La vérification d'identité peut prendre plusieurs semaines ; l'engager en S24 laisse un mois de marge avant la publication.
+> *(v1.1, C1)* Le compte développeur Google Play est **déjà créé et vérifié** depuis J0 — il n'y a plus d'action de paiement à engager ici. Ce qui reste à faire dès S24 : créer l'**application** dans la Play Console (voir tableau ci-dessus) pour tenir le calendrier du test fermé.
 
 ---
 
@@ -328,8 +332,8 @@ La liste d'acceptation v1.0 du CDC §16 est passée **point par point**, avec un
 | T-101 | Politique de confidentialité (une page, GitHub Pages) `[ENF-33]` | 1 h |
 | T-102 | Formulaire Data Safety (« aucune donnée collectée »), déclaration de contenu IA, classification d'âge | 2 h |
 | T-103 | Fiche de store : titre, description courte et longue (FR/EN), icône, captures, **vidéo courte d'une nuée en mouvement** | 6 h |
-| T-104 | Test fermé (piste interne) avec les testeurs, sur AAB signé de production | 3 h |
-| T-105 | Envoi, réponse aux retours de revue, publication | 3 h |
+| T-104 | ~~Test fermé (piste interne) avec les testeurs, sur AAB signé de production~~ — **fusionnée avec la campagne 3** *(v1.1, C2)*, voir §9 S24-S28 : lancement, suivi et clôture du test fermé, demande d'accès production | *(charge déplacée en §9)* |
+| T-105 | Envoi, réponse aux retours de revue, publication — accès production déjà accordé (demande partie en S28) | 3 h |
 | T-106 | Annonce : devlog, communautés de jeux de réflexion et de simulation | 4 h |
 
 ### ▲ J-5 — Publication (28 février 2027)
@@ -389,8 +393,10 @@ Si le retard cumulé atteint **3 semaines**, l'ajustement s'applique dans cet or
 | P3 | Production de contenu plus lente que prévu | < 8 niveaux validés sur 2 semaines | Appliquer §11.3 dès le deuxième cycle en retard, pas au troisième |
 | P4 | Lassitude du concepteur | Deux semaines sans ouvrir le projet | Pause franche d'une semaine, puis relecture du J-2 : la réponse a-t-elle changé ? |
 | P5 | Validateur trop lent | Cycle nocturne > 8 h | Parallélisation renforcée, puis portage C++ `[DT-16]` |
-| P6 | Compte Play retardé | Vérification > 3 semaines | Marge déjà prévue (ouverture en S24) |
+| ~~P6~~ | ~~Compte Play retardé~~ | — | **Supprimé** *(v1.1, C3)* : compte déjà créé et vérifié avant J0 (DT-21) |
 | P7 | Régression du déterminisme | Test d'or en échec | Correction immédiate, avant toute autre tâche — c'est bloquant |
+| P8 | **Désistement de testeurs pendant les 14 jours** *(v1.1, nouveau — C3)* | Un testeur inscrit se désinscrit avant la fin de la période | Recruter 15-18 personnes (marge au-dessus du minimum de 12) ; rappeler explicitement de ne pas se désinscrire avant la fin des 14 jours |
+| P9 | **Rejet de la demande d'accès production pour engagement insuffisant** *(v1.1, nouveau — C3)* | Retour Google Play signalant une activité de test jugée insuffisante | Recruter des testeurs réellement actifs (qui ouvrent et jouent), pas de simples installations passives |
 
 ---
 
@@ -427,9 +433,11 @@ Bilan écrit : ce qui était prévu, ce qui a été fait, l'écart, la décision
 
 ## 14. Ce qu'il faut faire cette semaine
 
+*(v1.1, C1 — mis à jour : T-001 et T-002 sont clos, voir §5.)*
+
 Par ordre, dès aujourd'hui :
 
-1. **T-001 — vérifier « Volens »** (INPI, EUIPO, stores). C'est la seule tâche qui peut invalider une décision déjà prise. Deux heures.
+1. ~~T-001 — vérifier « Volens »~~ **Fait** : aucun dépôt trouvé, risque de référencement accepté.
 2. **T-008 — solliciter les testeurs.** Le recrutement met des semaines à aboutir et bloque J-1 ; l'engager maintenant, pas en septembre.
 3. **T-004 + T-005 — chaîne de développement et dépôt.** Critère de fin non négociable : un projet Godot vide s'exécute sur l'appareil de référence, et la CI passe au vert sur un dépôt encore quasi vide.
 4. **T-006 — générer et sauvegarder la clé de signature**, en deux endroits distincts.
@@ -438,4 +446,11 @@ Puis, semaine prochaine, la première ligne de `sim/` — et pas une ligne de re
 
 ---
 
-*Fin du document — Plan de production v1.0. Ce plan se révise à chaque jalon ; les dates après J-2 sont indicatives et seront recalées le 1er novembre 2026.*
+## Historique des révisions *(v1.1)*
+
+| Version | Date | Changements | Motif |
+|---|---|---|---|
+| 1.0 | 3 août 2026 | Version initiale | Réponse au CDC v2.0 et au DCT v1.0 |
+| 1.1 | 4 août 2026 | T-001 et T-002 clôturés avec verdict (§5, §14) ; phase 4 réorganisée autour de l'obligation de test fermé (§9) : build fonctionnel S24, lancement S25, 14 jours jusqu'à S27, demande d'accès production S28 ; `T-104` fusionnée avec la campagne 3, charge corrigée de 3 h à ≈9 h répartis ; `L-15` étendu à S28 (§4) ; risque `P6` supprimé, risques `P8` (désistement) et `P9` (rejet pour engagement insuffisant) ajoutés (§12) ; recrutement de testeurs différencié : 5-8 (campagne 1, maintenant) vs 15-18 (campagne 3/test fermé, avant S25) (§5, C5) | Compte Google Play déjà créé et vérifié avant J0 ; obligation de test fermé (12 testeurs, 14 jours) découverte après la v1.0 du plan |
+
+*Fin du document — Plan de production v1.1. Ce plan se révise à chaque jalon ; les dates après J-2 sont indicatives et seront recalées le 1er novembre 2026.*
