@@ -1,0 +1,131 @@
+{
+  "_comment": "Recettes d'or (T-021, DCT §11.2). Empreintes FNV-1a archivées aux ticks de contrôle. Une empreinte qui change signale une régression du déterminisme : c'est un défaut à corriger, JAMAIS une valeur à mettre à jour sans décision humaine explicite (docs/ARCHITECTURE.md règle 1).",
+  "checkpoints": [
+    50.0,
+    150.0,
+    300.0
+  ],
+  "recipes": [
+    {
+      "hashes": {
+        "150": "6c838209878c472b",
+        "300": "979f04d1da705194",
+        "50": "f56e9a97f1009bcf"
+      },
+      "level": "res://data/levels/test_smoke.json",
+      "stack": [
+        1.0,
+        2.0,
+        3.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "367541630f1d1f04",
+        "300": "de96e801ff23b5bb",
+        "50": "17bb90056d5b5ba0"
+      },
+      "level": "res://data/levels/test_smoke.json",
+      "stack": [
+        2.0,
+        3.0,
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "b8a4dadc142c5323",
+        "300": "f3390a708015379c",
+        "50": "07bbf03ef858cdc7"
+      },
+      "level": "res://data/levels/test_smoke.json",
+      "stack": [
+        3.0,
+        1.0,
+        2.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "97cf39c88755af60",
+        "300": "894de72dca2e255f",
+        "50": "a9964db5bc8c5a04"
+      },
+      "level": "res://data/levels/test_smoke.json",
+      "stack": []
+    },
+    {
+      "hashes": {
+        "150": "541863a2a3401685",
+        "300": "443df85912ee634c",
+        "50": "07ff77225a68f589"
+      },
+      "level": "res://tests/golden/levels/golden_corridor.json",
+      "stack": [
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "a5305df4d9ee6364",
+        "300": "24caeb64ed58456b",
+        "50": "62feaa386fc69b80"
+      },
+      "level": "res://tests/golden/levels/golden_corridor.json",
+      "stack": [
+        2.0,
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "541863a2a3401685",
+        "300": "443df85912ee634c",
+        "50": "07ff77225a68f589"
+      },
+      "level": "res://tests/golden/levels/golden_corridor.json",
+      "stack": [
+        1.0,
+        3.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "1d2693dd544db080",
+        "300": "82f477c1cb6abfff",
+        "50": "ca9fdb8408c6cc24"
+      },
+      "level": "res://tests/golden/levels/golden_field.json",
+      "stack": [
+        1.0,
+        2.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "c7a9de07436189e2",
+        "300": "c01c7ab9929ea69d",
+        "50": "276f8128d4252a86"
+      },
+      "level": "res://tests/golden/levels/golden_field.json",
+      "stack": [
+        2.0,
+        3.0,
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "455fd656f7c6f302",
+        "300": "5abb354827f17d7d",
+        "50": "34c9b72ccffae6a6"
+      },
+      "level": "res://tests/golden/levels/golden_field.json",
+      "stack": [
+        3.0,
+        2.0,
+        1.0
+      ]
+    }
+  ]
+}
