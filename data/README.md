@@ -27,3 +27,35 @@ utilisent la règle concernée (EQ-03) — hors périmètre tant que le validate
 
 Fichiers de niveau. `test_smoke.json` est un niveau minimal de test
 technique, pas un niveau de jeu.
+
+### Format d'un niveau (état S3 — évoluera)
+
+```json
+{
+  "max_ticks": 300,
+  "stack": [1, 2, 3, 0],
+  "allowed_rules": [1, 2, 3],
+  "grid": {
+    "size": [largeur, hauteur],
+    "cells": [ types de case, ligne par ligne — voir GridState.CellType ],
+    "cycle_index": [ index de cycle par case, -1 sinon ],
+    "cycles": [ {"period": 4, "active_ticks": 2} ]
+  },
+  "agents": [ {"pos": [x, y]} ],
+  "objectives": [
+    {"type": "extraction", "percent": 60},
+    {"type": "preservation", "max_lost": 2},
+    {"type": "celerity", "max_ticks": 120},
+    {"type": "interdiction", "cells": [[x, y]]},
+    {"type": "collect", "count": 3}
+  ]
+}
+```
+
+- `stack` : pile par défaut pour `run_sim.gd` (outillage seulement).
+- `allowed_rules` : sous-ensemble de la bibliothèque offert au joueur
+  (RG-14) ; c'est l'espace qu'énumère le validateur.
+- `objectives` : voir `core/sim/objective_def.gd` — accomplissements
+  (extraction, collect) et contraintes (preservation, celerity,
+  interdiction) ; `collect` restera inatteignable jusqu'aux règles
+  R11/R12 (chapitre 4).
