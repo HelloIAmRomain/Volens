@@ -32,6 +32,7 @@ func _init() -> void:
 
 	var recipes: Array = golden.get("recipes", [])
 	var failures := 0
+	var rules_fp := GoldenRunner.rules_fingerprint()
 
 	for recipe in recipes:
 		var level_path: String = recipe["level"]
@@ -47,6 +48,7 @@ func _init() -> void:
 
 		if write_mode:
 			recipe["hashes"] = got
+			recipe["rules_hash"] = rules_fp  # revue S3, 3.1
 			print("ÉCRIT   %s %s : %s" % [level_path, str(stack), str(got)])
 			continue
 
@@ -59,6 +61,10 @@ func _init() -> void:
 				failures += 1
 		if recipe_ok:
 			print("OK      %s %s" % [level_path, str(stack)])
+		else:
+			var archived_fp: String = String(recipe.get("rules_hash", ""))
+			if not archived_fp.is_empty() and archived_fp != rules_fp:
+				print("        ⚠ data/rules.json a changé depuis l'archivage (%s -> %s) : divergence peut-être voulue (rééquilibrage) — à trancher humainement, jamais automatiquement." % [archived_fp, rules_fp])
 
 	if write_mode:
 		var file := FileAccess.open(GoldenRunner.GOLDEN_PATH, FileAccess.WRITE)

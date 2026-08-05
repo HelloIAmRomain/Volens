@@ -20,6 +20,17 @@ static func load_json(path: String) -> Dictionary:
 		return {}
 	return parsed
 
+## Empreinte FNV-1a 64 bits du texte brut de data/rules.json, en hexadécimal
+## (revue S3, 3.1). Archivée à côté de chaque recette d'or : le jour où une
+## divergence apparaît après un rééquilibrage, elle permet de distinguer
+## « régression du code » de « changement de paramètre voulu ».
+static func rules_fingerprint() -> String:
+	var text := FileAccess.get_file_as_string(RULES_PATH)
+	var h: int = StateHash.OFFSET_BASIS
+	for b in text.to_utf8_buffer():
+		h = (h ^ b) * StateHash.PRIME
+	return StateHash.to_hex(h)
+
 ## Contrôle de type au chargement (revue S3, 1.2) : toute empreinte archivée
 ## doit être une String hexadécimale. Un nombre JSON transite en float64
 ## (exact jusqu'à 2^53 seulement) : une empreinte 64 bits y serait tronquée
