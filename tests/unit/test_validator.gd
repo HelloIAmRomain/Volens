@@ -28,6 +28,15 @@ func test_enumerate_has_no_duplicate_and_no_repeated_rule() -> void:
 			assert_false(used.has(rule_id), "règle répétée dans %s" % key)
 			used[rule_id] = true
 
+func test_enumerate_respects_the_slots_cap() -> void:
+	# CDC §12.2.1 : N_total dépend de allowed_rules ET de slots.
+	var three: Array[int] = [1, 2, 3]
+	assert_eq(StackEnumerator.enumerate(three, 2).size(), 10, "3 règles, 2 emplacements : 1+3+6")
+	assert_eq(StackEnumerator.expected_count(3, 2), 10)
+	var one: Array[int] = [1]
+	assert_eq(StackEnumerator.enumerate(one, 1).size(), 2, "pile vide + [1]")
+	assert_eq(StackEnumerator.expected_count(1, 1), 2)
+
 func test_enumerate_is_deterministic() -> void:
 	var three: Array[int] = [1, 2, 3]
 	assert_eq(str(StackEnumerator.enumerate(three)), str(StackEnumerator.enumerate(three)))
@@ -154,3 +163,35 @@ func test_collect_without_transport_rules_is_flagged_out_of_chapter() -> void:
 
 	assert_true(bool(summary["collect_out_of_chapter"]))
 	assert_string_contains(String(summary["qn01_verdict"]), "hors chapitre")
+
+# --- CDC §12.2.1 : slots, dégénérescence, mode informatif ---------------------
+
+func test_slots_key_caps_the_enumerated_space() -> void:
+	var level := _corridor_level()
+	level["slots"] = 2
+	var report := ValidateLib.validate_level(level, RuleParams.new())
+
+	assert_eq(int(report["summary"]["n_stacks"]), 10, "3 règles, 2 emplacements")
+	assert_eq(int(report["summary"]["slots"]), 2)
+
+func test_a_level_won_by_the_empty_stack_is_degenerate() -> void:
+	# extraction 0 % : satisfaite sans poser une seule règle -> rejet.
+	var level := _corridor_level()
+	level["objectives"] = [{"type": "extraction", "percent": 0}]
+	var report := ValidateLib.validate_level(level, RuleParams.new())
+
+	assert_string_contains(String(report["summary"]["qn01_verdict"]), "dégénéré")
+
+func test_expected_wins_switches_to_informational_mode() -> void:
+	# Métadonnées tutorielles : rapportées sans verdict QN-01 (bandes à
+	# figer après T-040).
+	var level := _corridor_level()
+	level["tutorial"] = true
+	level["expected_wins"] = 4
+	var report := ValidateLib.validate_level(level, RuleParams.new())
+	var summary: Dictionary = report["summary"]
+
+	assert_string_contains(String(summary["qn01_verdict"]), "SANS VERDICT QN-01")
+	assert_string_contains(String(summary["qn01_verdict"]), "attendu 4, constaté %d" % int(summary["n_win"]))
+	assert_true(bool(summary["tutorial"]))
+	assert_between(int(summary["win_ratio_percent"]), 1, 99, "ratio rapporté")

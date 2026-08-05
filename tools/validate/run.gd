@@ -40,8 +40,10 @@ func _init() -> void:
 	_write_json(out_dir + "/" + level_name + ".summary.json", summary)
 
 	print("Volens validate v1 — %s" % level_name)
-	print("piles simulées   : %d (attendu : %d)" % [summary["n_stacks"], summary["expected_stacks"]])
-	print("piles gagnantes  : %d, en %d classe(s) structurelle(s)" % [summary["n_win"], summary["n_win_classes"]])
+	print("piles simulées   : %d (attendu : %d, slots : %d)" % [summary["n_stacks"], summary["expected_stacks"], summary.get("slots", 4)])
+	print("piles gagnantes  : %d / %d (%d %%), en %d classe(s) structurelle(s)" % [summary["n_win"], summary.get("n_total", summary["n_stacks"]), summary.get("win_ratio_percent", 0), summary["n_win_classes"]])
+	if int(summary.get("expected_wins", -1)) >= 0:
+		print("fiche            : attendu %d, constaté %d" % [summary["expected_wins"], summary["n_win"]])
 	if summary["min_ticks"] >= 0:
 		print("étalon efficience: %d ticks, pile %s" % [summary["min_ticks"], str(summary["best_stack"])])
 	print("verdict QN-01    : %s" % summary["qn01_verdict"])

@@ -84,6 +84,10 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 	for v in level_data.get("allowed_rules", []):
 		allowed.append(int(v))
 
+	# Emplacements offerts par le niveau (CDC §12.2.1) : borne l'énumération.
+	# Sans clé `slots`, comportement historique (4, plafond RG-05).
+	var slots := clampi(int(level_data.get("slots", StackEnumerator.MAX_SLOTS)), 1, StackEnumerator.MAX_SLOTS)
+
 	# Contrôles structurels — avant toute énumération (revue S3).
 	var structural_errors: Array[String] = []
 	var grid_data: Dictionary = level_data.get("grid", {})
@@ -98,7 +102,7 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 			"rows": [],
 			"summary": {
 				"n_stacks": 0,
-				"expected_stacks": StackEnumerator.expected_count(allowed.size()),
+				"expected_stacks": StackEnumerator.expected_count(allowed.size(), slots),
 				"n_win": 0,
 				"n_win_classes": 0,
 				"min_ticks": -1,
@@ -108,7 +112,7 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 			},
 		}
 
-	var stacks := StackEnumerator.enumerate(allowed)
+	var stacks := StackEnumerator.enumerate(allowed, slots)
 	var rows: Array = []
 	var wins: Array = []
 	for stack_variant in stacks:
@@ -146,12 +150,34 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 	var collect_out_of_chapter: bool = has_collect \
 		and not (allowed.has(R11_CARRY) and allowed.has(R12_DROP))
 
+	# Garde-fou universel (CDC §12.2.1) : si la pile vide gagne, le niveau
+	# se résout sans poser une seule règle — dégénéré, quel que soit le type.
+	var empty_stack_wins := false
+	for row in rows:
+		if (row["stack"] as Array).is_empty() and row["outcome"] == SimState.Outcome.WON:
+			empty_stack_wins = true
+
+	# Métadonnées tutorielles (CDC §12.2.1) : transportées par le format et
+	# rapportées SANS verdict QN-01 — les bandes proportionnelles restent
+	# indicatives tant que T-040 n'est pas clos.
+	var tutorial := bool(level_data.get("tutorial", false))
+	var has_expected: bool = level_data.has("expected_wins")
+	var expected_wins := int(level_data.get("expected_wins", -1))
+
 	var n_classes: int = classes.size()
 	var verdict: String
-	if wins.is_empty():
+	if empty_stack_wins:
+		verdict = "REJETÉ : dégénéré (la pile vide gagne — le niveau se résout sans poser une seule règle)"
+	elif wins.is_empty():
 		verdict = "REJETÉ : insoluble (zéro pile gagnante)"
 		if collect_out_of_chapter:
 			verdict += " — collecte hors chapitre : R11/R12 non autorisées (attendu tant que le chapitre 4 n'existe pas, pas un niveau cassé)"
+	elif tutorial or has_expected:
+		if has_expected:
+			var gap := "" if wins.size() == expected_wins else " — ÉCART À LA FICHE"
+			verdict = "SANS VERDICT QN-01 (CDC §12.2.1) — attendu %d, constaté %d%s" % [expected_wins, wins.size(), gap]
+		else:
+			verdict = "SANS VERDICT QN-01 (CDC §12.2.1) — %d gagnante(s) sur %d" % [wins.size(), rows.size()]
 	elif n_classes == 1:
 		verdict = "REJETÉ : puzzle déguisé (une seule classe de solution)"
 	elif n_classes < 3:
@@ -161,15 +187,23 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 	else:
 		verdict = "CONFORME QN-01 (3 <= classes <= 40)"
 
+	@warning_ignore("integer_division")
+	var win_ratio_percent: int = wins.size() * 100 / rows.size() if rows.size() > 0 else 0
+
 	return {
 		"rows": rows,
 		"summary": {
 			"n_stacks": rows.size(),
-			"expected_stacks": StackEnumerator.expected_count(allowed.size()),
+			"n_total": rows.size(),
+			"expected_stacks": StackEnumerator.expected_count(allowed.size(), slots),
+			"slots": slots,
 			"n_win": wins.size(),
 			"n_win_classes": n_classes,
+			"win_ratio_percent": win_ratio_percent,
 			"min_ticks": min_ticks,
 			"best_stack": best_stack,
+			"tutorial": tutorial,
+			"expected_wins": expected_wins,
 			"structural_errors": [],
 			"collect_out_of_chapter": collect_out_of_chapter,
 			"qn01_verdict": verdict,
