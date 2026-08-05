@@ -20,6 +20,16 @@ func _init() -> void:
 		quit(2)
 		return
 
+	# Échec bruyant si une empreinte n'est pas une String (troncature float64
+	# sinon). Le mode --write reste permis : c'est le chemin de réparation.
+	var type_errors := GoldenRunner.hash_type_errors(golden)
+	if not write_mode and not type_errors.is_empty():
+		for e in type_errors:
+			print("TYPE    " + e)
+		print("\nEmpreinte non textuelle : golden.json corrompu (risque de troncature flottante).")
+		quit(2)
+		return
+
 	var recipes: Array = golden.get("recipes", [])
 	var failures := 0
 

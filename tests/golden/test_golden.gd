@@ -5,6 +5,14 @@ extends GutTest
 ## (docs/ARCHITECTURE.md règle 1). Version GUT du contrôle ; le script autonome est
 ## tools/check_golden.gd, les deux partagent GoldenRunner.
 
+func test_archived_hashes_are_strings_never_json_numbers() -> void:
+	# Revue S3 (1.2) : une empreinte 64 bits stockée en nombre JSON serait
+	# tronquée en float64 (exact jusqu'à 2^53) — le test d'or comparerait
+	# alors des valeurs corrompues sans jamais échouer.
+	var golden := GoldenRunner.load_json(GoldenRunner.GOLDEN_PATH)
+	var errors := GoldenRunner.hash_type_errors(golden)
+	assert_eq(errors.size(), 0, "empreintes non-String dans golden.json : %s" % ", ".join(errors))
+
 func test_all_golden_recipes_match_their_archived_hashes() -> void:
 	var golden := GoldenRunner.load_json(GoldenRunner.GOLDEN_PATH)
 	assert_false(golden.is_empty(), "tests/golden/golden.json introuvable ou invalide")

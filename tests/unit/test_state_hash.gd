@@ -127,6 +127,26 @@ func test_to_hex_is_16_chars_and_unsigned() -> void:
 	assert_eq(hex.length(), 16)
 	assert_false(hex.begins_with("-"), "jamais de signe : motif binaire non signé")
 
+# --- sérialisation JSON (revue S3, 1.2) -----------------------------------
+
+func test_hex_hash_survives_a_json_round_trip_strictly() -> void:
+	# Le seul format de transit autorisé pour une empreinte est la chaîne
+	# hexadécimale. Valeurs hautes (proche de 2^63 - 1), négatives en signé
+	# (motif haut) : égalité STRICTE exigée après aller-retour.
+	for value in [0x7FFFFFFFFFFFFFF3, StateHash.OFFSET_BASIS, -1] as Array[int]:
+		var hex := StateHash.to_hex(value)
+		var parsed: Variant = JSON.parse_string(JSON.stringify({"h": hex}))
+		assert_true(parsed["h"] is String, "l'empreinte reste une String après aller-retour")
+		assert_eq(parsed["h"], hex, "égalité stricte après aller-retour JSON")
+
+func test_a_json_number_would_truncate_beyond_2_pow_53() -> void:
+	# Preuve du danger qui justifie le stockage en chaîne : le parseur JSON
+	# de Godot rend des float64, exacts jusqu'à 2^53 seulement. Une empreinte
+	# 64 bits stockée en nombre serait corrompue en silence.
+	var big: int = 9007199254740993  # 2^53 + 1, inexprimable en double
+	var parsed: Variant = JSON.parse_string(JSON.stringify({"h": big}))
+	assert_ne(int(parsed["h"]), big, "un nombre JSON perd l'exactitude au-delà de 2^53")
+
 func test_known_fnv1a_vector_for_a_single_zero_byte() -> void:
 	# Vecteur de contrôle indépendant de notre code : FNV-1a 64 bits d'un
 	# unique octet 0x00 = basis ^ 0x00 * prime = 0xAF63BD4C8601B7DF

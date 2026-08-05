@@ -20,6 +20,25 @@ static func load_json(path: String) -> Dictionary:
 		return {}
 	return parsed
 
+## Contrôle de type au chargement (revue S3, 1.2) : toute empreinte archivée
+## doit être une String hexadécimale. Un nombre JSON transite en float64
+## (exact jusqu'à 2^53 seulement) : une empreinte 64 bits y serait tronquée
+## en silence, et la comparaison d'or deviendrait aveugle aux vraies
+## régressions. Renvoie la liste des violations (vide = conforme).
+static func hash_type_errors(golden: Dictionary) -> PackedStringArray:
+	var errors := PackedStringArray()
+	var recipes: Array = golden.get("recipes", [])
+	for i in range(recipes.size()):
+		var hashes: Variant = recipes[i].get("hashes", {})
+		if not (hashes is Dictionary):
+			errors.append("recette %d : champ hashes absent ou invalide" % i)
+			continue
+		for key in hashes:
+			if not (hashes[key] is String):
+				errors.append("recette %d, t=%s : empreinte de type %s au lieu de String" % [
+					i, str(key), type_string(typeof(hashes[key]))])
+	return errors
+
 ## Rejoue une recette et renvoie les empreintes hexadécimales aux ticks
 ## demandés : { "50": "…", "150": "…", "300": "…" }. Les points de contrôle
 ## doivent être croissants. La simulation continue après un outcome décidé
