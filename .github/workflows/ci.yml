@@ -49,6 +49,19 @@ jobs:
             | tee /tmp/gut.log
           grep -q -- "---- All tests passed! ----" /tmp/gut.log
 
+      - name: Cohérence du nombre de tests (aucune suite silencieusement ignorée)
+        run: |
+          # Le nombre de tests exécutés par GUT doit égaler le nombre de
+          # fonctions test_ déclarées sous tests/. Auto-ajustant : aucun
+          # compteur à maintenir à la main. Si des tests paramétrés
+          # apparaissent un jour, l'écart déclaré/exécuté devra être rendu
+          # EXPLICITE ici (variable dédiée et commentée) — jamais absorbé
+          # en assouplissant ce contrôle.
+          declared=$(grep -rh --include="*.gd" "^func test_" tests/ | wc -l)
+          executed=$(grep -oP '^Tests\s+\K[0-9]+' /tmp/gut.log | head -1)
+          echo "déclarés : $declared — exécutés : $executed"
+          test -n "$executed" && test "$declared" -eq "$executed"
+
       - name: Déterminisme x86_64 — deux exécutions, empreintes identiques
         run: |
           run_hash() {
