@@ -163,6 +163,10 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 	var tutorial := bool(level_data.get("tutorial", false))
 	var has_expected: bool = level_data.has("expected_wins")
 	var expected_wins := int(level_data.get("expected_wins", -1))
+	# Arbitrage du 6 août 2026 : expected_wins compte des PILES (convention
+	# de l'outil) ; expected_classes, optionnel, compte des classes
+	# structurelles — les deux sont confrontés et rapportés.
+	var expected_classes := int(level_data.get("expected_classes", -1))
 
 	var n_classes: int = classes.size()
 	var verdict: String
@@ -176,6 +180,9 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 		if has_expected:
 			var gap := "" if wins.size() == expected_wins else " — ÉCART À LA FICHE"
 			verdict = "SANS VERDICT QN-01 (CDC §12.2.1) — attendu %d, constaté %d%s" % [expected_wins, wins.size(), gap]
+			if expected_classes >= 0:
+				var class_gap := "" if n_classes == expected_classes else " — ÉCART"
+				verdict += " ; classes : attendu %d, constaté %d%s" % [expected_classes, n_classes, class_gap]
 		else:
 			verdict = "SANS VERDICT QN-01 (CDC §12.2.1) — %d gagnante(s) sur %d" % [wins.size(), rows.size()]
 	elif n_classes == 1:
@@ -204,6 +211,7 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 			"best_stack": best_stack,
 			"tutorial": tutorial,
 			"expected_wins": expected_wins,
+			"expected_classes": expected_classes,
 			"structural_errors": [],
 			"collect_out_of_chapter": collect_out_of_chapter,
 			"qn01_verdict": verdict,
