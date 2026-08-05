@@ -13,6 +13,7 @@
         "50": "f56e9a97f1009bcf"
       },
       "level": "res://data/levels/test_smoke.json",
+      "rules_hash": "13d052fe2d40429a",
       "stack": [
         1.0,
         2.0,
@@ -26,6 +27,7 @@
         "50": "17bb90056d5b5ba0"
       },
       "level": "res://data/levels/test_smoke.json",
+      "rules_hash": "13d052fe2d40429a",
       "stack": [
         2.0,
         3.0,
@@ -39,6 +41,7 @@
         "50": "07bbf03ef858cdc7"
       },
       "level": "res://data/levels/test_smoke.json",
+      "rules_hash": "13d052fe2d40429a",
       "stack": [
         3.0,
         1.0,
@@ -52,6 +55,7 @@
         "50": "a9964db5bc8c5a04"
       },
       "level": "res://data/levels/test_smoke.json",
+      "rules_hash": "13d052fe2d40429a",
       "stack": []
     },
     {
@@ -61,17 +65,19 @@
         "50": "07ff77225a68f589"
       },
       "level": "res://tests/golden/levels/golden_corridor.json",
+      "rules_hash": "13d052fe2d40429a",
       "stack": [
         1.0
       ]
     },
     {
       "hashes": {
-        "150": "a5305df4d9ee6364",
-        "300": "24caeb64ed58456b",
-        "50": "62feaa386fc69b80"
+        "150": "214a833de049f558",
+        "300": "5d2c7c49f711a977",
+        "50": "9478d02727a5265d"
       },
       "level": "res://tests/golden/levels/golden_corridor.json",
+      "rules_hash": "13d052fe2d40429a",
       "stack": [
         2.0,
         1.0
@@ -84,6 +90,7 @@
         "50": "07ff77225a68f589"
       },
       "level": "res://tests/golden/levels/golden_corridor.json",
+      "rules_hash": "13d052fe2d40429a",
       "stack": [
         1.0,
         3.0
@@ -96,6 +103,7 @@
         "50": "ca9fdb8408c6cc24"
       },
       "level": "res://tests/golden/levels/golden_field.json",
+      "rules_hash": "13d052fe2d40429a",
       "stack": [
         1.0,
         2.0
@@ -108,6 +116,7 @@
         "50": "276f8128d4252a86"
       },
       "level": "res://tests/golden/levels/golden_field.json",
+      "rules_hash": "13d052fe2d40429a",
       "stack": [
         2.0,
         3.0,
@@ -121,6 +130,7 @@
         "50": "34c9b72ccffae6a6"
       },
       "level": "res://tests/golden/levels/golden_field.json",
+      "rules_hash": "13d052fe2d40429a",
       "stack": [
         3.0,
         2.0,
