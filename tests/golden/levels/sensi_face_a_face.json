@@ -1,0 +1,9 @@
+{
+  "_comment": "Fixture de sensibilité (revue S3, 2.4) — face-à-face de couloir : deux dangers statiques aux extrémités, deux agents adjacents fuient en sens opposés -> échange direct perpétuel. Archive l'autorisation des échanges. Fixture technique, pas un niveau de jeu.",
+  "max_ticks": 300,
+  "grid": {
+    "size": [4, 1],
+    "cells": [3, 0, 0, 3]
+  },
+  "agents": [{ "pos": [1, 0] }, { "pos": [2, 0] }]
+}

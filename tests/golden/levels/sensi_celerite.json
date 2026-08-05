@@ -1,0 +1,13 @@
+{
+  "_comment": "Fixture de sensibilité (revue S3, 2.2) — victoire « sur le fil » : l'agent atteint la sortie exactement au tick de la borne de célérité (tick == T == 4). Doit être GAGNÉ : la célérité est une échéance (tick <= T) évaluée après la victoire (ENF-04). Fixture technique, pas un niveau de jeu.",
+  "max_ticks": 300,
+  "grid": {
+    "size": [6, 1],
+    "cells": [9, 2, 0, 0, 0, 0]
+  },
+  "agents": [{ "pos": [5, 0] }],
+  "objectives": [
+    { "type": "extraction", "percent": 100 },
+    { "type": "celerity", "max_ticks": 4 }
+  ]
+}

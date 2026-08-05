@@ -1,0 +1,11 @@
+{
+  "_comment": "Fixture de sensibilité (revue S3, 2.1) — traversée en phase calme (option C) : danger cyclique période 6 (au plancher ⚙️) sur le chemin de la lumière. Pile [2,1] : R02 évite les arrivées létales et traverse pendant la fenêtre dormante. Pile [1] : sans R02, l'agent fonce et meurt — R02 est la seule protection, jamais le pipeline. Fixture technique, pas un niveau de jeu.",
+  "max_ticks": 300,
+  "grid": {
+    "size": [6, 1],
+    "cells": [9, 0, 4, 0, 0, 0],
+    "cycle_index": [-1, -1, 0, -1, -1, -1],
+    "cycles": [{ "period": 6, "active_ticks": 3 }]
+  },
+  "agents": [{ "pos": [4, 0] }]
+}
