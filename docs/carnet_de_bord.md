@@ -236,6 +236,43 @@ distinctes (détaillées dans la PR du lot).
 - docs/ARCHITECTURE.md : interdit n°4 reformulé par fonctionnalité (« le rendu suit
   toujours la simulation ») — condition satisfaite pour le chapitre 1.
 
+---
+
+## Fait — Convertisseur .lvl et CDC v2.2 (5 août 2026, branches `docs/qn01-tutoriels` et `feat/lvl-converter`)
+
+Préparation de T-040 (conception du chapitre 1), sur le guide du
+concepteur revu et corrigé (6 points d'écart moteur/guide relevés et
+acceptés : case unique par type et lumière au-delà de la sortie —
+en **bande pleine largeur** sur consigne du concepteur —, largeur
+minimale 8, espace = 16 piles avec la vide, `slots` absent du validateur,
+« phase » de cycle inexistante dans core, contournement R02 unilatéral
+vers l'Est).
+
+- **CDC → v2.2** (§12.2.1) : N_total défini par la convention de l'outil
+  (arrangements de règles distinctes, longueur 0 à `slots`, pile vide
+  incluse) ; niveaux `tutorial: true` exemptés de QN-01 (critère propre :
+  `N_win` == `expected_wins` exactement) ; pile vide gagnante = niveau
+  dégénéré, rejet universel ; bandes proportionnelles 20-50 % INDICATIVES,
+  à confirmer après T-040, non opposables.
+- **Validateur** : `slots` borne l'énumération (N_total en dépend) ;
+  garde-fou dégénérescence ; mode informatif quand `tutorial` ou
+  `expected_wins` est présent (« attendu N, constaté M », sans verdict) ;
+  ratio rapporté. Les bandes ne sont PAS câblées — décision du concepteur,
+  elles seraient une métrique fabriquée avant d'avoir vu un seul niveau.
+- **Convertisseur `tools/lvl/`** (avance sur T-074) : `.lvl` (en-tête +
+  grille ASCII) → JSON, validations à l'entrée (dimensions CDC 8×10-14×18
+  plus haute que large, agents, sortie si extraction, symboles, plancher
+  de période, règles implémentées uniquement), `--validate` enchaîne le
+  validateur. **Conventions figées, elles affectent le déterminisme** :
+  ids d'agents en ordre de lecture ; origine en haut à gauche.
+  Limitations v1 assumées : pas de phase de cycle (toucherait le parcours
+  de hachage), sens uniques rejetés (orientation absente de core/sim),
+  une seule définition de cycle.
+- **Critère de fin constaté** : `ch1_01.lvl` (croquis N1 du concepteur,
+  corrigé bande de sortie + largeur 8 — la conception reste sa propriété,
+  DCT §12.4) converti et validé : espace de 2 piles, `N_win = 1`,
+  « attendu 1, constaté 1 ». Verrouillé par test permanent.
+
 ## Reste à faire
 
 **S3 : clos** — premier passage de la CI en ligne constaté vert le
