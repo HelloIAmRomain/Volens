@@ -4,5 +4,8 @@
   },
   "rester_groupe": {
     "perception_range_sq": 16
+  },
+  "validation": {
+    "min_cycle_period": 6
   }
 }

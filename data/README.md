@@ -14,6 +14,12 @@ Paramètres d'équilibrage des règles de comportement, jamais codés en dur
 |---|---|---|---|
 | `fuir_le_rouge.perception_range_sq` | R02 | rayon² au-delà duquel un danger n'est plus perçu | 25 (rayon ≈ 5 cases) |
 | `rester_groupe.perception_range_sq` | R03 | rayon² au-delà duquel un congénère n'est plus perçu | 16 (rayon ≈ 4 cases) |
+| `validation.min_cycle_period` | (validateur) | plancher ⚙️ de période des dangers cycliques — en dessous, l'oscillation d'une nuée se lit comme un tremblement | 6 |
+
+R02 évalue les dangers **à l'instant d'arrivée** (revue S3, option C) : un
+danger est menaçant s'il sera actif au tick t+1 ; un danger dormant qui le
+restera n'exerce aucune répulsion — la traversée en phase calme est un
+puzzle voulu.
 
 R01 (vers la lumière) n'a pas de portée de perception : la lumière la plus
 proche est toujours perçue, quelle que soit la distance (aucun `⚙️` sur R01
@@ -56,6 +62,10 @@ technique, pas un niveau de jeu.
 - `allowed_rules` : sous-ensemble de la bibliothèque offert au joueur
   (RG-14) ; c'est l'espace qu'énumère le validateur.
 - `objectives` : voir `core/sim/objective_def.gd` — accomplissements
-  (extraction, collect) et contraintes (preservation, celerity,
-  interdiction) ; `collect` restera inatteignable jusqu'aux règles
-  R11/R12 (chapitre 4).
+  (extraction, collect) et contraintes ; `preservation` et `interdiction`
+  sont des **événements** (violation = défaite immédiate, prime sur tout),
+  `celerity` est une **échéance** : réussir en au plus T ticks
+  (`tick <= T`), évaluée après la victoire — gagner au tick exact de la
+  borne est gagné (revue S3, 2.2). `collect` restera inatteignable
+  jusqu'aux règles R11/R12 (chapitre 4) ; le validateur signale ce cas
+  comme « hors chapitre », distinct d'un niveau cassé.

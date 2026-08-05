@@ -100,3 +100,57 @@ func test_insoluble_level_is_rejected() -> void:
 
 	assert_eq(int(summary["n_win"]), 0)
 	assert_string_contains(String(summary["qn01_verdict"]), "insoluble")
+
+# --- contrôles structurels et hors-chapitre (revue S3) ------------------------
+
+func test_cycle_period_below_the_floor_is_structurally_rejected() -> void:
+	# Plancher ⚙️ de période (défaut 6) : l'oscillation doit se lire comme
+	# un avance/recul, pas un tremblement. Rejet AVANT toute énumération.
+	var level := {
+		"max_ticks": 20,
+		"allowed_rules": [1],
+		"grid": {
+			"size": [3, 1], "cells": [0, 4, 0],
+			"cycle_index": [-1, 0, -1],
+			"cycles": [{"period": 4, "active_ticks": 2}],
+		},
+		"agents": [{"pos": [0, 0]}],
+		"objectives": [{"type": "extraction", "percent": 100}],
+	}
+	var report := ValidateLib.validate_level(level, RuleParams.new())
+	var summary: Dictionary = report["summary"]
+
+	assert_string_contains(String(summary["qn01_verdict"]), "plancher")
+	assert_eq(report["rows"].size(), 0, "rejet structurel : aucune simulation lancée")
+
+func test_cycle_period_at_the_floor_passes_the_structural_check() -> void:
+	var level := {
+		"max_ticks": 20,
+		"allowed_rules": [1],
+		"grid": {
+			"size": [3, 1], "cells": [0, 4, 0],
+			"cycle_index": [-1, 0, -1],
+			"cycles": [{"period": 6, "active_ticks": 3}],
+		},
+		"agents": [{"pos": [0, 0]}],
+		"objectives": [{"type": "extraction", "percent": 100}],
+	}
+	var report := ValidateLib.validate_level(level, RuleParams.new())
+
+	assert_gt(int(report["summary"]["n_stacks"]), 0, "période au plancher : énumération normale")
+
+func test_collect_without_transport_rules_is_flagged_out_of_chapter() -> void:
+	# 3.6 : « inatteignable faute de R11/R12 autorisées » n'est pas « niveau
+	# cassé » — le rapport doit distinguer les deux pour l'authoring du ch. 4.
+	var level := {
+		"max_ticks": 20,
+		"allowed_rules": [1, 2, 3],
+		"grid": {"size": [3, 1], "cells": [5, 0, 2]},
+		"agents": [{"pos": [1, 0]}],
+		"objectives": [{"type": "collect", "count": 1}],
+	}
+	var report := ValidateLib.validate_level(level, RuleParams.new())
+	var summary: Dictionary = report["summary"]
+
+	assert_true(bool(summary["collect_out_of_chapter"]))
+	assert_string_contains(String(summary["qn01_verdict"]), "hors chapitre")

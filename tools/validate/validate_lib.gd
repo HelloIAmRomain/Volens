@@ -10,6 +10,16 @@ extends RefCounted
 ##   ppcm des périodes) se répète, la simulation boucle — les compteurs ne
 ##   progresseront plus jamais, l'issue est un échec anticipé.
 
+## Plancher de période des dangers cycliques ⚙️ (revue S3) : en dessous,
+## l'oscillation d'une nuée se lit comme un tremblement, pas comme un
+## avance/recul. Surchargeable depuis data/rules.json ("validation").
+const MIN_CYCLE_PERIOD_DEFAULT := 6
+
+## Identifiants des règles de transport du chapitre 4 (pas encore dans
+## RuleRegistry) : nécessaires pour que `delivered` puisse progresser.
+const R11_CARRY := 11
+const R12_DROP := 12
+
 ## Simule une pile jusqu'à l'issue, la limite de ticks du niveau, ou une
 ## boucle détectée. Renvoie : outcome, ticks, exited, lost, final_hash,
 ## looped.
@@ -66,12 +76,37 @@ static func _gcd(a: int, b: int) -> int:
 		x = t
 	return x
 
-## Valide un niveau entier : énumère les piles autorisées, simule chacune,
-## agrège. Renvoie { rows, summary }.
-static func validate_level(level_data: Dictionary, params: RuleParams) -> Dictionary:
+## Valide un niveau entier : contrôles structurels, puis énumération des
+## piles autorisées, simulation de chacune, agrégation. Renvoie
+## { rows, summary }.
+static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle_period: int = MIN_CYCLE_PERIOD_DEFAULT) -> Dictionary:
 	var allowed: Array[int] = []
 	for v in level_data.get("allowed_rules", []):
 		allowed.append(int(v))
+
+	# Contrôles structurels — avant toute énumération (revue S3).
+	var structural_errors: Array[String] = []
+	var grid_data: Dictionary = level_data.get("grid", {})
+	var cycles_arr: Array = grid_data.get("cycles", [])
+	for i in range(cycles_arr.size()):
+		var period := int(cycles_arr[i].get("period", 1))
+		if period < min_cycle_period:
+			structural_errors.append(
+				"cycle %d : période %d < plancher %d ⚙️ (l'oscillation doit se lire comme un avance/recul, pas un tremblement)" % [i, period, min_cycle_period])
+	if not structural_errors.is_empty():
+		return {
+			"rows": [],
+			"summary": {
+				"n_stacks": 0,
+				"expected_stacks": StackEnumerator.expected_count(allowed.size()),
+				"n_win": 0,
+				"n_win_classes": 0,
+				"min_ticks": -1,
+				"best_stack": [],
+				"structural_errors": structural_errors,
+				"qn01_verdict": "REJETÉ : structure invalide — " + " ; ".join(structural_errors),
+			},
+		}
 
 	var stacks := StackEnumerator.enumerate(allowed)
 	var rows: Array = []
@@ -101,10 +136,22 @@ static func validate_level(level_data: Dictionary, params: RuleParams) -> Dictio
 			min_ticks = int(w["ticks"])
 			best_stack = w["stack"]
 
+	# Collecte hors chapitre (revue S3, 3.6) : distinguer « inatteignable
+	# faute de règles de transport autorisées » de « niveau cassé » — sans
+	# cela, l'authoring du chapitre 4 serait pénible.
+	var has_collect := false
+	for entry in level_data.get("objectives", []):
+		if String(entry.get("type", "")) == "collect":
+			has_collect = true
+	var collect_out_of_chapter: bool = has_collect \
+		and not (allowed.has(R11_CARRY) and allowed.has(R12_DROP))
+
 	var n_classes: int = classes.size()
 	var verdict: String
 	if wins.is_empty():
 		verdict = "REJETÉ : insoluble (zéro pile gagnante)"
+		if collect_out_of_chapter:
+			verdict += " — collecte hors chapitre : R11/R12 non autorisées (attendu tant que le chapitre 4 n'existe pas, pas un niveau cassé)"
 	elif n_classes == 1:
 		verdict = "REJETÉ : puzzle déguisé (une seule classe de solution)"
 	elif n_classes < 3:
@@ -123,6 +170,8 @@ static func validate_level(level_data: Dictionary, params: RuleParams) -> Dictio
 			"n_win_classes": n_classes,
 			"min_ticks": min_ticks,
 			"best_stack": best_stack,
+			"structural_errors": [],
+			"collect_out_of_chapter": collect_out_of_chapter,
 			"qn01_verdict": verdict,
 		},
 	}

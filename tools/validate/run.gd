@@ -28,7 +28,10 @@ func _init() -> void:
 		quit(2)
 		return
 
-	var report := ValidateLib.validate_level(level_data, RuleParams.from_dict(rules_data))
+	# Plancher de période ⚙️ : surchargeable depuis data/rules.json.
+	var validation: Dictionary = rules_data.get("validation", {})
+	var min_period := int(validation.get("min_cycle_period", ValidateLib.MIN_CYCLE_PERIOD_DEFAULT))
+	var report := ValidateLib.validate_level(level_data, RuleParams.from_dict(rules_data), min_period)
 	var summary: Dictionary = report["summary"]
 
 	var out_dir: String = args.get("out", DEFAULT_OUT)
