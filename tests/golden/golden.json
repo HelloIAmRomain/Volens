@@ -13,6 +13,7 @@
         "50": "f56e9a97f1009bcf"
       },
       "level": "res://data/levels/test_smoke.json",
+      "rules_hash": "13d052fe2d40429a",
       "stack": [
         1.0,
         2.0,
@@ -26,6 +27,7 @@
         "50": "17bb90056d5b5ba0"
       },
       "level": "res://data/levels/test_smoke.json",
+      "rules_hash": "13d052fe2d40429a",
       "stack": [
         2.0,
         3.0,
@@ -39,6 +41,7 @@
         "50": "07bbf03ef858cdc7"
       },
       "level": "res://data/levels/test_smoke.json",
+      "rules_hash": "13d052fe2d40429a",
       "stack": [
         3.0,
         1.0,
@@ -52,6 +55,7 @@
         "50": "a9964db5bc8c5a04"
       },
       "level": "res://data/levels/test_smoke.json",
+      "rules_hash": "13d052fe2d40429a",
       "stack": []
     },
     {
@@ -61,17 +65,19 @@
         "50": "07ff77225a68f589"
       },
       "level": "res://tests/golden/levels/golden_corridor.json",
+      "rules_hash": "13d052fe2d40429a",
       "stack": [
         1.0
       ]
     },
     {
       "hashes": {
-        "150": "a5305df4d9ee6364",
-        "300": "24caeb64ed58456b",
-        "50": "62feaa386fc69b80"
+        "150": "214a833de049f558",
+        "300": "5d2c7c49f711a977",
+        "50": "9478d02727a5265d"
       },
       "level": "res://tests/golden/levels/golden_corridor.json",
+      "rules_hash": "13d052fe2d40429a",
       "stack": [
         2.0,
         1.0
@@ -84,6 +90,7 @@
         "50": "07ff77225a68f589"
       },
       "level": "res://tests/golden/levels/golden_corridor.json",
+      "rules_hash": "13d052fe2d40429a",
       "stack": [
         1.0,
         3.0
@@ -96,6 +103,7 @@
         "50": "ca9fdb8408c6cc24"
       },
       "level": "res://tests/golden/levels/golden_field.json",
+      "rules_hash": "13d052fe2d40429a",
       "stack": [
         1.0,
         2.0
@@ -108,6 +116,7 @@
         "50": "276f8128d4252a86"
       },
       "level": "res://tests/golden/levels/golden_field.json",
+      "rules_hash": "13d052fe2d40429a",
       "stack": [
         2.0,
         3.0,
@@ -121,9 +130,95 @@
         "50": "34c9b72ccffae6a6"
       },
       "level": "res://tests/golden/levels/golden_field.json",
+      "rules_hash": "13d052fe2d40429a",
       "stack": [
         3.0,
         2.0,
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "1eacf8b53dbd48c3",
+        "300": "978313de2b34307c",
+        "50": "0c123dc3a0faae67"
+      },
+      "level": "res://tests/golden/levels/sensi_face_a_face.json",
+      "rules_hash": "13d052fe2d40429a",
+      "stack": [
+        2.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "758c26711d670581",
+        "300": "e8c729c4fbf77a4e",
+        "50": "254ce21223a52ea5"
+      },
+      "level": "res://tests/golden/levels/sensi_cadence.json",
+      "rules_hash": "13d052fe2d40429a",
+      "stack": [
+        2.0,
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "ac14c69c5e8fde1b",
+        "300": "8eddcc55d68711b4",
+        "50": "d5408e4eeebb833f"
+      },
+      "level": "res://tests/golden/levels/sensi_cadence.json",
+      "rules_hash": "13d052fe2d40429a",
+      "stack": [
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "2f54aabb2932ade3",
+        "300": "5183e509a17f0f92",
+        "50": "aa8c0cc0fb8ddb8f"
+      },
+      "level": "res://tests/golden/levels/sensi_celerite.json",
+      "rules_hash": "13d052fe2d40429a",
+      "stack": [
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "c58d4d06f272780c",
+        "300": "7d421dcf09e235f3",
+        "50": "3a94f9977bd084a8"
+      },
+      "level": "res://tests/golden/levels/sensi_damier.json",
+      "rules_hash": "13d052fe2d40429a",
+      "stack": [
+        3.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "e958e1f121aea3a3",
+        "300": "607ecf602145da2c",
+        "50": "c52acca4eee7d3c7"
+      },
+      "level": "res://tests/golden/levels/sensi_chaine_a.json",
+      "rules_hash": "13d052fe2d40429a",
+      "stack": [
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "9b0a1f685c9e2803",
+        "300": "48162e9cdc390dcc",
+        "50": "07dfadb254a5cc27"
+      },
+      "level": "res://tests/golden/levels/sensi_chaine_b.json",
+      "rules_hash": "13d052fe2d40429a",
+      "stack": [
         1.0
       ]
     }

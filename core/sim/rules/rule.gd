@@ -19,9 +19,14 @@ const ABSTAIN := Vector2i(-2, -2)
 ## grille ou dans un mur est ignorée, et une règle dont toutes les directions
 ## utiles sont bloquées s'abstient — la cascade continue. C'est la sémantique
 ## qu'implique le DCT §4.2 : `explain` documente « non applicable (…,
-## mouvement bloqué) » comme raison d'inapplication. Les murs sont un état du
-## monde constant et visible ; les autres agents, eux, ne sont JAMAIS
-## considérés ici — leurs conflits se résolvent à l'étape 3 (RG-06/RG-07).
+## mouvement bloqué) » comme raison d'inapplication.
+##
+## « Bloqué » signifie mur ou bordure de grille, UNIQUEMENT (revue S3, 2.3).
+## Une case occupée par un autre agent n'est JAMAIS « bloquée » du point de
+## vue d'une règle : sinon les règles deviendraient sensibles à la densité,
+## entreraient en interaction avec la résolution de conflits, et plus aucun
+## comportement ne serait explicable au joueur. Les conflits d'occupation se
+## résolvent exclusivement à l'étape 3 du pipeline (RG-06/RG-07).
 
 ## À redéfinir par chaque règle concrète.
 func evaluate(_agent: AgentState, _state: SimState, _params: RuleParams) -> Vector2i:

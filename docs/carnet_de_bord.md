@@ -113,6 +113,129 @@ Décisions supplémentaires (S3) :
     les niveaux (DCT §12.4) : les 5 niveaux du chapitre 1 (T-040) relèvent
     du concepteur.
 
+---
+
+## Fait — Revue croisée des décisions S2/S3 (5 août 2026, branche `fix/semantique-s3`)
+
+Relecture par le concepteur des 14 décisions S2/S3 : 7 validées, 4
+modifiées, 3 précisées ou vérifiées. Chaque arbitrage ci-dessous fait foi,
+y compris ceux qui renversent une décision antérieure — le raisonnement
+doit rester relisible dans six mois.
+
+### Décisions 12-15 — les renversements sémantiques du lot
+
+12. **R02 : option C, évaluation à l'instant d'arrivée** (renverse la
+    décision n°2). Un danger est menaçant s'il sera actif à t+1 ; un
+    dormant qui le restera n'exerce aucune répulsion. Pourquoi : l'option A
+    (fuir toute phase, ma décision initiale) faisait du danger cyclique un
+    mur animé et neutralisait la famille des puzzles temporels (RG-14) ;
+    l'option B (ne fuir que l'actif) produisait des morts non déductibles
+    de la pile (P4). Cas limite SPÉCIFIÉ, pas émergent : agent sur case
+    létale à t+1 → évacuation vers la première adjacente sûre, départage
+    N>E>S>O ; jamais un pas vers une case létale à l'arrivée. La létalité
+    effective reste l'affaire exclusive de l'étape 5 : un agent sans R02
+    fonce et meurt (archétype CDC §7.3).
+13. **Célérité : échéance, pas événement** (amende la décision n°8, dont la
+    partition accomplissements/contraintes est confirmée). Préservation et
+    interdiction sont des ÉVÉNEMENTS — violation irrémédiable, prime sur
+    tout, y compris au tick d'égalité. La célérité est une ÉCHÉANCE
+    (tick <= T) évaluée APRÈS la victoire : gagner au tick exact de la
+    borne est GAGNÉ (« sur le fil », ENF-04 non punitif). Ordre d'issue
+    complet et fixe : contraintes-événement > victoire > échéance de
+    célérité > inatteignabilité (RG-09) > limite de ticks.
+    L'inatteignabilité de la célérité EST son échéance, placée après la
+    victoire pour ne pas recréer le bug un cran plus bas.
+14. **Plancher de période cyclique ≥ 6 ⚙️** (`rules.json`,
+    `validation.min_cycle_period` ; rejet structurel du validateur, avant
+    toute énumération). L'oscillation d'une nuée doit se lire comme un
+    avance/recul, pas un tremblement. Corollaire de conception : CASSER une
+    oscillation devient un objectif de puzzle possible dès le chapitre 2,
+    via une règle placée avant R02 dans la pile.
+15. **« Bloqué » = mur ou bordure de grille, uniquement** (précise la
+    décision n°1, que la revue valide comme IMPOSÉE par la règle d'or —
+    « la première règle applicable l'emporte »). Une case occupée n'est
+    jamais un blocage pour une règle, sinon sensibilité à la densité et
+    comportements inexplicables. Documenté dans `Rule`, vérifié dans les
+    trois règles.
+
+### Ce que les tests de preuve ont établi (zéro changement de code)
+
+- **Le point fixe existait déjà** (revue 1.1) : `_resolve_conflicts`
+  raisonne en revendications de cases, pas en occupation. Libérations ET
+  refus se propagent en cascade, indépendamment de l'ordre des ids —
+  l'id ne départage que les prétendants à une même case libre (DT-07).
+- **Tous les cycles fermés tournent** (revue 2.4) : échange à 2, rotations
+  à 4 et 6, sans cas particulier. Le cycle IMPAIR est géométriquement
+  impossible : un pas cardinal inverse la parité de (x+y), la grille est
+  bipartie, tout cycle fermé est pair. L'incohérence redoutée (« 2 passe,
+  3 bloque ») ne peut pas exister.
+- **Empreintes en chaînes hexadécimales partout** (revue 1.2) : vérifié,
+  puis verrouillé — assertion de type au chargement de `golden.json`
+  (échec bruyant), aller-retour JSON strict testé, preuve exécutable
+  qu'un nombre JSON tronque au-delà de 2^53.
+- **Détection de boucle du validateur** (revue 3.4) : les compteurs SONT
+  dans la clé (`dynamics_hash` couvre `counters`) ; la coupe vit
+  exclusivement dans `tools/validate/` — garanti par le test
+  d'architecture T-022 (`preload`/`load`/`res://` interdits dans `core/`,
+  qui ne peut donc référencer aucun outil), pas par simple inspection.
+
+### Parité et compaction (à suivre visuellement en S4)
+
+Un agent qui bouge à chaque tick conserve la parité de (x+y) : en TRANSIT,
+une nuée sous R03 ne peut pas se compacter en bloc. Constat de la fixture
+`sensi_damier` : à l'ÉQUILIBRE, R03 s'abstient, et l'abstention casse la
+parité — l'agrégat final est un escalier compact stable (dès t=150), pas
+un damier permanent. L'effet damier est donc un phénomène de mouvement :
+signature esthétique ou artefact perçu comme bug ? À trancher dès S4.
+
+### Protocole permanent de régénération du corpus d'or
+
+Appliqué pour la première fois ce jour ; désormais OBLIGATOIRE — plus
+jamais de `--write` sans prédiction écrite préalable :
+1. prédiction ÉCRITE, recette par recette (change / ne change pas, et
+   pourquoi), rédigée avant toute vérification post-changement ;
+2. `check_golden` en mode vérification, sans écriture ;
+3. confrontation liste d'échecs ↔ prédiction — tout écart non prédit
+   s'investigue avant toute écriture ;
+4. feu vert humain, puis `--write` ; commit isolé citant les causes ;
+5. l'archivage initial de nouvelles fixtures se fait dans un commit
+   SÉPARÉ, après confrontation à leurs attendus qualitatifs.
+
+Résultat du jour : 10 recettes prédites une à une, 9 inchangées, seule
+corridor [2,1] change (danger cyclique + R02) — zéro écart non prédit.
+Sur le champ 8×8, (3,4) est l'unique case de décision divergente du
+plateau et elle est inatteignable dans les trois piles, pour trois raisons
+distinctes (détaillées dans la PR du lot).
+
+### Appartenance des règles aux chapitres (référence rapide, CDC §7.2)
+
+| Chapitre | Règles |
+|---|---|
+| 1 — mouvement élémentaire | R01 Vers la lumière · R02 Fuir le rouge · R03 Rester groupé |
+| 2 — coordination | R04 S'écarter · R05 Suivre les voisins · R06 Longer le mur |
+| 3 — stigmergie | R07 Attendre · R08 Marquer la piste · R09 Suivre la piste |
+| 4 — transport | R10 Rebrousser si seul · R11 Porter · R12 Déposer au but |
+| 5 — sacrifice et régulation | R13 Boucher · R14 Disperser si dense · R15 Suivre le plus lent (+ R16 Ignorer, joker) |
+
+### Autres ajouts du lot
+
+- `rules_hash` archivé à côté de chaque recette d'or : distingue
+  « régression du code » de « rééquilibrage voulu » (revue 3.1).
+- Garde-fou de débogage : toute sortie de règle non-ABSTAIN doit être ZERO
+  ou un pas cardinal — assert dans la cascade (revue 3.2).
+- Validateur : « collecte sans R11/R12 autorisées » signalée hors
+  chapitre, distincte d'un niveau cassé (revue 3.6).
+- CI : nombre de tests exécutés = nombre déclaré, auto-ajustant ; tout
+  écart futur (tests paramétrés) devra être explicite, jamais absorbé
+  (revue 3.8).
+- Exigence notée pour T-074 (éditeur) : refuser d'enregistrer un niveau
+  sans accomplissement.
+- Corpus d'or : **17 recettes** (10 régénérées + 7 fixtures de
+  sensibilité : face-à-face, cadence ×2, célérité sur le fil, damier,
+  chaîne A/B).
+- docs/ARCHITECTURE.md : interdit n°4 reformulé par fonctionnalité (« le rendu suit
+  toujours la simulation ») — condition satisfaite pour le chapitre 1.
+
 ## Reste à faire
 
 **S3 : clos** — premier passage de la CI en ligne constaté vert le
@@ -144,9 +267,9 @@ décision humaine consignée ici).
 
 | Mesure | Valeur | Date |
 |---|---|---|
-| Empreinte de fumée (test_smoke, 200 ticks, pile 1,2,3,0) | `c8a7cc2c73394949` | 4 août 2026 |
-| Tests (unitaires + architecture + or) | 92/92 (268 assertions), ~0,7 s | 4 août 2026 (S3) |
-| Recettes d'or | 10/10 concordantes, doublement vérifiées | 4 août 2026 |
+| Empreinte de fumée (test_smoke, 200 ticks, pile 1,2,3,0) | `c8a7cc2c73394949` — **inchangée à travers la revue S3** | 5 août 2026 |
+| Tests (unitaires + architecture + or) | 125/125 (360 assertions), ~0,9 s | 5 août 2026 |
+| Recettes d'or | 17/17 concordantes (10 régénérées sous protocole + 7 fixtures de sensibilité) | 5 août 2026 |
 | Coupe de boucle du validateur | simulation statique tranchée en ~7 ticks au lieu de 300 | 4 août 2026 |
 | Godot | 4.7.1-stable, standard (pas .NET), Linux x86_64 | 4 août 2026 |
 | GUT | 9.6.1 | 4 août 2026 |

@@ -1,0 +1,9 @@
+{
+  "_comment": "Fixture de sensibilité (revue S3, 1.1) — libération en chaîne, agents déclarés dans l'ordre B puis A (ids intervertis par rapport à sensi_chaine_a). Voir sensi_chaine_a pour le contrat. Fixture technique.",
+  "max_ticks": 300,
+  "grid": {
+    "size": [1, 5],
+    "cells": [9, 0, 0, 0, 0]
+  },
+  "agents": [{ "pos": [0, 3] }, { "pos": [0, 2] }]
+}

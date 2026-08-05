@@ -8,15 +8,17 @@ extends RefCounted
 ## Deux familles :
 ## — accomplissements (EXTRACTION, COLLECT) : le niveau est gagné quand tous
 ##   sont satisfaits simultanément (RG-16 : objectif composé = arbitrage) ;
-## — contraintes (PRESERVATION, CELERITY, INTERDICTION) : leur violation est
-##   irrémédiable et perd le niveau (RG-09 : « mathématiquement
-##   inatteignable » — on ne peut pas dé-perdre un agent, dé-entrer d'une
-##   zone, ni remonter le temps de la simulation).
+## — contraintes (PRESERVATION, INTERDICTION : ÉVÉNEMENTS — la perte a eu
+##   lieu, violation irrémédiable, défaite immédiate qui prime sur tout ;
+##   CELERITY : ÉCHÉANCE — rien ne s'est produit, voir ci-dessous).
 ##
-## CELERITY (« réussir en moins de T ticks ») borne le temps plus court que
-## la limite du niveau : seul, il ne définit aucune victoire — un niveau
-## sans accomplissement n'est jamais gagné (défaut de conception que le
-## validateur signalera).
+## CELERITY (« réussir en AU PLUS T ticks », tick <= T — revue S3, 2.2)
+## borne le temps plus court que la limite du niveau. C'est une échéance,
+## pas un événement : elle est évaluée APRÈS la victoire — gagner au tick
+## exact de la borne est un « sur le fil » GAGNÉ (ENF-04). Seule, elle ne
+## définit aucune victoire — un niveau sans accomplissement n'est jamais
+## gagné (défaut de conception que le validateur signale et que l'éditeur
+## T-074 devra refuser d'enregistrer).
 ##
 ## COLLECT est analysé et évalué, mais restera inatteignable tant que R11
 ## (Porter) et R12 (Déposer) n'existent pas : `delivered` ne progresse pas.

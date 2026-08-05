@@ -20,8 +20,19 @@ func _init() -> void:
 		quit(2)
 		return
 
+	# Échec bruyant si une empreinte n'est pas une String (troncature float64
+	# sinon). Le mode --write reste permis : c'est le chemin de réparation.
+	var type_errors := GoldenRunner.hash_type_errors(golden)
+	if not write_mode and not type_errors.is_empty():
+		for e in type_errors:
+			print("TYPE    " + e)
+		print("\nEmpreinte non textuelle : golden.json corrompu (risque de troncature flottante).")
+		quit(2)
+		return
+
 	var recipes: Array = golden.get("recipes", [])
 	var failures := 0
+	var rules_fp := GoldenRunner.rules_fingerprint()
 
 	for recipe in recipes:
 		var level_path: String = recipe["level"]
@@ -37,6 +48,7 @@ func _init() -> void:
 
 		if write_mode:
 			recipe["hashes"] = got
+			recipe["rules_hash"] = rules_fp  # revue S3, 3.1
 			print("ÉCRIT   %s %s : %s" % [level_path, str(stack), str(got)])
 			continue
 
@@ -49,6 +61,10 @@ func _init() -> void:
 				failures += 1
 		if recipe_ok:
 			print("OK      %s %s" % [level_path, str(stack)])
+		else:
+			var archived_fp: String = String(recipe.get("rules_hash", ""))
+			if not archived_fp.is_empty() and archived_fp != rules_fp:
+				print("        ⚠ data/rules.json a changé depuis l'archivage (%s -> %s) : divergence peut-être voulue (rééquilibrage) — à trancher humainement, jamais automatiquement." % [archived_fp, rules_fp])
 
 	if write_mode:
 		var file := FileAccess.open(GoldenRunner.GOLDEN_PATH, FileAccess.WRITE)
