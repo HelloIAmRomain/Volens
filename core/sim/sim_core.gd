@@ -121,6 +121,11 @@ static func _decide_one(agent: AgentState, state: SimState, stack: Array[int]) -
 			continue
 		var result: Vector2i = rule.evaluate(agent, state, state.rule_params)
 		if result != Rule.ABSTAIN:
+			# Garde-fou de débogage (revue S3, 3.2) : une règle ne peut rendre
+			# que ZERO ou un pas cardinal (|x|+|y| <= 1). Tout autre vecteur est
+			# un défaut de la règle — échec bruyant, jamais de propagation.
+			assert(absi(result.x) + absi(result.y) <= 1,
+				"règle %d : sortie illégale %s (attendu ZERO ou pas cardinal)" % [rule_id, str(result)])
 			return result
 	return Vector2i.ZERO
 
@@ -234,20 +239,26 @@ static func _evaporate_pheromones(next_state: SimState) -> void:
 ## Étape 7 — évaluation des objectifs (RG-09, RG-15). Un état WON ou LOST
 ## déjà atteint ne revient jamais en arrière (un niveau se termine).
 ##
-## Ordre d'évaluation, fixe et documenté :
-##   1. contraintes violées (préservation, interdiction, célérité) -> LOST —
-##      une violation est irrémédiable, elle prime sur tout le reste ;
-##   2. inatteignabilité mathématique des accomplissements -> LOST (RG-09) ;
-##   3. tous les accomplissements satisfaits (et il en existe au moins un)
-##      -> WON ;
-##   4. limite de ticks du niveau atteinte -> LOST.
+## Ordre d'évaluation, fixe et documenté (revue S3, 2.2) :
+##   1. contraintes-ÉVÉNEMENT violées (préservation, interdiction) -> LOST —
+##      la perte a eu lieu, elle est irrémédiable et prime sur tout ;
+##   2. tous les accomplissements satisfaits (et il en existe au moins un)
+##      -> WON — évalué AVANT l'échéance de célérité : la célérité est une
+##      échéance (tick <= T), pas un événement, et gagner au tick exact de
+##      la borne est un « sur le fil » GAGNÉ (ENF-04, non punitif) ;
+##   3. échéance de célérité dépassée sans victoire -> LOST — c'est aussi
+##      sa propre détection d'inatteignabilité, placée après la victoire
+##      pour ne pas recréer le bug du « sur le fil » un cran plus bas ;
+##   4. inatteignabilité mathématique des accomplissements -> LOST (RG-09) ;
+##   5. limite de ticks du niveau atteinte -> LOST.
 ## Un niveau sans accomplissement n'est jamais gagné : défaut de conception,
-## que le validateur signalera (zéro pile gagnante -> rejeté, CDC §12.2).
+## que le validateur signalera (zéro pile gagnante -> rejeté, CDC §12.2) et
+## que l'éditeur de niveaux (T-074) devra refuser d'enregistrer.
 static func _evaluate_outcome(next_state: SimState) -> void:
 	if next_state.outcome != SimState.Outcome.RUNNING:
 		return
 
-	# 1. Contraintes.
+	# 1. Contraintes-événement : la perte a déjà eu lieu.
 	for obj in next_state.objectives:
 		match obj.type:
 			ObjectiveDef.Type.PRESERVATION:
@@ -258,31 +269,26 @@ static func _evaluate_outcome(next_state: SimState) -> void:
 				if _any_present_agent_on_cells(next_state, obj.cells):
 					next_state.outcome = SimState.Outcome.LOST
 					return
-			ObjectiveDef.Type.CELERITY:
-				if next_state.tick >= obj.max_ticks:
-					next_state.outcome = SimState.Outcome.LOST
-					return
 
-	# 2. Inatteignabilité, 3. accomplissements — en un seul parcours.
+	# 2. Victoire (et relevé d'inatteignabilité pour l'étape 4, sans trancher).
 	var total_agents: int = next_state.agents.size()
 	var present: int = _count_present(next_state)
 	var achievement_count := 0
 	var all_achieved := true
+	var unattainable := false
 	for obj in next_state.objectives:
 		match obj.type:
 			ObjectiveDef.Type.EXTRACTION:
 				achievement_count += 1
 				# Comparaisons en centièmes entiers : jamais de division.
 				if (next_state.counters.exited + present) * 100 < obj.percent * total_agents:
-					next_state.outcome = SimState.Outcome.LOST  # plus assez d'agents
-					return
+					unattainable = true  # plus assez d'agents
 				if next_state.counters.exited * 100 < obj.percent * total_agents:
 					all_achieved = false
 			ObjectiveDef.Type.COLLECT:
 				achievement_count += 1
 				if next_state.counters.delivered + _collectable_remaining(next_state) < obj.count:
-					next_state.outcome = SimState.Outcome.LOST
-					return
+					unattainable = true
 				if next_state.counters.delivered < obj.count:
 					all_achieved = false
 
@@ -290,7 +296,18 @@ static func _evaluate_outcome(next_state: SimState) -> void:
 		next_state.outcome = SimState.Outcome.WON
 		return
 
-	# 4. Limite de ticks du niveau.
+	# 3. Échéance de célérité : passé T sans victoire, l'issue est scellée.
+	for obj in next_state.objectives:
+		if obj.type == ObjectiveDef.Type.CELERITY and next_state.tick >= obj.max_ticks:
+			next_state.outcome = SimState.Outcome.LOST
+			return
+
+	# 4. Inatteignabilité mathématique des accomplissements (RG-09).
+	if unattainable:
+		next_state.outcome = SimState.Outcome.LOST
+		return
+
+	# 5. Limite de ticks du niveau.
 	if next_state.max_ticks > 0 and next_state.tick >= next_state.max_ticks:
 		next_state.outcome = SimState.Outcome.LOST
 

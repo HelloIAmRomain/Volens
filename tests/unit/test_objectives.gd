@@ -137,6 +137,33 @@ func test_composed_objective_requires_both() -> void:
 
 # --- célérité --------------------------------------------------------------------
 
+func test_celerity_win_on_the_wire_is_won() -> void:
+	# Revue S3 (2.2) : la célérité est une ÉCHÉANCE (tick <= T), pas un
+	# événement — gagner AU tick exact de la borne est gagné. « Je passe sur
+	# le fil » est l'une des meilleures sensations du genre (ENF-04).
+	var state := _make_state(3, 3, [Vector2i(0, 0)])
+	state.objectives = [_extraction(100)]
+	var celerity := ObjectiveDef.new()
+	celerity.type = ObjectiveDef.Type.CELERITY
+	celerity.max_ticks = 10
+	state.objectives.append(celerity)
+	_mark_exited(state, 0)
+	state.tick = 10
+
+	SimCore._evaluate_outcome(state)
+	assert_eq(state.outcome, SimState.Outcome.WON, "victoire évaluée avant l'échéance de célérité")
+
+func test_event_constraint_still_beats_victory_at_the_same_tick() -> void:
+	# Contre-borne de la précédente : préservation et interdiction restent
+	# des ÉVÉNEMENTS — au tick d'égalité, la violation prime la victoire.
+	var state := _make_state(5, 5, [Vector2i(0, 0), Vector2i(1, 0)])
+	state.objectives = [_extraction(50), _preservation(0)]
+	_mark_exited(state, 0)  # extraction 50 % atteinte...
+	_mark_lost(state, 1)    # ...mais une perte au même tick
+
+	SimCore._evaluate_outcome(state)
+	assert_eq(state.outcome, SimState.Outcome.LOST, "l'événement prime, l'échéance non")
+
 func test_celerity_loses_at_its_own_bound_before_level_limit() -> void:
 	var state := _make_state(3, 3, [Vector2i(0, 0)])
 	state.max_ticks = 100
