@@ -34,6 +34,31 @@ utilisent la règle concernée (EQ-03) — hors périmètre tant que le validate
 Fichiers de niveau. `test_smoke.json` est un niveau minimal de test
 technique, pas un niveau de jeu.
 
+### Format `.lvl` (source d'écriture, convertie en JSON)
+
+Les niveaux se rédigent en `.lvl` (en-tête + grille ASCII) et se
+convertissent via `tools/lvl/run.gd` (voir docs/ARCHITECTURE.md). Symboles : `.` vide,
+`#` mur, `o` agent, `L` lumière, `E` sortie, `X` danger statique, `C`
+danger cyclique (une ligne `cycle: period=N active=M` en en-tête, plancher
+de période ⚙️), `r` ressource, `D` dépôt, `P` porte à pression. Les
+espaces entre symboles sont ignorés.
+
+**Conventions figées (elles affectent le déterminisme)** : les ids
+d'agents suivent l'**ordre de lecture** (ligne par ligne, gauche à
+droite) ; l'origine est **en haut à gauche**, y vers le bas.
+
+**Limitations v1** : pas de « phase » de cycle (CycleDef n'a pas de
+décalage — en ajouter un toucherait le parcours de hachage) ; sens
+uniques `^ > v <` rejetés (orientation non représentable dans core/sim,
+chapitre 2+) ; une seule définition de cycle par niveau.
+
+En-tête : `id`, `name`, `tutorial`, `allowed_rules` (`[R01, R02]`),
+`slots` (1-4, borne l'espace validé — CDC §12.2.1), `max_ticks`,
+`lesson`, `expected_wins` (rapporté par le validateur : « attendu N,
+constaté M », sans verdict), `objective:` répétable
+(`extraction 60`, `preservation 2`, `celerity 120`, `collect 3`,
+`interdiction (x,y) …`).
+
 ### Format d'un niveau (état S3 — évoluera)
 
 ```json

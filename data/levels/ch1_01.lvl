@@ -1,0 +1,25 @@
+# N1 « La nuée » — transcription du croquis du concepteur (guide T-040 §5),
+# corrigée selon ses consignes du 5 août 2026 : bande de sortie sur toute
+# la largeur, lumière sur la rangée au-dessus, largeur portée à 8 (CDC §8.1).
+# La conception du niveau reste la propriété du concepteur (DCT §12.4) —
+# ce fichier sert de critère de fin au lot convertisseur.
+id: ch1_01
+name: La nuée
+tutorial: true
+allowed_rules: [R01]
+slots: 1
+max_ticks: 120
+objective: extraction 100
+lesson: "Une règle gouverne tous les agents à la fois."
+expected_wins: 1
+---
+. . . L . . . .
+E E E E E E E E
+. . . . . . . .
+. . . . . . . .
+. . . . . . . .
+. . . . . . . .
+. . o o o o o .
+. . o o o o o .
+. . o o o o o .
+. . o o o o o .

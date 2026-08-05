@@ -13,14 +13,17 @@ extends RefCounted
 
 const MAX_SLOTS: int = 4  # RG-05 : la pile compte quatre emplacements
 
-static func enumerate(allowed: Array[int]) -> Array:
+## `max_len` : nombre d'emplacements offerts par le niveau (`slots`,
+## CDC §12.2.1) — N_total dépend de allowed_rules ET de slots. La pile
+## vide (longueur 0) fait toujours partie de l'espace énuméré.
+static func enumerate(allowed: Array[int], max_len: int = MAX_SLOTS) -> Array:
 	var results: Array = []
 	var current: Array[int] = []
 	var used: Array[bool] = []
 	used.resize(allowed.size())
 	for i in range(allowed.size()):
 		used[i] = false
-	for length in range(MAX_SLOTS + 1):
+	for length in range(clampi(max_len, 0, MAX_SLOTS) + 1):
 		_build(allowed, used, current, length, results)
 	return results
 
@@ -38,9 +41,9 @@ static func _build(allowed: Array[int], used: Array[bool], current: Array[int], 
 		used[i] = false
 
 ## Nombre attendu de piles pour n règles autorisées — sert d'auto-contrôle.
-static func expected_count(n: int) -> int:
+static func expected_count(n: int, max_len: int = MAX_SLOTS) -> int:
 	var total := 0
-	for k in range(mini(n, MAX_SLOTS) + 1):
+	for k in range(mini(n, clampi(max_len, 0, MAX_SLOTS)) + 1):
 		var arrangements := 1
 		for j in range(k):
 			arrangements *= n - j
