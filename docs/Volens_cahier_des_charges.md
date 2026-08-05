@@ -1,6 +1,6 @@
 # Volens — Cahier des charges fonctionnel
 
-**Version 2.1 — 4 août 2026**
+**Version 2.2 — 5 août 2026**
 *Document de spécification — jeu mobile de puzzle systémique*
 
 ---
@@ -492,11 +492,46 @@ Le déterminisme (RG-03) et la finitude de l'espace des piles rendent ces critè
 
 | Réf. | Critère | Seuil |
 |---|---|---|
-| **QN-01** | Nombre de piles gagnantes structurellement distinctes (hors variantes triviales : permutations d'emplacements sans effet, règles inertes) | **entre 3 et 40** `⚙️` |
+| **QN-01** | Nombre de piles gagnantes structurellement distinctes (hors variantes triviales : permutations d'emplacements sans effet, règles inertes) | **entre 3 et 40** `⚙️` — *voir §12.2.1 pour les chapitres à bibliothèque restreinte et les niveaux tutoriels* |
 | **QN-02** | Absence de stratégie dominante : aucune pile ne doit résoudre à elle seule tous les niveaux d'un même chapitre | obligatoire |
 | **QN-03** | Densité d'« échecs proches » (piles échouant à moins de 10 % de l'objectif) — mesure la frustration productive : un niveau où l'on échoue de peu donne envie de réessayer, un niveau où tout échoue de loin décourage | seuil plancher `⚙️` |
 | **QN-04** | Existence d'une solution notablement plus efficiente que la moyenne, servant d'étalon au défi Efficience | obligatoire |
 | **QN-05** | Nombre d'essais attendus avant première résolution pour un joueur du niveau visé | 3 à 8 `⚙️` |
+
+#### 12.2.1 QN-01 aux chapitres à bibliothèque restreinte et aux niveaux tutoriels *(v2.2)*
+
+Les seuils absolus de QN-01 (3 à 40) présupposent la bibliothèque complète.
+Un chapitre qui n'ouvre que 3 règles offre un espace de **16 piles au
+total** (pile vide comprise) : le plafond de 40 y est sans objet et le
+plancher de 3 contredirait la vocation des premiers niveaux.
+
+**Définition de N_total.** L'espace d'un niveau est celui qu'énumère
+l'outil de validation (EQ-01), et la convention de l'outil fait foi :
+arrangements ordonnés de règles **distinctes** parmi `allowed_rules`, de
+longueur 0 à `slots` (nombre d'emplacements offerts par le niveau,
+plafonné à 4 par RG-05), **pile vide incluse**. Exemples : 3 règles et
+4 emplacements → 16 ; 3 règles et 2 emplacements → 10 ; 1 règle et
+1 emplacement → 2.
+
+**Niveaux tutoriels.** Un niveau marqué `tutorial: true` est **exempté de
+QN-01**. Il porte à la place un critère propre : `N_win` doit valoir
+**exactement** la valeur `expected_wins` annoncée dans sa fiche de
+conception, ni plus ni moins — une leçon qui admet une solution imprévue
+n'enseigne plus ce qu'elle prétend enseigner.
+
+**Garde-fou universel.** Un niveau où la **pile vide** gagne est dégénéré
+(il se résout sans qu'aucune règle ne soit posée) : rejet, quel que soit
+son type.
+
+**Bandes proportionnelles — indicatives, non opposables.** Pour les
+niveaux non tutoriels d'un chapitre à bibliothèque restreinte,
+l'hypothèse de travail est `20 % ≤ N_win / N_total ≤ 50 %`. Ces bornes
+sont **indicatives** : elles seront confirmées ou corrigées à l'issue de
+T-040 (conception des 5 niveaux du chapitre 1), et ne constituent pas un
+seuil opposable d'ici là. L'outil de validation rapporte `N_win`,
+`N_total`, leur ratio et `expected_wins` s'il est présent, sans rendre de
+verdict QN-01 pour ces niveaux. QN-02 (absence de stratégie dominante)
+reste pleinement applicable et opposable à tous les niveaux.
 
 **Verdicts associés :** zéro pile gagnante → niveau insoluble, rejeté. Une seule → puzzle déguisé, rejeté ou retravaillé. Plus de 100 → niveau creux, contraintes à durcir. Stratégie dominante sur un chapitre → chapitre cassé, à rééquilibrer.
 
@@ -700,11 +735,12 @@ Par ordre de priorité pressenti, sans engagement :
 
 ---
 
-## Historique des révisions *(v2.1)*
+## Historique des révisions *(v2.2)*
 
 | Version | Date | Changements | Motif |
 |---|---|---|---|
 | 2.0 | 2 août 2026 | Version de référence | — |
 | 2.1 | 4 août 2026 | Retrait d'iOS du périmètre v1.0 (§1.4, §2.1, §2.2, §14.4, §16, §17 — cohérence avec le choix technique déjà tranché par le DCT, Android uniquement) ; testeurs de la campagne 3 portés à 15-18 et fusion avec le test fermé Google Play (§1.4, §13.3, §14.4) ; obligation de test fermé documentée (§14.4) ; compte développeur Google Play déjà réglé (§14.4) ; `minSdk` 33 et conséquence sur le parc adressable (§3.1, §14.4) ; critères d'acceptation §16 réécrits avec marge (60 i/s à 4×, temps d'image < 4 ms, sobriété en écart) et critère de déterminisme reformulé en deux architectures CPU plutôt qu'en appareils physiques/plateformes (§13.5, §16) | Série de décisions de cadrage prises entre J0 et le début de S2 ; contradiction Android/iOS relevée et tranchée en faveur du DCT (déjà Android uniquement) plutôt que silencieusement ignorée |
+| 2.2 | 5 août 2026 | Nouveau §12.2.1 : QN-01 inapplicable tel quel aux chapitres à bibliothèque restreinte — définition de N_total (convention de l'outil : arrangements de règles distinctes, longueur 0 à `slots`, pile vide incluse), exemption des niveaux `tutorial: true` (critère propre : `N_win` == `expected_wins` exactement), garde-fou « pile vide gagnante = niveau dégénéré », bandes proportionnelles 20-50 % posées comme indicatives et à confirmer après T-040 (non opposables) | Préparation de T-040 : les seuils absolus 3-40 présupposent la bibliothèque complète ; arbitrage du concepteur du 5 août 2026 |
 
-*Fin du document — v2.1. Toute modification des principes (§4) ou des règles de gestion (§6) exige une révision de version majeure de ce cahier des charges.*
+*Fin du document — v2.2. Toute modification des principes (§4) ou des règles de gestion (§6) exige une révision de version majeure de ce cahier des charges.*
