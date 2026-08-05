@@ -123,14 +123,83 @@ func test_flee_danger_abstains_without_any_danger() -> void:
 
 	assert_eq(rule.evaluate(state.agents[0], state, _params), Rule.ABSTAIN)
 
-func test_flee_danger_perceives_inactive_cyclic_danger() -> void:
-	# Un danger cyclique se fuit même inactif : il est visible et prévisible
-	# (RG-08) — décision documentée dans la règle.
+# --- R02, option C (revue S3, 2.1) : évaluation à l'instant d'arrivée -----
+
+## Pose un danger cyclique et son CycleDef sur la case donnée.
+func _set_cyclic(state: SimState, pos: Vector2i, period: int, active_ticks: int) -> void:
+	_set_cell(state, pos, GridState.CellType.CYCLIC_DANGER)
+	var cycle := CycleDef.new()
+	cycle.period = period
+	cycle.active_ticks = active_ticks
+	state.grid.cycles.append(cycle)
+	state.grid.cycle_index[state.grid.index_of(pos)] = state.grid.cycles.size() - 1
+
+func test_flee_danger_flees_cyclic_danger_active_at_arrival() -> void:
+	# Période 6, actif aux phases 0-2. Décision au tick 5 : arrivée au tick 6,
+	# phase 0 -> actif. Le danger est dormant MAINTENANT mais menaçant à
+	# l'arrivée : il se fuit (« je ne mets pas le pied là où ça brûlera
+	# quand j'y serai »).
 	var state := _make_state(5, 1, [Vector2i(1, 0)])
-	_set_cell(state, Vector2i(0, 0), GridState.CellType.CYCLIC_DANGER)
+	_set_cyclic(state, Vector2i(0, 0), 6, 3)
+	state.tick = 5
 	var rule := RuleFleeDanger.new()
 
 	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.offset(Directions.EAST))
+
+func test_flee_danger_ignores_cyclic_danger_dormant_at_arrival() -> void:
+	# Décision au tick 2 : le danger est actif MAINTENANT (phase 2) mais
+	# dormant à l'arrivée (phase 3) -> aucune répulsion, la traversée en
+	# phase calme est un puzzle voulu (option C, ni option A ni option B).
+	var state := _make_state(5, 1, [Vector2i(1, 0)])
+	_set_cyclic(state, Vector2i(0, 0), 6, 3)
+	state.tick = 2
+	var rule := RuleFleeDanger.new()
+
+	assert_eq(rule.evaluate(state.agents[0], state, _params), Rule.ABSTAIN)
+
+func test_flee_danger_evacuates_own_cell_lethal_at_arrival_north_first() -> void:
+	# L'agent est SUR une case qui sera létale à l'arrivée : évacuation vers
+	# n'importe quelle adjacente sûre, départage N>E>S>O (spécifié en revue).
+	var state := _make_state(5, 5, [Vector2i(2, 2)])
+	_set_cyclic(state, Vector2i(2, 2), 6, 3)
+	state.tick = 5  # arrivée au tick 6, phase 0 -> sa case s'allume
+	var rule := RuleFleeDanger.new()
+
+	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.offset(Directions.NORTH))
+
+func test_flee_danger_evacuation_skips_unsafe_neighbours() -> void:
+	# Même évacuation, mais le Nord est un danger statique (létal à
+	# l'arrivée) : première direction sûre suivante -> Est.
+	var state := _make_state(5, 5, [Vector2i(2, 2)])
+	_set_cyclic(state, Vector2i(2, 2), 6, 3)
+	_set_cell(state, Vector2i(2, 1), GridState.CellType.STATIC_DANGER)
+	state.tick = 5
+	var rule := RuleFleeDanger.new()
+
+	assert_eq(rule.evaluate(state.agents[0], state, _params), Directions.offset(Directions.EAST))
+
+func test_flee_danger_abstains_when_no_safe_evacuation_exists() -> void:
+	# Case courante létale à l'arrivée, voisines toutes létales ou hors
+	# grille : ABSTAIN — R02 évite mais ne protège pas, l'étape 5 tranchera.
+	var state := _make_state(3, 1, [Vector2i(1, 0)])
+	_set_cyclic(state, Vector2i(1, 0), 6, 3)
+	_set_cell(state, Vector2i(0, 0), GridState.CellType.STATIC_DANGER)
+	_set_cell(state, Vector2i(2, 0), GridState.CellType.STATIC_DANGER)
+	state.tick = 5
+	var rule := RuleFleeDanger.new()
+
+	assert_eq(rule.evaluate(state.agents[0], state, _params), Rule.ABSTAIN)
+
+func test_flee_danger_never_steps_onto_a_cell_lethal_at_arrival() -> void:
+	# Fuite du danger statique à l'ouest : la seule direction qui éloigne
+	# (Est) sera létale à l'arrivée -> ABSTAIN plutôt qu'un pas dans le feu.
+	var state := _make_state(8, 1, [Vector2i(1, 0)])
+	_set_cell(state, Vector2i(0, 0), GridState.CellType.STATIC_DANGER)
+	_set_cyclic(state, Vector2i(2, 0), 6, 3)
+	state.tick = 5  # arrivée phase 0 -> la case (2,0) s'allume
+	var rule := RuleFleeDanger.new()
+
+	assert_eq(rule.evaluate(state.agents[0], state, _params), Rule.ABSTAIN)
 
 func test_flee_danger_range_boundary_is_inclusive() -> void:
 	_params.flee_perception_range_sq = 4
