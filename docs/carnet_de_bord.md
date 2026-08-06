@@ -66,6 +66,50 @@ avance en parallèle : il ne dépend de rien.
 
 ---
 
+## R03 v2 : ça marche. EQ-05 est une propriété du NIVEAU (6 août 2026)
+
+41. **Paramètres mesurés : `close_range_sq = 2`, `min_neighbours = 1`.**
+    Sémantique en une phrase — *« je suis groupé si j'ai au moins un
+    congénère à portée de main »*, adjacence orthogonale ou diagonale.
+    C'est le seul couple testé qui donne à la fois quatre archétypes
+    distincts, aucun gel, et un tremblement négligeable.
+
+42. **EQ-05 n'est pas une propriété des règles, c'est une propriété du
+    NIVEAU.** Pour que l'ordre entre R02 et R03 soit seulement observable,
+    il faut un agent que les DEUX veulent gouverner au même tick : **proche
+    d'un danger** (R02) **et isolé** (R03). Une nuée compacte ne produit
+    jamais cette situation — d'où trois semaines d'impasse. Une nuée
+    **dispersée près d'un danger** la produit.
+
+    | Géométrie | agents-ticks R02∩R03 | comportements distincts |
+    |---|---|---|
+    | Compacte + danger | 0 | 2 sur 4 |
+    | **Dispersée + danger** | **15-23** | **4 sur 4** ✓ |
+    | Dispersée, sans danger | 0 | 2 sur 4 |
+    | Compacte, sans danger | 0 | 1 sur 4 |
+
+    **Conséquence directe pour T-040** : le niveau qui sert de test EQ-05
+    doit avoir une nuée **dispersée au départ** ET un danger. C'est une
+    contrainte de conception, pas un défaut de règle.
+
+43. **Le gel de v1 est supprimé, sans tremblement.** Le bloc compact qui
+    gelait en v1 sort maintenant en 12 ticks — exactement comme `[1]` seule
+    — avec zéro demi-tour. Sur la géométrie dispersée : 20/20 sortis en
+    20-21 ticks, **8 demi-tours** pour 20 agents (contre 573 avec
+    `n_min = 2`). Ce n'est plus du tremblement, c'est de l'ajustement.
+
+44. **Pourquoi `n_min = 1` et pas 2.** Avec 2, l'agent traverse sans cesse
+    le seuil « groupé / pas groupé » et oscille contre R01 — le même cycle
+    limite que la décision 31, à un autre seuil. Avec 1, le seuil est
+    atteint dès qu'un voisin est là et ne se re-franchit plus : la
+    condition de maintien est stable. Mesuré, pas déduit.
+
+**Reste à faire avant de committer** : cérémonie du corpus d'or (`core/`
+change), avec prédiction écrite préalable. Le patch est prêt dans
+`~/volens-patches-r03/r03-v2-predicat.patch`, paramètres figés.
+
+---
+
 ## Règle de méthode — un observable inattendu se mesure, il ne se classe pas
 
 **Un comportement inattendu qui trouve son explication du premier coup doit
