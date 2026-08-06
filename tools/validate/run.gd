@@ -46,6 +46,14 @@ func _init() -> void:
 		print("fiche            : attendu %d, constaté %d" % [summary["expected_wins"], summary["n_win"]])
 	if summary["min_ticks"] >= 0:
 		print("étalon efficience: %d ticks, pile %s" % [summary["min_ticks"], str(summary["best_stack"])])
+	var contention: Dictionary = summary.get("contention_by_pair", {})
+	if not contention.is_empty():
+		var keys := contention.keys()
+		keys.sort()
+		var parts := PackedStringArray()
+		for k in keys:
+			parts.append("R%s %d" % [String(k).replace("-", "/R"), int(contention[k])])
+		print("contention RG-13 : %s   (0 = ordre inobservable)" % "   ".join(parts))
 	if int(summary.get("wins_with_oscillation", 0)) > 0:
 		print("sur-place        : %d pile(s) gagnante(s), jusqu'à %d agent(s) — à corriger au dessin" % [
 			summary["wins_with_oscillation"], summary["max_oscillating_agents"]])

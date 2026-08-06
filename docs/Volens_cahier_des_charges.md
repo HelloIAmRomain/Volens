@@ -1,6 +1,6 @@
 # Volens — Cahier des charges fonctionnel
 
-**Version 2.2 — 5 août 2026**
+**Version 2.3 — 6 août 2026**
 *Document de spécification — jeu mobile de puzzle systémique*
 
 ---
@@ -549,6 +549,14 @@ reste pleinement applicable et opposable à tous les niveaux.
 
 **EQ-05 [O]** Le test des quatre piles du §7.3 (quatre comportements visiblement distincts avec les seules règles du chapitre 1) constitue le critère d'acceptation du paramétrage de base.
 
+> **Géométrie du niveau de test — obligatoire** *(v2.3, 6 août 2026)*. EQ-05 n'est **pas** une propriété des règles seules : c'est une propriété du **couple règles + niveau**. Pour que l'ordre relatif de deux règles soit seulement *observable*, il faut qu'il existe des agents que **les deux veulent gouverner au même tick** — sinon leur ordre ne peut rien changer, quelles que soient leurs sémantiques.
+>
+> Le niveau qui sert de test EQ-05 doit donc réunir : une **nuée dispersée au départ** (pour que « Rester groupé » ait matière à agir) **et** un **danger à portée de perception** (pour que « Fuir le rouge » en ait aussi). Mesuré le 6 août 2026 : sur une nuée compacte, les quatre piles ne produisent que **deux** comportements distincts, et le paramétrage paraît à tort cassé ; sur une nuée dispersée près d'un danger, elles en produisent **quatre**.
+>
+> **Cette précision existe parce que son absence a coûté trois semaines** : EQ-05 était relancé sur des blocs compacts, et l'on en concluait que les règles étaient défectueuses. Le validateur mesure désormais directement la condition (contention par paire de règles, EQ-06) : une paire à contention nulle a un ordre inobservable sur ce niveau.
+
+**EQ-06 [O]** *(v2.3)* Le rapport du validateur indique, pour chaque **paire de règles** autorisées d'un niveau, le nombre d'**agents-ticks où les deux règles veulent agir simultanément** — la *contention*. Une contention nulle signifie que l'ordre relatif de la paire est **inobservable** sur ce niveau : elle ne crée aucun conflit de priorité, et ne satisfait donc pas **RG-13** pour ce niveau. C'est le critère opérationnel de RG-13, qui se jugeait jusqu'ici à l'intuition.
+
 ---
 
 ## 13. Validation et campagnes de test
@@ -735,12 +743,13 @@ Par ordre de priorité pressenti, sans engagement :
 
 ---
 
-## Historique des révisions *(v2.2)*
+## Historique des révisions *(v2.3)*
 
 | Version | Date | Changements | Motif |
 |---|---|---|---|
 | 2.0 | 2 août 2026 | Version de référence | — |
 | 2.1 | 4 août 2026 | Retrait d'iOS du périmètre v1.0 (§1.4, §2.1, §2.2, §14.4, §16, §17 — cohérence avec le choix technique déjà tranché par le DCT, Android uniquement) ; testeurs de la campagne 3 portés à 15-18 et fusion avec le test fermé Google Play (§1.4, §13.3, §14.4) ; obligation de test fermé documentée (§14.4) ; compte développeur Google Play déjà réglé (§14.4) ; `minSdk` 33 et conséquence sur le parc adressable (§3.1, §14.4) ; critères d'acceptation §16 réécrits avec marge (60 i/s à 4×, temps d'image < 4 ms, sobriété en écart) et critère de déterminisme reformulé en deux architectures CPU plutôt qu'en appareils physiques/plateformes (§13.5, §16) | Série de décisions de cadrage prises entre J0 et le début de S2 ; contradiction Android/iOS relevée et tranchée en faveur du DCT (déjà Android uniquement) plutôt que silencieusement ignorée |
 | 2.2 | 5 août 2026 | Nouveau §12.2.1 : QN-01 inapplicable tel quel aux chapitres à bibliothèque restreinte — définition de N_total (convention de l'outil : arrangements de règles distinctes, longueur 0 à `slots`, pile vide incluse), exemption des niveaux `tutorial: true` (critère propre : `N_win` == `expected_wins` exactement), garde-fou « pile vide gagnante = niveau dégénéré », bandes proportionnelles 20-50 % posées comme indicatives et à confirmer après T-040 (non opposables) | Préparation de T-040 : les seuils absolus 3-40 présupposent la bibliothèque complète ; arbitrage du concepteur du 5 août 2026 |
+| 2.3 | 6 août 2026 | **EQ-05 précisée** : la géométrie du niveau de test devient obligatoire (nuée dispersée + danger à portée) — EQ-05 est une propriété du couple règles+niveau, pas des règles seules ; sur une nuée compacte les quatre piles ne donnent que deux comportements et le paramétrage paraît à tort cassé. **Nouvelle EQ-06** : contention par paire de règles au rapport du validateur — critère opérationnel de RG-13, qui se jugeait à l'intuition | Trois semaines perdues à relancer EQ-05 sur des blocs compacts et à en conclure que les règles étaient défectueuses ; la condition est désormais mesurée, pas devinée |
 
-*Fin du document — v2.2. Toute modification des principes (§4) ou des règles de gestion (§6) exige une révision de version majeure de ce cahier des charges.*
+*Fin du document — v2.3. Toute modification des principes (§4) ou des règles de gestion (§6) exige une révision de version majeure de ce cahier des charges.*

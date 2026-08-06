@@ -33,10 +33,32 @@ const R12_DROP := 12
 const OSCILLATION_WINDOW := 12
 const MAX_OSCILLATION_PERIOD := 6
 
+## CONTENTION — le critère opérationnel de RG-13 (6 août 2026).
+##
+## RG-13 exige qu'une règle « crée un conflit de priorité intéressant avec au
+## moins deux règles déjà présentes ». Ce critère se jugeait à l'intuition.
+## Il est mesurable : **deux règles dont les zones d'action sont disjointes
+## ont un ordre inobservable**, donc ne créent aucun conflit de priorité,
+## quelles que soient leurs sémantiques.
+##
+## La mesure compte les **agents-ticks où les deux règles veulent agir
+## simultanément** (toutes deux non-ABSTAIN sur le même agent au même tick).
+## Zéro = leur ordre relatif ne peut RIEN changer, sur ce niveau.
+##
+## Trois semaines ont été perdues à chercher pourquoi « Fuir > Grouper » et
+## « Grouper > Fuir » étaient indiscernables : leurs zones d'action ne se
+## recouvraient jamais sur les géométries essayées. La métrique l'aurait dit
+## en une exécution — et elle évitera de refrapper ce mur avec R08 (ch. 3) et
+## R11/R12 (ch. 4).
+##
+## Coût maîtrisé : mesurée uniquement sur les piles de DEUX règles, où la
+## paire concernée est seule à décider — c'est la trajectoire qui répond le
+## plus directement à « ces deux règles se disputent-elles un agent ? ».
+
 ## Simule une pile jusqu'à l'issue, la limite de ticks du niveau, ou une
 ## boucle détectée. Renvoie : outcome, ticks, exited, lost, final_hash,
 ## looped.
-static func simulate_stack(level_data: Dictionary, params: RuleParams, stack: Array[int]) -> Dictionary:
+static func simulate_stack(level_data: Dictionary, params: RuleParams, stack: Array[int], measure_contention: bool = false) -> Dictionary:
 	var state := SimCore.load_level(level_data, params)
 	var tick_cap: int = state.max_ticks if state.max_ticks > 0 else 300
 	var modulus: int = _cycle_modulus(state)
@@ -47,8 +69,11 @@ static func simulate_stack(level_data: Dictionary, params: RuleParams, stack: Ar
 	for agent in state.agents:
 		history.append([agent.pos])
 
+	var contention := 0
 	var looped := false
 	while state.outcome == SimState.Outcome.RUNNING and state.tick < tick_cap:
+		if measure_contention:
+			contention += _count_contention(state, stack, params)
 		state = SimCore.step(state, stack)
 		for i in range(state.agents.size()):
 			var h: Array = history[i]
@@ -80,7 +105,29 @@ static func simulate_stack(level_data: Dictionary, params: RuleParams, stack: Ar
 		"looped": looped,
 		"oscillating": motion["oscillating"],
 		"stuck": motion["stuck"],
+		"contention": contention,
 	}
+
+## Agents-ticks où TOUTES les règles de `stack` veulent agir simultanément.
+## Sur une pile de deux règles, c'est exactement « ces deux règles se
+## disputent-elles un agent ? » — et zéro signifie que leur ordre relatif ne
+## peut rien changer sur ce niveau (critère opérationnel de RG-13).
+static func _count_contention(state: SimState, stack: Array[int], params: RuleParams) -> int:
+	if stack.size() < 2:
+		return 0
+	var count := 0
+	for agent in state.agents:
+		if not agent.is_present():
+			continue
+		var all_want := true
+		for rule_id in stack:
+			var rule := RuleRegistry.get_rule(rule_id)
+			if rule == null or rule.evaluate(agent, state, params) == Rule.ABSTAIN:
+				all_want = false
+				break
+		if all_want:
+			count += 1
+	return count
 
 ## Classe les agents encore présents à la fin : combien font du sur-place
 ## perpétuel (cycle de période >= 2), combien sont figés (période 1).
@@ -209,14 +256,33 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 	var stacks := StackEnumerator.enumerate(allowed, slots)
 	var rows: Array = []
 	var wins: Array = []
+	# Contention par PAIRE de règles (RG-13) : mesurée sur les piles de deux,
+	# où la paire concernée est seule à décider. Clé « a-b » avec a < b.
+	var contention: Dictionary = {}
 	for stack_variant in stacks:
 		var stack: Array[int] = []
 		for v in stack_variant:
 			stack.append(int(v))
-		var row := simulate_stack(level_data, params, stack)
+		var measure: bool = stack.size() == 2
+		var row := simulate_stack(level_data, params, stack, measure)
 		rows.append(row)
+		if measure:
+			var a: int = mini(stack[0], stack[1])
+			var b: int = maxi(stack[0], stack[1])
+			var key := "%d-%d" % [a, b]
+			# Les deux ordres d'une même paire sont deux trajectoires : on
+			# retient la plus révélatrice.
+			contention[key] = maxi(int(contention.get(key, 0)), int(row["contention"]))
 		if row["outcome"] == SimState.Outcome.WON:
 			wins.append(row)
+
+	# Paires dont l'ordre est INOBSERVABLE sur ce niveau : elles ne créent
+	# aucun conflit de priorité, donc ne satisfont pas RG-13 ici.
+	var blind_pairs := PackedStringArray()
+	for key in contention:
+		if int(contention[key]) == 0:
+			blind_pairs.append(String(key))
+	blind_pairs.sort()
 
 	# Classes structurelles : piles gagnantes regroupées par clé d'ÉQUIVALENCE
 	# (DCT §8.2), pas par empreinte — voir equivalence_key : deux issues qui
@@ -302,6 +368,8 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 	if wins_with_oscillation > 0:
 		verdict += "   ⚠ %d pile(s) gagnante(s) laissent jusqu'à %d agent(s) faire du sur-place perpétuel : le joueur y verra un bug" % [
 			wins_with_oscillation, max_oscillating]
+	if not blind_pairs.is_empty():
+		verdict += "   ⚠ paire(s) à l'ordre INOBSERVABLE ici (RG-13) : %s — leurs zones d'action ne se recouvrent jamais sur ce niveau" % ", ".join(blind_pairs)
 
 	@warning_ignore("integer_division")
 	var win_ratio_percent: int = wins.size() * 100 / rows.size() if rows.size() > 0 else 0
@@ -325,6 +393,8 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 			"collect_out_of_chapter": collect_out_of_chapter,
 			"wins_with_oscillation": wins_with_oscillation,
 			"max_oscillating_agents": max_oscillating,
+			"contention_by_pair": contention,
+			"blind_pairs": blind_pairs,
 			"qn01_verdict": verdict,
 		},
 	}
