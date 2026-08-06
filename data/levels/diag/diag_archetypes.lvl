@@ -1,0 +1,32 @@
+# DIAGNOSTIC — pas un niveau de jeu. Géométrie de la sonde du 6 août 2026 :
+# danger unique en colonne ouest du flux (décision 17 : rien ne vit à l'ouest
+# d'un danger, sinon zone piège). Sert à la question 1 — « [2,3,1] et [3,2,1]
+# se distinguent-elles à l'œil ? »
+#
+#   --stacks=2-3-1,3-2-1,1-2-3,2-1   (les quatre archétypes du CDC §7.3)
+id: diag_archetypes
+name: Archetypes (diagnostic)
+allowed_rules: [R01, R02, R03]
+slots: 3
+max_ticks: 250
+objective: extraction 60
+lesson: "Diagnostic : les quatre archetypes du CDC 7.3 se separent-ils a l'oeil ?"
+---
+. . . . L . . . . .
+E E E E E E E E E E
+. . . . . . . . . .
+. . . . . . . . . .
+. . . . . . . . . .
+. . . . . . . . . .
+. . . . . . . . . .
+. . . . . . . . . .
+. . . . . . . . . .
+. . X . . . . . . .
+. . . . . . . . . .
+. . . . . . . . . .
+. . . . . . . . . .
+. . o o o o o . . .
+. . o o o o o . . .
+. . o o o o o . . .
+. . o o o o o . . .
+. . . . . . . . . .

@@ -1,0 +1,33 @@
+# DIAGNOSTIC — pas un niveau de jeu. L'ESCALIER DE PARITÉ : un pas cardinal
+# inverse la parité de (x+y) et les agents la conservent, donc deux agents de
+# même parité ne peuvent jamais être adjacents. Sous R03 seule, la nuée
+# s'agrège en escalier troué puis s'immobilise. Sert à la question 4 —
+# « beau ou cassé ? » — et à voir le gel de R03 tel qu'il est aujourd'hui.
+#
+#   --stacks=3,3-1,1        (R03 seule, R03 puis lumière, lumière seule)
+id: diag_parite
+name: Escalier de parite (diagnostic)
+allowed_rules: [R01, R02, R03]
+slots: 3
+max_ticks: 250
+objective: extraction 60
+lesson: "Diagnostic : l'agregat de R03 sous contrainte de parite."
+---
+. . . . L . . . . .
+E E E E E E E E E E
+. . . . . . . . . .
+. . . . . . . . . .
+. o . . o . . o . .
+. . . . . . . . . .
+. . o . . o . . o .
+. . . . . . . . . .
+o . . o . . o . . o
+. . . . . . . . . .
+. o . . o . . o . .
+. . . . . . . . . .
+. . o . . o . . o .
+. . . . . . . . . .
+o . . o . . o . . o
+. . . . . . . . . .
+. . . . . . . . . .
+. . . . . . . . . .
