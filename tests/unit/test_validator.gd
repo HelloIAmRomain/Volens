@@ -164,6 +164,47 @@ func test_collect_without_transport_rules_is_flagged_out_of_chapter() -> void:
 	assert_true(bool(summary["collect_out_of_chapter"]))
 	assert_string_contains(String(summary["qn01_verdict"]), "hors chapitre")
 
+# --- contention : le critère opérationnel de RG-13 -----------------------------
+
+func test_contention_is_zero_when_action_zones_never_overlap() -> void:
+	# Un niveau SANS danger : R02 ne veut jamais agir, donc jamais en même
+	# temps que R01. Leur ordre relatif ne peut rien changer — c'est
+	# exactement ce que la métrique doit dire.
+	var level := _oscillation_level([{"pos": [0, 13]}])
+	level["grid"]["cells"][10 * 10 + 4] = GridState.CellType.EMPTY  # retire le danger
+	var stack: Array[int] = [1, 2]
+	var row := ValidateLib.simulate_stack(level, RuleParams.new(), stack, true)
+
+	assert_eq(int(row["contention"]), 0, "sans danger, R02 ne dispute jamais un agent à R01")
+
+func test_contention_is_positive_when_both_rules_want_the_same_agent() -> void:
+	# Avec un danger sur le trajet, l'agent est à la fois attiré par la
+	# lumière et repoussé par le danger : les deux règles veulent agir.
+	var stack: Array[int] = [1, 2]
+	var row := ValidateLib.simulate_stack(_oscillation_level([{"pos": [0, 13]}]), RuleParams.new(), stack, true)
+
+	assert_gt(int(row["contention"]), 0, "R01 et R02 se disputent le même agent")
+
+func test_blind_pairs_are_named_in_the_verdict() -> void:
+	# Sans danger, la paire R01/R02 est aveugle : le rapport doit le dire
+	# plutôt que de laisser croire à un conflit de priorité (RG-13).
+	var level := _oscillation_level([{"pos": [0, 13]}])
+	level["grid"]["cells"][10 * 10 + 4] = GridState.CellType.EMPTY
+	var report := ValidateLib.validate_level(level, RuleParams.new())
+	var summary: Dictionary = report["summary"]
+
+	assert_true(PackedStringArray(summary["blind_pairs"]).has("1-2"),
+		"la paire R01/R02 doit être signalée aveugle : %s" % str(summary["blind_pairs"]))
+	assert_string_contains(String(summary["qn01_verdict"]), "INOBSERVABLE")
+
+func test_contention_is_only_measured_on_two_rule_stacks() -> void:
+	# Coût maîtrisé : la mesure n'a de sens que là où la paire est seule à
+	# décider, et c'est aussi là qu'elle est bon marché.
+	var stack: Array[int] = [1]
+	var row := ValidateLib.simulate_stack(_oscillation_level([{"pos": [0, 13]}]), RuleParams.new(), stack, true)
+
+	assert_eq(int(row["contention"]), 0, "une pile d'une seule règle ne dispute rien")
+
 # --- sur-place perpétuel (cycle limite de portée) ------------------------------
 
 ## Reproduit le cycle mesuré le 6 août 2026, aux coordonnées exactes de la
