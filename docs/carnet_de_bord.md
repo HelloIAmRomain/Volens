@@ -104,9 +104,52 @@ avance en parallèle : il ne dépend de rien.
     atteint dès qu'un voisin est là et ne se re-franchit plus : la
     condition de maintien est stable. Mesuré, pas déduit.
 
-**Reste à faire avant de committer** : cérémonie du corpus d'or (`core/`
-change), avec prédiction écrite préalable. Le patch est prêt dans
-`~/volens-patches-r03/r03-v2-predicat.patch`, paramètres figés.
+### Cérémonie du corpus d'or — faite le 6 août 2026
+
+Protocole complet respecté : prédiction écrite, vérification sans écriture,
+confrontation, accord du concepteur, puis `--write` en commit isolé.
+
+**5 recettes sur 17 changent, exactement celles où R03 précède R01** :
+`test_smoke [2,3,1]` · `test_smoke [3,1,2]` · `golden_field [2,3,1]` ·
+`golden_field [3,2,1]` · `sensi_damier [3]`. 15 empreintes modifiées, ni
+plus ni moins que ce que la vérification annonçait.
+
+**L'empreinte de fumée `c8a7cc2c73394949` SURVIT.** Elle a désormais
+traversé sans bouger d'un bit : la revue sémantique complète, l'option C de
+R02, la célérité-échéance et R03 v2. `test_smoke [1,2,3]` est immune parce
+que R01 en tête masque réellement la suite de la pile.
+
+**Le dispositif `rules_hash` a fait ses preuves à son premier usage réel**
+(ajout 3.1 de la revue du 5 août) : il a signalé que `data/rules.json` avait
+changé, donc que la divergence pouvait être voulue. Sans lui, ces 15
+divergences ressembleraient à une régression pure.
+
+---
+
+## Règle de méthode — sur une condition d'abstention, prédire GROSSIÈREMENT
+
+**Un raisonnement d'un cran trop fin sur une condition d'abstention est
+plausible et faux.** Le même piège a frappé trois fois :
+
+| Occasion | Le raisonnement fin, plausible | Le fait |
+|---|---|---|
+| Le damier | « à l'équilibre, R03 s'abstient » | elle ne s'abstient **jamais** ; elle propose un pas éternellement refusé |
+| L'arc QN-02 | « le barycentre est au centre, donc R03 mène aux dangers centraux » | le barycentre est **où est la nuée**, c'est-à-dire en bas |
+| La cérémonie R03 v2 | « R02 masque R03 puisqu'elle perçoit le danger depuis toute la grille » | percevoir **ne suffit pas** : il faut aussi une direction franchissable qui éloigne strictement |
+
+À chaque fois, le critère **syntaxique** a battu le critère **sémantique**.
+« R03 est-elle avant R01 dans la pile ? » ne suppose rien sur ce que la
+règle fait réellement, et a prédit juste 17 recettes sur 17 là où mon
+raisonnement sur les zones d'action s'est trompé sur deux.
+
+**La règle : sur une condition d'abstention, prédis grossièrement. La
+finesse se gagne en mesurant, jamais en raisonnant.**
+
+**Fait sur R02 à retenir** (il resservira) : R02 ne propose PAS dès qu'elle
+perçoit un danger. Il lui faut en plus une direction **franchissable** qui
+**éloigne strictement**. Contre un mur, dans un coin, ou quand toutes les
+directions améliorantes sont bloquées, elle s'abstient — plus souvent qu'on
+ne l'estime de tête.
 
 ---
 
