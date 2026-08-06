@@ -164,6 +164,68 @@ func test_collect_without_transport_rules_is_flagged_out_of_chapter() -> void:
 	assert_true(bool(summary["collect_out_of_chapter"]))
 	assert_string_contains(String(summary["qn01_verdict"]), "hors chapitre")
 
+# --- sur-place perpétuel (cycle limite de portée) ------------------------------
+
+## Reproduit le cycle mesuré le 6 août 2026, aux coordonnées exactes de la
+## trace : lumière (4,0), bande de sortie rangée 1, danger (4,10).
+## Un agent en (0,13) est à d² = 25 — pile à la portée de R02, qui le
+## repousse au sud ; en (0,14) il est à d² = 32, hors de portée, et R01 le
+## ramène au nord. Répulseur à seuil + attracteur = cycle de période 2.
+func _oscillation_level(agents: Array) -> Dictionary:
+	var cells: Array = []
+	cells.resize(10 * 18)
+	cells.fill(0)
+	cells[4] = GridState.CellType.LIGHT_SOURCE             # (4,0)
+	for x in range(10):
+		cells[10 + x] = GridState.CellType.EXIT            # rangée 1
+	cells[10 * 10 + 4] = GridState.CellType.STATIC_DANGER  # (4,10)
+	return {
+		"max_ticks": 120,
+		"allowed_rules": [1, 2],
+		"grid": {"size": [10, 18], "cells": cells},
+		"agents": agents,
+		"objectives": [{"type": "extraction", "percent": 100}],
+	}
+
+func test_range_boundary_limit_cycle_is_reported() -> void:
+	var stack: Array[int] = [2, 1]
+	var row := ValidateLib.simulate_stack(_oscillation_level([{"pos": [0, 13]}]), RuleParams.new(), stack)
+
+	assert_eq(int(row["oscillating"]), 1, "l'agent fait du sur-place perpétuel")
+	assert_eq(int(row["stuck"]), 0, "il bouge : ce n'est pas un agent figé")
+
+func test_a_marching_swarm_reports_no_oscillation() -> void:
+	# Contre-borne : sans R02 dans la pile, l'agent monte tout droit et sort.
+	var stack: Array[int] = [1]
+	var row := ValidateLib.simulate_stack(_oscillation_level([{"pos": [0, 13]}]), RuleParams.new(), stack)
+
+	assert_eq(int(row["outcome"]), SimState.Outcome.WON)
+	assert_eq(int(row["oscillating"]), 0)
+
+func test_a_frozen_agent_counts_as_stuck_not_oscillating() -> void:
+	# Pile vide : personne ne bouge — figé, pas oscillant. La distinction
+	# compte : un agent figé peut être légitime, un oscillant jamais.
+	var stack: Array[int] = []
+	var row := ValidateLib.simulate_stack(_oscillation_level([{"pos": [0, 13]}]), RuleParams.new(), stack)
+
+	assert_eq(int(row["oscillating"]), 0)
+	assert_eq(int(row["stuck"]), 1)
+
+func test_oscillation_in_a_winning_stack_is_flagged_in_the_verdict() -> void:
+	# LE cas qui compte, et celui que la coupe de boucle ne voit pas : le
+	# niveau est GAGNABLE et paraît cassé. L'agent de la colonne 9 traverse
+	# librement et sort ; celui de la colonne 0 oscille pendant tout ce
+	# temps. L'objectif à 50 % est atteint — le rapport doit quand même le
+	# signaler.
+	var level := _oscillation_level([{"pos": [9, 16]}, {"pos": [0, 13]}])
+	level["objectives"] = [{"type": "extraction", "percent": 50}]
+	var report := ValidateLib.validate_level(level, RuleParams.new())
+	var summary: Dictionary = report["summary"]
+
+	assert_gt(int(summary["n_win"]), 0, "le niveau est gagnable")
+	assert_gt(int(summary["wins_with_oscillation"]), 0, "et laisse pourtant un agent osciller")
+	assert_string_contains(String(summary["qn01_verdict"]), "sur-place perpétuel")
+
 # --- RG-04 : identité vs équivalence (classes QN-01) --------------------------
 
 func _state_with_agents(positions: Array, flags_list: Array = []) -> SimState:
