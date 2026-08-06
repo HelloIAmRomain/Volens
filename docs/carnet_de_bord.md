@@ -6,6 +6,28 @@ fait foi sur l'avancement réel, en complément du plan de production.
 
 ---
 
+## Règle de méthode — un observable inattendu se mesure, il ne se classe pas
+
+**Un comportement inattendu qui trouve son explication du premier coup doit
+être sondé, pas rangé.** Une explication plausible immédiate est le signal
+qu'il faut mesurer, pas la permission de passer.
+
+Le cas fondateur, 5-6 août 2026. La fixture `sensi_damier` montrait une
+nuée qui s'immobilise sous R03. Il a été consigné « à l'équilibre, R03
+s'abstient, et l'abstention casse la parité — l'agrégat final est un
+escalier compact stable ». C'était faux. La sonde S8 a mesuré l'inverse :
+**R03 ne s'abstient pratiquement jamais** ; elle propose éternellement un
+pas vers le barycentre, que les voisins refusent. Deux mécanismes opposés,
+un seul observable — la nuée s'arrête.
+
+Le comportement réel était donc déjà visible, et il a été archivé au corpus
+d'or sous une lecture erronée. La fixture reste juste (elle archive ce qui
+se passe, pas ce qu'on en dit), mais l'explication ne l'était pas. C'est le
+seul point du projet où quelque chose est passé sans preuve — dans une zone
+à relecture renforcée, qui plus est.
+
+---
+
 ## État d'avancement au 4 août 2026 (fin de séance S2)
 
 ### Fait — Étape 0 : mise à jour documentaire (fusionnée dans `main`)

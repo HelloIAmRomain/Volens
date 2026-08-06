@@ -164,6 +164,52 @@ func test_collect_without_transport_rules_is_flagged_out_of_chapter() -> void:
 	assert_true(bool(summary["collect_out_of_chapter"]))
 	assert_string_contains(String(summary["qn01_verdict"]), "hors chapitre")
 
+# --- RG-04 : identité vs équivalence (classes QN-01) --------------------------
+
+func _state_with_agents(positions: Array, flags_list: Array = []) -> SimState:
+	var level := {
+		"max_ticks": 50,
+		"grid": {"size": [5, 5], "cells": []},
+		"agents": positions.map(func(p: Variant) -> Dictionary: return {"pos": p}),
+	}
+	var state := SimCore.load_level(level, RuleParams.new())
+	for i in range(flags_list.size()):
+		state.agents[i].flags = flags_list[i]
+	return state
+
+func test_equivalence_key_ignores_agent_identity() -> void:
+	# RG-04 : les agents sont anonymes et interchangeables. Deux issues aux
+	# mêmes cases occupées, seuls les identifiants permutés, sont LA MÊME
+	# solution — QN-01 exclut les variantes triviales.
+	var a := _state_with_agents([[1, 1], [3, 3]])
+	var b := _state_with_agents([[3, 3], [1, 1]])
+
+	assert_ne(SimCore.hash_state(a), SimCore.hash_state(b),
+		"l'IDENTITÉ distingue les deux (les id sont hachés) — et doit continuer")
+	assert_eq(ValidateLib.equivalence_key(a), ValidateLib.equivalence_key(b),
+		"l'ÉQUIVALENCE ne les distingue pas : même nuée, identifiants permutés")
+
+func test_equivalence_key_still_separates_different_shapes() -> void:
+	var a := _state_with_agents([[1, 1], [3, 3]])
+	var b := _state_with_agents([[1, 1], [3, 2]])
+
+	assert_ne(ValidateLib.equivalence_key(a), ValidateLib.equivalence_key(b),
+		"une case différente reste une solution différente")
+
+func test_equivalence_key_separates_different_counters() -> void:
+	var a := _state_with_agents([[1, 1], [3, 3]])
+	var b := _state_with_agents([[1, 1], [3, 3]])
+	b.counters.exited = 1
+
+	assert_ne(ValidateLib.equivalence_key(a), ValidateLib.equivalence_key(b))
+
+func test_equivalence_key_separates_different_flags() -> void:
+	# Sortis et perdus ne se confondent pas, même à positions identiques.
+	var a := _state_with_agents([[1, 1], [3, 3]], [AgentState.SORTI, AgentState.PRESENT])
+	var b := _state_with_agents([[1, 1], [3, 3]], [AgentState.PERDU, AgentState.PRESENT])
+
+	assert_ne(ValidateLib.equivalence_key(a), ValidateLib.equivalence_key(b))
+
 # --- CDC §12.2.1 : slots, dégénérescence, mode informatif ---------------------
 
 func test_slots_key_caps_the_enumerated_space() -> void:
