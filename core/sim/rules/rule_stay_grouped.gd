@@ -11,22 +11,46 @@ extends Rule
 ## fractions — plutôt que de diviser : |p.x*count - sum_x| + |p.y*count - sum_y|.
 ## `count` est positif et constant pour tous les candidats d'un même agent à
 ## un même tick, donc cette mise à l'échelle préserve l'ordre des distances.
+##
+## PRÉDICAT DE MAINTIEN (v2, 6 août 2026). R03 était une FORCE dans un
+## système qui n'accepte que des CONDITIONS : chez les boids la cohésion est
+## un vecteur sommé et pondéré, ici la cascade est « le premier qui décide
+## l'emporte ». R01 a un terminal naturel (la lumière), R02 une abstention
+## naturelle (hors de portée) ; « converger vers le barycentre » n'en a
+## aucun — le barycentre recule avec la nuée. Mesuré : sur un bloc compact,
+## 0 agent sur 20 s'abstenait, 20 proposaient un pas refusé par leurs
+## voisins, et R03 masquait la suite de la pile pour toujours (gel).
+##
+## Le nom du CDC contenait la réponse : « rester groupé » est un prédicat de
+## maintien. L'agent qui compte au moins `group_min_neighbours` congénères
+## dans le rayon rapproché ⚙️ est groupé — il s'abstient, et la règle
+## suivante décide. R03 ne se déclenche donc que sur DÉFORMATION de la nuée
+## (pertes, sorties, détours de R02, goulots) : elle récupère les traînards.
+##
+## Comptage entier, aucune division ; le rayon rapproché est un carré de
+## distance (DT-04) et reste inclus dans la portée de perception.
 
 func evaluate(agent: AgentState, state: SimState, params: RuleParams) -> Vector2i:
 	var sum_x := 0
 	var sum_y := 0
 	var count := 0
+	var close_count := 0
 	for other in state.agents:
 		if other.id == agent.id or not other.is_present():
 			continue
 		var dx: int = other.pos.x - agent.pos.x
 		var dy: int = other.pos.y - agent.pos.y
-		if dx * dx + dy * dy > params.group_perception_range_sq:
+		var dist_sq: int = dx * dx + dy * dy
+		if dist_sq <= params.group_close_range_sq:
+			close_count += 1
+		if dist_sq > params.group_perception_range_sq:
 			continue
 		sum_x += other.pos.x
 		sum_y += other.pos.y
 		count += 1
 
+	if close_count >= params.group_min_neighbours:
+		return ABSTAIN  # déjà groupé : le prédicat de maintien est satisfait
 	if count == 0:
 		return ABSTAIN  # aucun voisin perçu
 
