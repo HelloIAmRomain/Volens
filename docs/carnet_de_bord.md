@@ -498,6 +498,55 @@ Aucune cérémonie d'or : c'est du `tools/`, `core/` est intouché.
   retravailler après la révision d'architecture, pas à fusionner telle
   quelle.**
 
+## Fait — T-032 : écran de jeu et composition de la pile (6 août 2026)
+
+Le rendu montrait la nuée ; il manquait de quoi **jouer**. Sans composition
+de pile, aucun testeur ne peut rien faire — c'est le chemin critique de J-1.
+
+Conforme au DCT §9.2 : bandeau d'objectif d'une ligne avec avancement en
+continu (RG-17), grille au centre dans un sous-viewport, **pile de 4
+emplacements et transport dans la moitié basse** (ENF-01, zone du pouce),
+tiroir de bibliothèque coulissant — jamais un écran plein (P3). Ancrage sur
+la zone sûre d'Android (encoches, barre gestuelle).
+
+35. **Cible tactile de 144 unités, dérivée et non choisie.** ENF-01 exige
+    ≈ 48 dp. La base du projet est 1080×2400 en étirement `canvas_items`,
+    donc les unités d'interface sont les pixels de cette base. Sur les
+    appareils visés, 1080 px valent 360 dp (densité 3,0) à 411 dp (S23
+    Ultra) : 48 dp valent donc entre 126 et 144 unités. On retient **144**,
+    la borne haute — une cible trop grande ne viole rien, une trop petite si.
+36. **Deux façons de poser une règle, l'une et l'autre obligatoires** :
+    glisser-déposer natif (DCT §9.2) **et** équivalent sans glissement
+    (ENF-25 : appui pour sélectionner, appui pour placer). Un joueur debout
+    dans le bus, une main occupée, ne peut pas toujours glisser.
+37. **Une règle n'occupe jamais deux emplacements** : la reposer ailleurs la
+    DÉPLACE. L'espace des piles est fait d'arrangements sans répétition —
+    l'interface doit rendre impossible ce que l'énumérateur ne compte pas.
+38. **Les emplacements portent une couleur fixe** (1 cyan, 2 ambre,
+    3 magenta, 4 vert), la même dont la vue teinte les agents décidés par
+    cet emplacement. Le joueur lit alors directement « la plupart des agents
+    sont cyan, donc c'est ma première règle qui gouverne » — la règle d'or
+    rendue visible sans un mot. ⚠ **Choix de conception, à confirmer.**
+39. **Modifier la pile réinitialise l'essai** (RG-10) : la recette est
+    (niveau, pile), et `ReplaySession` fige la pile pour la durée d'une
+    session. Vérifié par test.
+
+**Test d'interface automatisé** (`tests/ui/`, exigé par le DCT §9.2) :
+inspection de l'arbre de contrôles pour les cibles tactiles, les quatre
+emplacements, l'équivalent sans glissement, l'unicité d'une règle dans la
+pile, et la réinitialisation. Il existe parce qu'une cible trop petite ne se
+voit pas sur un écran d'ordinateur — elle se découvre dans le bus.
+
+**Hors périmètre, signalé plutôt que bâclé** : EF-05 (appui sur un agent →
+cascade de décision) attend `SimCore.explain` (T-065, S8) ; retour haptique
+(ENF-24), audio, sauvegarde, écrans d'accueil et de bilan.
+
+40. **Incohérence documentaire relevée** : le DCT §9.2 renvoie à « la
+    maquette du CDC », qui n'existe pas. La disposition a été déduite du
+    texte du DCT lui-même (bandeau / grille / pile + transport en zone
+    basse) et d'ENF-01. À trancher : produire la maquette, ou retirer la
+    référence.
+
 ## Reste à faire
 
 **S3 : clos** — premier passage de la CI en ligne constaté vert le
