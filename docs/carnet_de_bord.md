@@ -295,6 +295,137 @@ vers l'Est).
   DCT §12.4) converti et validé : espace de 2 piles, `N_win = 1`,
   « attendu 1, constaté 1 ». Verrouillé par test permanent.
 
+---
+
+## Fait — R03 : trois tentatives, un diagnostic, et l'arrêt (6 août 2026)
+
+Trois semaines de décisions perceptives arbitrées avec des compteurs. Le
+concepteur a tranché : on arrête R03 et on construit l'instrument (le
+rendu) avant de reprendre.
+
+### Ce que les sondes ont établi
+
+20. **R03 v1 gèle la nuée, et ce n'est pas un défaut de code.** Sur un bloc
+    compact, 0 agent sur 20 s'abstient, 20 proposent un pas vers le
+    barycentre, tous refusés par leurs voisins ; et comme une règle ne voit
+    jamais les autres agents (décision 15), R03 ne s'abstient pas et masque
+    la suite de la pile pour toujours. R03 avant R01 = pile morte ; R03
+    après R01 = poids mort strict ([1] ≡ [1,3] aux chiffres près).
+21. **Cause racine** : R03 est une FORCE dans un système qui n'accepte que
+    des CONDITIONS. Chez les boids la cohésion est un vecteur sommé et
+    pondéré ; ici la cascade est « le premier qui décide l'emporte ». R01 a
+    un terminal naturel (la lumière), R02 une abstention naturelle (hors de
+    portée) ; « converger vers le barycentre » n'en a aucun — le barycentre
+    recule avec la nuée.
+22. **Tentative A — rayon satisfait (tolérance k)** : k=3 minimal pour
+    débloquer, k=4 obligatoire (à k=3, [3,2,1] et [2,3,1] gèlent encore).
+    Mais à k=4 R03 décide **0 %** du temps : famille cosmétique. Raison
+    mathématique : la distance au barycentre des voisins perçus ne peut pas
+    dépasser la portée de perception, donc k≈portée rend la règle inerte.
+    Élargir la portée réactive R03 (27-50 %) mais **ramène le gel**.
+23. **Tentative B — R03 saute les cases occupées** (mesurée, non
+    implémentée) : échange le gel contre le tremblement (564 demi-tours,
+    ne termine jamais). Pire.
+24. **Tentative C — prédicat de maintien v2** (s'abstient si ≥ n_min voisins
+    dans r_close) : supprime le gel proprement (r_close=2, n_min=2 : 0 %
+    de déclenchement sur bloc compact, sortie en t=12 comme [1] seule).
+    **Mais les archétypes 1 et 2 ne se séparent toujours pas** : [2,3,1] et
+    [3,2,1] sont identiques dans les **huit** géométries testées, jusqu'au
+    nombre de demi-tours. Raison structurelle : R02 pousse un agent hors de
+    portée du danger, donc l'isolement (ce qui déclenche R03) est le
+    PRODUIT de la poussée et n'apparaît qu'une fois R02 abstenue. **Les
+    zones d'action des deux règles sont disjointes, donc leur ordre est
+    inobservable** — aucune géométrie de niveau ne peut les séparer.
+25. **Zone piège Ouest, mesurée à grande échelle** : toute géométrie où un
+    danger a des agents à son ouest produit 1 494 à 2 446 demi-tours et une
+    nuée qui ne termine jamais. Bien plus violent qu'estimé en décision 17 :
+    le niveau est injouable, pas seulement imparfait.
+26. **Évitement pur de R02 : PARQUÉ.** L'idée (R02 refuse les pas létaux et
+    s'abstient sinon, au lieu de repousser) réglerait la zone piège et
+    rendrait les ordres observables — mais c'est une CONTRAINTE, et la
+    cascade n'accepte que des PROPOSITIONS. C'est la pathologie de R03 sous
+    un autre visage : le système de règles n'a qu'un genre (proposeur) là
+    où il en faudrait trois — **proposeur, filtre, condition de maintien**.
+    Question d'architecture, pas de paramètre ; ne se tranche pas à
+    l'aveugle avant une échéance.
+
+Les deux patches R03 (tolérance, prédicat v2) sont **hors dépôt**, dans
+`~/volens-patches-r03/`. Aucune cérémonie d'or n'a été faite : les
+empreintes archivées sont intactes.
+
+### Correctif livré au passage
+
+27. **Classes QN-01 sur l'ÉQUIVALENCE, jamais sur l'identité** (PR #6).
+    Deux issues qui ne diffèrent que par l'attribution des identifiants
+    d'agents sont la même solution (RG-04 ; QN-01 exclut les variantes
+    triviales). Le validateur les comptait séparément et gonflait le chiffre
+    servant de critère — et celui qu'affiche le bilan de niveau. Clé
+    d'équivalence = multiensemble trié des (pos, dir, flags) + compteurs,
+    dans `tools/` uniquement. `hash_state` garde les identifiants : identité
+    (déterminisme, `core/`) et équivalence (rapport, `tools/`) sont deux
+    notions distinctes — **aucune empreinte d'or touchée**.
+
+## Fait — T-030/T-031 : premier rendu (6 août 2026, branche `feat/view-prototype`)
+
+Motif : trois semaines de questions perceptives (« tremblement ou
+hésitation », « beau ou cassé ») arbitrées avec des compteurs. Un compteur
+de demi-tours est un substitut du regard. Le rendu est aussi sur le chemin
+critique de J-1 (6 septembre) — sans lui, aucun testeur ne peut jouer.
+
+- **`game/view/`** (gardé) : nuée et traînées en MultiMesh 2D, halos et
+  hachures par shaders `canvas_item`, **zéro texture** (DT-13, ENF-11).
+  Interpolation entre ticks (DCT §6.2) — sans elle, tout ressemblerait à du
+  tremblement à 4 ticks/s. Calques dans l'ordre du DCT §6.3. Danger porté
+  par couleur **et** hachures (ENF-20/22). Liseré d'état (DA-03).
+  Traînées mesurées en **ticks**, pas en images : c'est la forme collective
+  dans le temps qui est en question (DA-01).
+- **`game/bench/`** (jetable) : transport (marche/pause, pas à pas,
+  rembobinage continu, 1/2/4/8 ticks/s), **bascule de pile sans relancer**,
+  surcouche par appui long (tick, sortis, perdus, demi-tours cumulés, i/s,
+  temps d'image).
+- **Coloration par règle décisionnaire** : chaque agent porte la couleur de
+  l'emplacement de pile qui a décidé pour lui à ce tick. C'est l'instrument
+  qui rend visible la disjonction des zones d'action de la décision 24 —
+  deux couleurs qui ne se mélangent jamais.
+- **`data/levels/diag/`** : les trois géométries des sondes, en `.lvl`
+  lisible et `.json` converti.
+
+28. **Écart à DT-13 signalé, non tranché** : les cases sont rendues en
+    MultiMesh et non en TileMapLayer. Un TileMapLayer impose un atlas de
+    texture, ce que « tout le visuel est procédural » interdit ; et une
+    grille ne dépasse pas 14×18 = 252 cases. Un seul appel de dessin dans
+    les deux cas. À confirmer ou infirmer par le concepteur.
+
+### Arbitrages du 6 août (soir)
+
+29. **DT-13 amendée → DCT v1.2** : cases en MultiMesh 2D avec données par
+    instance, jamais de TileMapLayer (un atlas de texture contredirait
+    « tout le visuel est procédural »). **Conséquence actée sur T-074** :
+    l'éditeur de niveaux éditera le format `.lvl`, il ne sera pas un
+    peintre de tuiles adossé à l'éditeur intégré de Godot. C'est déjà le
+    flux réel depuis le 5 août, donc coût nul — mais c'est un choix, pas
+    une découverte en semaine 10.
+
+30. **RÉVISION DU SYSTÈME DE RÈGLES — à trancher AVANT LE CHAPITRE 3, pas
+    avant J-1.** La cascade actuelle n'a qu'un seul genre de règle : le
+    **proposeur** (« je propose un déplacement, ou je m'abstiens »). Trois
+    besoins déjà identifiés n'y rentrent pas :
+    - **condition de maintien** — R03 « Rester groupé » : un prédicat
+      satisfait ou non, pas une convergence (décisions 20-24) ;
+    - **filtre** — l'évitement pur de R02 : « ne va pas là », une
+      contrainte sur les propositions d'autrui, pas une proposition ;
+    - **effet** — R08 « Marquer la piste » (chapitre 3) : déposer un
+      marqueur n'est pas un déplacement. Sous la cascade actuelle, soit
+      elle s'abstient et n'est pas vraiment dans la pile, soit elle
+      propose l'immobilité et masque tout ce qui suit. **La stigmergie ne
+      rentre pas dans le genre proposeur** — et le chapitre 3 est
+      entièrement bâti dessus (R07/R08/R09).
+
+    Genres à instruire : proposeur, filtre, condition de maintien, effet.
+    **Échéance : avant le premier code du chapitre 3.** Ne pas ouvrir avant
+    J-1 (6 septembre) — la question est structurante et ne se tranche pas
+    sous contrainte de calendrier.
+
 ## Reste à faire
 
 **S3 : clos** — premier passage de la CI en ligne constaté vert le
