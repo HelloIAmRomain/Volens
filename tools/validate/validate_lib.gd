@@ -51,8 +51,29 @@ static func simulate_stack(level_data: Dictionary, params: RuleParams, stack: Ar
 		"exited": state.counters.exited,
 		"lost": state.counters.lost,
 		"final_hash": StateHash.to_hex(SimCore.hash_state(state)),
+		"equivalence_key": equivalence_key(state),
 		"looped": looped,
 	}
+
+## Clé d'ÉQUIVALENCE d'une issue — à ne jamais confondre avec son IDENTITÉ.
+##
+##   Identité (StateHash.hash_state, core/sim) : inclut les identifiants
+##     d'agents, sert au déterminisme et aux tests d'or, et n'en bougera pas.
+##   Équivalence (ici, tools/) : les agents sont anonymes et interchangeables
+##     (RG-04), donc deux issues qui ne diffèrent que par l'attribution des
+##     identifiants sont LA MÊME solution. QN-01 exclut explicitement les
+##     « variantes triviales » : les compter séparément gonflerait le chiffre
+##     même qui sert de critère, et celui qu'affiche le bilan de fin de niveau.
+##
+## Invariant : multiensemble trié des (pos, dir, flags) + compteurs. Le tick
+## n'en fait pas partie — l'efficience se mesure à part (min_ticks, QN-04).
+static func equivalence_key(state: SimState) -> String:
+	var parts := PackedStringArray()
+	for agent in state.agents:
+		parts.append("%d,%d,%d,%d" % [agent.pos.x, agent.pos.y, agent.dir, agent.flags])
+	parts.sort()  # multiensemble : l'ordre des identifiants ne doit rien changer
+	return "%s|%d,%d,%d" % [
+		";".join(parts), state.counters.exited, state.counters.lost, state.counters.delivered]
 
 ## Module de répétition temporelle : ppcm des périodes des dangers
 ## cycliques (1 sans cycle). Deux états de même dynamique ne sont vraiment
@@ -124,14 +145,16 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 		if row["outcome"] == SimState.Outcome.WON:
 			wins.append(row)
 
-	# Classes structurelles : piles gagnantes regroupées par empreinte finale
-	# (DCT §8.2 — même empreinte = même déroulement, variante triviale).
+	# Classes structurelles : piles gagnantes regroupées par clé d'ÉQUIVALENCE
+	# (DCT §8.2), pas par empreinte — voir equivalence_key : deux issues qui
+	# ne diffèrent que par l'attribution des identifiants d'agents sont la
+	# même solution (RG-04, et QN-01 « hors variantes triviales »).
 	var classes: Dictionary = {}
 	for w in wins:
-		var h: String = w["final_hash"]
-		if not classes.has(h):
-			classes[h] = 0
-		classes[h] += 1
+		var key: String = w["equivalence_key"]
+		if not classes.has(key):
+			classes[key] = 0
+		classes[key] += 1
 
 	var min_ticks := -1
 	var best_stack: Array = []
