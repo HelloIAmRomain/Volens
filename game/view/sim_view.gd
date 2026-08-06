@@ -25,7 +25,9 @@ const HATCH_SHADER := preload("res://game/view/shaders/hatch.gdshader")
 ## Traînée : longueur en TICKS, pas en images — c'est la forme collective
 ## dans le temps de simulation qui est en question (DA-01), pas un flou.
 var trail_ticks: int = 6
-var show_decision_colors: bool = true
+## Faux par défaut : on ne juge pas si quelque chose est beau en fixant une
+## surcouche de diagnostic. Esthétique d'abord, diagnostic ensuite (touche C).
+var show_decision_colors: bool = false
 var reduced_motion: bool = false:
 	set(value):
 		reduced_motion = value

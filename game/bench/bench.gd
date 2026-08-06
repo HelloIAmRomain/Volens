@@ -178,6 +178,7 @@ func _build_overlay(level_path: String) -> void:
 	layer.add_child(_banner)
 
 	_overlay = Label.new()
+	_overlay.visible = false  # esthétique d'abord : H ou appui long pour le diagnostic
 	_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_overlay.add_theme_color_override("font_color", Color(0.85, 0.90, 1.0))
 	_overlay.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
