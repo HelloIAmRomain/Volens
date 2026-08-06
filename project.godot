@@ -7,7 +7,10 @@ config_version=5
 
 [application]
 
+run/main_scene="res://game/ui/game_screen.tscn"
+
 config/name="Volens"
+config/icon="res://game/ui/icon.png"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
 [editor_plugins]
@@ -28,6 +31,8 @@ window/stretch/aspect="expand"
 window/handheld/orientation="portrait"
 
 [rendering]
+
+textures/vram_compression/import_etc2_astc=true
 
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"

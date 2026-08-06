@@ -1,78 +1,109 @@
 # Environnement de développement
 
-## Poste Ubuntu (orque) — travail headless
-- Godot : `~/bin/godot` → lien vers `Godot_v4.7.1-stable_linux.x86_64` (version standard, pas .NET)
-- JDK export Android : `~/opt/jdk17` (Temurin 17.0.20)
-  → **jamais dans le PATH** (le `java` système reste en 21)
-- Pas de sudo : tout vit dans `$HOME`
-- Appareil en sans-fil : `adb pair` puis `adb connect`
+## Poste Ubuntu (orque) — développement et export
 
-## Chaîne d'export Android — état constaté le 6 août 2026
-
-Quatre pièces manquent, pas une seule. Vérifié pièce par pièce :
-
-| Pièce | État | Emplacement attendu |
+| Outil | Emplacement | Note |
 |---|---|---|
-| JDK 17 | ✅ **installé** | `~/opt/jdk17` |
-| JDK **déclaré dans Godot** | ❌ `java_sdk_path` est **vide** | Paramètres de l'éditeur → Export → Android |
-| Android SDK | ❌ **absent** (le chemin configuré n'existe pas) | `~/Android/Sdk` |
-| Modèles d'export Godot | ❌ **absents** | `~/.local/share/godot/export_templates/` |
-| Clé de signature de débogage | ❌ **absente** (chemin configuré, fichier inexistant) | `~/.local/share/godot/keystores/debug.keystore` |
+| Godot 4.7.1-stable | `~/bin/godot` | version standard, pas .NET |
+| JDK 17 (Temurin) | `~/opt/jdk17` | **jamais dans le PATH** — le `java` système reste en 21 |
+| Android SDK | `~/Android/Sdk` | outils en ligne de commande seuls ; **pas besoin d'Android Studio** |
+| Modèles d'export Godot | `~/.local/share/godot/export_templates/4.7.1.stable/` | 35 fichiers, dont `android_source.zip` |
+| Clé de **débogage** | `~/.local/share/godot/keystores/debug.keystore` | ⚠ **ce n'est PAS la clé de release de T-006** |
 
-### Procédure d'installation (à faire une fois)
+Pas de sudo : tout vit dans `$HOME`.
 
-```bash
-# 1. Clé de débogage — locale, sans réseau
-mkdir -p ~/.local/share/godot/keystores
-~/opt/jdk17/bin/keytool -keyalg RSA -genkeypair -alias androiddebugkey \
-  -keypass android -keystore ~/.local/share/godot/keystores/debug.keystore \
-  -storepass android -dname "CN=Android Debug,O=Android,C=US" -validity 9999 -deststoretype pkcs12
+---
 
-# 2. Outils en ligne de commande Android + plateforme 36 + build-tools
-#    (téléchargement ~1 Go ; tout reste dans $HOME, aucun sudo)
-#    puis : sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+## Export Android — OPÉRATIONNEL depuis le 6 août 2026
 
-# 3. Modèles d'export Godot 4.7.1 (~1 Go)
-#    Éditeur → Projet → Installer les modèles d'export, OU dépôt manuel dans
-#    ~/.local/share/godot/export_templates/4.7.1.stable/
+**`targetSdk 36` est confirmé sur un APK réel.** Le modèle de compilation
+Gradle de Godot 4.7.1 embarque `compileSdk: 36`, `targetSdk: 36`,
+`javaVersion: 17`. Constaté sur l'artefact produit :
 
-# 4. Déclarer les chemins dans Godot : Paramètres de l'éditeur → Export → Android
-#    Java SDK Path    = ~/opt/jdk17
-#    Android SDK Path = ~/Android/Sdk
+```
+package: name='com.volensgame.volens' versionCode='1' versionName='0.1.0'
+minSdkVersion:'33'   targetSdkVersion:'36'   compileSdkVersion='36'
+aucune uses-permission · signé CN=Android Debug · 81 Mo
 ```
 
-### `targetSdk 36` — ce qui est vérifié et ce qui ne l'est pas
-
-Le binaire Godot 4.7.1 **expose bien** les options d'export
-`gradle_build/min_sdk` et `gradle_build/target_sdk` : la valeur 36 est donc
-saisissable. **Mais** ces options ne prennent effet qu'avec la **compilation
-Gradle** (« Use Gradle Build ») — le modèle APK préfabriqué embarque son
-propre `targetSdk`. Utiliser 36 impose donc :
-le modèle de compilation Android installé, `platforms;android-36` et des
-build-tools correspondants dans le SDK. **Non vérifiable tant que le SDK et
-les modèles ne sont pas installés** — à reconfirmer à ce moment-là.
-
-### Export d'un APK de débogage (à refaire à chaque build)
+### La procédure hebdomadaire
 
 ```bash
-# export_presets.cfg est hors dépôt (gitignoré : il porte les chemins et
-# mots de passe de signature). À recréer depuis l'éditeur, une fois :
-#   Projet → Exporter → Ajouter → Android
-#   · Gradle Build activé          · Orientation : portrait
-#   · min_sdk 33, target_sdk 36    · Aucune permission cochée
-#   · Renderer : gl_compatibility  · Clé de débogage : celle générée ci-dessus
+cd ~/Documents/Volens
+~/bin/godot --headless --path . --export-debug "Android" build/volens-debug.apk
 
-godot --headless --path . --export-debug "Android" build/volens-debug.apk
-
-adb pair <ip>:<port>        # code affiché sur le téléphone
-adb connect <ip>:<port>
+export PATH="$HOME/Android/Sdk/platform-tools:$PATH"
+adb pair <ip>:<port>       # code affiché par le téléphone
+adb connect <ip>:<port>    # Options développeur → Débogage sans fil
 adb install -r build/volens-debug.apk
 ```
 
-**APK, jamais AAB** : l'AAB ne sert qu'au magasin, il n'est pas installable
-directement sur l'appareil.
+Le **premier** export lance une compilation Gradle qui télécharge ses propres
+dépendances : plusieurs minutes. Les suivants sont rapides. **APK, jamais
+AAB** — l'AAB ne sert qu'au magasin et ne s'installe pas directement.
 
-## Poste Windows — export et déploiement
-- Android Studio, AVD API 36, AVD petit écran (~5,8")
-- JDK 17 et Java SDK Path à reconfigurer : les paramètres d'éditeur Godot ne sont pas
-  versionnés, ils ne suivent pas le dépôt
+### Décisions d'empaquetage, et pourquoi
+
+- **arm64-v8a seule** — l'APK passe de 166 à 81 Mo. Le S23 est arm64 et
+  l'APK se réinstalle chaque semaine par wifi. Pour l'AVD x86_64
+  (vérifications Android 15/16), remettre `architectures/x86_64=true`.
+- **`addons/gut/`, `tools/`, `tests/`, `docs/`, `reports/`, `*.lvl`, `*.md`
+  exclus** — vérifié : l'APK ne contient aucun fichier de GUT. Les `.lvl`
+  sont des sources d'écriture ; seuls les `.json` convertis embarquent.
+- **Icône procédurale** (`game/ui/icon.png`, 1,1 ko, générée par script) :
+  fond très sombre, nuée de points clairs, conforme à DA-02. Android exige
+  une icône de lanceur — c'est un actif de plateforme, pas un visuel de jeu,
+  donc DT-13 (« aucune texture pour le jeu lui-même ») reste respecté.
+- **`reports/.gdignore`** — sans lui, Godot importe les CSV du validateur
+  comme fichiers de traduction et pollue l'export.
+- **`import_etc2_astc=true`** dans `project.godot` — exigé par l'export
+  Android, qui échoue avant de commencer sans lui.
+
+### Sur une machine neuve — les trois pièces hors dépôt
+
+```bash
+# 1. Clé de DÉBOGAGE (locale, sans réseau)
+mkdir -p ~/.local/share/godot/keystores
+~/opt/jdk17/bin/keytool -keyalg RSA -genkeypair -alias androiddebugkey \
+  -keypass android -keystore ~/.local/share/godot/keystores/debug.keystore \
+  -storepass android -dname "CN=Android Debug,O=Android,C=US" \
+  -validity 9999 -deststoretype pkcs12
+
+# 2. Modèle de compilation Gradle dans le projet
+mkdir -p android/build
+unzip -q ~/.local/share/godot/export_templates/4.7.1.stable/android_source.zip -d android/build
+cp ~/.local/share/godot/export_templates/4.7.1.stable/version.txt android/.build_version
+
+# 3. Preset d'export — une copie fidèle est versionnée
+cp docs/export_presets.cfg.exemple export_presets.cfg
+```
+
+Le `export_presets.cfg` réel reste hors dépôt (il porte les chemins de
+signature) ; l'exemple garantit qu'aucun réglage ne se perde — `min_sdk 33`,
+`target_sdk 36`, `use_gradle_build`, la liste d'exclusions, l'absence de
+permission.
+
+### Chemins à déclarer dans Godot (non versionnés)
+
+Paramètres de l'éditeur → Export → Android :
+
+| Réglage | Valeur |
+|---|---|
+| Java SDK Path | `~/opt/jdk17` |
+| Android SDK Path | `~/Android/Sdk` |
+| Debug Keystore | `~/.local/share/godot/keystores/debug.keystore` |
+
+*(Ces réglages vivent dans `~/.config/godot/editor_settings-4.7.tres` et ne
+suivent pas le dépôt : à refaire sur chaque poste.)*
+
+---
+
+## Poste Windows — vérifications de comportement Android
+
+- Android Studio, AVD API 36, AVD petit écran (~5,8").
+- JDK 17 et chemins à reconfigurer : les paramètres d'éditeur Godot ne sont
+  pas versionnés.
+- Sert aux comportements Android 15/16 (bord à bord, retour prédictif) que
+  le S23 sous Android 13 ne peut pas montrer. **L'export lui-même se fait
+  très bien depuis Ubuntu** — le poste Windows n'est pas nécessaire pour
+  produire un APK.
