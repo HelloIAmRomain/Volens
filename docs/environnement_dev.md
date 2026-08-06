@@ -58,6 +58,12 @@ AAB** — l'AAB ne sert qu'au magasin et ne s'installe pas directement.
   comme fichiers de traduction et pollue l'export.
 - **`import_etc2_astc=true`** dans `project.godot` — exigé par l'export
   Android, qui échoue avant de commencer sans lui.
+- **`android/.gdignore`** — **indispensable**. Sans lui, Godot importe les
+  ressources du modèle Gradle et sème des `.import` dans `android/build/res/`,
+  que Gradle refuse (« The file name must end with .xml or .png »). Le build
+  échoue alors *après* plusieurs minutes de compilation. Si l'erreur
+  réapparaît : `find android -name "*.import" -delete` puis recréer le
+  `.gdignore`.
 
 ### Sur une machine neuve — les trois pièces hors dépôt
 

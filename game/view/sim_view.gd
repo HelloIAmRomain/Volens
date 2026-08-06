@@ -237,6 +237,57 @@ func _fit_to_viewport() -> void:
 func _to_pixels(cell: Vector2) -> Vector2:
 	return _grid_origin + (cell + Vector2(0.5, 0.5)) * _cell_size
 
+## Case de grille sous un point de l'écran, ou (-1,-1) hors grille. Sert au
+## diagnostic EF-05 : le joueur touche un agent, pas une coordonnée.
+func cell_at_pixel(pixel: Vector2) -> Vector2i:
+	if _to == null or _cell_size <= 0.0:
+		return Vector2i(-1, -1)
+	var local := (pixel - _grid_origin) / _cell_size
+	var cell := Vector2i(int(floor(local.x)), int(floor(local.y)))
+	if not _to.grid.is_in_bounds(cell):
+		return Vector2i(-1, -1)
+	return cell
+
+## Index de l'agent présent le plus proche d'une case, dans un rayon de
+## tolérance — le doigt est large, la case est petite (ENF-01).
+func agent_near(cell: Vector2i, tolerance: int = 1) -> int:
+	if _to == null:
+		return -1
+	var best := -1
+	var best_dist := tolerance + 1
+	for i in range(_to.agents.size()):
+		var agent := _to.agents[i]
+		if not agent.is_present():
+			continue
+		var d: int = absi(agent.pos.x - cell.x) + absi(agent.pos.y - cell.y)
+		if d < best_dist:
+			best_dist = d
+			best = i
+	return best
+
+## Position affichée d'un agent, pour ancrer une surimpression de diagnostic.
+func agent_pixel(index: int) -> Vector2:
+	if _to == null or index < 0 or index >= _to.agents.size():
+		return Vector2.ZERO
+	return _to_pixels(Vector2(_to.agents[index].pos))
+
+## Direction réellement accordée à un agent au dernier tick — à comparer à ce
+## que sa règle avait proposé (RG-06 : le pipeline peut refuser).
+func last_granted(index: int) -> Vector2i:
+	if _from == null or _to == null or index >= _to.agents.size():
+		return Vector2i.ZERO
+	if not _from.agents[index].is_present() or not _to.agents[index].is_present():
+		return Vector2i.ZERO
+	return _to.agents[index].pos - _from.agents[index].pos
+
+## État du tick PRÉCÉDENT : c'est sur lui que la décision du dernier
+## mouvement a été prise (RG-07, décisions sur cliché immuable).
+func previous_state() -> SimState:
+	return _from
+
+func tick() -> int:
+	return 0 if _to == null else _to.tick
+
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_TRANSFORM_CHANGED:
 		return
