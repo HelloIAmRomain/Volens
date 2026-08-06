@@ -396,6 +396,36 @@ critique de J-1 (6 septembre) — sans lui, aucun testeur ne peut jouer.
     grille ne dépasse pas 14×18 = 252 cases. Un seul appel de dessin dans
     les deux cas. À confirmer ou infirmer par le concepteur.
 
+### Arbitrages du 6 août (soir)
+
+29. **DT-13 amendée → DCT v1.2** : cases en MultiMesh 2D avec données par
+    instance, jamais de TileMapLayer (un atlas de texture contredirait
+    « tout le visuel est procédural »). **Conséquence actée sur T-074** :
+    l'éditeur de niveaux éditera le format `.lvl`, il ne sera pas un
+    peintre de tuiles adossé à l'éditeur intégré de Godot. C'est déjà le
+    flux réel depuis le 5 août, donc coût nul — mais c'est un choix, pas
+    une découverte en semaine 10.
+
+30. **RÉVISION DU SYSTÈME DE RÈGLES — à trancher AVANT LE CHAPITRE 3, pas
+    avant J-1.** La cascade actuelle n'a qu'un seul genre de règle : le
+    **proposeur** (« je propose un déplacement, ou je m'abstiens »). Trois
+    besoins déjà identifiés n'y rentrent pas :
+    - **condition de maintien** — R03 « Rester groupé » : un prédicat
+      satisfait ou non, pas une convergence (décisions 20-24) ;
+    - **filtre** — l'évitement pur de R02 : « ne va pas là », une
+      contrainte sur les propositions d'autrui, pas une proposition ;
+    - **effet** — R08 « Marquer la piste » (chapitre 3) : déposer un
+      marqueur n'est pas un déplacement. Sous la cascade actuelle, soit
+      elle s'abstient et n'est pas vraiment dans la pile, soit elle
+      propose l'immobilité et masque tout ce qui suit. **La stigmergie ne
+      rentre pas dans le genre proposeur** — et le chapitre 3 est
+      entièrement bâti dessus (R07/R08/R09).
+
+    Genres à instruire : proposeur, filtre, condition de maintien, effet.
+    **Échéance : avant le premier code du chapitre 3.** Ne pas ouvrir avant
+    J-1 (6 septembre) — la question est structurante et ne se tranche pas
+    sous contrainte de calendrier.
+
 ## Reste à faire
 
 **S3 : clos** — premier passage de la CI en ligne constaté vert le

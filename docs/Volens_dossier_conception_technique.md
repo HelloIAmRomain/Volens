@@ -1,6 +1,6 @@
 # VOLENS — Dossier de conception technique
 
-**Version 1.1 — 4 août 2026**
+**Version 1.2 — 6 août 2026**
 *Réponse technique au cahier des charges fonctionnel v2.1 du projet nom commercial : Volens*
 
 ---
@@ -259,7 +259,11 @@ Dimensionnement au pire cas du CDC (50 agents, grille 14×18, 4 règles) :
 
 ### 6.1 Technique de rendu de la nuée
 
-> **DT-13.** Les agents et leurs traînées sont rendus par **MultiMesh 2D** (un seul appel de dessin pour toute la nuée), les cases par TileMapLayer, les halos (but, danger, pistes) par des shaders `canvas_item` sur des primitives. Aucune texture importée pour le jeu lui-même : tout le visuel est procédural, conformément à l'intention DA du CDC — et au budget de poids (ENF-11).
+> **DT-13** *(révisée v1.2)***.** Les agents et leurs traînées sont rendus par **MultiMesh 2D** (un seul appel de dessin pour toute la nuée), **les cases également par MultiMesh 2D avec données par instance**, les halos (but, danger, pistes) par des shaders `canvas_item` sur des primitives. Aucune texture importée ni générée pour le jeu lui-même : tout le visuel est procédural, conformément à l'intention DA du CDC — et au budget de poids (ENF-11).
+>
+> *Motif de la révision (6 août 2026).* La v1.1 prescrivait TileMapLayer pour les cases. Or un TileMapLayer impose un **atlas de texture**, ce que « tout le visuel est procédural » interdit ; le contourner exigerait de fabriquer une texture en mémoire, c'est-à-dire de réintroduire par la porte de service ce que la décision écarte. Une grille de niveau ne dépasse pas 14×18 = 252 cases, et le nombre d'appels de dessin est identique dans les deux cas : le MultiMesh n'est pas un compromis, c'est le choix cohérent.
+>
+> **Conséquence assumée sur T-074.** L'éditeur de niveaux ne sera **pas** un peintre de tuiles s'appuyant sur l'éditeur intégré de Godot, mais un **éditeur du format `.lvl`**. C'est déjà le flux de production réel depuis le 5 août (`.lvl` lisible → convertisseur → JSON → validateur), donc le coût est nul — mais c'est une décision prise maintenant, pas une découverte en semaine 10.
 
 ### 6.2 Interpolation
 
@@ -528,11 +532,12 @@ Couverture exhaustive ; « — » signale un point de pure conduite de projet sa
 
 ---
 
-## Historique des révisions *(v1.1)*
+## Historique des révisions *(v1.2)*
 
 | Version | Date | Changements | Motif |
 |---|---|---|---|
 | 1.0 | 3 août 2026 | Version initiale | Réponse au CDC v2.0 |
 | 1.1 | 4 août 2026 | Arborescence à deux étages `core/`·`game/` et trois règles de dépendance testables (§2.2, remplace l'invariant DT-03) ; `minSdk` 26→33, identifiant `com.volensgame.volens` et nom Play « Draille » figés (§13.1) ; DT-21 réécrite (compte Google Play déjà créé et vérifié, risque T8 éteint) ; nouvelle obligation de test fermé documentée (§13.1 bis) ; nouveau DT-22, écran caché d'auto-vérification d'empreinte (§13.3 bis) ; vérification du déterminisme reformulée en deux architectures CPU (arm64/x86_64) plutôt qu'en nombre d'appareils physiques (§11.2, A6) ; avertissement sur l'écart de couverture Android 13/API 36 (§13.1, A7) | Série de décisions de cadrage prises entre J0 et le début de S2 ; les documents étaient périmés sur ces points |
+| 1.2 | 6 août 2026 | **DT-13 révisée** : cases rendues en MultiMesh 2D avec données par instance, et non en TileMapLayer — un atlas de texture contredirait « tout le visuel est procédural » ; nombre d'appels de dessin identique, grille plafonnée à 14×18 = 252 cases. Conséquence actée sur T-074 : l'éditeur de niveaux éditera le format `.lvl`, il ne sera pas un peintre de tuiles (§6.1) | Premier rendu implémenté (T-030/T-031) ; l'écart a été signalé à l'implémentation plutôt que tranché seul |
 
-*Fin du document — DCT v1.1. Toute décision DT ne peut être révisée qu'avec mise à jour de la matrice §14 ; les décisions DT-03, DT-04 et DT-15 sont structurantes et leur révision équivaut à une refonte.*
+*Fin du document — DCT v1.2. Toute décision DT ne peut être révisée qu'avec mise à jour de la matrice §14 ; les décisions DT-03, DT-04 et DT-15 sont structurantes et leur révision équivaut à une refonte.*
