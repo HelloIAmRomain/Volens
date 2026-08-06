@@ -195,3 +195,15 @@ func test_expected_wins_switches_to_informational_mode() -> void:
 	assert_string_contains(String(summary["qn01_verdict"]), "attendu 4, constaté %d" % int(summary["n_win"]))
 	assert_true(bool(summary["tutorial"]))
 	assert_between(int(summary["win_ratio_percent"]), 1, 99, "ratio rapporté")
+
+func test_expected_classes_is_confronted_and_reported() -> void:
+	# Arbitrage du 6 août : expected_wins = piles, expected_classes = classes
+	# structurelles, les deux rapportés sans verdict.
+	var level := _corridor_level()
+	level["expected_wins"] = 4
+	level["expected_classes"] = 2
+	var report := ValidateLib.validate_level(level, RuleParams.new())
+	var verdict := String(report["summary"]["qn01_verdict"])
+
+	assert_string_contains(verdict, "classes : attendu 2, constaté %d" % int(report["summary"]["n_win_classes"]))
+	assert_eq(int(report["summary"]["expected_classes"]), 2)

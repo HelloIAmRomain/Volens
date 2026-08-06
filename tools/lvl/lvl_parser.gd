@@ -33,6 +33,13 @@ const MAX_WIDTH := 14
 const MIN_HEIGHT := 10
 const MAX_HEIGHT := 18
 
+## Effectif de la nuée, RG-14 : 20 à 50 agents ⚙️. Trou de validation
+## découvert en revue de conception le 6 août 2026 — les bornes RG
+## contrôlables à la conversion sont depuis passées en revue EN BLOC
+## (un trou trouvé en signale rarement un seul).
+const MIN_AGENTS := 20
+const MAX_AGENTS := 50
+
 const _SYMBOLS := {
 	".": GridState.CellType.EMPTY,
 	"#": GridState.CellType.WALL,
@@ -121,6 +128,7 @@ static func parse(text: String, min_cycle_period: int) -> Dictionary:
 	var agents: Array = []
 	var has_exit := false
 	var has_cyclic := false
+	var resource_count := 0
 	for y in range(height):
 		var symbols: Array = cells_rows[y]["symbols"]
 		for x in range(mini(width, symbols.size())):
@@ -138,6 +146,8 @@ static func parse(text: String, min_cycle_period: int) -> Dictionary:
 			cells.append(cell)
 			if cell == GridState.CellType.EXIT:
 				has_exit = true
+			if cell == GridState.CellType.RESOURCE:
+				resource_count += 1
 			if cell == GridState.CellType.CYCLIC_DANGER:
 				has_cyclic = true
 				cycle_index.append(0)
@@ -147,16 +157,52 @@ static func parse(text: String, min_cycle_period: int) -> Dictionary:
 	# --- Validations sémantiques -------------------------------------------
 	if agents.is_empty():
 		errors.append("aucun agent (« o ») dans la grille")
+	elif agents.size() < MIN_AGENTS or agents.size() > MAX_AGENTS:
+		errors.append("effectif de %d agents hors RG-14 (20 à 50 ⚙️) — dix points ne font pas une nuée, la forme collective est le personnage (DA-01)" % agents.size())
 
+	# Cohérence des objectifs (revue générale du 6 août 2026).
+	var max_ticks := int(header.get("max_ticks", "0"))
+	var seen_types: Dictionary = {}
+	var has_achievement := false
 	var has_extraction := false
 	for obj in objectives:
-		if obj.get("type", "") == "extraction":
-			has_extraction = true
+		var obj_type: String = obj.get("type", "")
+		if seen_types.has(obj_type):
+			errors.append("objectif « %s » en double" % obj_type)
+		seen_types[obj_type] = true
+		match obj_type:
+			"extraction":
+				has_achievement = true
+				has_extraction = true
+				var pc := int(obj["percent"])
+				if pc < 1 or pc > 100:
+					errors.append("extraction %d %% hors bornes (1 à 100 ; 0 rendrait le niveau dégénéré)" % pc)
+			"collect":
+				has_achievement = true
+				if int(obj["count"]) < 1:
+					errors.append("collect : compte < 1")
+				elif int(obj["count"]) > resource_count:
+					errors.append("collect %d > %d ressource(s) sur la grille : inatteignable dès le tick 0" % [int(obj["count"]), resource_count])
+			"preservation":
+				if not agents.is_empty() and int(obj["max_lost"]) >= agents.size():
+					errors.append("preservation max_lost=%d >= effectif %d : contrainte sans effet" % [int(obj["max_lost"]), agents.size()])
+			"celerity":
+				if max_ticks >= 1 and int(obj["max_ticks"]) >= max_ticks:
+					errors.append("celerity %d >= limite du niveau %d : échéance sans effet" % [int(obj["max_ticks"]), max_ticks])
+			"interdiction":
+				for pair in obj.get("cells", []):
+					if int(pair[0]) < 0 or int(pair[0]) >= width or int(pair[1]) < 0 or int(pair[1]) >= height:
+						errors.append("interdiction : case (%d,%d) hors de la grille %d×%d" % [int(pair[0]), int(pair[1]), width, height])
+	if not has_achievement:
+		errors.append("aucun objectif d'accomplissement (extraction/collect) : le niveau ne peut jamais être gagné — refus (exigence T-074, CDC §12.2.1)")
+
 	if has_extraction and not has_exit:
 		errors.append("objectif d'extraction sans aucune sortie (« E ») dans la grille")
 
 	if has_cyclic and cycle.is_empty():
 		errors.append("case « C » présente mais aucune ligne `cycle: period=N active=M` en en-tête")
+	if not cycle.is_empty() and not has_cyclic:
+		errors.append("cycle déclaré en en-tête mais aucune case « C » dans la grille")
 	if not cycle.is_empty():
 		var period := int(cycle.get("period", 0))
 		var active := int(cycle.get("active_ticks", 0))
@@ -169,11 +215,27 @@ static func parse(text: String, min_cycle_period: int) -> Dictionary:
 	var slots := int(header.get("slots", "4"))
 	if slots < 1 or slots > StackEnumerator.MAX_SLOTS:
 		errors.append("slots=%d invalide (attendu 1 à %d, RG-05)" % [slots, StackEnumerator.MAX_SLOTS])
-	var max_ticks := int(header.get("max_ticks", "0"))
 	if max_ticks < 1:
 		errors.append("max_ticks manquant ou invalide (entier >= 1 requis)")
 	if header.has("expected_wins") and int(header["expected_wins"]) < 0:
 		errors.append("expected_wins=%s invalide (entier >= 0 requis)" % header["expected_wins"])
+
+	# Prédictions de fiche vs espace atteignable (CDC §12.2.1) :
+	# expected_wins compte des PILES (convention de l'outil, arbitrage du
+	# 6 août 2026) ; expected_classes, optionnel, compte des classes
+	# structurelles — le validateur rapporte les deux.
+	if header.has("expected_wins") and not allowed_rules.is_empty() \
+			and slots >= 1 and slots <= StackEnumerator.MAX_SLOTS:
+		var n_total := StackEnumerator.expected_count(allowed_rules.size(), slots)
+		if int(header["expected_wins"]) > n_total:
+			errors.append("expected_wins=%d > N_total=%d (%d règle(s), %d emplacement(s), pile vide incluse)" % [
+				int(header["expected_wins"]), n_total, allowed_rules.size(), slots])
+	if header.has("expected_classes"):
+		if int(header["expected_classes"]) < 1:
+			errors.append("expected_classes=%s invalide (entier >= 1 requis)" % header["expected_classes"])
+		elif header.has("expected_wins") and int(header["expected_classes"]) > int(header["expected_wins"]):
+			errors.append("expected_classes=%d > expected_wins=%d : impossible (une classe contient au moins une pile)" % [
+				int(header["expected_classes"]), int(header["expected_wins"])])
 
 	if not errors.is_empty():
 		return {"level": {}, "errors": errors}
@@ -201,6 +263,8 @@ static func parse(text: String, min_cycle_period: int) -> Dictionary:
 		level["tutorial"] = true
 	if header.has("expected_wins"):
 		level["expected_wins"] = int(header["expected_wins"])
+	if header.has("expected_classes"):
+		level["expected_classes"] = int(header["expected_classes"])
 	return {"level": level, "errors": errors}
 
 ## `[R01, R02]` ou `[1, 2]` -> [1, 2]. Chaque règle doit être implémentée
@@ -218,6 +282,9 @@ static func _parse_allowed_rules(value: String, errors: PackedStringArray) -> Ar
 		var rule_id := int(token)
 		if RuleRegistry.get_rule(rule_id) == null:
 			errors.append("allowed_rules : règle %s non implémentée à ce jour" % token_raw.strip_edges())
+			continue
+		if out.has(rule_id):
+			errors.append("allowed_rules : règle %s en double (l'espace énuméré serait faux)" % token_raw.strip_edges())
 			continue
 		out.append(rule_id)
 	if out.is_empty():
