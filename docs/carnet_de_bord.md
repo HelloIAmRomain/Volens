@@ -6,6 +6,66 @@ fait foi sur l'avancement réel, en complément du plan de production.
 
 ---
 
+## PÉRIMÈTRE FERMÉ — définition de « prêt pour les testeurs » (6 août 2026)
+
+**J-1 est reporté.** Décision du concepteur : les tests se feront sur une
+version aboutie, installée sur son téléphone, jamais sur un prototype au
+banc. *Une interface à moitié faite ferait échouer les testeurs pour des
+raisons étrangères à la question posée* — on mesurerait leur patience au
+lieu de l'émergence.
+
+**Ce périmètre est FERMÉ.** Tout ce que le testeur touche pendant ses trente
+minutes doit fonctionner ; le reste attend. **Une tâche qui n'est dans
+aucune des deux colonnes se demande avant d'être faite.**
+
+### Doit être fini
+
+| # | Élément |
+|---|---|
+| 1 | **Chapitre 1 complet** : les 5 niveaux conçus, validés, conformes à leurs critères QN |
+| 2 | **Menu principal** : titre, Jouer / Continuer. Rien d'autre |
+| 3 | **Sélecteur des 5 niveaux** : état résolu / non résolu, progression sauvegardée |
+| 4 | **Interface de jeu propre** : pile de 4 emplacements, glisser-déposer **et** équivalent sans glissement (ENF-25), tiroir de bibliothèque |
+| 5 | **Objectif et avancement en continu** (RG-17) |
+| 6 | **Écran de bilan** : gagné / perdu, pourquoi, reprise en un geste |
+| 7 | **EF-05 — PRIORITÉ DE LA LISTE** : toucher un agent → quelle règle a décidé, et pourquoi les précédentes non. Sans lui, un testeur qui échoue ne peut former aucune hypothèse : il abandonne, et on mesure sa patience au lieu de l'émergence |
+| 8 | **Lisibilité DA-02/03** : danger, lumière, sortie distinguables sans légende |
+| 9 | **Reprise après fermeture** (EF-20/21) · **vitesse lente au premier niveau** (T-031) · portrait, une main |
+| 10 | **APK installable sur le S23** (voir lot d'empaquetage) |
+
+### Ne doit PAS être fait
+
+Audio · chapitres 2-6 et carte des chapitres · défis optionnels, encyclopédie,
+aide graduée · accessibilité complète · localisation anglaise · optimisation
+fine et budget de poids · facturation, AAB de production, création de
+l'application dans la Play Console.
+
+### Lot d'empaquetage — à faire TÔT, pour ne pas le découvrir à la fin
+
+- **APK signé en debug, pas AAB** : l'AAB ne sert qu'au magasin, il n'est
+  pas installable directement.
+- Preset d'export Android : `minSdk` 33, `targetSdk` 36, portrait verrouillé,
+  **aucune permission**, `gl_compatibility`.
+- JDK 17 en place (`~/opt/jdk17`), déclaré dans les paramètres
+  d'éditeur. Export depuis Ubuntu, tout dans `$HOME`.
+- Installation par `adb` en sans-fil (`adb pair` puis `adb connect`).
+- **Numéro de version visible dans le menu** : le concepteur réinstallera
+  souvent et doit savoir quel build est sur le téléphone.
+- **Remise à zéro de la progression depuis le menu** : rejouer le premier
+  contact autant de fois qu'il le faut.
+- Procédure complète documentée dans `docs/environnement_dev.md` — elle sera
+  refaite chaque semaine.
+
+### Conséquence immédiate sur l'ordre de travail
+
+**R03 redevient bloquant.** Le chapitre 1 complet suppose N3-N5, qui étaient
+bâties sur la troisième famille de comportement. Reprise immédiate de R03 ;
+si le deuxième archétype du §7.3 ne se produit toujours pas, on assume deux
+familles et le concepteur réinvente N3-N5 sur cette base. L'empaquetage
+avance en parallèle : il ne dépend de rien.
+
+---
+
 ## Règle de méthode — un observable inattendu se mesure, il ne se classe pas
 
 **Un comportement inattendu qui trouve son explication du premier coup doit
