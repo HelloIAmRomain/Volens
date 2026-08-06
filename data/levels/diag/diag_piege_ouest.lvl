@@ -1,17 +1,28 @@
-# DIAGNOSTIC — pas un niveau de jeu. LA ZONE PIÈGE OUEST (décision 17) :
-# le danger est au milieu du flux, des agents vivent à son ouest. Pour eux,
-# aller à l'Est RAPPROCHE du danger — la seule direction qui éloigne est le
-# Sud, puis R01 les ramène au Nord. Mesuré : 2 446 demi-tours, nuée qui ne
-# termine jamais. Sert à la question 3 — « à quel point est-ce laid ? »
+# DIAGNOSTIC — pas un niveau de jeu. LE CYCLE LIMITE DE PORTÉE (décision 31).
+#
+# Le danger est sur l'axe d'approche. Un agent qui monte traverse la frontière
+# de perception de R02 dans les deux sens, sans fin :
+#
+#   d² = 32  > portée 25  ->  R02 s'abstient, R01 dit Nord   -> il monte
+#   d² = 25 <= portée 25  ->  R02 dit Sud (seule direction    -> il redescend
+#                             qui éloigne)                       et recommence
+#
+# Un répulseur à seuil dur plus un attracteur produit TOUJOURS un cycle limite
+# au seuil : c'est structurel, pas un réglage. Le nom du fichier vient d'un
+# premier diagnostic erroné (« zone piège Ouest ») — conservé pour ne pas
+# casser les références, mais la cause est celle décrite ci-dessus.
+#
+# Mesuré : 2 446 demi-tours, nuée qui ne termine jamais.
+# Question 3 — « un joueur croirait-il à un bug ? »
 #
 #   --stacks=2-1
 id: diag_piege_ouest
-name: Zone piege Ouest (diagnostic)
+name: Cycle limite de portee (diagnostic)
 allowed_rules: [R01, R02, R03]
 slots: 3
 max_ticks: 250
 objective: extraction 60
-lesson: "Diagnostic : la zone piege Ouest de R02, vue de l'oeil."
+lesson: "Diagnostic : le cycle limite a la frontiere de portee de R02."
 ---
 . . . . L . . . . .
 E E E E E E E E E E

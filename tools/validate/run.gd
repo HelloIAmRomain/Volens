@@ -46,6 +46,9 @@ func _init() -> void:
 		print("fiche            : attendu %d, constaté %d" % [summary["expected_wins"], summary["n_win"]])
 	if summary["min_ticks"] >= 0:
 		print("étalon efficience: %d ticks, pile %s" % [summary["min_ticks"], str(summary["best_stack"])])
+	if int(summary.get("wins_with_oscillation", 0)) > 0:
+		print("sur-place        : %d pile(s) gagnante(s), jusqu'à %d agent(s) — à corriger au dessin" % [
+			summary["wins_with_oscillation"], summary["max_oscillating_agents"]])
 	print("verdict QN-01    : %s" % summary["qn01_verdict"])
 	print("rapports         : %s/%s.{csv,summary.json}" % [out_dir, level_name])
 	quit(0)
@@ -62,14 +65,15 @@ func _parse_args() -> Dictionary:
 
 func _write_csv(path: String, rows: Array) -> void:
 	var file := FileAccess.open(path, FileAccess.WRITE)
-	file.store_line("stack;outcome;ticks;exited;lost;final_hash;looped")
+	file.store_line("stack;outcome;ticks;exited;lost;oscillating;stuck;final_hash;looped")
 	var outcome_names := ["RUNNING", "WON", "LOST"]
 	for row in rows:
 		var stack_str := "-".join(PackedStringArray(Array(row["stack"]).map(func(v: Variant) -> String: return str(int(v)))))
-		file.store_line("%s;%s;%d;%d;%d;%s;%s" % [
+		file.store_line("%s;%s;%d;%d;%d;%d;%d;%s;%s" % [
 			stack_str if not stack_str.is_empty() else "(vide)",
 			outcome_names[row["outcome"]], row["ticks"], row["exited"],
-			row["lost"], row["final_hash"], str(row["looped"])])
+			row["lost"], row["oscillating"], row["stuck"],
+			row["final_hash"], str(row["looped"])])
 	file.close()
 
 func _write_json(path: String, summary: Dictionary) -> void:

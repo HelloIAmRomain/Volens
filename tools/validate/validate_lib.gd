@@ -20,6 +20,19 @@ const MIN_CYCLE_PERIOD_DEFAULT := 6
 const R11_CARRY := 11
 const R12_DROP := 12
 
+## Détection du sur-place perpétuel (6 août 2026). Un agent peut rester
+## bloqué dans un cycle court — typiquement un aller-retour de période 2 sur
+## la frontière de portée de R02 : à d² <= portée la règle le repousse, à
+## d² > portée elle s'abstient et R01 le ramène. C'est un cycle limite
+## structurel (répulseur à seuil + attracteur), pas un défaut de réglage.
+##
+## Le niveau reste GAGNABLE quand les autres agents sortent — la coupe de
+## boucle (DT-16) ne le voit donc pas — mais le joueur, lui, y voit un bug.
+## D'où cette mesure à part : « aucune pile gagnante ne doit laisser un agent
+## osciller » est un critère de conception vérifiable à l'écriture du niveau.
+const OSCILLATION_WINDOW := 12
+const MAX_OSCILLATION_PERIOD := 6
+
 ## Simule une pile jusqu'à l'issue, la limite de ticks du niveau, ou une
 ## boucle détectée. Renvoie : outcome, ticks, exited, lost, final_hash,
 ## looped.
@@ -29,9 +42,19 @@ static func simulate_stack(level_data: Dictionary, params: RuleParams, stack: Ar
 	var modulus: int = _cycle_modulus(state)
 	var seen: Dictionary = {}
 
+	# Fenêtre glissante des dernières positions, par agent.
+	var history: Array = []
+	for agent in state.agents:
+		history.append([agent.pos])
+
 	var looped := false
 	while state.outcome == SimState.Outcome.RUNNING and state.tick < tick_cap:
 		state = SimCore.step(state, stack)
+		for i in range(state.agents.size()):
+			var h: Array = history[i]
+			h.append(state.agents[i].pos)
+			if h.size() > OSCILLATION_WINDOW:
+				h.pop_front()
 		if state.outcome != SimState.Outcome.RUNNING:
 			break
 		var key := "%d:%s" % [state.tick % modulus, StateHash.to_hex(StateHash.dynamics_hash(state))]
@@ -44,6 +67,8 @@ static func simulate_stack(level_data: Dictionary, params: RuleParams, stack: Ar
 	if looped:
 		outcome = SimState.Outcome.LOST  # boucle = objectif à jamais hors d'atteinte
 
+	var motion := _classify_motion(state, history, looped)
+
 	return {
 		"stack": stack.duplicate(),
 		"outcome": outcome,
@@ -53,7 +78,55 @@ static func simulate_stack(level_data: Dictionary, params: RuleParams, stack: Ar
 		"final_hash": StateHash.to_hex(SimCore.hash_state(state)),
 		"equivalence_key": equivalence_key(state),
 		"looped": looped,
+		"oscillating": motion["oscillating"],
+		"stuck": motion["stuck"],
 	}
+
+## Classe les agents encore présents à la fin : combien font du sur-place
+## perpétuel (cycle de période >= 2), combien sont figés (période 1).
+##
+## Deux chemins, parce que la simulation peut s'arrêter tôt : si la coupe de
+## boucle a tranché, l'état ENTIER se répète, donc tout agent qui bouge
+## encore est par définition dans un cycle — inutile d'attendre une fenêtre
+## pleine. Sinon, on cherche une périodicité dans la fenêtre glissante.
+static func _classify_motion(state: SimState, history: Array, looped: bool) -> Dictionary:
+	var oscillating := 0
+	var stuck := 0
+	for i in range(state.agents.size()):
+		if not state.agents[i].is_present():
+			continue
+		var positions: Array = history[i]
+		var period := 0
+		if looped:
+			period = 1 if _all_equal(positions) else 2
+		else:
+			period = _cycle_period(positions)
+		if period == 1:
+			stuck += 1
+		elif period >= 2:
+			oscillating += 1
+	return {"oscillating": oscillating, "stuck": stuck}
+
+static func _all_equal(positions: Array) -> bool:
+	for i in range(1, positions.size()):
+		if positions[i] != positions[0]:
+			return false
+	return true
+
+## Plus petite période qui explique toute la fenêtre, ou 0 si aucune.
+static func _cycle_period(positions: Array) -> int:
+	var n: int = positions.size()
+	if n < OSCILLATION_WINDOW:
+		return 0
+	for p in range(1, MAX_OSCILLATION_PERIOD + 1):
+		var periodic := true
+		for i in range(n - p):
+			if positions[i] != positions[i + p]:
+				periodic = false
+				break
+		if periodic:
+			return p
+	return 0
 
 ## Clé d'ÉQUIVALENCE d'une issue — à ne jamais confondre avec son IDENTITÉ.
 ##
@@ -191,6 +264,15 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 	# structurelles — les deux sont confrontés et rapportés.
 	var expected_classes := int(level_data.get("expected_classes", -1))
 
+	# Sur-place perpétuel parmi les piles GAGNANTES : le niveau est jouable et
+	# paraît cassé. Rapporté, jamais bloquant — c'est au concepteur de juger.
+	var wins_with_oscillation := 0
+	var max_oscillating := 0
+	for w in wins:
+		if int(w["oscillating"]) > 0:
+			wins_with_oscillation += 1
+			max_oscillating = maxi(max_oscillating, int(w["oscillating"]))
+
 	var n_classes: int = classes.size()
 	var verdict: String
 	if empty_stack_wins:
@@ -217,6 +299,10 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 	else:
 		verdict = "CONFORME QN-01 (3 <= classes <= 40)"
 
+	if wins_with_oscillation > 0:
+		verdict += "   ⚠ %d pile(s) gagnante(s) laissent jusqu'à %d agent(s) faire du sur-place perpétuel : le joueur y verra un bug" % [
+			wins_with_oscillation, max_oscillating]
+
 	@warning_ignore("integer_division")
 	var win_ratio_percent: int = wins.size() * 100 / rows.size() if rows.size() > 0 else 0
 
@@ -237,6 +323,8 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 			"expected_classes": expected_classes,
 			"structural_errors": [],
 			"collect_out_of_chapter": collect_out_of_chapter,
+			"wins_with_oscillation": wins_with_oscillation,
+			"max_oscillating_agents": max_oscillating,
 			"qn01_verdict": verdict,
 		},
 	}

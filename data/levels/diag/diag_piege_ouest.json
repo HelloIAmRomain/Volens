@@ -317,9 +317,9 @@
     ]
   },
   "id": "diag_piege_ouest",
-  "lesson": "Diagnostic : la zone piege Ouest de R02, vue de l'oeil.",
+  "lesson": "Diagnostic : le cycle limite a la frontiere de portee de R02.",
   "max_ticks": 250,
-  "name": "Zone piege Ouest (diagnostic)",
+  "name": "Cycle limite de portee (diagnostic)",
   "objectives": [
     {
       "percent": 60,

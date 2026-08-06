@@ -336,10 +336,12 @@ rendu) avant de reprendre.
     PRODUIT de la poussée et n'apparaît qu'une fois R02 abstenue. **Les
     zones d'action des deux règles sont disjointes, donc leur ordre est
     inobservable** — aucune géométrie de niveau ne peut les séparer.
-25. **Zone piège Ouest, mesurée à grande échelle** : toute géométrie où un
-    danger a des agents à son ouest produit 1 494 à 2 446 demi-tours et une
-    nuée qui ne termine jamais. Bien plus violent qu'estimé en décision 17 :
-    le niveau est injouable, pas seulement imparfait.
+25. ~~**Zone piège Ouest**~~ — **DIAGNOSTIC ERRONÉ, corrigé le 6 août au
+    soir par la décision 31.** J'avais attribué le va-et-vient perpétuel à
+    la position du danger à l'est des agents. C'était le bon symptôme et la
+    mauvaise cause. Trace conservée ici pour mémoire : les chiffres (1 494
+    à 2 446 demi-tours, nuée qui ne termine jamais) sont exacts, leur
+    explication ne l'était pas. Voir la décision 31 pour le mécanisme réel.
 26. **Évitement pur de R02 : PARQUÉ.** L'idée (R02 refuse les pas létaux et
     s'abstient sinon, au lieu de repousser) réglerait la zone piège et
     rendrait les ordres observables — mais c'est une CONTRAINTE, et la
@@ -425,6 +427,76 @@ critique de J-1 (6 septembre) — sans lui, aucun testeur ne peut jouer.
     **Échéance : avant le premier code du chapitre 3.** Ne pas ouvrir avant
     J-1 (6 septembre) — la question est structurante et ne se tranche pas
     sous contrainte de calendrier.
+
+## Fait — Première observation à l'œil, et ce qu'elle a corrigé (6 août 2026, soir)
+
+Le concepteur a regardé le jeu tourner. **Ses trois observations confirment
+les compteurs** — ce qui valide rétroactivement la méthode de mesure, mais
+l'une d'elles a aussi renversé un diagnostic consigné.
+
+31. **Le va-et-vient perpétuel est un CYCLE LIMITE À LA FRONTIÈRE DE PORTÉE,
+    pas une affaire de géométrie est/ouest** (corrige la décision 25).
+    Trace exacte d'un agent, danger en (4,10), portée² de R02 = 25 :
+
+    | tick | pos | d² | R02 | R01 | décide |
+    |---|---|---|---|---|---|
+    | 0 | (0,14) | 32 | abstient | Nord | R01 → Nord |
+    | 1 | (0,13) | **25** | **Sud** | Nord | R02 → Sud |
+    | 2 | (0,14) | 32 | abstient | Nord | R01 → Nord |
+
+    L'agent traverse la frontière de perception dans les deux sens, sans
+    fin. **Un répulseur à seuil dur plus un attracteur produit toujours un
+    cycle limite au seuil** : c'est structurel, pas un réglage. Vérifié que
+    les échappatoires ne tiennent pas — une hystérésis sur la portée ne fait
+    qu'élargir le cycle ; « préférer la direction qui éloigne le plus » ne
+    change rien car au point critique le sud est la SEULE direction qui
+    éloigne ; et l'ordre N>E>S>O choisit le sud avant l'ouest de toute façon,
+    donc le bord de grille n'y est pour rien.
+
+32. **Un seul défaut, deux visages.** Les deux agents qui traînaient sous
+    R03 v2 relèvent du même mécanisme : R03 s'active sous un seuil de
+    voisins, R01 pousse vers la lumière, l'agent traverse le seuil dans les
+    deux sens. Le concepteur voyait deux problèmes ; c'en est un.
+
+33. **L'échéance de la décision 30 est avancée de fait.** Le seul correctif
+    robuste est que R02 **évite** au lieu de **repousser** — sans répulsion,
+    pas de cycle. Or éviter est une CONTRAINTE : ça exige le genre
+    « filtre ». La révision du système de règles était datée « avant le
+    chapitre 3 » à cause de R08 ; elle touche en réalité le **chapitre 1**,
+    et il y a désormais une preuve visuelle, pas seulement des compteurs.
+    Elle reste néanmoins à n'ouvrir qu'après J-1.
+
+34. **EQ-05 définitivement violé, confirmé à l'œil.** « Fuir > Grouper >
+    Lumière » et « Grouper > Fuir > Lumière » sont indiscernables à l'écran,
+    comme ils l'étaient à l'empreinte. Deux des quatre archétypes du CDC
+    §7.3 sont le même comportement. Plus rien à mesurer : c'est un fait
+    acquis qui attend la révision d'architecture.
+
+### Livré : métrique de sur-place au validateur
+
+Le validateur détectait déjà les boucles complètes (DT-16), mais **pas** le
+cas qui compte : quelques agents oscillent pendant que les autres sortent —
+le niveau est gagnable et paraît cassé. Il rapporte désormais, par pile,
+les agents `oscillating` (cycle de période ≥ 2) et `stuck` (figés), et
+signale dans le verdict toute **pile gagnante** qui laisse un agent en
+sur-place. Sur la géométrie fautive : 2 piles gagnantes, jusqu'à 8 agents.
+Sur `ch1_01` : rien.
+
+**Critère de conception qui en découle, vérifiable à l'écriture :** *aucune
+pile gagnante ne doit laisser un agent osciller.* C'est ce qui remplace la
+fausse règle « pas d'agent à l'ouest d'un danger » de la décision 25.
+Aucune cérémonie d'or : c'est du `tools/`, `core/` est intouché.
+
+### Dette documentaire à traiter
+
+- **Numérotation** : les décisions 16-19 vivent sur la branche
+  `docs/fiches-ch1` (PR #4, brouillon) et manquent donc sur `main`.
+- **PR #4 est périmée en partie** : les fiches N3/N4/N5 sont bâties sur
+  l'arc à trois familles, que les décisions 20-24 ont invalidé ; sa
+  décision 17 porte le diagnostic erroné corrigé ici. Les fiches N1/N2
+  restent bonnes, ainsi que l'allongement de `ch1_01` en 8×16. **À
+  retravailler après la révision d'architecture, pas à fusionner telle
+  quelle.**
 
 ## Reste à faire
 
