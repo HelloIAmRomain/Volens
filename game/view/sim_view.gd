@@ -318,8 +318,9 @@ func _rebuild_static_layers() -> void:
 				GridState.CellType.DROPOFF:
 					goals.append([Vector2(x, y), ViewPalette.DROPOFF])
 	_fill(_walls_mm, walls, _cell_size)
-	# Les buts débordent de leur case : le halo doit rayonner.
-	_fill(_goal_mm, goals, _cell_size * 2.6)
+	# Les buts rayonnent, mais pas au point de noyer trois rangées de grille :
+	# la hiérarchie DA-02 est but > danger > nuée > décor, pas but > tout.
+	_fill(_goal_mm, goals, _cell_size * 1.5)
 
 func _process(_dt: float) -> void:
 	if _to == null:
@@ -376,9 +377,9 @@ func _draw_trails() -> void:
 		for k in range(t.size() - 1):
 			var age := float(k + 1) / float(t.size())
 			var c := color
-			c.a = age * 0.30
+			c.a = age * 0.20
 			items.append([Vector2(t[k]), c])
-	_fill(_trail_mm, items, _cell_size * 0.34)
+	_fill(_trail_mm, items, _cell_size * 0.22)
 
 ## Quelle règle a décidé pour cet agent, à ce tick ? Lecture seule : on
 ## interroge les mêmes règles que la simulation, on n'en réimplémente aucune

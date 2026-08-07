@@ -22,15 +22,45 @@ bout en bout**, donc rien n'a touché la sémantique de jeu.
 | Dangers intercalés + couloir libre | **1 820 (30 %)** | 13 agents | **non, 0/20** |
 | Goulot bordé de dangers | 4 | 2 agents | non |
 
-45. **La contention et la jouabilité s'opposent.** Le maximum atteignable est
-    **1 820 agents-ticks (30 %)** avec des dangers intercalés dans une nuée
-    dispersée — mais la nuée ne sort plus. Le meilleur compromis **jouable**
-    est **303 (14 %), pic de 3-4 agents** : deux murs de dangers latéraux
-    encadrant le trajet, nuée dispersée, 18/20 sortis.
-    **Réponse à la réserve du concepteur** : la troisième famille est
-    perceptible, mais **en filet** — quelques agents à la fois, sur la durée —
-    jamais en vague. Un niveau qui veut la rendre évidente doit accepter de
-    perdre des agents.
+45. **La contention et la jouabilité s'opposent** *(en volume)*. Le maximum
+    atteignable est **1 820 agents-ticks (30 %)** avec des dangers intercalés
+    dans une nuée dispersée — mais la nuée ne sort plus. Le meilleur
+    compromis jouable est **303 (14 %), pic de 3-4 agents**.
+
+    ~~*« Un niveau qui veut rendre la troisième famille évidente doit
+    accepter de perdre des agents. »*~~ **CONCLUSION FAUSSE, corrigée le
+    7 août 2026 par la décision 54.**
+
+54. **La visibilité de R03 dépend du TYPE D'OBJECTIF, pas de la géométrie**
+    (correction du concepteur, vérifiée par la mesure). J'avais confondu le
+    *volume* de contention avec la *conséquence* d'une contention : deux
+    règles peuvent se disputer un agent 300 fois sans que l'issue change
+    d'un iota. Mesuré sur la géométrie à contention maximale : R03 y change
+    **zéro perte et zéro sortie**.
+
+    Le bon dispositif n'est pas d'entasser les dangers, c'est un **traînard
+    isolé dont la route naturelle croise un danger**. R03 le dévie vers le
+    groupe, donc hors de la colonne fatale. Mesuré (19 agents, 3 isolés
+    dans la colonne du danger) :
+
+    | Pile | Sortis | Perdus |
+    |---|---|---|
+    | Lumière seule | 16 | **3** |
+    | Grouper > Lumière | 18 | **1** |
+
+    **R03 sauve 2 agents.** Sous une **préservation `max_lost = 1`**, les
+    deux piles se séparent : l'une gagne, l'autre perd. Sous une
+    **extraction**, les mêmes piles donnent 84 % et 94 % — tout seuil
+    inférieur ou égal à 84 % les confond, et personne ne remarque rien.
+
+    **Le filet devient décisif sans devenir une vague** — et sans qu'aucun
+    niveau ait à sacrifier des agents pour être lisible. C'est cohérent avec
+    ce que R03 v2 est devenue : elle récupère les traînards, et seul un
+    objectif qui compte les pertes rend ce rôle visible.
+
+    **Conséquence pour N3-N5** : le niveau qui doit exposer la troisième
+    famille porte une **préservation**, pas une extraction — et sa
+    géométrie place quelques traînards isolés sur une route dangereuse.
 
 ### ch1_02 « Le détour » — conforme du premier coup
 

@@ -27,6 +27,11 @@ enabled=PackedStringArray("res://addons/gut/plugin.cfg")
 ; redimensionnement entier vers les densités courantes (xhdpi/xxhdpi) sans flou.
 window/size/viewport_width=1080
 window/size/viewport_height=2400
+; Fenêtre de bureau : le portrait 1080×2400 ne tient sur aucun écran
+; d'ordinateur. La base de rendu reste 1080×2400 (l'étirement canvas_items
+; s'en charge) ; seule la fenêtre est réduite, à ratio identique.
+window/size/window_width_override=540
+window/size/window_height_override=1200
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 window/handheld/orientation="portrait"

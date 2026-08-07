@@ -3,7 +3,7 @@ shader_type canvas_item;
 // + shader, jamais de texture. Respiration lente, coupable en mode
 // « animations réduites » (ENF-21) via reduced_motion.
 
-uniform float falloff : hint_range(0.5, 4.0) = 2.2;
+uniform float falloff : hint_range(0.5, 6.0) = 3.4;
 uniform float pulse_amplitude : hint_range(0.0, 0.5) = 0.14;
 uniform float pulse_speed : hint_range(0.0, 4.0) = 1.1;
 uniform bool reduced_motion = false;

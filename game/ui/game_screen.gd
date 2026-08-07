@@ -24,7 +24,7 @@ var _objective_label: Label
 var _slots: Array[RuleSlot] = []
 var _chips: Array[RuleChip] = []
 var _drawer: PanelContainer
-var _explain_panel: PanelContainer
+var _explain_panel: Panel
 var _explain_label: Label
 var _play_button: Button
 var _speed_button: Button
@@ -205,23 +205,16 @@ func _build_chips() -> void:
 		_chips.append(chip)
 
 func _build_explain_panel() -> void:
-	_explain_panel = PanelContainer.new()
+	# Panel nu plutôt que PanelContainer : un conteneur impose sa propre
+	# taille minimale et ignore celle qu'on lui donne. Ici on veut un
+	# rectangle exactement aussi haut que son texte, posé où on le décide.
+	_explain_panel = Panel.new()
 	_explain_panel.name = "ExplainPanel"
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.04, 0.05, 0.08, 0.96)
-	style.corner_radius_top_left = 14
-	style.corner_radius_top_right = 14
-	style.corner_radius_bottom_left = 14
-	style.corner_radius_bottom_right = 14
-	style.border_width_left = 2
-	style.border_width_right = 2
-	style.border_width_top = 2
-	style.border_width_bottom = 2
-	style.border_color = Color(0.35, 0.85, 1.0, 0.8)
-	style.content_margin_left = 20
-	style.content_margin_right = 20
-	style.content_margin_top = 16
-	style.content_margin_bottom = 16
+	style.bg_color = Color(0.04, 0.05, 0.08, 0.97)
+	style.set_corner_radius_all(14)
+	style.set_border_width_all(2)
+	style.border_color = Color(0.35, 0.85, 1.0, 0.85)
 	_explain_panel.add_theme_stylebox_override("panel", style)
 	_explain_panel.visible = false
 	_explain_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -230,7 +223,7 @@ func _build_explain_panel() -> void:
 	_explain_label = Label.new()
 	_explain_label.add_theme_font_size_override("font_size", 24)
 	_explain_label.add_theme_color_override("font_color", Color(0.88, 0.92, 1.0))
-	_explain_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_explain_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_explain_panel.add_child(_explain_label)
 
 # --- EF-05 : le diagnostic ---------------------------------------------------------
@@ -281,15 +274,22 @@ func _show_explain_at(local_pos: Vector2) -> void:
 	_explain_panel.visible = true
 	_position_explain_panel()
 
+## Posé au BAS de la zone de grille, aussi haut que son texte et pas plus :
+## il occupait la moitié de l'écran et masquait la nuée, c'est-à-dire
+## exactement l'agent dont il parle.
 func _position_explain_panel() -> void:
-	# Ancré sous la grille, jamais par-dessus la nuée : le joueur doit voir
-	# l'agent dont on lui parle.
 	var vp := get_viewport_rect().size
 	var m := UiMetrics.safe_area_margins(vp)
-	_explain_panel.reset_size()
+	var pad := 18.0
 	var width: float = vp.x - m.x - m.z
-	_explain_panel.position = Vector2(m.x, _view_host.position.y + _view_host.size.y - _explain_panel.size.y - UiMetrics.GAP)
-	_explain_panel.size = Vector2(width, _explain_panel.size.y)
+	var lines: int = maxi(_explain_label.text.split("\n").size(), 1)
+	var height: float = pad * 2.0 + lines * 32.0
+
+	_explain_panel.position = Vector2(
+		m.x, _view_host.position.y + _view_host.size.y - height - UiMetrics.GAP)
+	_explain_panel.size = Vector2(width, height)
+	_explain_label.position = Vector2(pad, pad)
+	_explain_label.size = Vector2(width - pad * 2.0, height - pad * 2.0)
 
 func _hide_explain() -> void:
 	if _explain_panel != null:
@@ -329,8 +329,9 @@ func _layout() -> void:
 
 	if _drawer != null:
 		var drawer_h := UiMetrics.MIN_TOUCH_TARGET + UiMetrics.MARGIN * 2.0
-		_drawer.position = Vector2(left, bottom - transport_h - UiMetrics.GAP - stack_h - UiMetrics.GAP - drawer_h)
 		_drawer.size = Vector2(width, drawer_h)
+		_drawer.position = Vector2(left,
+			_drawer_resting_y() if _drawer.visible else bottom + drawer_h)
 
 	if _explain_panel != null and _explain_panel.visible:
 		_position_explain_panel()
@@ -391,10 +392,29 @@ func _clear_selection() -> void:
 	for chip in _chips:
 		chip.selected = false
 
+## Le tiroir COULISSE depuis le bas (DCT §9.2) : il apparaissait et
+## disparaissait d'un coup, ce qui ne dit pas d'où il vient ni où il repart.
 func _toggle_drawer() -> void:
-	_drawer.visible = not _drawer.visible
-	if not _drawer.visible:
+	var opening: bool = not _drawer.visible
+	var resting: float = _drawer_resting_y()
+	if opening:
+		_drawer.position.y = resting + _drawer.size.y
+		_drawer.visible = true
+	var tween := create_tween()
+	tween.set_ease(Tween.EASE_OUT)
+	tween.set_trans(Tween.TRANS_CUBIC)
+	tween.tween_property(_drawer, "position:y",
+		resting if opening else resting + _drawer.size.y, 0.22)
+	if not opening:
+		tween.tween_callback(func() -> void: _drawer.visible = false)
 		_clear_selection()
+
+func _drawer_resting_y() -> float:
+	var vp := get_viewport_rect().size
+	var m := UiMetrics.safe_area_margins(vp)
+	var bottom: float = vp.y - m.w
+	return bottom - UiMetrics.MIN_TOUCH_TARGET - UiMetrics.GAP \
+		- UiMetrics.MIN_TOUCH_TARGET * 1.25 - UiMetrics.GAP - _drawer.size.y
 
 # --- transport ------------------------------------------------------------------------------
 
