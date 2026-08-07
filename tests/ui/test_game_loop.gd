@@ -73,7 +73,8 @@ func test_the_session_is_written_when_the_system_pauses_the_app() -> void:
 	# qu'Android puisse tuer le processus : la session doit y être écrite.
 	_app._on_play_requested()
 	var game := _screen_of("GameScreen") as GameScreen
-	game._place(RuleRegistry.R01_TOWARD_LIGHT, 0)
+	game._on_chip_tapped(RuleRegistry.R01_TOWARD_LIGHT)
+	game._on_slot_tapped(0)
 	for i in range(4):
 		game._view.step_forward()
 
