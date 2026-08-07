@@ -3,7 +3,9 @@
     "perception_range_sq": 25
   },
   "rester_groupe": {
-    "perception_range_sq": 16
+    "perception_range_sq": 16,
+    "close_range_sq": 2,
+    "min_neighbours": 1
   },
   "validation": {
     "min_cycle_period": 6
