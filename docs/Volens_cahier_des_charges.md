@@ -1,6 +1,6 @@
 # Volens — Cahier des charges fonctionnel
 
-**Version 2.3 — 6 août 2026**
+**Version 2.4 — 7 août 2026**
 *Document de spécification — jeu mobile de puzzle systémique*
 
 ---
@@ -418,10 +418,37 @@ Le chapitre 1 est un tutoriel invisible. **Aucun texte pédagogique** n'est auto
 | Réf. | Exigence | Priorité |
 |---|---|---|
 | ENF-10 | Fluidité constante (60 images/s) sur un téléphone de milieu de gamme d'environ 4 ans d'âge, défini comme appareil de référence au démarrage du projet. | [O] |
-| ENF-11 | Taille d'installation inférieure à 60 Mo. | [O] |
+| ENF-11 | Taille d'installation inférieure à **90 Mo** `⚙️` *(révisée v2.4 — voir §10.1 bis)*. | [O] |
 | ENF-12 | Consommation d'énergie minimale : aucun calcul ni rendu superflu lorsque la simulation est en pause ; palette sombre dominante (économie sur écrans OLED). | [O] |
 | ENF-13 | Lancement à froid en moins de 3 secondes sur l'appareil de référence. | [O] |
 | ENF-14 | Aucune dégradation perceptible avec la nuée maximale (50 agents) et tous les effets actifs. | [O] |
+
+#### 10.1 bis — Révision d'ENF-11 : 60 → 90 Mo *(v2.4, 7 août 2026)*
+
+**Le seuil de 60 Mo était irréalisable dès le premier jour, quel que soit le
+contenu du jeu.** Il avait été fixé sans mesurer le plancher du moteur.
+Mesures faites sur l'APK réel du 7 août 2026 :
+
+| Composant | Taille |
+|---|---|
+| `libgodot_android.so` (arm64, **release**) | **67,8 Mo** |
+| `libgodot_android.so` (arm64, debug) | 72,6 Mo |
+| Runtime Java/Kotlin | ~7 Mo |
+| **Toutes les données du jeu** (niveaux, scripts, icône) | **0,1 Mo** |
+
+Le moteur standard de Godot 4.7.1 impose donc un plancher d'environ 75 Mo
+avant la première ligne de jeu. Aucune discipline de contenu n'y change
+quoi que ce soit : **le jeu lui-même pèse un millième du total.**
+
+**L'intention de sobriété reste servie par ce qui compte réellement** et qui
+n'a jamais dépendu du poids : aucun rendu ni calcul en pause (ENF-12), aucune
+dépendance externe, aucune permission, aucun appel réseau, aucune collecte de
+données (ENF-30/31). Un utilisateur ne subit pas 75 Mo de disque de la même
+façon qu'une application qui l'écoute ou le sollicite.
+
+**Le plancher n'est pas une fatalité définitive** : un modèle d'export sur
+mesure le ramènerait sous le seuil d'origine — voir §17, évolution n°7, et
+le point de décision explicite du jalon J4 (§15).
 
 ### 10.3 Accessibilité
 
@@ -650,7 +677,7 @@ Calendrier indicatif pour une personne seule à temps partiel (~15 h/semaine). L
 | **J1 — Prototype** | Semaine 3 | Chapitre 1 jouable (5 niveaux, 3 règles) ; outil de validation opérationnel sur ces niveaux ; campagne 1 réalisée | **GO / PIVOT / STOP** selon §13.1 — interdiction de continuer « pour voir » |
 | **J2 — Tranche verticale** | Semaine 9 | Chapitres 1-2 complets et finis (interface définitive, audio, sauvegarde, accessibilité de base) ; campagne 2 ; test transport | GO production, ou révision du périmètre |
 | **J3 — Contenu complet** | Semaine 20 | 70+ niveaux, 16 règles, rapports de validation conformes sur 100 % du catalogue ; campagne 3 engagée | Gel du contenu |
-| **J4 — Candidate à la livraison** | Semaine 26 | Localisation, accessibilité complète, performance conforme, liste §16 tenue | Gel de la version |
+| **J4 — Candidate à la livraison** | Semaine 26 | Localisation, accessibilité complète, performance conforme, liste §16 tenue ; **décision explicite sur le modèle d'export sur mesure** (§17 n°7) — oui ou non, jamais un report tacite | Gel de la version |
 | **J5 — Publication** | Semaine 30 | Conformité stores validée, pages de store, lancement | — |
 
 **Règle de conduite J2 :** si, à la fin de la tranche verticale, le concepteur lui-même n'a plus de plaisir à équilibrer et rejouer son propre jeu, ce signal prime sur tout indicateur — c'est le prédicteur le plus fiable de l'intérêt du public.
@@ -692,6 +719,12 @@ Par ordre de priorité pressenti, sans engagement :
 3. **Pack de chapitres additionnels** (contenu payant, jamais d'avantage) — si le scénario commercial nominal est atteint.
 4. **Défis hebdomadaires hors ligne** — un niveau commun préchargé, sans classement en ligne ni date limite réelle, pour ne pas contredire EF-24.
 5. Langues supplémentaires (le coût est structurellement faible, ENF-41).
+7. **Modèle d'export Godot sur mesure** *(v2.4, nouveau)* — recompiler le moteur sans les modules inutilisés ramènerait l'APK arm64 de ~75 Mo à **35-50 Mo**, sous le budget d'origine.
+   · *Gain principal* : `disable_3d=yes` — plusieurs dizaines de mégaoctets, **sans aucun risque** puisque Volens est strictement 2D. S'y ajoutent `optimize=size`, le LTO, et le retrait module par module. Le serveur de texte de repli (`module_text_server_adv_enabled=no` + `module_text_server_fb_enabled=yes`) est sûr — le français et l'anglais n'ont besoin ni de droite-à-gauche ni d'écritures complexes — mais son gain réel est **modeste, de l'ordre de 2 Mo**, bien moins que ce que la documentation laisse croire.
+   · *Coût* : NDK Android à télécharger (plusieurs Go — notre connexion a déjà cédé sur 1 Go), dépôt Godot complet, **recompilation à chaque version du moteur**, et un binaire à archiver que la CI ne saura pas reconstruire.
+   · *Mode d'échec à connaître* : désactiver un module dont dépend autre chose **ne produit aucune erreur de compilation, mais un plantage au lancement**. Le retrait des en-têtes de débogage est une étape **séparée**, sans laquelle le modèle peut sortir plus gros qu'avant. Prévoir une vérification explicite que l'application **démarre encore**, pas seulement qu'elle compile.
+   · *Quand* : **après J4**, une fois la version de Godot gelée. Pas avant — un modèle sur mesure fige la version et ajoute une pièce fragile à maintenir sur les vingt-cinq semaines restantes, pour un gain sans effet sur le jeu ni sur la conversion en boutique. **Un lot dédié d'une journée, décidé et budgété — jamais un rognage glissé dans un lot de correction.**
+
 6. **Portage iOS** *(v2.1, nouveau)* — retiré de la v1.0 pour concentrer le calendrier sur une seule chaîne de publication (§2.2) ; aucun choix technique actuel ne le condamne (DCT §1.6), à réévaluer si le scénario commercial nominal est atteint.
 
 ---
@@ -743,7 +776,7 @@ Par ordre de priorité pressenti, sans engagement :
 
 ---
 
-## Historique des révisions *(v2.3)*
+## Historique des révisions *(v2.4)*
 
 | Version | Date | Changements | Motif |
 |---|---|---|---|
@@ -751,5 +784,6 @@ Par ordre de priorité pressenti, sans engagement :
 | 2.1 | 4 août 2026 | Retrait d'iOS du périmètre v1.0 (§1.4, §2.1, §2.2, §14.4, §16, §17 — cohérence avec le choix technique déjà tranché par le DCT, Android uniquement) ; testeurs de la campagne 3 portés à 15-18 et fusion avec le test fermé Google Play (§1.4, §13.3, §14.4) ; obligation de test fermé documentée (§14.4) ; compte développeur Google Play déjà réglé (§14.4) ; `minSdk` 33 et conséquence sur le parc adressable (§3.1, §14.4) ; critères d'acceptation §16 réécrits avec marge (60 i/s à 4×, temps d'image < 4 ms, sobriété en écart) et critère de déterminisme reformulé en deux architectures CPU plutôt qu'en appareils physiques/plateformes (§13.5, §16) | Série de décisions de cadrage prises entre J0 et le début de S2 ; contradiction Android/iOS relevée et tranchée en faveur du DCT (déjà Android uniquement) plutôt que silencieusement ignorée |
 | 2.2 | 5 août 2026 | Nouveau §12.2.1 : QN-01 inapplicable tel quel aux chapitres à bibliothèque restreinte — définition de N_total (convention de l'outil : arrangements de règles distinctes, longueur 0 à `slots`, pile vide incluse), exemption des niveaux `tutorial: true` (critère propre : `N_win` == `expected_wins` exactement), garde-fou « pile vide gagnante = niveau dégénéré », bandes proportionnelles 20-50 % posées comme indicatives et à confirmer après T-040 (non opposables) | Préparation de T-040 : les seuils absolus 3-40 présupposent la bibliothèque complète ; arbitrage du concepteur du 5 août 2026 |
 | 2.3 | 6 août 2026 | **EQ-05 précisée** : la géométrie du niveau de test devient obligatoire (nuée dispersée + danger à portée) — EQ-05 est une propriété du couple règles+niveau, pas des règles seules ; sur une nuée compacte les quatre piles ne donnent que deux comportements et le paramétrage paraît à tort cassé. **Nouvelle EQ-06** : contention par paire de règles au rapport du validateur — critère opérationnel de RG-13, qui se jugeait à l'intuition | Trois semaines perdues à relancer EQ-05 sur des blocs compacts et à en conclure que les règles étaient défectueuses ; la condition est désormais mesurée, pas devinée |
+| 2.4 | 7 août 2026 | **ENF-11 révisée : 60 → 90 Mo** ⚙️ avec sa justification chiffrée (§10.1 bis) — le seuil d'origine était irréalisable dès le premier jour, le moteur standard imposant un plancher de ~75 Mo quand les données du jeu pèsent 0,1 Mo ; nouvelle évolution §17 n°7 « modèle d'export sur mesure » (gains, coûts, mode d'échec, calendrier) ; **point de décision explicite ajouté au jalon J4** | Erreur de cadrage relevée par la mesure : l'exigence avait été fixée sans mesurer le plancher du moteur. L'intention de sobriété reste servie par ce qui compte — aucun rendu en pause, aucune dépendance, aucune collecte |
 
-*Fin du document — v2.3. Toute modification des principes (§4) ou des règles de gestion (§6) exige une révision de version majeure de ce cahier des charges.*
+*Fin du document — v2.4. Toute modification des principes (§4) ou des règles de gestion (§6) exige une révision de version majeure de ce cahier des charges.*
