@@ -18,13 +18,8 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array) -> 
 	add_child(banner)
 
 	var column := VBoxContainer.new()
-	column.set_anchors_preset(Control.PRESET_FULL_RECT)
 	column.alignment = BoxContainer.ALIGNMENT_CENTER
 	column.add_theme_constant_override("separation", int(UiMetrics.GAP))
-	column.offset_left = UiMetrics.MARGIN
-	column.offset_right = -UiMetrics.MARGIN
-	column.offset_top = UiMetrics.MARGIN
-	column.offset_bottom = -UiMetrics.MARGIN
 	add_child(column)
 
 	var verdict := Label.new()

@@ -14,13 +14,13 @@ func setup(progress: Progress) -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 
 	var column := VBoxContainer.new()
-	column.set_anchors_preset(Control.PRESET_FULL_RECT)
 	column.add_theme_constant_override("separation", int(UiMetrics.GAP))
+	add_child(column)
+	column.set_anchors_preset(Control.PRESET_FULL_RECT)
 	column.offset_left = UiMetrics.MARGIN
 	column.offset_right = -UiMetrics.MARGIN
-	column.offset_top = UiMetrics.MARGIN * 2
+	column.offset_top = UiMetrics.MARGIN
 	column.offset_bottom = -UiMetrics.MARGIN
-	add_child(column)
 
 	var title := Label.new()
 	title.text = "Chapitre 1"

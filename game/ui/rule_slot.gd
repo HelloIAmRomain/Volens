@@ -72,7 +72,7 @@ func _refresh() -> void:
 	var color := ViewPalette.slot_color(slot_index)
 	if rule_id == RuleRegistry.EMPTY:
 		_glyph.text = str(slot_index + 1)
-		_glyph.add_theme_color_override("font_color", Color(color, 0.35))
+		_glyph.add_theme_color_override("font_color", Color(color, 0.20))
 		_label.text = ""
 		_style.bg_color = Color(0.09, 0.10, 0.13, 0.85)
 		_style.border_color = Color(color, 0.28)

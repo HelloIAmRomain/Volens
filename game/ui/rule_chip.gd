@@ -15,7 +15,7 @@ var _style: StyleBoxFlat
 
 func _init(id: int = RuleRegistry.EMPTY) -> void:
 	rule_id = id
-	custom_minimum_size = Vector2(UiMetrics.MIN_TOUCH_TARGET * 1.6, UiMetrics.MIN_TOUCH_TARGET)
+	custom_minimum_size = Vector2(UiMetrics.MIN_TOUCH_TARGET * 2.1, UiMetrics.MIN_TOUCH_TARGET)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
 func _ready() -> void:
@@ -46,7 +46,8 @@ func _ready() -> void:
 	label.text = RuleCatalog.name_of(rule_id)
 	label.add_theme_font_size_override("font_size", 22)
 	label.add_theme_color_override("font_color", Color(0.82, 0.86, 0.95))
-	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	# Pas de retour à la ligne : contraint en largeur, le libellé se
+	# repliait en une colonne d'une lettre par ligne.
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(label)
 

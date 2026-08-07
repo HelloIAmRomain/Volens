@@ -104,6 +104,27 @@ suivent pas le dépôt : à refaire sur chaque poste.)*
 
 ---
 
+## Lancer le jeu sur le poste Ubuntu — sans APK
+
+Le jeu tourne en fenêtre portrait sur le poste de développement : inutile
+d'attendre l'appareil pour regarder les écrans.
+
+```bash
+# Le jeu, en fenêtre portrait 540x1200
+~/bin/godot --path .
+
+# Captures automatiques de chaque écran dans reports/screens/
+# (ouvre une fenêtre quelques secondes, écrit 9 images, se ferme seule)
+~/bin/godot --path . game/bench/screenshots.tscn
+```
+
+La base de rendu reste 1080x2400 ; seule la fenêtre est réduite, à ratio
+identique (`window_width_override` dans `project.godot`).
+
+**Ce qui exige vraiment l'appareil**, et rien d'autre : la lisibilité au
+soleil et à luminosité minimale (DA-02), le temps de reprise réel (EF-20/21,
+< 1,5 s) et la jouabilité à une main.
+
 ## Poste Windows — vérifications de comportement Android
 
 - Android Studio, AVD API 36, AVD petit écran (~5,8").

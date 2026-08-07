@@ -53,15 +53,18 @@ func _open_menu() -> void:
 	menu.play_requested.connect(_on_play_requested)
 	menu.select_requested.connect(_open_select)
 	menu.reset_requested.connect(_on_reset_requested)
-	menu.setup(progress, session)
+	# L'écran entre dans l'arbre AVANT d'être configuré : des ancres posées
+	# hors de l'arbre sont perdues, et le contenu retombe sur sa taille
+	# minimale — d'où une colonne collée en haut à gauche.
 	_swap(menu, Screen.MENU)
+	menu.setup(progress, session)
 
 func _open_select() -> void:
 	var select := LevelSelectScreen.new()
 	select.level_chosen.connect(func(level_id: String) -> void: _open_game(level_id, false))
 	select.back_requested.connect(_open_menu)
-	select.setup(progress)
 	_swap(select, Screen.SELECT)
+	select.setup(progress)
 
 func _open_game(level_id: String, resume: bool) -> void:
 	var level_data := LevelCatalog.load_level_data(level_id)
