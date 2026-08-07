@@ -6,6 +6,84 @@ fait foi sur l'avancement réel, en complément du plan de production.
 
 ---
 
+## Lot APK + boucle de jeu (6-7 août 2026) — décisions prises en autonomie
+
+Lot mené sans arbitrage intermédiaire, sur mandat explicite du concepteur.
+Frontière respectée : **les 17 recettes d'or sont restées concordantes de
+bout en bout**, donc rien n'a touché la sémantique de jeu.
+
+### Mesure demandée — contention R2/R3 maximale
+
+| Géométrie | contention | pic simultané | la nuée sort ? |
+|---|---|---|---|
+| Dispersion pas 3, un danger au bord (référence) | 15-23 | 4 agents | oui, 20/20 |
+| Deux murs de dangers latéraux | **303** (14 %) | 3-4 agents | **oui, 18/20** |
+| Dangers intercalés dans la nuée | 1 364 (21 %) | 14 agents | non, 3/20 |
+| Dangers intercalés + couloir libre | **1 820 (30 %)** | 13 agents | **non, 0/20** |
+| Goulot bordé de dangers | 4 | 2 agents | non |
+
+45. **La contention et la jouabilité s'opposent.** Le maximum atteignable est
+    **1 820 agents-ticks (30 %)** avec des dangers intercalés dans une nuée
+    dispersée — mais la nuée ne sort plus. Le meilleur compromis **jouable**
+    est **303 (14 %), pic de 3-4 agents** : deux murs de dangers latéraux
+    encadrant le trajet, nuée dispersée, 18/20 sortis.
+    **Réponse à la réserve du concepteur** : la troisième famille est
+    perceptible, mais **en filet** — quelques agents à la fois, sur la durée —
+    jamais en vague. Un niveau qui veut la rendre évidente doit accepter de
+    perdre des agents.
+
+### ch1_02 « Le détour » — conforme du premier coup
+
+`N_win = 1`, une classe, étalon 31 ticks avec [Fuir, Lumière]. **La
+prédiction falsifiable de la fiche est vérifiée** : `[R01]` et `[R01,R02]`
+produisent la même empreinte finale `19fdfed445951397` — preuve exécutable
+du masquage. Sous `[R01]` seule, le premier agent de la colonne alignée
+entre dans le danger au tick 6 et l'objectif devient inatteignable
+immédiatement (RG-09) : l'échec est binaire, donc parfaitement lisible.
+
+### Décisions tranchées seul
+
+46. **`android/.gdignore` obligatoire.** Sans lui, Godot importe les
+    ressources du modèle Gradle, sème des `.import` dans `android/build/res/`,
+    et le build échoue *après* plusieurs minutes de compilation.
+47. **arm64 seule dans l'APK** (166 → 80 Mo) : le S23 est arm64 et l'APK se
+    réinstalle chaque semaine par wifi. `x86_64` reste réactivable en une
+    ligne pour l'AVD.
+48. **Icône de lanceur procédurale** générée par script (1,1 ko) : Android
+    l'exige. C'est un actif de plateforme, pas un visuel de jeu — DT-13 tient.
+49. **La session ne stocke que la RECETTE** (niveau, pile, tick), jamais
+    l'état. Le déterminisme reconstruit le reste. Un fichier qui ne décrit
+    pas d'état ne peut pas décrire un état impossible : la corruption devient
+    structurellement impossible, pas seulement rattrapée.
+50. **EF-05 vit dans `game/ui/`, pas dans `core/`.** `SimCore.explain`
+    (T-065) est prévu en semaine 8 ; l'écrire maintenant aurait touché
+    `core/` et risqué une empreinte. Le diagnostic interroge **les vraies
+    règles** pour savoir laquelle a décidé (jamais de réimplémentation,
+    DT-15) et ne déduit que la *formulation* du motif d'abstention.
+    Vérifié par test : expliquer ne change pas l'empreinte de l'état.
+51. **Effacement de progression en deux appuis**, sans fenêtre modale (P3) :
+    le premier avertit, le second exécute.
+52. **Les niveaux 3 à 5 s'affichent grisés** avec « en attente de
+    conception » plutôt que d'être cachés : le testeur voit la forme du
+    chapitre et comprend qu'il n'a pas raté une porte.
+53. **Un repli sur sauvegarde corrompue n'est PAS un avertissement.** Sur
+    mobile, le système tue le processus sans préavis, y compris en pleine
+    écriture : c'est un chemin prévu, tracé par `print`, pas signalé comme
+    une anomalie. (`JSON.parse` et non `parse_string`, qui pousse une erreur
+    moteur sur entrée invalide.)
+
+### Deux bogues que seuls les tests ont attrapés
+
+- La persistance de session, branchée **avant** le chargement, écrasait le
+  tick à restaurer : toute reprise serait revenue au tick 0.
+- `restore_session` lisait la session **après** avoir déclenché sa
+  réécriture. Les deux défauts se masquaient l'un l'autre.
+
+Aucun n'était visible à l'œil : la reprise « fonctionnait », elle ramenait
+simplement au début.
+
+---
+
 ## PÉRIMÈTRE FERMÉ — définition de « prêt pour les testeurs » (6 août 2026)
 
 **J-1 est reporté.** Décision du concepteur : les tests se feront sur une
