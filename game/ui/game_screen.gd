@@ -20,7 +20,7 @@ extends Control
 ## garde ses clichés-clés et sa remontée du temps (DT-11/12). C'est
 ## l'affordance qu'on retire, jamais la capacité.
 
-signal finished(level_id: String, won: bool, ticks: int, lost: int, stack: Array)
+signal finished(level_id: String, won: bool, ticks: int, lost: int, stack: Array, reason: String)
 signal quit_requested
 signal state_changed
 
@@ -53,6 +53,16 @@ var _has_selection: bool = false
 var _playing: bool = false
 var _speed_index: int = 0
 var _finished: bool = false
+## Temps mort ⚙️ entre l'instant où la simulation tranche et l'écran de bilan.
+## La simulation atteint LOST au tick où l'objectif devient inatteignable —
+## souvent avant que rien de visible ne se soit produit. Sans ce délai, le
+## bilan surgit sur un écran où il ne s'est apparemment rien passé, et
+## l'échec devient inexplicable (pilier P4).
+const OUTCOME_DELAY := 1.1
+var _outcome_countdown: float = -1.0
+var _objective_panel: Panel
+var _banner_flash: float = 0.0
+var _objective_panel_label: Label
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -133,7 +143,9 @@ func _build() -> void:
 	_objective_label.add_theme_font_size_override("font_size", 28)
 	_objective_label.add_theme_color_override("font_color", Color(0.86, 0.90, 1.0))
 	_objective_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_objective_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Le bandeau est CLIQUABLE : il rouvre l'énoncé complet à tout moment.
+	_objective_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	_objective_label.gui_input.connect(_on_banner_input)
 	add_child(_objective_label)
 
 	_view_host = SubViewportContainer.new()
@@ -152,6 +164,7 @@ func _build() -> void:
 	_build_stack_bar()
 	_build_panel()
 	_build_explain_panel()
+	_build_objective_panel()
 	_layout()
 
 func _build_stack_bar() -> void:
@@ -164,6 +177,7 @@ func _build_stack_bar() -> void:
 		slot.rule_dropped.connect(_on_rule_dropped)
 		slot.tapped.connect(_on_slot_tapped.bind(i))
 		slot.long_pressed.connect(_on_slot_long_pressed.bind(i))
+		slot.remove_requested.connect(_on_remove_requested)
 		row.add_child(slot)
 		_slots.append(slot)
 
@@ -199,11 +213,9 @@ func _build_chips() -> void:
 	for child in row.get_children():
 		child.queue_free()
 	_chips = []
-	# « Retirer » en tête : c'est le chemin sans glissement pour vider un
-	# emplacement (ENF-25).
-	var ids: Array[int] = [RuleRegistry.EMPTY]
-	ids.append_array(_allowed)
-	for rule_id in ids:
+	# Le retrait passe désormais par l'icône de l'emplacement sélectionné,
+	# plus par une pastille aussi grosse qu'une règle.
+	for rule_id in _allowed:
 		var chip := RuleChip.new(rule_id)
 		chip.tapped.connect(_on_chip_tapped.bind(rule_id))
 		chip.long_pressed.connect(_on_chip_long_pressed.bind(rule_id))
@@ -229,16 +241,87 @@ func _build_explain_panel() -> void:
 	_explain_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_explain_panel.add_child(_explain_label)
 
+## Énoncé d'objectif : chiffré, explicite, sans un mot de tutoriel. Ni
+## explication de règle, ni conseil — seulement ce qu'il faut obtenir.
+func _build_objective_panel() -> void:
+	_objective_panel = Panel.new()
+	_objective_panel.name = "ObjectivePanel"
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.05, 0.07, 0.11, 0.98)
+	style.set_corner_radius_all(18)
+	style.set_border_width_all(2)
+	style.border_color = Color(0.45, 0.72, 0.95, 0.85)
+	_objective_panel.add_theme_stylebox_override("panel", style)
+	_objective_panel.visible = false
+	_objective_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_objective_panel.gui_input.connect(func(e: InputEvent) -> void:
+		if (e is InputEventMouseButton and (e as InputEventMouseButton).pressed) \
+				or (e is InputEventScreenTouch and (e as InputEventScreenTouch).pressed):
+			_hide_objective_panel())
+	add_child(_objective_panel)
+
+	var box := VBoxContainer.new()
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_theme_constant_override("separation", 14)
+	_objective_panel.add_child(box)
+
+	var title := Label.new()
+	title.name = "Title"
+	title.text = "Objectif"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_size_override("font_size", 30)
+	title.add_theme_color_override("font_color", Color(0.55, 0.80, 1.0))
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(title)
+
+	_objective_panel_label = Label.new()
+	_objective_panel_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_objective_panel_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_objective_panel_label.add_theme_font_size_override("font_size", 26)
+	_objective_panel_label.add_theme_color_override("font_color", Color(0.90, 0.93, 1.0))
+	_objective_panel_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(_objective_panel_label)
+
+	var hint := Label.new()
+	hint.text = "toucher pour fermer"
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hint.add_theme_font_size_override("font_size", 20)
+	hint.add_theme_color_override("font_color", Color(0.45, 0.50, 0.60))
+	hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_child(hint)
+
+func show_objective_panel() -> void:
+	var total: int = _view.current_state().agents.size() if _view != null and _view.current_state() != null else 0
+	var lines := RuleCatalog.objective_brief(_level_data.get("objectives", []), total)
+	_objective_panel_label.text = "\n".join(PackedStringArray(lines))
+	_objective_panel.visible = true
+	_layout()
+
+func _hide_objective_panel() -> void:
+	if _objective_panel != null:
+		_objective_panel.visible = false
+
+## À la reprise (EF-21) : pas de panneau — il coûterait un geste avant le
+## premier geste utile. Le bandeau se souligne brièvement, c'est tout.
+func flash_banner() -> void:
+	_banner_flash = 1.4
+
+func _on_banner_input(event: InputEvent) -> void:
+	var pressed := (event is InputEventMouseButton and (event as InputEventMouseButton).pressed) \
+		or (event is InputEventScreenTouch and (event as InputEventScreenTouch).pressed)
+	if pressed:
+		show_objective_panel()
+
 # --- composition de la pile : deux chemins équivalents ---------------------
 
 ## Glissement : panneau → emplacement (pose ou remplace), emplacement →
 ## emplacement (échange).
 func _on_rule_dropped(slot_index: int, rule_id: int, from_slot: int) -> void:
-	if from_slot >= 0:
-		_swap_slots(from_slot, slot_index)
+	var source: int = from_slot if from_slot >= 0 else _index_of_rule(rule_id)
+	if source >= 0:
+		_swap_slots(source, slot_index)
 	else:
 		_stack[slot_index] = rule_id
-		_dedupe(slot_index)
 		_apply_stack()
 	_clear_selection()
 	_close_panel()
@@ -263,10 +346,12 @@ func _on_slot_tapped(slot_index: int) -> void:
 		if _selected_from >= 0:
 			_swap_slots(_selected_from, slot_index)
 		else:
-			_stack[slot_index] = _selected_rule
-			if _selected_rule != RuleRegistry.EMPTY:
-				_dedupe(slot_index)
-			_apply_stack()
+			var already: int = _index_of_rule(_selected_rule)
+			if already >= 0:
+				_swap_slots(already, slot_index)
+			else:
+				_stack[slot_index] = _selected_rule
+				_apply_stack()
 		_clear_selection()
 		_close_panel()
 		return
@@ -275,6 +360,11 @@ func _on_slot_tapped(slot_index: int) -> void:
 		_open_panel()
 	else:
 		_open_panel()
+
+func _on_remove_requested(slot_index: int) -> void:
+	_stack[slot_index] = RuleRegistry.EMPTY
+	_apply_stack()
+	_clear_selection()
 
 func _on_chip_tapped(rule_id: int) -> void:
 	if _has_selection and _selected_from == -1 and _selected_rule == rule_id:
@@ -312,11 +402,14 @@ func _swap_slots(a: int, b: int) -> void:
 
 ## Une règle n'occupe jamais deux emplacements : l'espace des piles est fait
 ## d'arrangements SANS répétition, l'interface doit rendre impossible ce que
-## l'énumérateur ne compte pas.
-func _dedupe(keep_slot: int) -> void:
+## l'énumérateur ne compte pas. D'où la reposer ailleurs la DÉPLACE.
+func _index_of_rule(rule_id: int) -> int:
+	if rule_id == RuleRegistry.EMPTY:
+		return -1
 	for i in range(_stack.size()):
-		if i != keep_slot and _stack[i] == _stack[keep_slot]:
-			_stack[i] = RuleRegistry.EMPTY
+		if _stack[i] == rule_id:
+			return i
+	return -1
 
 func _open_panel() -> void:
 	if _panel.visible:
@@ -482,6 +575,17 @@ func _layout() -> void:
 		_panel.position = Vector2(left,
 			_panel_resting_y() if _panel.visible else bottom + _panel_height())
 
+	if _objective_panel != null:
+		var ow: float = width * 0.9
+		var oh: float = 300.0
+		_objective_panel.position = Vector2(left + (width - ow) * 0.5,
+			_view_host.position.y + (_view_host.size.y - oh) * 0.4)
+		_objective_panel.size = Vector2(ow, oh)
+		var box := _objective_panel.get_child(0) as Control
+		if box != null:
+			box.position = Vector2(24, 24)
+			box.size = Vector2(ow - 48, oh - 48)
+
 	if _explain_panel != null and _explain_panel.visible:
 		_position_explain_panel()
 
@@ -494,16 +598,42 @@ func _compact_stack() -> Array[int]:
 			out.append(rule_id)
 	return out
 
+## Compacte la pile : les règles glissent vers la gauche, sans trou.
+## Renvoie vrai si quelque chose a bougé — ce qui déclenche l'animation.
+func _compact_in_place() -> bool:
+	var packed: Array[int] = _compact_stack()
+	var moved := false
+	for i in range(_stack.size()):
+		var wanted: int = packed[i] if i < packed.size() else RuleRegistry.EMPTY
+		if _stack[i] != wanted:
+			_stack[i] = wanted
+			moved = true
+	return moved
+
 func _apply_stack() -> void:
+	var slid := _compact_in_place()
 	for i in range(_slots.size()):
-		_slots[i].set_rule(_stack[i])
+		_slots[i].set_rule(_stack[i], slid)
+	_mark_next_slot()
 	if _view != null and not _level_data.is_empty():
 		_view.load_level(_level_data, _params, _compact_stack())
 	_pause()
 	_hide_explain()
 	_finished = false
+	_outcome_countdown = -1.0
 	_refresh_transport()
 	_notify_state()
+
+## Distingue l'emplacement suivant disponible des emplacements simplement
+## inutilisés : le premier est une invitation, les autres du décor.
+func _mark_next_slot() -> void:
+	var next := -1
+	for i in range(_stack.size()):
+		if _stack[i] == RuleRegistry.EMPTY:
+			next = i
+			break
+	for i in range(_slots.size()):
+		_slots[i].set_next_available(i == next)
 
 func _pause() -> void:
 	_playing = false
@@ -539,8 +669,24 @@ func _process(delta: float) -> void:
 	var state := _view.current_state()
 	if _objective_label != null:
 		_objective_label.text = RuleCatalog.objective_line(_level_data.get("objectives", []), state)
+	if _banner_flash > 0.0:
+		_banner_flash -= delta
+		var t2: float = fmod(_banner_flash, 0.4) / 0.4
+		_objective_label.add_theme_color_override("font_color",
+			Color(0.55, 0.85, 1.0).lerp(Color(0.86, 0.90, 1.0), t2))
+		if _banner_flash <= 0.0:
+			_objective_label.add_theme_color_override("font_color", Color(0.86, 0.90, 1.0))
+
 	if not _finished and state.outcome != SimState.Outcome.RUNNING:
+		# La simulation a tranché ; l'interface, elle, laisse d'abord VOIR ce
+		# qui s'est passé — la marque de mort a besoin de son temps d'écran.
 		_finished = true
 		_playing = false
-		finished.emit(_level_id, state.outcome == SimState.Outcome.WON,
-			state.tick, state.counters.lost, _compact_stack())
+		_outcome_countdown = OUTCOME_DELAY
+	if _outcome_countdown > 0.0:
+		_outcome_countdown -= delta
+		if _outcome_countdown <= 0.0:
+			_outcome_countdown = -1.0
+			finished.emit(_level_id, state.outcome == SimState.Outcome.WON,
+				state.tick, state.counters.lost, _compact_stack(),
+				RuleCatalog.outcome_reason(_level_data.get("objectives", []), state))

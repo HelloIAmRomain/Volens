@@ -58,7 +58,11 @@ var _danger_mm: MultiMeshInstance2D
 var _goal_mm: MultiMeshInstance2D
 var _trail_mm: MultiMeshInstance2D
 var _agent_mm: MultiMeshInstance2D
+var _deaths_mm: MultiMeshInstance2D
 var _grid_lines: Node2D
+
+## Marques de mort : { cell, age }. Purement visuelles, jamais un état.
+var _death_marks: Array = []
 
 # --- construction ------------------------------------------------------------
 
@@ -72,6 +76,7 @@ func _ready() -> void:
 	_goal_mm = _make_layer(Layer.GOAL, HALO_SHADER)
 	_trail_mm = _make_layer(Layer.TRAIL, AGENT_SHADER)
 	_agent_mm = _make_layer(Layer.AGENT, AGENT_SHADER)
+	_deaths_mm = _make_layer(Layer.GOAL - 1, AGENT_SHADER)
 
 func _make_layer(z: int, shader: Shader) -> MultiMeshInstance2D:
 	var node := MultiMeshInstance2D.new()
@@ -81,6 +86,7 @@ func _make_layer(z: int, shader: Shader) -> MultiMeshInstance2D:
 	var mm := MultiMesh.new()
 	mm.transform_format = MultiMesh.TRANSFORM_2D
 	mm.use_colors = true
+	mm.use_custom_data = true
 	mm.mesh = quad
 	mm.instance_count = 0
 	node.multimesh = mm
@@ -124,6 +130,7 @@ func _reset_display() -> void:
 	_to = _from
 	_alpha = 0.0
 	_reversals = 0
+	_death_marks = []
 	_trails = []
 	_last_dir = []
 	for i in range(_from.agents.size()):
@@ -297,52 +304,140 @@ func _on_viewport_resized() -> void:
 
 # --- dessin ------------------------------------------------------------------
 
+## DÉCOMPOSITION EN RÉGIONS. Le vocabulaire de niveau est fait de cases ;
+## l'œil, lui, lit des formes. Deux cases de lumière côte à côte doivent se
+## lire comme UNE zone lumineuse, pas comme deux points — et la bande de
+## sortie pleine largeur de ch1_01 doit se lire comme une bande.
+##
+## Algorithme glouton : on prend la case libre la plus haute à gauche, on
+## étend vers la droite tant que le type se répète, puis vers le bas tant que
+## la ligne entière se répète. Une bande pleine largeur donne UN rectangle,
+## un bloc plein en donne un aussi. Les formes concaves se décomposent en
+## quelques rectangles, jamais en cases isolées.
+func _rects_of(predicate: Callable) -> Array:
+	var grid := _to.grid
+	var w: int = grid.size.x
+	var h: int = grid.size.y
+	var taken := {}
+	var rects: Array = []
+	for y in range(h):
+		for x in range(w):
+			var key: int = y * w + x
+			if taken.has(key) or not predicate.call(Vector2i(x, y)):
+				continue
+			var rw := 1
+			while x + rw < w and not taken.has(y * w + x + rw) and predicate.call(Vector2i(x + rw, y)):
+				rw += 1
+			var rh := 1
+			while y + rh < h:
+				var full := true
+				for k in range(rw):
+					if taken.has((y + rh) * w + x + k) or not predicate.call(Vector2i(x + k, y + rh)):
+						full = false
+						break
+				if not full:
+					break
+				rh += 1
+			for yy in range(y, y + rh):
+				for xx in range(x, x + rw):
+					taken[yy * w + xx] = true
+			rects.append(Rect2i(x, y, rw, rh))
+	return rects
+
 func _rebuild_static_layers() -> void:
 	if _to == null or _walls_mm == null:
 		return
 	var grid := _to.grid
 	var walls: Array = []
-	var goals: Array = []
-	for y in range(grid.size.y):
-		for x in range(grid.size.x):
-			var t: int = grid.cells[y * grid.size.x + x]
-			match t:
-				GridState.CellType.WALL:
-					walls.append([Vector2(x, y), ViewPalette.WALL])
-				GridState.CellType.EXIT:
-					goals.append([Vector2(x, y), ViewPalette.EXIT])
-				GridState.CellType.LIGHT_SOURCE:
-					goals.append([Vector2(x, y), ViewPalette.LIGHT])
-				GridState.CellType.RESOURCE:
-					goals.append([Vector2(x, y), ViewPalette.RESOURCE])
-				GridState.CellType.DROPOFF:
-					goals.append([Vector2(x, y), ViewPalette.DROPOFF])
-	_fill(_walls_mm, walls, _cell_size)
-	# Les buts rayonnent, mais pas au point de noyer trois rangées de grille :
-	# la hiérarchie DA-02 est but > danger > nuée > décor, pas but > tout.
-	_fill(_goal_mm, goals, _cell_size * 1.5)
+	for r in _rects_of(func(p: Vector2i) -> bool: return grid.cell_type_at(p) == GridState.CellType.WALL):
+		walls.append(_region_item(r, ViewPalette.WALL, 0.0))
+	_fill_items(_walls_mm, walls)
 
-func _process(_dt: float) -> void:
+	# Les buts débordent de leur région : le halo doit rayonner autour de la
+	# forme entière, d'où le débord et la proportion de noyau transmise.
+	var goals: Array = []
+	for spec in [[GridState.CellType.EXIT, ViewPalette.EXIT],
+			[GridState.CellType.LIGHT_SOURCE, ViewPalette.LIGHT],
+			[GridState.CellType.RESOURCE, ViewPalette.RESOURCE],
+			[GridState.CellType.DROPOFF, ViewPalette.DROPOFF]]:
+		var wanted: int = spec[0]
+		for r in _rects_of(func(p: Vector2i) -> bool: return grid.cell_type_at(p) == wanted):
+			goals.append(_region_item(r, spec[1], GOAL_BLEED))
+	_fill_items(_goal_mm, goals)
+
+## Débord du halo autour d'une région de but, en cases.
+const GOAL_BLEED := 0.45
+
+## Construit l'instance d'une région : quad élargi de `bleed` cases, couleur,
+## et données par instance. Pour un but, ces données portent la PROPORTION du
+## noyau dans le quad ; pour une région pleine, la taille en CASES.
+func _region_item(r: Rect2i, color: Color, bleed: float) -> Dictionary:
+	var cells := Vector2(r.size.x, r.size.y)
+	var span := cells + Vector2(bleed, bleed) * 2.0
+	var centre := Vector2(r.position.x, r.position.y) + cells * 0.5
+	var custom := Color(cells.x, cells.y, 0.0, 0.0)
+	if bleed > 0.0:
+		custom = Color(cells.x / span.x, cells.y / span.y, 0.0, 0.0)
+	return {
+		"pos": _grid_origin + centre * _cell_size,
+		"size": span * _cell_size,
+		"color": color,
+		"custom": custom,
+	}
+
+## Durée d'une marque de mort ⚙️ : assez pour être vue, pas au point de
+## traîner sur l'écran suivant.
+const DEATH_MARK_SECONDS := 1.6
+
+func _process(dt: float) -> void:
 	if _to == null:
 		return
+	for mark in _death_marks:
+		mark["age"] = float(mark["age"]) + dt
+	_death_marks = _death_marks.filter(func(m: Dictionary) -> bool:
+		return float(m["age"]) < DEATH_MARK_SECONDS)
+	_draw_deaths()
 	_draw_dangers()
 	_draw_trails()
 	_draw_agents()
 
-## Les dangers cycliques changent d'aspect selon leur phase : reconstruits
-## à chaque image, ils sont peu nombreux.
+## Les dangers se dessinent aussi par RÉGION, et séparément selon leur phase :
+## un danger actif et un danger dormant ne se fondent jamais dans la même
+## forme, sans quoi le joueur croirait toute la zone dangereuse.
 func _draw_dangers() -> void:
 	var grid := _to.grid
+	var tick := _to.tick
 	var items: Array = []
-	for y in range(grid.size.y):
-		for x in range(grid.size.x):
-			var pos := Vector2i(x, y)
-			var t: int = grid.cells[y * grid.size.x + x]
-			if t != GridState.CellType.STATIC_DANGER and t != GridState.CellType.CYCLIC_DANGER:
-				continue
-			var active: bool = grid.is_danger_active_at(pos, _to.tick)
-			items.append([Vector2(x, y), ViewPalette.cell_color(t, active)])
-	_fill(_danger_mm, items, _cell_size)
+	var active := func(p: Vector2i) -> bool:
+		var t2: int = grid.cell_type_at(p)
+		if t2 != GridState.CellType.STATIC_DANGER and t2 != GridState.CellType.CYCLIC_DANGER:
+			return false
+		return grid.is_danger_active_at(p, tick)
+	var dormant := func(p: Vector2i) -> bool:
+		var t2: int = grid.cell_type_at(p)
+		if t2 != GridState.CellType.CYCLIC_DANGER:
+			return false
+		return not grid.is_danger_active_at(p, tick)
+	for r in _rects_of(active):
+		items.append(_region_item(r, ViewPalette.DANGER, 0.0))
+	for r in _rects_of(dormant):
+		items.append(_region_item(r, ViewPalette.DANGER_DORMANT, 0.0))
+	_fill_items(_danger_mm, items)
+
+## Une croix lumineuse qui s'ouvre et s'efface sur la case fatale.
+func _draw_deaths() -> void:
+	var items: Array = []
+	for mark in _death_marks:
+		var age := float(mark["age"]) / DEATH_MARK_SECONDS
+		var c := ViewPalette.DANGER.lightened(0.45)
+		c.a = (1.0 - age) * 0.95
+		items.append([Vector2(mark["cell"]), c])
+	_fill(_deaths_mm, items, _cell_size * (0.9 + 0.5 * _death_pulse()))
+
+func _death_pulse() -> float:
+	if _death_marks.is_empty():
+		return 0.0
+	return float(_death_marks[0]["age"]) / DEATH_MARK_SECONDS
 
 func _draw_agents() -> void:
 	var items: Array = []
@@ -361,7 +456,7 @@ func _draw_agents() -> void:
 			color = ViewPalette.slot_color(_deciding_slot(to_agent, _to))
 		color.a = alpha
 		items.append([cell, color])
-	_fill(_agent_mm, items, _cell_size * 0.62)
+	_fill(_agent_mm, items, _cell_size * 0.70)
 
 func _draw_trails() -> void:
 	var items: Array = []
@@ -396,6 +491,19 @@ func _deciding_slot(agent: AgentState, state: SimState) -> int:
 			return i
 	return -1
 
+## Remplit une couche à partir de régions déjà exprimées en pixels.
+func _fill_items(node: MultiMeshInstance2D, items: Array) -> void:
+	if node == null:
+		return
+	var mm := node.multimesh
+	mm.instance_count = items.size()
+	for i in range(items.size()):
+		var it: Dictionary = items[i]
+		var span: Vector2 = it["size"]
+		mm.set_instance_transform_2d(i, Transform2D(0.0, span, 0.0, it["pos"]))
+		mm.set_instance_color(i, it["color"])
+		mm.set_instance_custom_data(i, it["custom"])
+
 func _fill(node: MultiMeshInstance2D, items: Array, size: float) -> void:
 	if node == null:
 		return
@@ -405,6 +513,7 @@ func _fill(node: MultiMeshInstance2D, items: Array, size: float) -> void:
 		var cell: Vector2 = items[i][0]
 		mm.set_instance_transform_2d(i, Transform2D(0.0, Vector2(size, size), 0.0, _to_pixels(cell)))
 		mm.set_instance_color(i, items[i][1])
+		mm.set_instance_custom_data(i, Color(1.0, 1.0, 0.0, 0.0))
 
 # --- grille de fond -----------------------------------------------------------
 

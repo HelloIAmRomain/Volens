@@ -38,14 +38,14 @@ func test_play_skips_a_level_already_solved() -> void:
 	assert_eq((_screen_of("GameScreen") as GameScreen)._level_id, "ch1_02")
 
 func test_winning_records_progress_and_opens_the_summary() -> void:
-	_app._on_level_finished("ch1_01", true, 14, 0, [1])
+	_app._on_level_finished("ch1_01", true, 14, 0, [1], "gagné")
 
 	assert_not_null(_screen_of("SummaryScreen"), "une partie finie mène au bilan")
 	assert_true(_app.progress.is_solved("ch1_01"))
 	assert_eq(_app.progress.best_ticks("ch1_01"), 14)
 
 func test_losing_records_nothing() -> void:
-	_app._on_level_finished("ch1_01", false, 60, 3, [1])
+	_app._on_level_finished("ch1_01", false, 60, 3, [1], "perdu")
 
 	assert_not_null(_screen_of("SummaryScreen"))
 	assert_false(_app.progress.is_solved("ch1_01"), "un échec ne marque rien — le jeu n'est pas punitif")
@@ -55,7 +55,7 @@ func test_finishing_a_level_clears_the_resume_point() -> void:
 	# ramènerait le joueur dans un essai déjà joué.
 	_app.session.level_id = "ch1_01"
 	_app.session.tick = 9
-	_app._on_level_finished("ch1_01", true, 14, 0, [1])
+	_app._on_level_finished("ch1_01", true, 14, 0, [1], "gagné")
 
 	assert_false(_app.session.is_valid())
 

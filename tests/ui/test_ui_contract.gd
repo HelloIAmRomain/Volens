@@ -73,28 +73,58 @@ func test_pick_then_place_swaps_two_occupied_slots() -> void:
 	assert_eq(_screen._stack[0], RuleRegistry.R02_FLEE_DANGER)
 	assert_eq(_screen._stack[1], RuleRegistry.R01_TOWARD_LIGHT)
 
-func test_pick_then_place_moves_a_rule_to_an_empty_slot() -> void:
+func test_the_stack_is_always_compact() -> void:
+	# Un trou dans la pile n'a aucun sens : seule compte la position
+	# RELATIVE — [_, A, B] se comporte exactement comme [A, B]. Sans
+	# compaction, le joueur croirait que la position absolue compte.
+	_pick_then_place(RuleRegistry.R01_TOWARD_LIGHT, 2)
+
+	assert_eq(_screen._stack[0], RuleRegistry.R01_TOWARD_LIGHT,
+		"posée en 3 alors que 1 est libre, la règle va en 1")
+	assert_eq(_screen._stack[1], RuleRegistry.EMPTY)
+
+func test_removing_a_rule_shifts_the_following_ones_left() -> void:
 	_pick_then_place(RuleRegistry.R01_TOWARD_LIGHT, 0)
-	_screen._on_slot_tapped(0)
-	_screen._on_slot_tapped(2)
+	_pick_then_place(RuleRegistry.R02_FLEE_DANGER, 1)
+	_screen._on_remove_requested(0)
 
-	assert_eq(_screen._stack[0], RuleRegistry.EMPTY)
-	assert_eq(_screen._stack[2], RuleRegistry.R01_TOWARD_LIGHT)
+	assert_eq(_screen._stack[0], RuleRegistry.R02_FLEE_DANGER, "la suivante remonte")
+	assert_eq(_screen._stack[1], RuleRegistry.EMPTY)
 
-func test_the_remove_chip_empties_a_slot_without_dragging() -> void:
+func test_a_rule_can_be_removed_without_dragging() -> void:
 	# ENF-25 : aucune action ne doit avoir le glissement pour seul chemin.
+	# Le retrait passe par l'icône de l'emplacement sélectionné.
 	_pick_then_place(RuleRegistry.R01_TOWARD_LIGHT, 0)
-	_pick_then_place(RuleRegistry.EMPTY, 0)
+	_screen._on_remove_requested(0)
 
 	assert_eq(_screen._stack[0], RuleRegistry.EMPTY)
+	assert_eq(_screen._compact_stack().size(), 0)
+
+func test_the_remove_icon_shows_only_on_a_selected_occupied_slot() -> void:
+	_pick_then_place(RuleRegistry.R01_TOWARD_LIGHT, 0)
+	assert_false(_screen._slots[0]._remove.visible, "rien à retirer sans sélection")
+	_screen._on_slot_tapped(0)
+	assert_true(_screen._slots[0]._remove.visible)
+	assert_false(_screen._slots[1]._remove.visible, "un emplacement vide n'a rien à retirer")
+
+func test_the_remove_icon_meets_the_touch_minimum() -> void:
+	# Petit à l'œil, mais >= 48 dp au doigt (ENF-01).
+	var button: Control = _screen._slots[0]._remove
+	assert_gte(button.custom_minimum_size.x, UiMetrics.MIN_TOUCH_TARGET)
+	assert_gte(button.custom_minimum_size.y, UiMetrics.MIN_TOUCH_TARGET)
 
 func test_a_rule_never_occupies_two_slots() -> void:
 	_pick_then_place(RuleRegistry.R01_TOWARD_LIGHT, 0)
-	_pick_then_place(RuleRegistry.R01_TOWARD_LIGHT, 2)
+	_pick_then_place(RuleRegistry.R02_FLEE_DANGER, 1)
+	_pick_then_place(RuleRegistry.R01_TOWARD_LIGHT, 1)
 
-	assert_eq(_screen._stack[0], RuleRegistry.EMPTY)
-	assert_eq(_screen._stack[2], RuleRegistry.R01_TOWARD_LIGHT)
-	assert_eq(_screen._compact_stack().size(), 1)
+	# Reposer une règle déjà présente la DÉPLACE : ici elle échange avec R02,
+	# et la pile compte toujours deux règles, jamais trois.
+	assert_eq(_screen._compact_stack().size(), 2, "trois poses, jamais trois règles")
+	var seen := {}
+	for rule_id in _screen._compact_stack():
+		assert_false(seen.has(rule_id), "règle en double dans la pile")
+		seen[rule_id] = true
 
 # --- la sélection : visible, et annulable ---------------------------------
 
@@ -111,18 +141,21 @@ func test_selection_is_marked_on_the_chip_and_cancellable() -> void:
 	assert_false(_screen._has_selection)
 
 func test_selecting_from_a_slot_marks_that_slot() -> void:
+	# La pile étant compacte, une règle posée « en 2 » atterrit en 1.
 	_pick_then_place(RuleRegistry.R02_FLEE_DANGER, 1)
-	_screen._on_slot_tapped(1)
+	assert_eq(_screen._stack[0], RuleRegistry.R02_FLEE_DANGER)
+	_screen._on_slot_tapped(0)
 
 	assert_true(_screen._has_selection)
-	assert_eq(_screen._selected_from, 1)
-	assert_true(_screen._slots[1].selected)
+	assert_eq(_screen._selected_from, 0)
+	assert_true(_screen._slots[0].selected)
 
 # --- le glissement -------------------------------------------------------
 
 func test_dragging_from_the_panel_places_a_rule() -> void:
 	_screen._on_rule_dropped(2, RuleRegistry.R01_TOWARD_LIGHT, -1)
-	assert_eq(_screen._stack[2], RuleRegistry.R01_TOWARD_LIGHT)
+	assert_eq(_screen._compact_stack(), [RuleRegistry.R01_TOWARD_LIGHT] as Array[int],
+		"lâchée en 3, la règle se compacte en 1")
 
 func test_dragging_between_slots_swaps_them() -> void:
 	_pick_then_place(RuleRegistry.R01_TOWARD_LIGHT, 0)
@@ -158,3 +191,13 @@ func test_objective_line_reports_live_progress() -> void:
 	var line := RuleCatalog.objective_line(
 		[{"type": "extraction", "percent": 100}], _screen._view.current_state())
 	assert_string_contains(line, "sortis")
+
+
+func test_the_next_free_slot_is_marked_and_the_others_are_not() -> void:
+	# Le premier emplacement libre est une invitation ; les suivants ne sont
+	# que du décor. Sans cette distinction, quatre cases vides se valent.
+	_pick_then_place(RuleRegistry.R01_TOWARD_LIGHT, 0)
+
+	assert_true(_screen._slots[1]._next_available, "le suivant est marqué")
+	assert_false(_screen._slots[2]._next_available)
+	assert_false(_screen._slots[0]._next_available, "un emplacement occupé n'invite rien")

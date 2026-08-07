@@ -248,6 +248,78 @@ divergences ressembleraient à une régression pure.
 
 ---
 
+## Lisibilité, objectifs et direction visuelle (7 août 2026)
+
+64. **R02 renommée « Fuir le danger »** (CDC v2.5, libellé seul). Deux
+    raisons : on ne fuit pas une couleur, et surtout **nommer une règle par
+    sa couleur contredit ENF-20** — un joueur daltonien ou en contraste élevé
+    ne pourrait pas relier le libellé à ce qu'il voit. Vérifié : le libellé
+    ne vit que dans la présentation, l'empreinte `c8a7cc2c73394949` est intacte.
+
+65. **L'échec doit se VOIR avant d'être annoncé.** La simulation atteint LOST
+    au tick où l'objectif devient inatteignable (RG-09) — souvent avant que
+    rien de visible ne se soit produit. `core/` est correct ; c'était un
+    défaut de présentation. Trois corrections dans `game/` : une **marque de
+    mort** sur la case fatale (1,6 s ⚙️), un **temps mort de 1,1 s** ⚙️ avant
+    le bilan, et une **raison écrite** — « 1 agent perdu — l'objectif de 20
+    sur 20 est devenu inatteignable ». Sans cela l'échec était inexplicable,
+    donc décourageant (pilier P4).
+
+66. **RG-17 était satisfaite à la lettre et ratée en pratique.** Une ligne
+    affichée ne fait pas un objectif compris. Panneau d'ouverture chiffré
+    (« Faire sortir 21 agents sur 21 », jamais « extraction 100 % »), bandeau
+    cliquable qui le rouvre, avancement chiffré en continu. **Garde-fous** :
+    aucun panneau à la reprise (EF-21 — il coûterait un geste avant le
+    premier geste utile), seulement un bandeau souligné ; et **aucun mot de
+    tutoriel**.
+
+67. **POURQUOI L'ÉCRAN DE VICTOIRE A ÉCHAPPÉ À LA REVUE — ce n'est pas
+    l'instrument.** Le harnais avait produit `08-bilan-gagne.png`, et l'image
+    montrait le défaut en clair. **J'ai lu cinq captures sur dix et rapporté
+    « les écrans sont propres ».** J'ai présenté un échantillon comme un
+    ensemble, sans le dire.
+    Cause technique du défaut : mon correctif d'ancrage était un remplacement
+    textuel ancré sur `var title`, qui n'existe pas dans
+    `summary_screen.gd` — le patch a **silencieusement sauté ce fichier**.
+    **Parade** : `tests/ui/test_screen_layout.gd` place chaque écran dans un
+    parent dimensionné et exige qu'il le remplisse, plus un test qui vérifie
+    que le harnais couvre **tous** les écrans. La preuve ne dépend plus de
+    mon attention.
+
+68. **DIRECTION VISUELLE : dessiner des RÉGIONS, pas des cases** (T-070
+    anticipé). Le vocabulaire de niveau est fait de cases ; l'œil lit des
+    formes. Décomposition gloutonne des cases contiguës en rectangles, **une
+    instance par région**, taille en cases transmise au shader. La bande de
+    sortie se lit comme **une** bande ; les hachures d'un danger sont
+    **continues**, contour sur le seul pourtour.
+
+69. **Le but est une zone lumineuse, pas une dalle.** Premier essai : la
+    bande écrasait l'écran. Or DA-01 fait de la nuée le personnage, et DA-02
+    range le but au-dessus du **danger**, pas au-dessus de tout. Noyau
+    translucide (0,42), nuée agrandie.
+
+70. **Le danger passe au registre calme** (DS-03 étendu au visuel) : rouge
+    profond désaturé, remplissage sourd, hachures fines, aucune animation
+    pour un danger statique. **Un obstacle, pas une alarme.** Le défilement
+    reste aux dangers cycliques, dont il signale qu'ils changent.
+
+71. **Compaction de la pile, animée.** Un trou n'a aucun sens : seule compte
+    la position **relative** — `[_, A, B]` se comporte exactement comme
+    `[A, B]`. Sans compaction le joueur croirait que la position absolue
+    compte. Le contenu **glisse depuis la droite** en 0,20 s : un saut
+    instantané se lit comme un bug, une glissade comme une intention. Le
+    **premier emplacement libre** est marqué — c'est une invitation, les
+    suivants ne sont que du décor.
+
+72. **Reposer une règle déjà dans la pile la DÉPLACE**, elle n'écrase plus
+    par surprise celle d'arrivée : les deux échangent.
+
+73. **Retrait par icône dessinée** en primitives — aucune dépendance à la
+    couverture d'une police — au coin de l'emplacement **sélectionné et
+    occupé** seulement. Petite à l'œil, **zone tactile ≥ 48 dp** (ENF-01).
+
+---
+
 ## Refonte de l'interface de jeu (7 août 2026) — décisions et mesures
 
 56. **Cause des menus non centrés, mesurée** : `set_anchors_preset()`
