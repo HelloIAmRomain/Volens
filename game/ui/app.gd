@@ -18,7 +18,7 @@ var _current: Control
 var _screen: int = Screen.MENU
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	RenderingServer.set_default_clear_color(ViewPalette.BACKGROUND)
 	progress = Progress.load_from_disk()
 	session = Session.load_from_disk()
@@ -115,3 +115,4 @@ func _on_level_finished(level_id: String, won: bool, ticks: int, lost: int, stac
 	summary.setup(level_id, won, ticks, lost, stack)
 	# Le niveau est terminé : plus rien à reprendre.
 	session.clear()
+

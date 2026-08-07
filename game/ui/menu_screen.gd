@@ -20,17 +20,14 @@ func setup(progress: Progress, session: Session) -> void:
 	_build()
 
 func _build() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 	var column := VBoxContainer.new()
 	column.alignment = BoxContainer.ALIGNMENT_CENTER
 	column.add_theme_constant_override("separation", int(UiMetrics.GAP))
 	add_child(column)
-	column.set_anchors_preset(Control.PRESET_FULL_RECT)
-	column.offset_left = UiMetrics.MARGIN
-	column.offset_right = -UiMetrics.MARGIN
-	column.offset_top = UiMetrics.MARGIN
-	column.offset_bottom = -UiMetrics.MARGIN
+	column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT,
+		Control.PRESET_MODE_MINSIZE, int(UiMetrics.MARGIN))
 
 	var title := Label.new()
 	title.text = "VOLENS"

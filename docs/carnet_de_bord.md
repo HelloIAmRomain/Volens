@@ -248,6 +248,84 @@ divergences ressembleraient à une régression pure.
 
 ---
 
+## Refonte de l'interface de jeu (7 août 2026) — décisions et mesures
+
+56. **Cause des menus non centrés, mesurée** : `set_anchors_preset()`
+    **conserve les offsets**. Appelé sur un contrôle de taille nulle — le
+    parent n'étant pas encore disposé — il fige `offset_right = -largeur`,
+    donc une largeur de zéro **définitive**. Mesuré :
+    `MenuScreen anchors=0,0,1,1 offsets=0,-2400 size=(0,0)`.
+    Correctif : `set_anchors_and_offsets_preset()` partout — cinq
+    occurrences, dont celle du harnais de captures. **C'était bien la même
+    cause que le faux défaut du 7 août au matin**, comme le concepteur l'avait
+    supposé. `GameScreen` y échappait seulement parce qu'il positionne ses
+    enfants à la main.
+
+57. **Atteignabilité au pouce, mesurée avant de décider du placement.**
+    S23 Ultra : dalle d'environ 156 × 73 mm. En prise à une main, le pouce
+    pivote près du coin bas, rayon confortable ~90 mm, extension ~110 mm.
+    En unités de la base 1080×2400 :
+
+    | Zone | Bornes | Verdict |
+    |---|---|---|
+    | Confortable | y > 1080 | toute commande fréquente |
+    | Extension | 720 < y ≤ 1080 | acceptable, pas pour le critique |
+    | **Hors de portée** | **y ≤ 720** | **jamais un chemin unique** |
+
+    Le coin haut droit est à ~156 mm du pivot : **inatteignable**, quel que
+    soit le côté. Le transport y est donc placé comme **affordance visible**,
+    et doublé d'un second chemin dans la zone confortable : **un appui sur la
+    grille bascule marche/pause**. Le bouton du haut n'est jamais requis — il
+    montre l'état et sert à la souris ; le pouce touche la grille.
+    ENF-01 et le souhait du concepteur tiennent ensemble grâce à cette
+    redondance, pas à un compromis.
+
+58. **Fermer en haut à GAUCHE, à l'opposé du transport.** Fermer par erreur
+    en cherchant pause serait le pire défaut de cet écran. Réinitialiser
+    (EF-04) l'accompagne : même famille de gestes, loin des commandes de
+    lecture.
+
+59. **Deux boutons, deux formes.** Lecture = triangle **plein** (une action),
+    vitesse = triangles **creux** empilés ▷ ▷▷ ▷▷▷ (un niveau). Deux « ▶ »
+    côte à côte étaient indiscernables — vu sur capture, pas déduit.
+
+60. **Seuils de discrimination des gestes** : mouvement > **24 unités**
+    (~8 dp) = glissement ; maintien > **0,45 s** sans mouvement =
+    explication ; relâchement avant, sans mouvement = sélection.
+    **Le mouvement l'emporte toujours** — sans quoi un glissement commencé
+    lentement déclencherait une explication en cours de route. Et la
+    sélection est émise au **relâchement**, jamais à l'appui, sinon un
+    glissement sélectionnerait au passage ce qu'il s'apprête à déplacer.
+    Sept tests couvrent ces bascules, dont le tremblement sous le seuil —
+    une main dans un bus tremble.
+
+61. **DÉROGATION MOTIVÉE À ENF-25** (« aucune interaction n'exige un appui
+    maintenu »). L'appui long sur une règle affiche son explication courte,
+    dans le panneau comme dans un emplacement.
+    **Condition de recevabilité vérifiée** : l'appui long n'est **jamais le
+    seul chemin vers une information nécessaire pour jouer**. Le libellé de
+    six mots est affiché en permanence sur la pastille et sur l'emplacement ;
+    l'explication n'en est qu'un développement. Aucune règle, aucun objectif,
+    aucun état de partie ne dépend de ce geste.
+    **Cohabitation** : dans l'écran de jeu, l'appui maintenu ne porte que
+    **deux** gestes — explication et glissement — départagés par le seuil de
+    mouvement. La surcouche de diagnostic par appui long vit dans le **banc**
+    (`game/bench/`), pas dans le jeu : la discrimination reste à deux voies.
+
+62. **Le chemin sans glissement est le chemin PRINCIPAL**, pas un pis-aller.
+    Un appui sélectionne (depuis le panneau ou depuis un emplacement), un
+    appui destine. Il unifie **poser, retirer, déplacer et échanger** dans un
+    seul geste — l'échange en particulier, qui est l'action la plus fréquente
+    après poser, puisque tout le jeu tient à l'ordre de la pile. Une pastille
+    **« Retirer »** en tête du panneau donne le chemin de suppression sans
+    glissement, faute de quoi vider un emplacement l'aurait exigé.
+
+63. **Le rembobinage quitte l'interface, pas le code.** `core/replay/` garde
+    ses clichés-clés et sa remontée du temps (DT-11/12), et ses onze tests.
+    C'est l'affordance qui est retirée, jamais la capacité.
+
+---
+
 ## Règle de méthode — valider un instrument neuf sur un cas connu
 
 **Un instrument neuf produit de faux défauts, et un faux défaut a l'air

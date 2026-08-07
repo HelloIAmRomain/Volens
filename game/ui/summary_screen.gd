@@ -8,11 +8,11 @@ signal retry_requested
 signal select_requested
 
 func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array) -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 	# Liseré d'état : reconnaissable en une demi-seconde, sans lire (DA-03).
 	var banner := ColorRect.new()
-	banner.set_anchors_preset(Control.PRESET_FULL_RECT)
+	banner.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	banner.color = Color(0.16, 0.92, 0.62, 0.09) if won else Color(0.90, 0.16, 0.22, 0.09)
 	banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(banner)

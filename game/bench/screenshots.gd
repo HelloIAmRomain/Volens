@@ -40,12 +40,15 @@ func _capture_all() -> void:
 	await _shot("03-niveau-pile-vide")
 
 	# Tiroir de bibliothèque ouvert : c'est là que se compose la pile.
-	game._toggle_drawer()
-	await _shot("04-tiroir-ouvert")
+	game._on_slot_tapped(0)
+	await _shot("04-panneau-ouvert")
+
+	# Une règle sélectionnée : le retour visuel du chemin sans glissement.
+	game._on_chip_tapped(RuleRegistry.R01_TOWARD_LIGHT)
+	await _shot("04b-regle-selectionnee")
 
 	# Une règle posée, quelques ticks joués : l'état nominal du jeu.
-	game._toggle_drawer()
-	game._place(RuleRegistry.R01_TOWARD_LIGHT, 0)
+	game._on_slot_tapped(0)
 	for i in range(6):
 		game._view.step_forward()
 	await _shot("05-nuee-en-mouvement")
@@ -58,8 +61,10 @@ func _capture_all() -> void:
 	# Le niveau 2, celui de la leçon d'ordonnancement.
 	_app._open_game("ch1_02", false)
 	game = _game()
-	game._place(RuleRegistry.R02_FLEE_DANGER, 0)
-	game._place(RuleRegistry.R01_TOWARD_LIGHT, 1)
+	game._on_chip_tapped(RuleRegistry.R02_FLEE_DANGER)
+	game._on_slot_tapped(0)
+	game._on_chip_tapped(RuleRegistry.R01_TOWARD_LIGHT)
+	game._on_slot_tapped(1)
 	for i in range(14):
 		game._view.step_forward()
 	await _shot("07-ch1-02-detour")
@@ -80,7 +85,10 @@ func _game() -> GameScreen:
 func _shot(name: String) -> void:
 	# Deux images d'attente : la première laisse les conteneurs se disposer,
 	# la seconde garantit que le dessin est terminé avant la lecture.
-	await get_tree().process_frame
+	# Attendre que les transitions soient FINIES : saisir un panneau à
+	# mi-course fait croire à un défaut de disposition qui n'existe pas.
+	# (Leçon du 7 août : un instrument neuf produit de faux défauts.)
+	await get_tree().create_timer(0.35).timeout
 	await get_tree().process_frame
 	await RenderingServer.frame_post_draw
 	var image := get_viewport().get_texture().get_image()
