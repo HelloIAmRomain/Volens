@@ -37,7 +37,9 @@ func _capture_all() -> void:
 
 	_app._open_game("ch1_01", false)
 	var game := _game()
-	await _shot("03-niveau-pile-vide")
+	await _shot("03-objectif-ouverture")
+	game._hide_objective_panel()
+	await _shot("03b-niveau-pile-vide")
 
 	# Tiroir de bibliothèque ouvert : c'est là que se compose la pile.
 	game._on_slot_tapped(0)
@@ -70,10 +72,10 @@ func _capture_all() -> void:
 	await _shot("07-ch1-02-detour")
 
 	# Les deux bilans, gagné puis perdu.
-	_app._on_level_finished("ch1_01", true, 14, 0, [RuleRegistry.R01_TOWARD_LIGHT])
+	_app._on_level_finished("ch1_01", true, 14, 0, [RuleRegistry.R01_TOWARD_LIGHT], "La nuée a rempli l'objectif.")
 	await _shot("08-bilan-gagne")
 
-	_app._on_level_finished("ch1_02", false, 6, 1, [RuleRegistry.R01_TOWARD_LIGHT])
+	_app._on_level_finished("ch1_02", false, 6, 1, [RuleRegistry.R01_TOWARD_LIGHT], "1 agent perdu — l'objectif de 20 sur 20 est devenu inatteignable.")
 	await _shot("09-bilan-perdu")
 
 func _game() -> GameScreen:

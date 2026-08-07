@@ -11,8 +11,11 @@ const BACKGROUND := Color(0.027, 0.031, 0.047)
 const GRID_LINE := Color(0.10, 0.11, 0.14)
 const WALL := Color(0.13, 0.14, 0.19)
 
-const DANGER := Color(0.90, 0.16, 0.22)
-const DANGER_DORMANT := Color(0.42, 0.13, 0.17)  # cyclique en phase calme
+## Registre calme : un obstacle, pas une alarme (DS-03 étendu au visuel).
+## Rouge profond et désaturé plutôt que vif — il doit se lire sans crier, et
+## rester sous les buts dans la hiérarchie DA-02.
+const DANGER := Color(0.74, 0.22, 0.24)
+const DANGER_DORMANT := Color(0.34, 0.17, 0.20)  # cyclique en phase calme  # cyclique en phase calme
 const EXIT := Color(0.16, 0.92, 0.62)
 const LIGHT := Color(1.0, 0.90, 0.62)
 const RESOURCE := Color(0.75, 0.55, 0.95)

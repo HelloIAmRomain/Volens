@@ -79,6 +79,9 @@ func _open_game(level_id: String, resume: bool) -> void:
 	screen.load_level(level_data, RuleParams.from_dict(rules if rules is Dictionary else {}), level_id)
 	if resume and session.level_id == level_id:
 		screen.restore_session(session)
+		# EF-21 : à la reprise, aucun panneau — il coûterait un geste avant le
+		# premier geste utile. Le bandeau se souligne, c'est suffisant.
+		screen.flash_banner()
 	else:
 		session.level_id = level_id
 		session.stack = []
@@ -88,6 +91,7 @@ func _open_game(level_id: String, resume: bool) -> void:
 		session.speed_index = 0 if LevelCatalog.index_of(level_id) == 0 else 1
 		screen.set_speed_index(session.speed_index)
 		session.save_to_disk()
+		screen.show_objective_panel()
 	# La persistance n'est branchée qu'UNE FOIS l'écran en place : sinon le
 	# chargement lui-même émet `state_changed` et réécrit la session avec le
 	# tick zéro, effaçant précisément ce qu'on s'apprêtait à restaurer.
@@ -105,14 +109,14 @@ func _on_reset_requested() -> void:
 	session.clear()
 	_open_menu()
 
-func _on_level_finished(level_id: String, won: bool, ticks: int, lost: int, stack: Array) -> void:
+func _on_level_finished(level_id: String, won: bool, ticks: int, lost: int, stack: Array, reason: String) -> void:
 	if won:
 		progress.record_win(level_id, ticks, lost)
 	var summary := SummaryScreen.new()
 	summary.retry_requested.connect(func() -> void: _open_game(level_id, false))
 	summary.select_requested.connect(_open_select)
 	_swap(summary, Screen.SUMMARY)
-	summary.setup(level_id, won, ticks, lost, stack)
+	summary.setup(level_id, won, ticks, lost, stack, reason)
 	# Le niveau est terminé : plus rien à reprendre.
 	session.clear()
 

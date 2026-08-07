@@ -1,6 +1,6 @@
 class_name RuleFleeDanger
 extends Rule
-## R02 — Fuir le rouge [CDC §7.2] : évaluation à l'instant d'arrivée (revue
+## R02 — Fuir le danger [CDC §7.2] : évaluation à l'instant d'arrivée (revue
 ## S3, option C). Un danger est MENAÇANT si sa case sera active au tick où
 ## un déplacement décidé maintenant prend effet (t+1) : statique = toujours,
 ## cyclique = selon sa phase à t+1 (RG-08 : le cycle est visible et

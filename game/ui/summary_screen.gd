@@ -7,7 +7,7 @@ extends Control
 signal retry_requested
 signal select_requested
 
-func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array) -> void:
+func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array, reason: String = "") -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 	# Liseré d'état : reconnaissable en une demi-seconde, sans lire (DA-03).
@@ -21,6 +21,8 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array) -> 
 	column.alignment = BoxContainer.ALIGNMENT_CENTER
 	column.add_theme_constant_override("separation", int(UiMetrics.GAP))
 	add_child(column)
+	column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT,
+		Control.PRESET_MODE_MINSIZE, int(UiMetrics.MARGIN))
 
 	var verdict := Label.new()
 	verdict.text = "Objectif atteint" if won else "Objectif manqué"
@@ -30,7 +32,7 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array) -> 
 	column.add_child(verdict)
 
 	var why := Label.new()
-	why.text = _reason(won, lost)
+	why.text = reason if not reason.is_empty() else _reason(won, lost)
 	why.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	why.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	why.add_theme_font_size_override("font_size", 28)

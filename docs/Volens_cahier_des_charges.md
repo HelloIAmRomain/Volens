@@ -1,6 +1,6 @@
 # Volens — Cahier des charges fonctionnel
 
-**Version 2.4 — 7 août 2026**
+**Version 2.5 — 7 août 2026**
 *Document de spécification — jeu mobile de puzzle systémique*
 
 ---
@@ -214,7 +214,7 @@ Les descriptions ci-dessous définissent l'effet observable ; les paramètres ch
 | Réf. | Nom de travail | Effet observable |
 |---|---|---|
 | R01 | Vers la lumière | L'agent se rapproche d'une case de la source de lumière la plus proche. |
-| R02 | Fuir le rouge | L'agent s'éloigne du danger le plus proche s'il est à portée de perception `⚙️`. |
+| R02 | Fuir le danger *(v2.5 — anciennement « Fuir le rouge »)* | L'agent s'éloigne du danger le plus proche s'il est à portée de perception `⚙️`. |
 | R03 | Rester groupé | L'agent se rapproche du centre de gravité de ses voisins perçus `⚙️`. |
 
 **Chapitre 2 — la coordination.**
@@ -578,7 +578,7 @@ reste pleinement applicable et opposable à tous les niveaux.
 
 > **Géométrie du niveau de test — obligatoire** *(v2.3, 6 août 2026)*. EQ-05 n'est **pas** une propriété des règles seules : c'est une propriété du **couple règles + niveau**. Pour que l'ordre relatif de deux règles soit seulement *observable*, il faut qu'il existe des agents que **les deux veulent gouverner au même tick** — sinon leur ordre ne peut rien changer, quelles que soient leurs sémantiques.
 >
-> Le niveau qui sert de test EQ-05 doit donc réunir : une **nuée dispersée au départ** (pour que « Rester groupé » ait matière à agir) **et** un **danger à portée de perception** (pour que « Fuir le rouge » en ait aussi). Mesuré le 6 août 2026 : sur une nuée compacte, les quatre piles ne produisent que **deux** comportements distincts, et le paramétrage paraît à tort cassé ; sur une nuée dispersée près d'un danger, elles en produisent **quatre**.
+> Le niveau qui sert de test EQ-05 doit donc réunir : une **nuée dispersée au départ** (pour que « Rester groupé » ait matière à agir) **et** un **danger à portée de perception** (pour que « Fuir le danger » en ait aussi). Mesuré le 6 août 2026 : sur une nuée compacte, les quatre piles ne produisent que **deux** comportements distincts, et le paramétrage paraît à tort cassé ; sur une nuée dispersée près d'un danger, elles en produisent **quatre**.
 >
 > **Cette précision existe parce que son absence a coûté trois semaines** : EQ-05 était relancé sur des blocs compacts, et l'on en concluait que les règles étaient défectueuses. Le validateur mesure désormais directement la condition (contention par paire de règles, EQ-06) : une paire à contention nulle a un ordre inobservable sur ce niveau.
 
@@ -776,7 +776,7 @@ Par ordre de priorité pressenti, sans engagement :
 
 ---
 
-## Historique des révisions *(v2.4)*
+## Historique des révisions *(v2.5)*
 
 | Version | Date | Changements | Motif |
 |---|---|---|---|
@@ -785,5 +785,6 @@ Par ordre de priorité pressenti, sans engagement :
 | 2.2 | 5 août 2026 | Nouveau §12.2.1 : QN-01 inapplicable tel quel aux chapitres à bibliothèque restreinte — définition de N_total (convention de l'outil : arrangements de règles distinctes, longueur 0 à `slots`, pile vide incluse), exemption des niveaux `tutorial: true` (critère propre : `N_win` == `expected_wins` exactement), garde-fou « pile vide gagnante = niveau dégénéré », bandes proportionnelles 20-50 % posées comme indicatives et à confirmer après T-040 (non opposables) | Préparation de T-040 : les seuils absolus 3-40 présupposent la bibliothèque complète ; arbitrage du concepteur du 5 août 2026 |
 | 2.3 | 6 août 2026 | **EQ-05 précisée** : la géométrie du niveau de test devient obligatoire (nuée dispersée + danger à portée) — EQ-05 est une propriété du couple règles+niveau, pas des règles seules ; sur une nuée compacte les quatre piles ne donnent que deux comportements et le paramétrage paraît à tort cassé. **Nouvelle EQ-06** : contention par paire de règles au rapport du validateur — critère opérationnel de RG-13, qui se jugeait à l'intuition | Trois semaines perdues à relancer EQ-05 sur des blocs compacts et à en conclure que les règles étaient défectueuses ; la condition est désormais mesurée, pas devinée |
 | 2.4 | 7 août 2026 | **ENF-11 révisée : 60 → 90 Mo** ⚙️ avec sa justification chiffrée (§10.1 bis) — le seuil d'origine était irréalisable dès le premier jour, le moteur standard imposant un plancher de ~75 Mo quand les données du jeu pèsent 0,1 Mo ; nouvelle évolution §17 n°7 « modèle d'export sur mesure » (gains, coûts, mode d'échec, calendrier) ; **point de décision explicite ajouté au jalon J4** | Erreur de cadrage relevée par la mesure : l'exigence avait été fixée sans mesurer le plancher du moteur. L'intention de sobriété reste servie par ce qui compte — aucun rendu en pause, aucune dépendance, aucune collecte |
+| 2.5 | 7 août 2026 | **R02 renommée « Fuir le rouge » → « Fuir le danger »** (§7.2, libellé seul — l'identifiant R02 et la sémantique sont inchangés) | Deux raisons. On ne fuit pas une couleur, on fuit une menace. Et surtout : **nommer une règle par sa couleur contredit ENF-20** (« aucune information portée par le seul canal couleur ») — un joueur en mode contraste élevé, ou daltonien, ne pourrait pas relier le libellé à ce qu'il voit |
 
-*Fin du document — v2.4. Toute modification des principes (§4) ou des règles de gestion (§6) exige une révision de version majeure de ce cahier des charges.*
+*Fin du document — v2.5. Toute modification des principes (§4) ou des règles de gestion (§6) exige une révision de version majeure de ce cahier des charges.*

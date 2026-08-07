@@ -1,24 +1,38 @@
 shader_type canvas_item;
-// Case de danger : couleur ET hachures (ENF-20/22, DCT §6.3) — l'information
-// n'est jamais portée par le seul canal couleur. Les hachures défilent
-// lentement quand le danger est actif, sont figées quand il dort.
+// Région de danger : couleur ET hachures (ENF-20/22), sur toute la région
+// d'un seul tenant. `INSTANCE_CUSTOM.xy` porte la taille de la région en
+// CASES, ce qui garde la densité des hachures constante quelle que soit
+// l'étendue — et surtout continue, sans couture case par case.
+//
+// Registre calme (DS-03 appliqué au visuel) : c'est un obstacle, pas une
+// alarme. Remplissage sourd, hachures fines, contour net sur le seul
+// pourtour de la région.
 
-uniform float hatch_density : hint_range(2.0, 24.0) = 7.0;
-uniform float hatch_width : hint_range(0.05, 0.9) = 0.42;
-uniform float scroll_speed : hint_range(0.0, 2.0) = 0.35;
+uniform float hatch_per_cell : hint_range(0.5, 6.0) = 1.6;
+uniform float hatch_width : hint_range(0.05, 0.9) = 0.34;
+uniform float scroll_speed : hint_range(0.0, 2.0) = 0.0;
 uniform bool reduced_motion = false;
 
+varying vec2 cells;
+
+void vertex() {
+	cells = max(INSTANCE_CUSTOM.xy, vec2(1.0));
+}
+
 void fragment() {
-	float scroll = reduced_motion ? 0.0 : TIME * scroll_speed;
-	// Diagonale : hachures à 45°, lisibles même en petite taille.
-	float band = fract((UV.x + UV.y) * hatch_density - scroll);
-	// Inversion explicite : smoothstep à bornes décroissantes est indéfini.
-	float line = 1.0 - smoothstep(hatch_width - 0.10, hatch_width + 0.10, abs(band - 0.5) * 2.0);
+	vec2 in_cells = UV * cells;
+	float scroll = (reduced_motion || scroll_speed <= 0.0) ? 0.0 : TIME * scroll_speed;
 
-	// Bordure marquée : la case reste délimitée sans grille par-dessus.
-	vec2 edge = min(UV, vec2(1.0) - UV);
-	float border = 1.0 - smoothstep(0.0, 0.06, min(edge.x, edge.y));
+	// Diagonale à 45°, période liée à la CASE et non au quad : continue d'un
+	// bout à l'autre de la région.
+	float band = fract((in_cells.x + in_cells.y) * hatch_per_cell - scroll);
+	float line = 1.0 - smoothstep(hatch_width - 0.12, hatch_width + 0.12,
+		abs(band - 0.5) * 2.0);
 
-	float a = clamp(0.30 + line * 0.55 + border * 0.35, 0.0, 1.0) * COLOR.a;
+	// Contour sur le pourtour de la RÉGION, épaisseur constante en cases.
+	vec2 edge = min(in_cells, cells - in_cells);
+	float border = 1.0 - smoothstep(0.0, 0.10, min(edge.x, edge.y));
+
+	float a = clamp(0.22 + line * 0.26 + border * 0.55, 0.0, 1.0) * COLOR.a;
 	COLOR = vec4(COLOR.rgb, a);
 }
