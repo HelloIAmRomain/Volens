@@ -71,6 +71,20 @@ du masquage. Sous `[R01]` seule, le premier agent de la colonne alignée
 entre dans le danger au tick 6 et l'objectif devient inatteignable
 immédiatement (RG-09) : l'échec est binaire, donc parfaitement lisible.
 
+55. **ENF-11 révisée 60 → 90 Mo (CDC v2.4), sur arbitrage du concepteur.**
+    Le seuil d'origine était irréalisable dès le premier jour : le moteur
+    standard impose ~75 Mo de plancher (`libgodot_android.so` release :
+    67,8 Mo) quand **toutes les données du jeu pèsent 0,1 Mo**. Erreur de
+    cadrage, pas défaut de réalisation. L'intention de sobriété reste servie
+    par ce qui compte et n'a jamais dépendu du poids : aucun rendu en pause,
+    aucune dépendance externe, aucune permission, aucune collecte.
+    **L'optimisation n'est pas abandonnée mais tracée** : évolution §17 n°7
+    (modèle d'export sur mesure, 35-50 Mo visés), à trancher explicitement
+    au jalon J4 — `disable_3d=yes` est le gain principal et sans risque,
+    le serveur de texte de repli ne rapporte que ~2 Mo, et le mode d'échec
+    à connaître est qu'un module retiré à tort **compile puis plante au
+    lancement**.
+
 ### Décisions tranchées seul
 
 46. **`android/.gdignore` obligatoire.** Sans lui, Godot importe les
@@ -231,6 +245,34 @@ que R01 en tête masque réellement la suite de la pile.
 (ajout 3.1 de la revue du 5 août) : il a signalé que `data/rules.json` avait
 changé, donc que la divergence pouvait être voulue. Sans lui, ces 15
 divergences ressembleraient à une régression pure.
+
+---
+
+## Règle de méthode — valider un instrument neuf sur un cas connu
+
+**Un instrument neuf produit de faux défauts, et un faux défaut a l'air
+vrai.** Avant de croire un instrument qu'on vient d'écrire, le passer sur un
+cas dont on connaît déjà la réponse.
+
+Le cas fondateur, 7 août 2026. L'outil de captures automatiques montrait un
+menu effondré en haut à gauche, colonne étroite, contenu non centré. J'ai
+cherché le défaut dans l'écran, modifié l'ordre d'ancrage, réordonné
+l'initialisation — **et le jeu n'avait rien.** Le harnais ajoutait `App`
+sous un simple `Node` : un `Control` enfant d'un `Node` reste à **taille
+zéro**, et toute l'interface retombait sur sa taille minimale. Dans le vrai
+jeu, `App` est la **racine** de la scène et Godot lui donne le viewport.
+
+Il aura fallu mesurer les tailles réelles (`app.size = (0,0)`) pour voir que
+l'instrument mentait. Sans cette mesure, je « corrigeais » un écran sain.
+
+C'est le même piège que les raisonnements trop fins sur les conditions
+d'abstention, mais **d'un cran au-dessus** : là, une hypothèse fausse
+produisait une prédiction fausse ; ici, un outil faux produit une
+**observation** fausse — et une observation ne se met pas spontanément en
+doute.
+
+**La règle : les captures automatiques auraient dû être vérifiées sur un
+écran connu bon avant d'en tirer la moindre conclusion sur les autres.**
 
 ---
 
