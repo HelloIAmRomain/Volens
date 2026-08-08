@@ -248,3 +248,72 @@ func test_ch1_01_converts_and_validates_at_exactly_one_win() -> void:
 	assert_eq(int(summary["n_stacks"]), 2, "1 règle, 1 emplacement : pile vide + [1]")
 	assert_eq(int(summary["n_win"]), 1, "expected_wins de la fiche")
 	assert_string_contains(String(summary["qn01_verdict"]), "attendu 1, constaté 1")
+
+# --- Contraintes de géométrie (invariants n°13 et n°14) --------------------
+#
+# Ces trois contrôles remplacent trois notes de carnet qui n'avaient protégé
+# de rien : chacune des trois leçons a récidivé APRÈS avoir été consignée.
+# Les tests ci-dessous les éprouvent sur la géométrie fautive elle-même —
+# le cas où le mécanisme travaille (invariant n°12), pas un cas commode.
+
+const _GEO_HEAD := """id: geo
+name: Geo
+allowed_rules: [R01, R02]
+slots: 2
+max_ticks: 60
+objective: extraction 100
+---
+"""
+
+func _parse_grid(rows: Array) -> Dictionary:
+	return LvlParser.parse(_GEO_HEAD + "\n".join(PackedStringArray(rows)), 6, 25)
+
+## Grille de référence : mur percé, nuée compacte, aucun danger.
+func _blank_rows() -> Array:
+	var rows := [
+		". . . . . L . . . . .",
+		"# # # # E E E # # # #",
+	]
+	for i in range(8):
+		rows.append(". . . . . . . . . . .")
+	for i in range(4):
+		rows.append(". . . o o o o o . . .")
+	rows.append(". . . . . . . . . . .")
+	return rows
+
+func test_a_clean_geometry_raises_nothing() -> void:
+	# Sans ce test, les trois suivants pourraient passer sur un contrôle qui
+	# crie tout le temps — ce qui ne vaudrait pas mieux qu'un contrôle muet.
+	var result := _parse_grid(_blank_rows())
+	assert_eq(result["errors"], PackedStringArray(), "aucune erreur attendue")
+	assert_eq(result["warnings"], PackedStringArray(), "aucun avertissement attendu")
+
+func test_a_danger_due_north_within_flee_range_warns() -> void:
+	var rows: Array = _blank_rows()
+	rows[7] = ". . . . . X . . . . ."   # (5,7), plein nord des agents (5,10..13)
+	var result := _parse_grid(rows)
+	assert_eq(result["errors"], PackedStringArray(), "avertissement, pas refus")
+	assert_gt((result["warnings"] as PackedStringArray).size(), 0,
+		"un danger plein nord à portée de fuite doit être signalé (invariant n°14)")
+	assert_true(String(result["warnings"][0]).contains("NORD"))
+
+func test_a_danger_out_of_flee_range_stays_silent() -> void:
+	# (5,2) est à d² = 64 des agents les plus proches : hors de portée, donc
+	# aucun cycle possible. Le contrôle ne doit pas crier pour autant.
+	var rows: Array = _blank_rows()
+	rows[2] = ". . . . . X . . . . ."
+	var result := _parse_grid(rows)
+	assert_eq(result["warnings"], PackedStringArray(),
+		"hors de portée de fuite : aucun cycle limite possible, donc aucun avertissement")
+
+func test_two_dangers_framing_the_swarm_are_refused() -> void:
+	var rows: Array = _blank_rows()
+	rows[10] = ". X . o o o o o X . ."
+	var result := _parse_grid(rows)
+	var errors: PackedStringArray = result["errors"]
+	assert_gt(errors.size(), 0, "deux dangers encadrant la nuée doivent être REFUSÉS")
+	var found := false
+	for e in errors:
+		if String(e).contains("encadrent"):
+			found = true
+	assert_true(found, "l'erreur doit nommer l'encadrement (invariant n°13)")

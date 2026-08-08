@@ -41,7 +41,7 @@ expected_wins: 6
 expected_classes: 2
 ---
 . . . . . L . . . . .
-E E E E E E E E E E E
+# # # # E E E # # # #
 . . . . . . . . . . .
 . . . . . . . . . . .
 . . . . . . . . . . .

@@ -32,8 +32,17 @@ func _init() -> void:
 	var validation: Dictionary = rules_data.get("validation", {})
 	var min_period := int(validation.get("min_cycle_period", ValidateLib.MIN_CYCLE_PERIOD_DEFAULT))
 
-	var parsed := LvlParser.parse(FileAccess.get_file_as_string(in_path), min_period)
+	var flee: Dictionary = rules_data.get("fuir_le_rouge", {})
+	var flee_range_sq := int(flee.get("perception_range_sq", 25))
+
+	var parsed := LvlParser.parse(FileAccess.get_file_as_string(in_path), min_period, flee_range_sq)
 	var errors: PackedStringArray = parsed["errors"]
+	var warnings: PackedStringArray = parsed.get("warnings", PackedStringArray())
+	# Les avertissements s'affichent MÊME en cas de refus : c'est souvent le
+	# même défaut de géométrie qui produit les deux, et le lire une seule fois
+	# fait gagner la simulation de diagnostic.
+	for w in warnings:
+		print("  ⚠ " + w)
 	if not errors.is_empty():
 		print("Niveau REFUSÉ — %d erreur(s) :" % errors.size())
 		for e in errors:

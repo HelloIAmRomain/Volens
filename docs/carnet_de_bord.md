@@ -248,6 +248,144 @@ divergences ressembleraient à une régression pure.
 
 ---
 
+## Idiome de niveau et garde-fous de geometrie (8 aout 2026)
+
+104. **IDIOME DE NIVEAU PAR DEFAUT, tous chapitres : la lumiere est derriere
+     le mur, la sortie est l'ouverture.** *La nuee ne va pas vers la sortie :
+     elle va vers la lumiere, et le mur l'oblige a passer par l'ouverture.*
+     Ce que ca resout, et pourquoi ce n'est pas cosmetique :
+     - la lumiere posee sur la bande de sortie faisait dire **la meme chose au
+       meme endroit** a deux marques distinctes. Le concepteur l'a vu tout de
+       suite : « c'est soit la lumiere soit le vert, mais pas les deux » ;
+     - pire, ca transformait R01 en **moteur qui va seul au but**. La
+       profondeur annoncee par la regle d'or devenait decorative, et plusieurs
+       niveaux se resolvaient avec une seule regle ;
+     - l'idiome produit **gratuitement un entonnoir** : R01 teste le Nord, le
+       mur le bloque, il glisse vers l'ouverture. Congestion, forme collective
+       lisible, dispositif compris sans un mot.
+     Applique aux cinq niveaux. Inscrit dans docs/ARCHITECTURE.md comme point de depart
+     de toute carte : s'en ecarter demande une raison ecrite dans la fiche.
+
+105. **LE DANGER CYCLIQUE NE TIENT PAS SA PROMESSE, ET LA MESURE LE DIT.**
+     L'hypothese etait forte : une seule piece punissant trois familles
+     differemment parce qu'elle agit sur le QUAND — R03 changerait l'heure
+     d'arrivee en regroupant, R02 en detournant, R01 foncerait. Elle
+     contournerait ainsi l'invariant n°13, qui interdit deux dangers statiques.
+     **Balayage complet (periode 6 a 12, toutes phases actives) : aucun calage
+     ne fait gagner [3,1] pendant que [1] perd.** La raison est structurelle :
+     **R03 est un predicat de MAINTIEN — elle ne ralentit jamais une nuee deja
+     compacte.** Elle deplace un trainard vers le groupe ; elle ne fait pas
+     attendre le groupe. Le cyclique separe donc la prudence des deux autres,
+     jamais la vitesse de la cohesion.
+     **Ce qui reste vrai et vaut d'etre garde** : un danger cyclique peut se
+     placer plein nord dans l'entonnoir, la ou un danger statique est interdit
+     par l'invariant n°14 — ses phases dormantes relachent R02 et brisent le
+     cycle limite. Outil reel, mais pour un autre usage que celui qu'on lui
+     pretait. N5 conserve donc son danger statique et l'arc du chapitre
+     intact, plutot que d'echanger l'arc contre un mecanisme qui ne separe
+     qu'en deux.
+
+106. **QUATRIEME RECIDIVE, ET FIN DU MOTIF : LES TROIS CONTRAINTES DE
+     GEOMETRIE PASSENT DANS LE CONVERTISSEUR.** L'invariant n°14 a ete viole
+     dix minutes apres son ecriture, sur le premier niveau redessine. La
+     decision 103 s'applique a elle-meme : une note ne protege de rien.
+     - **G1** — danger plein nord d'un agent, a portee de fuite :
+       AVERTISSEMENT. Pas un refus, parce que la configuration reste jouable
+       si la fuite laterale mene quelque part (cas de N2).
+     - **G2** — fuite et entonnoir tirant en sens opposes : AVERTISSEMENT.
+     - **G3** — deux dangers statiques encadrant un meme agent : **REFUS**.
+       Aucune geometrie ne rattrape ca : insoluble par construction.
+     Chacun a rendu un niveau insoluble au moins une fois pendant ce lot, et
+     le diagnostic coutait alors une simulation de seize piles ; il coute
+     maintenant une lecture de grille. Les trois sont eprouves par des tests
+     sur la geometrie fautive, plus un test qui verifie qu'une geometrie saine
+     **ne declenche rien** — un controle qui crie tout le temps ne vaut pas
+     mieux qu'un controle muet.
+
+107. **Limite assumee des trois controles** : ils raisonnent sur les positions
+     INITIALES. Le cycle limite peut naitre d'une position atteinte en cours
+     de partie, et G1 ne le verra pas — N2 en est l'exemple, son danger est
+     hors de portee au depart. Le detecteur empirique du validateur (boucles,
+     oscillations) reste la seconde ligne. L'un nomme la cause avant de
+     simuler, l'autre attrape ce que la statique ignore.
+
+108. **UNE BRANCHE SUPPRIMEE EMPORTE CE QU'ELLE PORTAIT.** En fermant la PR
+     de la ceremonie d'or et en supprimant sa branche, j'ai efface du meme
+     geste les decisions 102 et 103 et les invariants 13-14 de docs/ARCHITECTURE.md —
+     qui n'avaient rien a voir avec le corpus d'or et que le concepteur avait
+     explicitement demande de consigner. Recuperes depuis le commit orphelin.
+     **Regle : une consignation ne voyage jamais dans une branche dont le
+     sort depend d'une decision en attente.** Ce qui doit survivre a un refus
+     se commite separement, sur une branche qui sera fusionnee quoi qu'il
+     arrive.
+
+---
+
+## Deux faits de conception, écrits pour servir (8 août 2026)
+
+102. **LE RAPPORT DES PORTÉES BORNE LES GÉOMÉTRIES POSSIBLES.** Fait de
+     conception réutilisable, pas anecdote de N3.
+
+     **Énoncé.** Un danger assez proche pour border un traînard lui-même perçu
+     par le bloc est **nécessairement perçu par le bloc**. La raison est
+     arithmétique et ne dépend d'aucun niveau : la portée de R02 (d² ≤ 25) est
+     plus large que celle de R03 (d² ≤ 16). Pour que R03 tire un traînard, il
+     faut qu'il perçoive le groupe — donc qu'il en soit à d² ≤ 16. Un danger
+     collé à ce traînard est alors à d² ≲ 25 du groupe, c'est-à-dire **dans**
+     la portée de R02. On ne peut pas isoler l'un sans exposer l'autre.
+
+     **Conséquence de dessin.** Toute géométrie qui met un répulseur au
+     service d'un seul agent agit aussi sur la nuée entière. Deux répulseurs
+     en vis-à-vis créent donc un bassin dont la famille prudente ne sort
+     jamais — mesuré sur N3 : 10 agents sur 22 en boucle au tick 12.
+
+     **Portée générale.** Cela vaudra pour tout couple (règle à portée large,
+     règle à portée étroite) des chapitres suivants, et pas seulement pour
+     R02/R03. La question à se poser avant de dessiner : *quelle est la plus
+     large des portées en jeu, et qui d'autre entre dedans ?*
+
+     **Cela explique rétrospectivement pourquoi les premières fiches ne
+     pouvaient pas fonctionner.** Elles plaçaient des dangers pour punir une
+     famille en supposant que les autres ne les verraient pas. Aucune n'a
+     échoué par manque de soin : elles échouaient parce que la géométrie
+     qu'elles supposaient n'existe pas.
+
+103. **UNE NOTE NE PROTÈGE DE RIEN ; SEULE UNE CONTRAINTE DE DESSIN PROTÈGE.**
+     À écrire au-dessus des trois occurrences, parce que le motif est plus
+     instructif qu'aucune d'elles.
+
+     | Leçon consignée | Récidive | Ce qui a manqué |
+     |---|---|---|
+     | Décision 67 — le patch textuel muet | 2 fois après | une note |
+     | Décision 12 — le cas d'épreuve confortable | 3 fois | une note |
+     | **Décision 31 — le cycle limite de portée** | **reprise ici, sur N4** | une note |
+
+     Trois leçons différentes, un seul motif : **la leçon était écrite au
+     bon endroit, elle a été relue, et elle n'a pas servi.** Une note décrit un
+     accident passé ; elle ne se présente pas au moment où l'on est sur le
+     point de le refaire. C'est le moment qui compte, pas le classement.
+
+     **La forme qu'une leçon doit prendre pour servir.** Comparer les deux
+     rédactions de la même chose :
+
+     - *décrit* (décision 31, telle qu'elle était) : « un répulseur à seuil dur
+       combiné à un attracteur oscille à la frontière de portée ». Vraie,
+       complète, inutile au moment de placer une case.
+     - **opératoire** : « **un répulseur à seuil dur ne se place jamais là où
+       fuir ramène dans le seuil** ». Même contenu, mais formulé comme un
+       INTERDIT DE GESTE : elle se déclenche à l'instant où l'on pose le
+       danger, pas quand on relit le carnet.
+
+     Le critère : une leçon sert si elle est rédigée comme une **contrainte
+     sur l'acte** — ce qu'on n'a pas le droit de dessiner, d'écrire ou
+     d'appeler — et non comme la description du phénomène qui l'a motivée.
+     Quand la contrainte peut être portée par un outil plutôt que par une
+     phrase, c'est encore mieux : le crochet de la décision 96 vaut mieux que
+     les deux notes qui l'ont précédé. **Une leçon qui reste une phrase doit
+     au moins être une phrase à l'impératif.**
+
+---
+
 ## Chapitre 1 terminé — N3, N4, N5 conçus et validés (8 août 2026)
 
 97. **L'ARC QN-02 TIENT, ET IL EST PROUVÉ PAR SIMULATION.** Trois familles,
