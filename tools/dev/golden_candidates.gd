@@ -28,6 +28,9 @@ extends SceneTree
 ## instrument, pas un registre.
 
 const CANDIDATES := [
+	["res://data/levels/ch1_01.json", [1]],
+	["res://data/levels/ch1_02.json", [1]],
+	["res://data/levels/ch1_02.json", [2, 1]],
 	["res://data/levels/ch1_03.json", [1]],
 	["res://data/levels/ch1_03.json", [2, 1]],
 	["res://data/levels/ch1_03.json", [2, 3, 1]],
