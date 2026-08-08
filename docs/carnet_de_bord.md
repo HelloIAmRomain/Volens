@@ -248,6 +248,35 @@ divergences ressembleraient à une régression pure.
 
 ---
 
+## Deux regles portees par des outils (8 aout 2026)
+
+109. **UN PARAMETRE CALIBRE EST UN PARAMETRE DE LA CARTE, PAS DU NIVEAU.**
+     Generalisation de ce que l'echeance de N4 a montre : calibree a 19 sur
+     une bande pleine largeur, elle ne laissait plus qu'UN tick de marge apres
+     le passage a l'entonnoir. Le niveau ne validait plus la meme chose sans
+     que rien dans son en-tete n'ait bouge.
+     Cela vaut pour **tout** parametre mesure : echeance de celerite, seuil de
+     preservation, pourcentage d'extraction, limite de ticks. Un mur deplace
+     d'une case change des temps de parcours, donc des marges, donc des
+     verdicts.
+     **Rendu mecanique** (decision 103 : une note ne protege de rien) : chaque
+     `.lvl` porte `calibrated_on`, l'empreinte de sa geometrie — grille et
+     positions initiales. Le convertisseur la recalcule et REFUSE le niveau si
+     elle differe. C'est le dispositif du `rules_hash` des recettes d'or,
+     transpose : distinguer « le code a regresse » de « l'entree a change ».
+
+110. **LA CONSIGNATION NE VIT QUE SUR `main`.** Regle elargie apres le
+     quatrieme incident du meme genre : une perte silencieuse decouverte par
+     hasard. Ma formulation precedente — « une consignation ne voyage pas dans
+     une branche au sort incertain » — etait trop etroite : TOUTE branche de
+     travail peut etre abandonnee, reecrite ou fermee.
+     Carnet, invariants et decisions se poussent sur `main` **des qu'ils sont
+     ecrits**, par une PR dediee fusionnee immediatement, jamais en passager
+     d'un lot technique dont l'issue n'est pas acquise. Une lecon perdue coute
+     plus cher que la lecon elle-meme : elle sera reapprise au meme prix.
+
+---
+
 ## Idiome de niveau et garde-fous de geometrie (8 aout 2026)
 
 104. **IDIOME DE NIVEAU PAR DEFAUT, tous chapitres : la lumiere est derriere
