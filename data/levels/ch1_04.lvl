@@ -1,0 +1,72 @@
+# N4 « Le prix du temps » — la prudence coute des ticks.
+#
+# Place dans l'arc QN-02 : c'est ici que la famille R02-en-tete perd.
+#
+# LE DISPOSITIF. Il n'y a RIEN a craindre sur ce niveau : aucun agent ne peut
+# mourir, quelle que soit la pile. Le danger est place a COTE du flux, jamais
+# dedans. C'est tout le propos : R02 ne distingue pas un danger qui menace
+# d'un danger qui passe a portee, et la portee (d² <= 25) est large.
+#
+# Geometrie, et pourquoi elle est contrainte (invariant n.12) :
+#  · le danger est en (1,8), donc AU NORD du bloc. C'est essentiel : R02 fuit
+#    en augmentant la distance de Manhattan, et pour un agent situe au SUD
+#    du danger, monter RAPPROCHE. Le Nord est donc refuse, l'Est l'emporte,
+#    et chaque tick de fuite est un tick qui ne monte pas.
+#    Un danger place au sud ou au niveau du bloc ferait fuir vers le Nord,
+#    c'est-a-dire gratuitement : le niveau ne prouverait rien.
+#  · UN trainard en (3,9), et il n'est pas decoratif. Sans lui le bloc est
+#    compact, R03 ne se declenche jamais, et le validateur a raison de le
+#    dire : l'ordre R01/R03 et R02/R03 devient INOBSERVABLE ici (RG-13,
+#    contention nulle). Un niveau qui laisse deux regles ne jamais se croiser
+#    n'enseigne rien sur leur ordre. Le trainard est place pour que les deux
+#    paires se disputent quelque chose :
+#      - il est isole (le sommet du bloc est a d² = 4 > 2) mais percu
+#        (d² = 4 <= 16), donc R03 le tire ;
+#      - il est a d² = 5 du danger, donc R02 le repousse aussi ;
+#      - sa colonne (3) ne croise pas le danger (colonne 1), donc R01 le
+#        laisse vivre : le niveau reste sans mort possible.
+#
+#    SA POSITION EST CONTRAINTE PAR LE CYCLE LIMITE DE PORTEE (decision 31).
+#    Premier essai en (0,10) : R02 y fuit vers le SUD — le Nord et l'Est
+#    rapprochent du danger — l'agent sort de portee, R01 le renvoie au Nord,
+#    il rentre en portee, et ainsi de suite. Boucle infinie, mesuree.
+#    En (3,9) la fuite part a l'EST : chaque pas AUGMENTE dx, l'agent quitte
+#    la portee pour de bon et remonte. Un repulseur a seuil dur ne doit
+#    jamais etre place la ou fuir ramene dans le seuil.
+#  · colonnes 3, 4, 5 dans la portee du danger, colonnes 6 et 7 hors portee :
+#    la nuee se scinde, une moitie derive a l'est, l'autre monte droit. La
+#    congestion qui s'ensuit est le vrai cout, pas la seule fuite.
+#
+# ECHEANCE : celerity 19, MESUREE et non devinee. Sans echeance, le niveau a
+# ete simule d'abord : la famille directe sort en 13 ticks, la prudente en 26.
+# 19 est pose au milieu — la directe a 6 ticks de marge, la prudente en manque
+# 7. Aucune des deux n'est sur le fil, donc l'echec ne tient pas a un detail
+# de conflit de case (ENF-04 : gagner au tick exact de la borne est gagne).
+id: ch1_04
+name: Le prix du temps
+tutorial: false
+allowed_rules: [R01, R02, R03]
+slots: 3
+max_ticks: 120
+objective: extraction 100
+objective: celerity 19
+lesson: "Fuir ce qui ne menace pas coute du temps, et le temps est compte."
+expected_wins: 7
+expected_classes: 2
+---
+. . . . . L . . . . .
+E E E E E E E E E E E
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. X . . . . . . . . .
+. . . o . . . . . . .
+. . . . . . . . . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . . . . . . . . .

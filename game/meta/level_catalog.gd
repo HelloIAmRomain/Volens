@@ -1,15 +1,18 @@
 class_name LevelCatalog
 extends RefCounted
-## Catalogue du chapitre 1. Les niveaux 3 à 5 sont **verrouillés en attendant
-## leur conception** : l'IA ne conçoit pas les niveaux (DCT §12.4), et leur
-## fiche dépend de la révision du système de règles.
+## Catalogue du chapitre 1 — les cinq niveaux, conçus et validés.
+##
+## Les niveaux 3 à 5 portent l'arc QN-02 : trois familles de piles, chacune
+## gagnante sur exactement deux niveaux, aucune sur les trois. La propriété
+## n'est pas déclarative — elle est simulée à chaque exécution des tests
+## (`tests/unit/test_chapter1_arc.gd`).
 
 const LEVELS := [
 	{"id": "ch1_01", "name": "La nuée", "path": "res://data/levels/ch1_01.json", "ready": true},
 	{"id": "ch1_02", "name": "Le détour", "path": "res://data/levels/ch1_02.json", "ready": true},
-	{"id": "ch1_03", "name": "À concevoir", "path": "", "ready": false},
-	{"id": "ch1_04", "name": "À concevoir", "path": "", "ready": false},
-	{"id": "ch1_05", "name": "À concevoir", "path": "", "ready": false},
+	{"id": "ch1_03", "name": "Les traînards", "path": "res://data/levels/ch1_03.json", "ready": true},
+	{"id": "ch1_04", "name": "Le prix du temps", "path": "res://data/levels/ch1_04.json", "ready": true},
+	{"id": "ch1_05", "name": "Plusieurs vérités", "path": "res://data/levels/ch1_05.json", "ready": true},
 ]
 
 static func count() -> int:

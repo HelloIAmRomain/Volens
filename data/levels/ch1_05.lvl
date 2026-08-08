@@ -1,0 +1,58 @@
+# N5 « Plusieurs verites » — cloture du chapitre.
+#
+# Place dans l'arc QN-02 : c'est ici que la famille R01-en-tete perd, et que
+# les deux autres gagnent. Aucune pile ne resout N3, N4 et N5 a la fois.
+#
+# LE RETOURNEMENT. En N3, la cohesion TUE le trainard : elle le tire vers le
+# groupe, et le feu est sur le chemin. Ici elle le SAUVE : le feu est sur sa
+# route naturelle vers la lumiere, et rejoindre le groupe l'en ecarte.
+# C'est la meme regle, la meme portee, le meme predicat de maintien — seule
+# la geometrie a change. Le joueur qui a appris « R03 est dangereuse » en N3
+# doit desapprendre, et c'est le sujet du niveau.
+#
+# GEOMETRIE, et pourquoi elle est contrainte (invariant n.12) :
+#  · le trainard est en (1,12), le danger en (1,6) : MEME COLONNE. R01 vise
+#    la lumiere (5,0), le Nord rapproche, donc il monte tout droit dans le feu.
+#    C'est la seule facon de faire perdre la famille directe sans toucher au
+#    bloc — dont aucune colonne (4 a 8) ne croise la colonne 1.
+#  · le danger est a d² = 36 du trainard au depart, donc HORS de portee de R02
+#    (d² <= 25). La prudence ne se declenche donc pas tout de suite : l'agent
+#    monte d'abord, entre en portee a (1,11), et n'esquive qu'ensuite. Sans ce
+#    delai, R02 et R03 auraient la meme trajectoire et le niveau n'aurait
+#    qu'une seule verite au lieu de plusieurs.
+#  · le trainard est isole (le bloc commence en x=4 : d² = 9 > 2) mais percu
+#    (d² = 9 <= 16). R03 le tire vers l'EST — le Nord eloigne du barycentre —
+#    donc hors de la colonne fatale des le premier tick.
+#
+# OBJECTIF : extraction 95 + preservation 0. Perdre le trainard laisse 20
+# sortis sur 21, soit 95 % : l'extraction PASSE. C'est la preservation qui
+# tranche, et c'est le coeur de la decision 54 — l'effet de R03 est invisible
+# sous une extraction seule, decisif sous une preservation.
+id: ch1_05
+name: Plusieurs verites
+tutorial: false
+allowed_rules: [R01, R02, R03]
+slots: 3
+max_ticks: 120
+objective: extraction 95
+objective: preservation 0
+lesson: "La meme regle sauve ici ce qu'elle tuait la : c'est le terrain qui decide."
+expected_wins: 6
+expected_classes: 2
+---
+. . . . . L . . . . .
+E E E E E E E E E E E
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. X . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . o o o o o . .
+. o . . o o o o o . .
+. . . . o o o o o . .
+. . . . o o o o o . .
+. . . . . . . . . . .

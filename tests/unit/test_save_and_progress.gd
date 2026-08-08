@@ -59,13 +59,13 @@ func test_unsolved_level_reports_no_best() -> void:
 
 # --- catalogue -----------------------------------------------------------------
 
-func test_catalog_exposes_five_levels_two_of_them_ready() -> void:
+func test_catalog_exposes_five_levels_all_of_them_ready() -> void:
 	assert_eq(LevelCatalog.count(), 5, "le chapitre 1 compte cinq niveaux")
 	var ready := 0
 	for i in range(LevelCatalog.count()):
 		if bool(LevelCatalog.entry(i)["ready"]):
 			ready += 1
-	assert_eq(ready, 2, "ch1_01 et ch1_02 seulement — les autres attendent leur conception")
+	assert_eq(ready, 5, "le chapitre 1 est complet : les cinq niveaux sont conçus et validés")
 
 func test_next_playable_skips_solved_levels() -> void:
 	var p := Progress.new()
@@ -73,10 +73,23 @@ func test_next_playable_skips_solved_levels() -> void:
 	p.solved = {"ch1_01": {"ticks": 14, "lost": 0}}
 	assert_eq(LevelCatalog.next_playable(p), "ch1_02")
 
-func test_locked_levels_have_no_path() -> void:
-	# Un niveau non conçu ne doit pas être ouvrable, même par erreur.
-	assert_eq(LevelCatalog.path_of("ch1_03"), "")
-	assert_eq(LevelCatalog.load_level_data("ch1_03"), {})
+func test_every_ready_level_actually_loads() -> void:
+	# Un niveau annoncé prêt et introuvable donnerait un écran noir. La garde
+	# vaut pour tout le catalogue, pas pour un identifiant écrit à la main.
+	for i in range(LevelCatalog.count()):
+		var item: Dictionary = LevelCatalog.entry(i)
+		if not bool(item["ready"]):
+			continue
+		var level_id := String(item["id"])
+		assert_ne(LevelCatalog.path_of(level_id), "", "%s : prêt mais sans chemin" % level_id)
+		assert_false(LevelCatalog.load_level_data(level_id).is_empty(),
+			"%s : prêt mais illisible" % level_id)
+
+func test_an_unknown_level_yields_nothing() -> void:
+	# Le repli doit rester propre pour un identifiant qui n'existe pas — une
+	# sauvegarde d'une version antérieure, par exemple.
+	assert_eq(LevelCatalog.path_of("ch2_01"), "")
+	assert_eq(LevelCatalog.load_level_data("ch2_01"), {})
 
 # --- session -------------------------------------------------------------------
 

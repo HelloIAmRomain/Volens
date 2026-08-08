@@ -103,9 +103,12 @@ func test_a_stored_session_reopens_the_level_paused_at_the_same_tick() -> void:
 	assert_eq(game._view.current_state().tick, 7, "au tick exact, par re-simulation déterministe")
 	assert_false(game._playing, "et TOUJOURS en pause : on ne reprend jamais une simulation en marche")
 
-func test_a_session_on_an_unbuilt_level_falls_back_to_the_menu() -> void:
+func test_a_session_on_an_unknown_level_falls_back_to_the_menu() -> void:
+	# Le chapitre 1 est complet : le cas à couvrir n'est plus « niveau non
+	# conçu » mais « identifiant inconnu », par exemple une sauvegarde écrite
+	# par une version antérieure ou postérieure.
 	var session := Session.new()
-	session.level_id = "ch1_04"  # verrouillé, aucun fichier
+	session.level_id = "ch2_01"  # inexistant, aucun fichier
 	session.stack = [1]
 	session.save_to_disk()
 

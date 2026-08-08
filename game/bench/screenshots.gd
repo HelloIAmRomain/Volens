@@ -107,6 +107,12 @@ func _capture_all() -> void:
 		game._view.step_forward()
 	await _shot("07c-ch1-02-detour")
 
+	# La cloture du chapitre : le niveau ou la cohesion sauve ce qu'elle tuait
+	# en N3. C'est la capture a regarder pour juger l'arc, pas une regle isolee.
+	game = _app._open_game("ch1_05", false)
+	game._hide_objective_panel()
+	await _shot("11-ch1-05-terrain")
+
 	# Les deux bilans, gagné puis perdu.
 	_app._on_level_finished("ch1_01", true, 14, 0, [RuleRegistry.R01_TOWARD_LIGHT], "La nuée a rempli l'objectif.")
 	await _shot("08-bilan-gagne")

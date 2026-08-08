@@ -1,0 +1,79 @@
+# N3 « Les trainards » — la cohesion est AVEUGLE.
+#
+# Place dans l'arc QN-02 : c'est ici que la famille R03-en-tete perd.
+#
+# LE DISPOSITIF, et pourquoi il est ce qu'il est (invariant n.12 : le cas
+# d'epreuve est celui ou le mecanisme est SOLLICITE).
+#
+# R03 est un PREDICAT DE MAINTIEN : un agent qui compte un congenere a
+# d² <= 2 s'abstient. Sur un bloc compact, R03 ne fait donc RIEN et [3,1] se
+# comporte exactement comme [1] — un niveau bati sur une nuee compacte ne
+# pourrait pas la departager. Il faut des agents ISOLES.
+#
+# D'ou UN trainard, colonne 0, hors du bloc :
+#  · isoles (le bloc commence en x=3, donc d² >= 9 > 2) ;
+#  · mais PERCUS (d² = 9 <= 16 pour la colonne 3 du bloc), sans quoi R03
+#    s'abstiendrait aussi, faute de voisin a rejoindre.
+#
+# Et un danger colle contre lui, du cote du bloc. Le calcul, verifie a la
+# main avant la mesure : depuis (0,12), le barycentre percu est a l'EST ;
+# l'ordre N>E>S>O teste le Nord d'abord, qui ELOIGNE du barycentre, donc
+# l'Est l'emporte — droit dans (1,12).
+#
+# UN SEUL DANGER, ET C'EST UNE CONTRAINTE, PAS UNE ECONOMIE. Le premier jet
+# en posait deux, symetriques, un par flanc. Mesure : 10 agents sur 22 pris
+# dans un bassin. La portee de R02 (d² <= 25) est plus large que celle de R03
+# (d² <= 16) : un danger assez proche pour border un trainard percu par le
+# bloc est FORCEMENT percu par le bloc lui-meme. Avec deux dangers en vis-a-vis,
+# le bloc est repousse par l'un vers l'autre et oscille entre les deux —
+# la famille R02 n'en sort jamais. Avec un seul, elle derive vers l'est,
+# quitte la portee, et remonte. La geometrie de N3 est donc contrainte par
+# le rapport des deux portees, pas par le gout.
+#
+# TROIS CLASSES GAGNANTES, et la troisieme n'etait pas prevue : [2,3,1] se
+# separe de [2,1]. Une fois le trainard hors de portee du danger, R02
+# s'abstient et R03 reprend la main sur lui — il est toujours isole, et il
+# percoit encore le bloc. Sa trajectoire differe donc, sans changer l'issue.
+# C'est exactement ce que le validateur est la pour dire : la prediction etait
+# a 8 gagnantes et 2 classes, la mesure donne 8 et 3.
+#
+# Les trois familles, au tick 1 :
+#  · R01 en tete — le trainard vise la lumiere, le Nord rapproche : il monte
+#    dans sa colonne, ou il n'y a rien. Il vit.
+#  · R02 en tete — le danger est a d² = 1, R02 fuit ; le Nord ELOIGNE (2 > 1)
+#    donc il monte aussi. Il vit.
+#  · R03 en tete — rien ne le protege : la cohesion le tire vers le groupe,
+#    et le groupe est de l'autre cote du feu. Il meurt.
+#
+# OBJECTIF : extraction 90 + preservation 0. Les deux seuils se croisent
+# exprès. Perdre le trainard laisse 20 sortis sur 21, soit 95 % —
+# l'extraction PASSE. C'est la preservation qui tranche, et c'est voulu :
+# decision 54, l'effet de R03 est invisible sous une extraction seule.
+id: ch1_03
+name: Les trainards
+tutorial: true
+allowed_rules: [R01, R02, R03]
+slots: 3
+max_ticks: 120
+objective: extraction 90
+objective: preservation 0
+lesson: "La cohesion est aveugle : elle ramene les trainards, jamais elle ne regarde ou."
+expected_wins: 8
+expected_classes: 3
+---
+. . . . . L . . . . .
+E E E E E E E E E E E
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . o o o o o . . .
+o X . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . . . . . . . . .

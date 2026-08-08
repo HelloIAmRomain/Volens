@@ -248,6 +248,67 @@ divergences ressembleraient à une régression pure.
 
 ---
 
+## Chapitre 1 terminé — N3, N4, N5 conçus et validés (8 août 2026)
+
+97. **L'ARC QN-02 TIENT, ET IL EST PROUVÉ PAR SIMULATION.** Trois familles,
+    chacune gagnante sur exactement deux niveaux, aucune pile sur les trois.
+
+    | Famille | N3 | N4 | N5 | Ce qu'elle apprend |
+    |---|---|---|---|---|
+    | A — R01 en tête | **G** | **G** | P | la vitesse saigne dès qu'un traînard suit sa route dans le feu |
+    | B — R02 en tête | **G** | P | **G** | la prudence ne perd pas d'agent, elle perd des ticks |
+    | C — R03 en tête | P | **G** | **G** | la cohésion est aveugle avant d'être utile |
+
+    Intersection des trois ensembles gagnants : **vide**. Ce n'est pas une
+    affirmation de fiche — `tests/unit/test_chapter1_arc.gd` simule les 16
+    piles sur les 3 niveaux à chaque exécution et le vérifie. Une retouche de
+    grille qui casserait l'arc le dirait là, pas six semaines plus tard sur un
+    téléphone.
+
+98. **LE RETOURNEMENT DE R03 EST LE SUJET DU CHAPITRE.** En N3 la cohésion
+    TUE le traînard : elle le tire vers le groupe, le feu est sur le chemin.
+    En N5 elle le SAUVE : le feu est sur sa route naturelle vers la lumière,
+    et rejoindre le groupe l'en écarte. **Même règle, même portée, même
+    prédicat de maintien — seule la géométrie a changé.** Le joueur qui a
+    appris « R03 est dangereuse » doit désapprendre. C'est l'application
+    directe de la décision 54 : l'effet de R03 est invisible sous une
+    extraction, décisif sous une préservation. Les deux niveaux portent donc
+    `preservation 0` avec une extraction volontairement atteignable (90 % et
+    95 %) : **c'est la préservation qui tranche, jamais le compte de sortis.**
+
+99. **DEUX CONTRAINTES DE GÉOMÉTRIE DÉCOUVERTES À LA MESURE**, et aucune des
+    deux n'était devinable sur le papier :
+    - **Le rapport des portées interdit les dangers en vis-à-vis.** R02 perçoit
+      à d² ≤ 25, R03 à d² ≤ 16 : un danger assez proche pour border un
+      traînard lui-même perçu par le bloc est *nécessairement* perçu par le
+      bloc. Deux dangers symétriques ont donc mis 10 agents sur 22 dans un
+      bassin dont la famille prudente ne sortait jamais. Un seul suffit.
+    - **Le cycle limite de portée (décision 31) m'a repris.** Traînard en
+      (0,10) sur N4 : R02 y fuit vers le sud, l'agent sort de portée, R01 le
+      renvoie au nord, il rentre en portée. Boucle infinie, mesurée. Règle qui
+      en sort : **un répulseur à seuil dur ne doit jamais être placé là où
+      fuir ramène dans le seuil.** En (3,9) la fuite part à l'est, dx croît à
+      chaque pas, l'agent quitte la portée pour de bon.
+
+100. **LE VALIDATEUR A CORRIGÉ MES PRÉDICTIONS TROIS FOIS SUR TROIS NIVEAUX,
+     ET C'EST SON MÉTIER.** N3 prédit 8 gagnantes en 2 classes, mesuré 8 et
+     **3** — `[2,3,1]` se sépare de `[2,1]` parce que R03 reprend la main sur
+     le traînard une fois R02 hors de portée. N4 prédit 11, mesuré 9 puis 11
+     après correction de la boucle. L'échéance de N4 (**celerity 19**) est
+     posée APRÈS mesure, entre 13 ticks (direct) et 26 (prudent) : 6 ticks de
+     marge d'un côté, 7 de manque de l'autre, aucune famille sur le fil.
+     **Aucun chiffre de ces trois niveaux n'a été choisi avant d'être mesuré.**
+
+101. **UN NIVEAU N'A PAS À RENDRE TOUS LES ORDRES OBSERVABLES ; LE CHAPITRE
+     SI.** Le validateur signale les paires à contention nulle (RG-13/EQ-06).
+     N5 laisse R2/R3 à zéro — leurs zones d'action ne s'y recouvrent jamais.
+     Accepté, parce que la paire est observable en N3 (6) et N4 (3). En
+     revanche j'ai **ajouté un traînard à N4** uniquement pour cette raison :
+     sans lui, R1/R3 et R2/R3 valaient tous deux zéro, et le niveau ne disait
+     rien de la place de R03 dans la pile.
+
+---
+
 ## Parades mécaniques et critère du cas d'épreuve (8 août 2026)
 
 95. **LE CAS D'ÉPREUVE EST CELUI OÙ LE MÉCANISME EST SOLLICITÉ, JAMAIS CELUI
