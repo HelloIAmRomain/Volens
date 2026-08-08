@@ -37,11 +37,24 @@
 #    la nuee se scinde, une moitie derive a l'est, l'autre monte droit. La
 #    congestion qui s'ensuit est le vrai cout, pas la seule fuite.
 #
-# ECHEANCE : celerity 19, MESUREE et non devinee. Sans echeance, le niveau a
-# ete simule d'abord : la famille directe sort en 13 ticks, la prudente en 26.
-# 19 est pose au milieu — la directe a 6 ticks de marge, la prudente en manque
-# 7. Aucune des deux n'est sur le fil, donc l'echec ne tient pas a un detail
-# de conflit de case (ENF-04 : gagner au tick exact de la borne est gagne).
+# IDIOME DU CHAPITRE (N1) : la lumiere est derriere le mur, la sortie est
+# l'ouverture. L'entonnoir ajoute ici une congestion qui n'existait pas avec
+# une bande pleine largeur — elle rallonge tout le monde, mais elle rallonge
+# SURTOUT la famille prudente, qui doit rejoindre l'ouverture apres avoir
+# derive. L'echeance a donc ete remesuree apres harmonisation.
+#
+# ECHEANCE : celerity 24, MESUREE et non devinee — et REMESUREE apres
+# l'harmonisation a l'idiome, qui a change tous les temps.
+#
+# Simulation sans echeance : famille directe 17 ticks, cohesion 18, prudente
+# 30. 24 est pose entre les deux groupes — 6 ticks de marge pour la cohesion
+# (la plus lente des gagnantes), 6 de manque pour la prudente. Symetrique et
+# sans personne sur le fil, donc l'echec ne tient pas a un detail de conflit
+# de case (ENF-04 : gagner au tick exact de la borne est gagne).
+#
+# La premiere valeur, 19, avait ete calibree AVANT l'entonnoir : elle ne
+# laissait plus qu'un tick a la cohesion. Une echeance se recalibre a chaque
+# fois que la geometrie bouge — c'est un parametre de la carte, pas du niveau.
 id: ch1_04
 name: Le prix du temps
 tutorial: false
@@ -49,13 +62,13 @@ allowed_rules: [R01, R02, R03]
 slots: 3
 max_ticks: 120
 objective: extraction 100
-objective: celerity 19
+objective: celerity 24
 lesson: "Fuir ce qui ne menace pas coute du temps, et le temps est compte."
 expected_wins: 7
 expected_classes: 2
 ---
 . . . . . L . . . . .
-E E E E E E E E E E E
+# # # # E E E # # # #
 . . . . . . . . . . .
 . . . . . . . . . . .
 . . . . . . . . . . .

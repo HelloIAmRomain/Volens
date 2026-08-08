@@ -1,21 +1,44 @@
-# N2 « Le détour » — LA leçon du jeu : l'ordre change tout.
-# Fiche : docs/design/ch1_02.md (PR #4). Grille proposée le 6 août 2026.
+# N2 « Le detour » — LA lecon du jeu : l'ordre change tout.
 #
-# Les sept contraintes de la fiche, satisfaites :
-# 1. Le contournement de R02 est unilatéral vers l'EST — le danger occupe
-#    donc la colonne OUEST du flux (colonne 1), et aucun agent ne vit à son
-#    ouest : personne ne peut tomber dans le cycle limite de portée (déc. 31).
-# 2. La colonne 1 du bloc d'agents est délibérément alignée sur le danger :
-#    sous [R01] seule, ses quatre agents entrent dans (1,6) et meurent.
-# 3. Le bloc démarre HORS de portée de R02 : (1,12) est à d² = 36 > 25 du
-#    danger, donc la nuée marche avant de réagir.
-# 4. Bande de sortie pleine largeur, lumière au-dessus : l'extraction ne
-#    mesure que la survie, jamais l'angle d'approche.
-# 5. Terrain ouvert, aucun mur : le masquage repose sur « R01 ne s'abstient
-#    jamais », vrai sans cul-de-sac.
-# 6. Trois colonnes libres à l'est (5, 6, 7) pour l'arc de contournement.
-# 7. Extraction 100 % : le seul niveau du chapitre où c'est justifié —
-#    l'échec devient binaire, donc parfaitement lisible.
+# Meme idiome que N1 : la lumiere est derriere le mur, la sortie est
+# l'ouverture. Le danger, lui, est LATERAL — sur la colonne de depart d'une
+# partie de la nuee, jamais plein nord d'elle.
+#
+# CE PLACEMENT EST FORCE, PAS CHOISI (invariant n.14). Premier essai : le
+# danger dans la bouche de l'entonnoir, plein nord. Mesure : la famille
+# prudente boucle a l'infini et le niveau devient INSOLUBLE — zero pile
+# gagnante. La raison est generale et vaut pour tout le chapitre : R02 fuit
+# en augmentant la distance de Manhattan ; face a un danger situe AU NORD,
+# le Nord la diminue toujours, donc R02 refuse d'avancer tant que le danger
+# est a portee, pendant que R01 rappelle vers la lumiere. Les deux se
+# renvoient l'agent a la frontiere de portee.
+#
+# Un danger LATERAL n'a pas ce defaut : des que l'agent l'a depasse en
+# hauteur, monter ELOIGNE, et fuir revient a avancer.
+#
+# DEUXIEME CONTRAINTE, mesuree elle aussi : le danger doit pousser VERS
+# l'ouverture, jamais a l'oppose. Deuxieme essai, danger a l'est du bloc :
+# la fuite derive vers l'est, puis il faut revenir a l'ouest pour trouver
+# l'ouverture — et revenir, c'est rentrer dans la portee. Boucle, niveau
+# insoluble a nouveau. Avec une bande de sortie pleine largeur ce probleme
+# n'existait pas ; avec un entonnoir, la fuite laterale et l'entonnoir se
+# combattent des qu'ils tirent en sens contraire.
+#
+# D'ou la geometrie finale : danger a l'OUEST, ouverture a l'EST du bloc.
+# La fuite et le but tirent dans le meme sens, l'escalier de contournement
+# monte sans jamais revenir sur ses pas.
+#
+# Les deux ordres, et rien entre les deux :
+#  · [Lumiere, Fuir] — R01 decide toujours en premier, R02 ne parle jamais.
+#    La nuee entre dans l'entonnoir et se fait faucher. C'est l'erreur
+#    instructive du CDC §7.3, « nuee pressee ».
+#  · [Fuir, Lumiere] — R02 ecarte de la colonne fatale tant que le danger est
+#    a portee, R01 reprend des qu'il ne l'est plus. La nuee contourne et
+#    passe par les cotes de l'ouverture.
+#
+# L'ouverture fait TROIS cases de large : le detour doit avoir ou aboutir.
+# Une ouverture d'une seule case rendrait le contournement impossible et
+# transformerait la lecon d'ordonnancement en impasse.
 id: ch1_02
 name: Le detour
 tutorial: true
@@ -23,23 +46,22 @@ allowed_rules: [R01, R02]
 slots: 2
 max_ticks: 120
 objective: extraction 100
-lesson: "L'ordre change tout : Lumiere en tete tue, Fuir en tete sauve."
+lesson: "L'ordre change tout : Lumiere en tete fauche, Fuir en tete sauve."
 expected_wins: 1
 expected_classes: 1
 ---
-. . . L . . . .
-E E E E E E E E
-. . . . . . . .
-. . . . . . . .
-. . . . . . . .
-. . . . . . . .
-. X . . . . . .
-. . . . . . . .
-. . . . . . . .
-. . . . . . . .
-. . . . . . . .
-. . . . . . . .
-. o o o o o . .
-. o o o o o . .
-. o o o o o . .
-. o o o o o . .
+. . . . . L . . . . .
+# # # # E E E # # # #
+. . . . . . . . . . .
+. . . . . . . . . . .
+. X . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. o o o o o . . . . .
+. o o o o o . . . . .
+. o o o o o . . . . .
+. o o o o o . . . . .
+. . . . . . . . . . .

@@ -55,7 +55,11 @@ const _ONE_WAY_SYMBOLS := ["^", ">", "v", "<"]
 
 ## Analyse un texte `.lvl`. Renvoie { "level": Dictionary, "errors":
 ## PackedStringArray } — des erreurs non vides invalident le niveau.
-static func parse(text: String, min_cycle_period: int) -> Dictionary:
+## `flee_range_sq` : portée de perception de R02 (data/rules.json). Elle sert
+## aux contrôles de géométrie, qui raisonnent sur ce que la fuite perçoit.
+## Valeur par défaut alignée sur RuleParams pour que les appels historiques
+## à deux arguments restent valides.
+static func parse(text: String, min_cycle_period: int, flee_range_sq: int = 25) -> Dictionary:
 	var errors := PackedStringArray()
 	var lines := text.split("\n")
 
@@ -237,8 +241,24 @@ static func parse(text: String, min_cycle_period: int) -> Dictionary:
 			errors.append("expected_classes=%d > expected_wins=%d : impossible (une classe contient au moins une pile)" % [
 				int(header["expected_classes"]), int(header["expected_wins"])])
 
+	# --- Contraintes de GÉOMÉTRIE (invariants n°13 et n°14, docs/ARCHITECTURE.md) -------
+	#
+	# Ces trois contrôles existent parce que les trois leçons correspondantes
+	# ont RÉCIDIVÉ après avoir été consignées — la dernière dix minutes après
+	# son écriture. Une note ne protège de rien ; ces contrôles, si.
+	#
+	# Chacun a rendu un niveau INSOLUBLE au moins une fois pendant la
+	# conception du chapitre 1, et le diagnostic prenait à chaque fois une
+	# simulation complète de seize piles. Ici il coûte une lecture de grille.
+	# Uniquement sur une grille déjà cohérente : analyser la géométrie d'une
+	# grille non rectangulaire n'a pas de sens, et l'indexation y sortirait des
+	# bornes. Les erreurs de structure se corrigent d'abord.
+	var warnings := PackedStringArray()
+	if errors.is_empty():
+		_check_geometry(cells, width, height, agents, flee_range_sq, errors, warnings)
+
 	if not errors.is_empty():
-		return {"level": {}, "errors": errors}
+		return {"level": {}, "errors": errors, "warnings": warnings}
 
 	# --- Assemblage du Dictionary de niveau ----------------------------------
 	var level: Dictionary = {
@@ -265,7 +285,110 @@ static func parse(text: String, min_cycle_period: int) -> Dictionary:
 		level["expected_wins"] = int(header["expected_wins"])
 	if header.has("expected_classes"):
 		level["expected_classes"] = int(header["expected_classes"])
-	return {"level": level, "errors": errors}
+	return {"level": level, "errors": errors, "warnings": warnings}
+
+## --- Contraintes de géométrie -------------------------------------------
+##
+## Trois pièges, tous découverts à la mesure, tous reproductibles.
+##
+## G1 — DANGER PLEIN NORD (avertissement). R02 fuit en augmentant la distance
+##      de Manhattan. Pour un agent situé au sud d'un danger, monter la
+##      DIMINUE : R02 refuse donc d'avancer tant que le danger est à portée,
+##      pendant que R01 rappelle vers la lumière. Les deux se renvoient
+##      l'agent à la frontière de portée — boucle infinie.
+##      Avertissement et non refus : la configuration reste jouable si la
+##      fuite latérale mène quelque part (c'est le cas de ch1_02).
+##
+## G2 — FUITE ET ENTONNOIR EN SENS OPPOSÉS (avertissement). Avec une ouverture
+##      étroite, si le danger pousse les agents du côté OPPOSÉ à l'ouverture,
+##      il faut revenir — et revenir, c'est rentrer dans la portée.
+##
+## G3 — DEUX DANGERS ENCADRANT LA NUÉE (refus). Invariant n°13 : deux
+##      répulseurs statiques dont les portées couvrent un même agent depuis
+##      des côtés opposés l'enferment. Refus, parce qu'aucune géométrie ne
+##      rattrape ça — le niveau est insoluble par construction.
+static func _check_geometry(cells: Array, width: int, height: int, agents: Array,
+		flee_range_sq: int, errors: PackedStringArray, warnings: PackedStringArray) -> void:
+	var dangers: Array = []
+	var exits: Array = []
+	if cells.size() < width * height:
+		return
+	for y in range(height):
+		for x in range(width):
+			var c: int = cells[y * width + x]
+			if c == GridState.CellType.STATIC_DANGER:
+				dangers.append(Vector2i(x, y))
+			elif c == GridState.CellType.EXIT:
+				exits.append(Vector2i(x, y))
+	if dangers.is_empty() or agents.is_empty():
+		return
+
+	var positions: Array = []
+	var sum_x := 0
+	for a in agents:
+		var p := Vector2i(int(a["pos"][0]), int(a["pos"][1]))
+		positions.append(p)
+		sum_x += p.x
+	var block_centre_x: int = sum_x / positions.size()
+
+	# G1 — un agent plein sud d'un danger, à portée de fuite.
+	for d in dangers:
+		for p in positions:
+			if p.x != d.x or p.y <= d.y:
+				continue
+			var dy: int = p.y - d.y
+			if dy * dy <= flee_range_sq:
+				warnings.append(("danger (%d,%d) plein NORD de l'agent (%d,%d), à portée de fuite "
+					+ "(invariant n°14) : R02 y refuse d'avancer tant que le danger est perçu. "
+					+ "Vérifier que la fuite latérale mène à l'ouverture, sinon cycle limite.") % [
+					d.x, d.y, p.x, p.y])
+				break
+
+	# G2 — la fuite pousse à l'opposé de l'ouverture.
+	if not exits.is_empty():
+		var sum_ex := 0
+		for e in exits:
+			sum_ex += e.x
+		var exit_centre_x: int = sum_ex / exits.size()
+		for d in dangers:
+			if not _threatens_any(d, positions, flee_range_sq):
+				continue
+			var flee_dir: int = signi(block_centre_x - d.x)
+			var exit_dir: int = signi(exit_centre_x - block_centre_x)
+			if flee_dir != 0 and exit_dir != 0 and flee_dir != exit_dir:
+				warnings.append(("danger (%d,%d) : la fuite pousse la nuée vers x %s alors que "
+					+ "l'ouverture est vers x %s. Fuite et entonnoir tirent en sens opposés — "
+					+ "les agents devront revenir dans la portée.") % [
+					d.x, d.y, "croissant" if flee_dir > 0 else "décroissant",
+					"croissant" if exit_dir > 0 else "décroissant"])
+
+	# G3 — deux dangers encadrent un même agent : insoluble par construction.
+	for i in range(dangers.size()):
+		for j in range(i + 1, dangers.size()):
+			var a: Vector2i = dangers[i]
+			var b: Vector2i = dangers[j]
+			for p in positions:
+				if not _in_range(a, p, flee_range_sq) or not _in_range(b, p, flee_range_sq):
+					continue
+				var opposed_x: bool = signi(a.x - p.x) * signi(b.x - p.x) < 0
+				var opposed_y: bool = signi(a.y - p.y) * signi(b.y - p.y) < 0
+				if opposed_x or opposed_y:
+					errors.append(("dangers (%d,%d) et (%d,%d) encadrent l'agent (%d,%d), tous deux "
+						+ "à portée de fuite : invariant n°13 — la nuée est repoussée de l'un vers "
+						+ "l'autre et n'en sort jamais. Un seul danger par niveau peut punir une "
+						+ "famille de piles ; deux l'enferment.") % [a.x, a.y, b.x, b.y, p.x, p.y])
+					return
+
+static func _in_range(a: Vector2i, b: Vector2i, range_sq: int) -> bool:
+	var dx: int = a.x - b.x
+	var dy: int = a.y - b.y
+	return dx * dx + dy * dy <= range_sq
+
+static func _threatens_any(d: Vector2i, positions: Array, range_sq: int) -> bool:
+	for p in positions:
+		if _in_range(d, p, range_sq):
+			return true
+	return false
 
 ## `[R01, R02]` ou `[1, 2]` -> [1, 2]. Chaque règle doit être implémentée
 ## (RuleRegistry) : une règle inconnue serait sautée par la cascade et

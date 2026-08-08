@@ -1,33 +1,48 @@
-# N1 « La nuée » — croquis du concepteur (guide T-040 §5), corrigé selon ses
-# consignes : bande de sortie pleine largeur, lumière au-dessus, largeur 8
-# (5 août), puis grille allongée en 8×16, agents sur les trois rangées du
-# bas — un trajet de ~14 ticks, pour que le mouvement collectif se LISE
-# (retour du concepteur du 5 août : 8 ticks = une téléportation, pas une
-# nuée). Fiche : docs/design/ch1_01.md. La conception reste la propriété
-# du concepteur (DCT §12.4).
+# N1 « La nuee » — une regle gouverne tout le monde a la fois.
+#
+# IDIOME DU CHAPITRE, pose ici et repris partout : LA LUMIERE EST DERRIERE UN
+# MUR, LA SORTIE EST L'OUVERTURE.
+#
+# La version precedente posait une bande de sortie pleine largeur avec une
+# lumiere juste au-dessus. Les deux disaient la meme chose au meme endroit :
+# « le but est en haut ». La lumiere ne servait a rien, et le joueur voyait
+# deux marques la ou il n'y a qu'une idee.
+#
+# Ici les deux ont des roles distincts :
+#  · la LUMIERE est la RAISON du mouvement — c'est ce que R01 poursuit ;
+#  · la SORTIE est le PASSAGE — la seule case franchissable du mur.
+# La nuee ne va pas « vers la sortie » : elle va vers la lumiere, et le mur
+# l'oblige a passer par l'ouverture. C'est le premier entonnoir du jeu, et il
+# se lit sans un mot.
+#
+# Verification du comportement de R01 face au mur : le Nord est teste en
+# premier ; s'il est bloque, la premiere direction qui rapproche encore de la
+# lumiere l'emporte — l'Est pour qui est a l'ouest de l'ouverture, l'Ouest
+# pour qui est a l'est. Les agents glissent donc le long du mur jusqu'a
+# l'ouverture, puis montent. Aucun blocage possible : le mur n'a pas de
+# recoin, et R01 ne s'abstient que sur la lumiere elle-meme, qui est derriere.
 id: ch1_01
-name: La nuée
+name: La nuee
 tutorial: true
 allowed_rules: [R01]
 slots: 1
-max_ticks: 60
+max_ticks: 120
 objective: extraction 100
-lesson: "Une règle gouverne tous les agents à la fois."
+lesson: "Une regle gouverne tout le monde a la fois."
 expected_wins: 1
+expected_classes: 1
 ---
-. . . L . . . .
-E E E E E E E E
-. . . . . . . .
-. . . . . . . .
-. . . . . . . .
-. . . . . . . .
-. . . . . . . .
-. . . . . . . .
-. . . . . . . .
-. . . . . . . .
-. . . . . . . .
-. . . . . . . .
-. . . . . . . .
-. o o o o o o o
-. o o o o o o o
-. o o o o o o o
+. . . . . L . . . . .
+# # # # E E E # # # #
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . . . . . . . . .
