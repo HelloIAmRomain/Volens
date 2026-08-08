@@ -1,7 +1,7 @@
 # VOLENS — Dossier de conception technique
 
-**Version 1.2 — 6 août 2026**
-*Réponse technique au cahier des charges fonctionnel v2.1 du projet nom commercial : Volens*
+**Version 1.3 — 8 août 2026**
+*Réponse technique au cahier des charges fonctionnel v2.5 du projet nom commercial : Volens*
 
 ---
 
@@ -9,7 +9,7 @@
 
 ### 0.1 Objet
 
-Ce document définit **comment** réaliser ce que le cahier des charges (CDC v2.0) exige. Il fixe les choix de technologies, l'architecture, les algorithmes structurants, les formats de données, l'outillage et l'environnement de production. Chaque exigence du CDC trouve ici sa solution ; la matrice de traçabilité (§14) le vérifie exhaustivement.
+Ce document définit **comment** réaliser ce que le cahier des charges (CDC v2.5) exige. Il fixe les choix de technologies, l'architecture, les algorithmes structurants, les formats de données, l'outillage et l'environnement de production. Chaque exigence du CDC trouve ici sa solution ; la matrice de traçabilité (§14) le vérifie exhaustivement.
 
 ### 0.2 Décisions de cadrage entérinées
 
@@ -466,7 +466,7 @@ Couverture exhaustive ; « — » signale un point de pure conduite de projet sa
 | RG-05 (première règle applicable) | Cascade `evaluate`/ABSTAIN | DT-10, §4.4 |
 | RG-06 (départage) | Id le plus faible, ordre N>E>S>O | DT-07 |
 | RG-07 (décision sur état t) | Double tampon | DT-08 |
-| RG-08 (dangers cycliques fixes) | `CycleDef` (période, phase), phase = tick mod période | §4.1, §4.4 |
+| RG-08 (dangers cycliques fixes) | `CycleDef` (période, ticks actifs) ; l'activité est une **requête pure** `is_active_at(tick)`, sans phase stockée ni décalage : tout cycle démarre actif à t = 0 | §4.1, §4.4 |
 | RG-09 (fin de niveau, échec-constat) | `outcome` + détection d'inatteignabilité | §4.4 |
 | RG-10 (pause, vitesses, remontée, essais illimités) | `replay` : cadences, clichés-clés, re-simulation | DT-12, §5 |
 | RG-11→13 (bibliothèque, 6 mots, admission) | Classes de règles, paramètres en données ; admission = processus de conception outillé par le validateur (conflits mesurables) | DT-10, §8 |
@@ -488,12 +488,15 @@ Couverture exhaustive ; « — » signale un point de pure conduite de projet sa
 | ENF-04 (interruptible) | Sauvegarde à chaque action + cycle de vie | §7.1, §13.2 |
 | ENF-05 (déterminisme constaté) | Tests d'or + empreintes croisées multi-appareils | §11.2 |
 | ENF-06 (zéro mécanique prédatrice) | Absence par construction ; aucun SDK tiers | §13.4 |
-| ENF-10→14 (60 i/s, <60 Mo, sobriété, boot <3 s) | MultiMesh, procédural, pause gelée, boot minimal, budget §4.5 | §6, §7.3 |
+| ENF-10→14 (60 i/s, **< 90 Mo** *(ENF-11 révisée v2.4)*, sobriété, boot < 3 s) | MultiMesh, procédural, pause gelée, boot minimal, budget §4.5 ; le plancher du moteur standard (~75 Mo) est la contrainte dominante — modèle d'export sur mesure évalué à J4 (CDC §17 n°7) | §6, §7.3 |
 | ENF-20→25 (accessibilité) | Double canal visuel, thèmes commutables, échelle système, haptique désactivable, équivalents sans gestes complexes | §6.3, §9.2 |
 | ENF-30→33 (zéro collecte) | Aucune permission/SDK/télémétrie ; export/effacement local | §7.1, §13 |
 | ENF-40/41 (FR/EN) | Système de traduction Godot, clés stables | §9.3 |
-| QN-01→05, EQ-01→05 (qualité mesurée) | Validateur même-code, rapports, verrou CI, couverture des règles | §8, DT-15/16 |
-| DA-01→04, DS-01→03 (directions artistique/sonore) | Rendu procédural par shaders ; moteur sonore événementiel | §6, DT-17 |
+| QN-01→05, EQ-01→04 (qualité mesurée) | Validateur même-code, rapports, verrou CI, couverture des règles | §8, DT-15/16 |
+| CDC §12.2.1 (QN-01 aux bibliothèques restreintes, v2.2) | Le validateur énumère l'espace réel (`allowed_rules` × `slots`), rend « sans verdict QN-01 » sur ces niveaux et confronte `expected_wins` ; `LevelSpec.open_slots()` est la source de vérité unique du nombre de rangs, partagée avec l'interface de jeu | §8.2, DT-15 |
+| EQ-05/06 (géométrie discriminante, contention par paire, v2.3) | Le validateur mesure la contention par paire de règles et signale les paires à ordre inobservable ; le convertisseur refuse ou signale les géométries qui rendent un niveau insoluble (dangers encadrants, répulseur à seuil mal placé) | §8.2 |
+| CDC §12.2.1 + calibration des paramètres | Chaque niveau archive `calibrated_on`, empreinte de sa géométrie ; le convertisseur refuse un niveau dont la carte a changé depuis la mesure de ses paramètres — même dispositif que le `rules_hash` des recettes d'or | §8.2, §11.2 |
+| DA-01→04 *(dont DA-02 bis, charte des couleurs v2.5)*, DS-01→03 | Rendu procédural par shaders, décomposition en régions, teintes réservées par entrée du vocabulaire RG-14 ; moteur sonore événementiel | §6, DT-17 |
 | CDC §13 (campagnes de test) | Builds de test APK hors store (coût zéro), scripts de scénarios | DT-21, §11.2 |
 | CDC §14.4 (API 36, Data Safety, contenu IA) | Cibles §13.1, conformité §13.4 | §13 |
 | CDC §15 (jalons) | Alignement des paiements et de la CI sur J1→J5 | DT-19, DT-21 |
@@ -532,12 +535,13 @@ Couverture exhaustive ; « — » signale un point de pure conduite de projet sa
 
 ---
 
-## Historique des révisions *(v1.2)*
+## Historique des révisions *(v1.3)*
 
 | Version | Date | Changements | Motif |
 |---|---|---|---|
 | 1.0 | 3 août 2026 | Version initiale | Réponse au CDC v2.0 |
 | 1.1 | 4 août 2026 | Arborescence à deux étages `core/`·`game/` et trois règles de dépendance testables (§2.2, remplace l'invariant DT-03) ; `minSdk` 26→33, identifiant `com.volensgame.volens` et nom Play « Draille » figés (§13.1) ; DT-21 réécrite (compte Google Play déjà créé et vérifié, risque T8 éteint) ; nouvelle obligation de test fermé documentée (§13.1 bis) ; nouveau DT-22, écran caché d'auto-vérification d'empreinte (§13.3 bis) ; vérification du déterminisme reformulée en deux architectures CPU (arm64/x86_64) plutôt qu'en nombre d'appareils physiques (§11.2, A6) ; avertissement sur l'écart de couverture Android 13/API 36 (§13.1, A7) | Série de décisions de cadrage prises entre J0 et le début de S2 ; les documents étaient périmés sur ces points |
 | 1.2 | 6 août 2026 | **DT-13 révisée** : cases rendues en MultiMesh 2D avec données par instance, et non en TileMapLayer — un atlas de texture contredirait « tout le visuel est procédural » ; nombre d'appels de dessin identique, grille plafonnée à 14×18 = 252 cases. Conséquence actée sur T-074 : l'éditeur de niveaux éditera le format `.lvl`, il ne sera pas un peintre de tuiles (§6.1) | Premier rendu implémenté (T-030/T-031) ; l'écart a été signalé à l'implémentation plutôt que tranché seul |
+| 1.3 | 8 août 2026 | **Matrice §14 remise à jour après les amendements du CDC v2.2 à v2.5** : ENF-11 corrigée (60 → 90 Mo) dans la ligne ENF-10→14, qui annonçait encore le seuil abandonné ; **EQ-06 n'était couverte par aucune ligne** — ajoutée avec EQ-05 ; §12.2.1 (QN-01 aux bibliothèques restreintes) explicitée ; DA-02 bis (charte des couleurs) nommée ; RG-08 reformulée — la matrice parlait d'une « phase » que `CycleDef` ne porte pas, l'activité étant une requête pure sans décalage. Deux lignes ajoutées pour des dispositifs sans exigence CDC dédiée : source de vérité unique de `slots` et empreinte de calibration des paramètres | Audit de traçabilité demandé par le concepteur : le DCT annonçait répondre au CDC v2.1 alors qu'il en était à v2.5, et une contradiction dormante finit par être relue comme une source |
 
-*Fin du document — DCT v1.2. Toute décision DT ne peut être révisée qu'avec mise à jour de la matrice §14 ; les décisions DT-03, DT-04 et DT-15 sont structurantes et leur révision équivaut à une refonte.*
+*Fin du document — DCT v1.3. Toute décision DT ne peut être révisée qu'avec mise à jour de la matrice §14 ; les décisions DT-03, DT-04 et DT-15 sont structurantes et leur révision équivaut à une refonte.*
