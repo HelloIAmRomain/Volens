@@ -66,6 +66,7 @@ objective: celerity 24
 lesson: "Fuir ce qui ne menace pas coute du temps, et le temps est compte."
 expected_wins: 7
 expected_classes: 2
+calibrated_on: 875c3d9d8598e7ed
 ---
 . . . . . L . . . . .
 # # # # E E E # # # #

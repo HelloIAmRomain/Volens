@@ -281,21 +281,31 @@ func _blank_rows() -> Array:
 	rows.append(". . . . . . . . . . .")
 	return rows
 
+## Avertissements de GÉOMÉTRIE seulement : l'absence de calibration en produit
+## un autre, légitime, qui n'a rien à voir avec ce qu'on teste ici.
+func _geometry_warnings(result: Dictionary) -> PackedStringArray:
+	var out := PackedStringArray()
+	for w in result["warnings"]:
+		if not String(w).contains("calibrated_on"):
+			out.append(String(w))
+	return out
+
 func test_a_clean_geometry_raises_nothing() -> void:
 	# Sans ce test, les trois suivants pourraient passer sur un contrôle qui
 	# crie tout le temps — ce qui ne vaudrait pas mieux qu'un contrôle muet.
 	var result := _parse_grid(_blank_rows())
 	assert_eq(result["errors"], PackedStringArray(), "aucune erreur attendue")
-	assert_eq(result["warnings"], PackedStringArray(), "aucun avertissement attendu")
+	assert_eq(_geometry_warnings(result), PackedStringArray(), "aucun avertissement de géométrie")
 
 func test_a_danger_due_north_within_flee_range_warns() -> void:
 	var rows: Array = _blank_rows()
 	rows[7] = ". . . . . X . . . . ."   # (5,7), plein nord des agents (5,10..13)
 	var result := _parse_grid(rows)
 	assert_eq(result["errors"], PackedStringArray(), "avertissement, pas refus")
-	assert_gt((result["warnings"] as PackedStringArray).size(), 0,
+	var geo := _geometry_warnings(result)
+	assert_gt(geo.size(), 0,
 		"un danger plein nord à portée de fuite doit être signalé (invariant n°14)")
-	assert_true(String(result["warnings"][0]).contains("NORD"))
+	assert_true(String(geo[0]).contains("NORD"))
 
 func test_a_danger_out_of_flee_range_stays_silent() -> void:
 	# (5,2) est à d² = 64 des agents les plus proches : hors de portée, donc
@@ -303,7 +313,7 @@ func test_a_danger_out_of_flee_range_stays_silent() -> void:
 	var rows: Array = _blank_rows()
 	rows[2] = ". . . . . X . . . . ."
 	var result := _parse_grid(rows)
-	assert_eq(result["warnings"], PackedStringArray(),
+	assert_eq(_geometry_warnings(result), PackedStringArray(),
 		"hors de portée de fuite : aucun cycle limite possible, donc aucun avertissement")
 
 func test_two_dangers_framing_the_swarm_are_refused() -> void:
@@ -317,3 +327,51 @@ func test_two_dangers_framing_the_swarm_are_refused() -> void:
 		if String(e).contains("encadrent"):
 			found = true
 	assert_true(found, "l'erreur doit nommer l'encadrement (invariant n°13)")
+
+# --- Calibration : invariant n°15 ------------------------------------------
+#
+# Un paramètre calibré est un paramètre de la CARTE. Ces tests éprouvent le
+# dispositif sur le cas où il travaille : une géométrie qui bouge.
+
+func test_a_level_without_calibration_is_warned_not_refused() -> void:
+	var result := _parse_grid(_blank_rows())
+	assert_eq(result["errors"], PackedStringArray(), "l'absence de calibration n'est pas une faute")
+	var found := false
+	for w in result["warnings"]:
+		if String(w).contains("calibrated_on"):
+			found = true
+	assert_true(found, "elle doit au moins être signalée")
+
+func test_a_matching_calibration_passes() -> void:
+	var first := _parse_grid(_blank_rows())
+	var geometry := String((first["level"] as Dictionary)["geometry_hash"])
+	var text := _GEO_HEAD.replace("---\n", "calibrated_on: %s\n---\n" % geometry)
+	var result := LvlParser.parse(text + "\n".join(PackedStringArray(_blank_rows())), 6, 25)
+	assert_eq(result["errors"], PackedStringArray(), "géométrie inchangée : rien à signaler")
+	assert_eq(result["warnings"], PackedStringArray(), "calibration à jour : plus aucun avertissement")
+
+func test_a_moved_wall_invalidates_the_calibration() -> void:
+	# LE cas qui a motivé l'invariant : la carte bouge, les paramètres
+	# mesurés dessus ne décrivent plus rien, et personne ne s'en aperçoit.
+	var first := _parse_grid(_blank_rows())
+	var geometry := String((first["level"] as Dictionary)["geometry_hash"])
+	var moved: Array = _blank_rows()
+	moved[1] = "# # # E E E # # # # #"   # l'ouverture se décale d'une case
+	var text := _GEO_HEAD.replace("---\n", "calibrated_on: %s\n---\n" % geometry)
+	var result := LvlParser.parse(text + "\n".join(PackedStringArray(moved)), 6, 25)
+	var errors: PackedStringArray = result["errors"]
+	assert_gt(errors.size(), 0, "une géométrie modifiée doit être REFUSÉE")
+	assert_true(String(errors[0]).contains("calibration"),
+		"l'erreur doit nommer la calibration, pas un symptôme")
+
+func test_the_fingerprint_ignores_the_parameters_it_protects() -> void:
+	# Sinon l'empreinte serait circulaire : changer une échéance invaliderait
+	# sa propre calibration, et le dispositif ne pourrait jamais être satisfait.
+	var rows: Array = _blank_rows()
+	var a := LvlParser.parse(_GEO_HEAD + "\n".join(PackedStringArray(rows)), 6, 25)
+	var b := LvlParser.parse(
+		_GEO_HEAD.replace("max_ticks: 60", "max_ticks: 90").replace("extraction 100", "extraction 80")
+		+ "\n".join(PackedStringArray(rows)), 6, 25)
+	assert_eq(String((a["level"] as Dictionary)["geometry_hash"]),
+		String((b["level"] as Dictionary)["geometry_hash"]),
+		"l'empreinte porte sur la carte, pas sur les paramètres")

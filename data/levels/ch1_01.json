@@ -124,8 +124,10 @@
   "allowed_rules": [
     1
   ],
+  "calibrated_on": "9e478de26edda57b",
   "expected_classes": 1,
   "expected_wins": 1,
+  "geometry_hash": "9e478de26edda57b",
   "grid": {
     "cells": [
       0,

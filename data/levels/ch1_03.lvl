@@ -48,6 +48,7 @@ objective: extraction 100
 lesson: "Ramener un trainard sans regarder ou : la cohesion est aveugle."
 expected_wins: 8
 expected_classes: 3
+calibrated_on: 418a5244cecd08f6
 ---
 . . . . . L . . . . .
 # # # # E E E # # # #
