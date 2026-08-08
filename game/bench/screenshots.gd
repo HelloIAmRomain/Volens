@@ -3,30 +3,56 @@ extends Node
 ##
 ## Le concepteur ne peut pas commenter précisément ce qu'il n'a pas vu, et
 ## « c'est bizarre » n'est pas une information exploitable. Cet outil produit
-## une image par écran dans `reports/screens/`, pour qu'il puisse répondre
-## par « la pile est trop basse » plutôt que par une impression.
+## une image par écran, pour qu'il puisse répondre par « la pile est trop
+## basse » plutôt que par une impression.
 ##
-##   godot --path . game/bench/screenshots.tscn
+##   godot --path . game/bench/screenshots.tscn -- --out=res://reports/screens
+##   godot --path . game/bench/screenshots.tscn -- --out=… --size=480x1067
 ##
 ## Ouvre une fenêtre quelques secondes, écrit les images, se ferme seul.
+##
+## DEUX PIÈGES DÉJÀ TOMBÉS DEDANS, tous deux corrigés ici :
+##  · un Control enfant d'un simple Node reste à taille zéro — d'où l'ancrage
+##    explicite de `App`, sans quoi le harnais mesure une interface effondrée
+##    et fait croire à un défaut qui n'existe pas ;
+##  · chercher « le premier GameScreen enfant » ramenait l'écran PRÉCÉDENT,
+##    encore vivant le temps de son `queue_free()`. Les gestes partaient dans
+##    l'écran mort et la capture montrait le nouveau, intact — une image qui
+##    ne montrait pas ce qu'elle annonçait. `_open_game` renvoie désormais
+##    l'écran, et l'on ne devine plus rien.
 
-const OUT_DIR := "res://reports/screens"
-
+var _out_dir := "res://reports/screens"
+var _size := Vector2i(1080, 2400)
 var _app: App
+var _sub: SubViewport
 var _index := 0
 
 func _ready() -> void:
-	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(OUT_DIR))
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--out="):
+			_out_dir = arg.substr(6)
+		elif arg.begins_with("--size="):
+			var parts := arg.substr(7).split("x")
+			if parts.size() == 2:
+				_size = Vector2i(int(parts[0]), int(parts[1]))
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(_out_dir))
+
+	# ON NE CAPTURE PLUS LA FENÊTRE. Elle est bornée par la dalle de la
+	# machine : demander 1080x2400 rendait 1080x1131, donc un cadrage faux et
+	# une image molle — et c'est ce flou qui a été pris pour un halo trop
+	# diffus. Le rendu part dans un SubViewport dimensionné à la main : la
+	# capture ne dépend plus de l'écran qui la produit.
+	_sub = SubViewport.new()
+	_sub.size = _size
+	_sub.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	_sub.transparent_bg = false
+	add_child(_sub)
 	_app = App.new()
-	add_child(_app)
-	# Un Control enfant d'un simple Node reste à taille zéro : dans le vrai
-	# jeu, App est la RACINE de la scène et Godot lui donne le viewport.
-	# Sans ça, le harnais mesurerait une interface effondrée sur sa taille
-	# minimale et ferait croire à un défaut qui n'existe pas.
+	_sub.add_child(_app)
 	_app.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	await get_tree().process_frame
 	await _capture_all()
-	print("\nCaptures écrites dans %s" % ProjectSettings.globalize_path(OUT_DIR))
+	print("\nCaptures écrites dans %s" % ProjectSettings.globalize_path(_out_dir))
 	get_tree().quit(0)
 
 func _capture_all() -> void:
@@ -35,8 +61,7 @@ func _capture_all() -> void:
 	_app._open_select()
 	await _shot("02-selecteur")
 
-	_app._open_game("ch1_01", false)
-	var game := _game()
+	var game := _app._open_game("ch1_01", false)
 	await _shot("03-objectif-ouverture")
 	game._hide_objective_panel()
 	await _shot("03b-niveau-pile-vide")
@@ -56,20 +81,26 @@ func _capture_all() -> void:
 	await _shot("05-nuee-en-mouvement")
 
 	# EF-05 : le diagnostic sur un agent, en pause. LA capture à regarder.
-	var target := game._view.agent_pixel(0)
-	game._show_explain_at(target)
+	game._show_explain_at(game._view.agent_pixel(0))
 	await _shot("06-diagnostic-ef05")
 
-	# Le niveau 2, celui de la leçon d'ordonnancement.
-	_app._open_game("ch1_02", false)
-	game = _game()
+	# Le niveau 2, celui de la leçon d'ordonnancement. D'abord l'énoncé
+	# par-dessus le terrain — c'est la capture qui dit si le panneau masque
+	# encore le niveau qu'il décrit.
+	game = _app._open_game("ch1_02", false)
+	await _shot("07a-ch1-02-objectif")
+	game._hide_objective_panel()
+	# Puis le terrain SEUL, à tick zéro : danger, sortie et lumière visibles,
+	# rien par-dessus. C'est sur celle-ci que se juge la hiérarchie DA-02.
+	await _shot("07b-ch1-02-terrain")
+
 	game._on_chip_tapped(RuleRegistry.R02_FLEE_DANGER)
 	game._on_slot_tapped(0)
 	game._on_chip_tapped(RuleRegistry.R01_TOWARD_LIGHT)
 	game._on_slot_tapped(1)
 	for i in range(14):
 		game._view.step_forward()
-	await _shot("07-ch1-02-detour")
+	await _shot("07c-ch1-02-detour")
 
 	# Les deux bilans, gagné puis perdu.
 	_app._on_level_finished("ch1_01", true, 14, 0, [RuleRegistry.R01_TOWARD_LIGHT], "La nuée a rempli l'objectif.")
@@ -78,23 +109,14 @@ func _capture_all() -> void:
 	_app._on_level_finished("ch1_02", false, 6, 1, [RuleRegistry.R01_TOWARD_LIGHT], "1 agent perdu — l'objectif de 20 sur 20 est devenu inatteignable.")
 	await _shot("09-bilan-perdu")
 
-func _game() -> GameScreen:
-	for child in _app.get_children():
-		if child is GameScreen:
-			return child
-	return null
-
 func _shot(name: String) -> void:
-	# Deux images d'attente : la première laisse les conteneurs se disposer,
-	# la seconde garantit que le dessin est terminé avant la lecture.
 	# Attendre que les transitions soient FINIES : saisir un panneau à
 	# mi-course fait croire à un défaut de disposition qui n'existe pas.
-	# (Leçon du 7 août : un instrument neuf produit de faux défauts.)
 	await get_tree().create_timer(0.35).timeout
 	await get_tree().process_frame
 	await RenderingServer.frame_post_draw
-	var image := get_viewport().get_texture().get_image()
+	var image := _sub.get_texture().get_image()
 	_index += 1
-	var path := "%s/%s.png" % [OUT_DIR, name]
+	var path := "%s/%s.png" % [_out_dir, name]
 	image.save_png(path)
 	print("  %d. %s (%d×%d)" % [_index, name, image.get_width(), image.get_height()])

@@ -44,6 +44,11 @@ var _level_data: Dictionary = {}
 var _level_id: String = ""
 var _params: RuleParams
 var _allowed: Array[int] = []
+## Nombre de rangs OUVERTS sur ce niveau (`slots`). La pile en compte quatre
+## (RG-05), mais un niveau en déclare moins — et le validateur n'énumère les
+## piles que jusqu'à ce nombre. Laisser le joueur en remplir quatre lui
+## permettrait de trouver une solution que personne n'a validée.
+var _open_slots: int = UiMetrics.SLOT_COUNT
 var _stack: Array[int] = []
 ## Règle sélectionnée en attente de destination, et sa provenance :
 ## -1 = le panneau, >= 0 = l'emplacement d'où elle vient (pour l'échange).
@@ -77,6 +82,9 @@ func load_level(level_data: Dictionary, params: RuleParams, level_id: String = "
 	_allowed = []
 	for v in level_data.get("allowed_rules", [1]):
 		_allowed.append(int(v))
+	_open_slots = clampi(int(level_data.get("slots", UiMetrics.SLOT_COUNT)), 1, UiMetrics.SLOT_COUNT)
+	for i in range(_slots.size()):
+		_slots[i].set_locked(i >= _open_slots)
 	_stack = []
 	for i in range(UiMetrics.SLOT_COUNT):
 		_stack.append(RuleRegistry.EMPTY)
@@ -132,10 +140,10 @@ func _build() -> void:
 	right_row.name = "RightBar"
 	right_row.add_theme_constant_override("separation", int(UiMetrics.GAP))
 	add_child(right_row)
-	_play_button = _make_button("▶", "Marche / pause — ou appui sur la grille")
+	_play_button = _make_button("▶", "Marche / pause — ou appui sur la grille", ButtonRank.PRIMARY)
 	_play_button.pressed.connect(_toggle_play)
 	right_row.add_child(_play_button)
-	_speed_button = _make_button("▷", "Vitesse de lecture")
+	_speed_button = _make_button("▷", "Vitesse de lecture", ButtonRank.SECONDARY)
 	_speed_button.pressed.connect(_cycle_speed)
 	right_row.add_child(_speed_button)
 
@@ -159,6 +167,9 @@ func _build() -> void:
 	_view_host.add_child(_viewport)
 	_viewport.size_changed.connect(func() -> void: if _view != null: _view._on_viewport_resized())
 	_view = SimView.new()
+	# Une sortie d'agent se voit (le compteur monte, l'agent s'efface) ET se
+	# sent. Jamais l'inverse : le retour haptique double, il n'informe pas seul.
+	_view.agents_exited.connect(func(_count: int) -> void: Haptics.exited())
 	_viewport.add_child(_view)
 
 	_build_stack_bar()
@@ -181,13 +192,52 @@ func _build_stack_bar() -> void:
 		row.add_child(slot)
 		_slots.append(slot)
 
-func _make_button(text: String, tip: String) -> Button:
+## QUATRE BOUTONS IDENTIQUES, C'EST QUATRE FOIS RIEN. Lecture est l'action la
+## plus fréquente de l'écran ; fermer est la plus coûteuse à déclencher par
+## erreur. Les donner à voir de la même façon oblige à LIRE un glyphe avant
+## chaque geste, et le glyphe est justement ce que le pouce recouvre.
+##
+## Trois registres : PRIMAIRE (lecture) — plein, accentué, plus grand ;
+## SECONDAIRE (vitesse) — contour ; DISCRET (fermer, réinitialiser) — sans
+## fond, ton bas. La hiérarchie porte sur la forme et la taille, pas sur la
+## seule couleur (ENF-20).
+enum ButtonRank { PRIMARY, SECONDARY, QUIET }
+
+func _make_button(text: String, tip: String, rank: int = ButtonRank.QUIET) -> Button:
 	var b := Button.new()
 	b.text = text
 	b.tooltip_text = tip
-	b.custom_minimum_size = Vector2(UiMetrics.MIN_TOUCH_TARGET, UiMetrics.MIN_TOUCH_TARGET)
-	b.add_theme_font_size_override("font_size", 30)
+	var scale: float = 1.24 if rank == ButtonRank.PRIMARY else 1.0
+	b.custom_minimum_size = Vector2(UiMetrics.MIN_TOUCH_TARGET * scale, UiMetrics.MIN_TOUCH_TARGET * scale)
+	b.add_theme_font_size_override("font_size", int(30 * scale))
+	_style_button(b, rank)
 	return b
+
+func _style_button(b: Button, rank: int) -> void:
+	var normal := StyleBoxFlat.new()
+	normal.set_corner_radius_all(16)
+	match rank:
+		ButtonRank.PRIMARY:
+			normal.bg_color = Color(0.20, 0.42, 0.62, 0.95)
+			normal.set_border_width_all(2)
+			normal.border_color = Color(0.62, 0.86, 1.0, 0.9)
+			b.add_theme_color_override("font_color", Color(0.96, 0.99, 1.0))
+		ButtonRank.SECONDARY:
+			normal.bg_color = Color(0.08, 0.10, 0.14, 0.85)
+			normal.set_border_width_all(2)
+			normal.border_color = Color(0.40, 0.48, 0.60, 0.75)
+			b.add_theme_color_override("font_color", Color(0.80, 0.86, 0.95))
+		_:
+			normal.bg_color = Color(0.06, 0.07, 0.10, 0.55)
+			normal.set_border_width_all(1)
+			normal.border_color = Color(0.28, 0.32, 0.40, 0.45)
+			b.add_theme_color_override("font_color", Color(0.62, 0.68, 0.78))
+	var hovered := normal.duplicate() as StyleBoxFlat
+	hovered.bg_color = normal.bg_color.lightened(0.10)
+	b.add_theme_stylebox_override("normal", normal)
+	b.add_theme_stylebox_override("hover", hovered)
+	b.add_theme_stylebox_override("pressed", hovered)
+	b.add_theme_stylebox_override("focus", normal)
 
 func _build_panel() -> void:
 	_panel = PanelContainer.new()
@@ -246,11 +296,16 @@ func _build_explain_panel() -> void:
 func _build_objective_panel() -> void:
 	_objective_panel = Panel.new()
 	_objective_panel.name = "ObjectivePanel"
+	# LE PANNEAU NE DOIT PAS MASQUER LE NIVEAU QU'IL DÉCRIT. Il occupait le
+	# centre du plateau, opaque, et cachait le danger de ch1_02 — c'est-à-dire
+	# exactement l'élément que l'énoncé donne à comprendre. Trois corrections
+	# cumulées : il descend au BAS de la vue, il se dimensionne sur son
+	# contenu au lieu d'une hauteur fixe, et il est TRANSLUCIDE.
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.05, 0.07, 0.11, 0.98)
+	style.bg_color = Color(0.05, 0.07, 0.11, 0.80)
 	style.set_corner_radius_all(18)
 	style.set_border_width_all(2)
-	style.border_color = Color(0.45, 0.72, 0.95, 0.85)
+	style.border_color = Color(0.45, 0.72, 0.95, 0.75)
 	_objective_panel.add_theme_stylebox_override("panel", style)
 	_objective_panel.visible = false
 	_objective_panel.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -317,12 +372,16 @@ func _on_banner_input(event: InputEvent) -> void:
 ## Glissement : panneau → emplacement (pose ou remplace), emplacement →
 ## emplacement (échange).
 func _on_rule_dropped(slot_index: int, rule_id: int, from_slot: int) -> void:
+	if slot_index >= _open_slots:
+		Haptics.refuse(self)
+		return
 	var source: int = from_slot if from_slot >= 0 else _index_of_rule(rule_id)
 	if source >= 0:
 		_swap_slots(source, slot_index)
 	else:
 		_stack[slot_index] = rule_id
 		_apply_stack()
+	Haptics.drop()
 	_clear_selection()
 	_close_panel()
 
@@ -342,6 +401,9 @@ func _drop_data(_at_position: Vector2, data: Variant) -> void:
 ## échanger dans un seul geste — l'échange en particulier, qui est l'action
 ## la plus fréquente après poser, puisque tout le jeu tient à l'ordre.
 func _on_slot_tapped(slot_index: int) -> void:
+	if slot_index >= _open_slots:
+		Haptics.refuse(self)
+		return
 	if _has_selection:
 		if _selected_from >= 0:
 			_swap_slots(_selected_from, slot_index)
@@ -352,6 +414,7 @@ func _on_slot_tapped(slot_index: int) -> void:
 			else:
 				_stack[slot_index] = _selected_rule
 				_apply_stack()
+		Haptics.drop()
 		_clear_selection()
 		_close_panel()
 		return
@@ -362,6 +425,7 @@ func _on_slot_tapped(slot_index: int) -> void:
 		_open_panel()
 
 func _on_remove_requested(slot_index: int) -> void:
+	Haptics.drop()
 	_stack[slot_index] = RuleRegistry.EMPTY
 	_apply_stack()
 	_clear_selection()
@@ -373,6 +437,7 @@ func _on_chip_tapped(rule_id: int) -> void:
 	_select(rule_id, -1)
 
 func _select(rule_id: int, from_slot: int) -> void:
+	Haptics.select()
 	_selected_rule = rule_id
 	_selected_from = from_slot
 	_has_selection = true
@@ -549,12 +614,16 @@ func _layout() -> void:
 		left_row.size = Vector2(bar_h * 2.0 + UiMetrics.GAP, bar_h)
 	var right_row := get_node_or_null("RightBar") as HBoxContainer
 	if right_row != null:
-		var w := bar_h * 2.0 + UiMetrics.GAP
+		# Le bouton de lecture est plus grand : la barre droite l'est aussi, et
+		# elle est alignée par le BAS pour que les glyphes restent sur une ligne.
+		var play_h := bar_h * 1.24
+		var w := play_h + bar_h + UiMetrics.GAP
 		right_row.position = Vector2(right - w, top)
-		right_row.size = Vector2(w, bar_h)
+		right_row.size = Vector2(w, play_h)
+		right_row.alignment = BoxContainer.ALIGNMENT_END
 
 	if _objective_label != null:
-		_objective_label.position = Vector2(left, top + bar_h + UiMetrics.GAP * 0.5)
+		_objective_label.position = Vector2(left, top + bar_h * 1.24 + UiMetrics.GAP * 0.5)
 		_objective_label.size = Vector2(width, 40)
 
 	# La pile occupe le bas — et rien d'autre : le concepteur y tient.
@@ -564,7 +633,7 @@ func _layout() -> void:
 		stack_bar.position = Vector2(left, bottom - stack_h)
 		stack_bar.size = Vector2(width, stack_h)
 
-	var view_top: float = top + bar_h + UiMetrics.GAP * 0.5 + 40 + UiMetrics.GAP
+	var view_top: float = top + bar_h * 1.24 + UiMetrics.GAP * 0.5 + 40 + UiMetrics.GAP
 	var view_bottom: float = bottom - stack_h - UiMetrics.GAP
 	if _view_host != null:
 		_view_host.position = Vector2(left, view_top)
@@ -577,9 +646,13 @@ func _layout() -> void:
 
 	if _objective_panel != null:
 		var ow: float = width * 0.9
-		var oh: float = 300.0
+		# Hauteur SUR MESURE : titre + énoncé (une ligne par objectif) + rappel
+		# de fermeture, plus les gouttières. Une hauteur fixe de 300 laissait
+		# un panneau à moitié vide au milieu du plateau.
+		var body_lines: int = maxi(_objective_panel_label.text.split("\n").size(), 1)
+		var oh: float = 24.0 * 2.0 + 40.0 + body_lines * 34.0 + 28.0 + 28.0
 		_objective_panel.position = Vector2(left + (width - ow) * 0.5,
-			_view_host.position.y + (_view_host.size.y - oh) * 0.4)
+			_view_host.position.y + _view_host.size.y - oh - UiMetrics.GAP)
 		_objective_panel.size = Vector2(ow, oh)
 		var box := _objective_panel.get_child(0) as Control
 		if box != null:
@@ -611,6 +684,8 @@ func _compact_in_place() -> bool:
 	return moved
 
 func _apply_stack() -> void:
+	for i in range(_open_slots, _stack.size()):
+		_stack[i] = RuleRegistry.EMPTY
 	var slid := _compact_in_place()
 	for i in range(_slots.size()):
 		_slots[i].set_rule(_stack[i], slid)
@@ -628,7 +703,7 @@ func _apply_stack() -> void:
 ## inutilisés : le premier est une invitation, les autres du décor.
 func _mark_next_slot() -> void:
 	var next := -1
-	for i in range(_stack.size()):
+	for i in range(mini(_open_slots, _stack.size())):
 		if _stack[i] == RuleRegistry.EMPTY:
 			next = i
 			break

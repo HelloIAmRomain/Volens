@@ -33,6 +33,9 @@ void fragment() {
 	vec2 edge = min(in_cells, cells - in_cells);
 	float border = 1.0 - smoothstep(0.0, 0.10, min(edge.x, edge.y));
 
-	float a = clamp(0.22 + line * 0.26 + border * 0.55, 0.0, 1.0) * COLOR.a;
+	// Le danger doit passer AVANT la nuée au test du plissement (DA-02) :
+	// il est petit — souvent une case — donc sa densité doit compenser sa
+	// surface. Registre calme, mais pas effacé.
+	float a = clamp(0.34 + line * 0.34 + border * 0.72, 0.0, 1.0) * COLOR.a;
 	COLOR = vec4(COLOR.rgb, a);
 }

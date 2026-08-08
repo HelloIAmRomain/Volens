@@ -77,10 +77,11 @@ func test_the_stack_is_always_compact() -> void:
 	# Un trou dans la pile n'a aucun sens : seule compte la position
 	# RELATIVE — [_, A, B] se comporte exactement comme [A, B]. Sans
 	# compaction, le joueur croirait que la position absolue compte.
-	_pick_then_place(RuleRegistry.R01_TOWARD_LIGHT, 2)
+	# Le rang visé est le dernier OUVERT du niveau : ch1_02 en déclare deux.
+	_pick_then_place(RuleRegistry.R01_TOWARD_LIGHT, 1)
 
 	assert_eq(_screen._stack[0], RuleRegistry.R01_TOWARD_LIGHT,
-		"posée en 3 alors que 1 est libre, la règle va en 1")
+		"posée en 2 alors que 1 est libre, la règle va en 1")
 	assert_eq(_screen._stack[1], RuleRegistry.EMPTY)
 
 func test_removing_a_rule_shifts_the_following_ones_left() -> void:
@@ -153,9 +154,9 @@ func test_selecting_from_a_slot_marks_that_slot() -> void:
 # --- le glissement -------------------------------------------------------
 
 func test_dragging_from_the_panel_places_a_rule() -> void:
-	_screen._on_rule_dropped(2, RuleRegistry.R01_TOWARD_LIGHT, -1)
+	_screen._on_rule_dropped(1, RuleRegistry.R01_TOWARD_LIGHT, -1)
 	assert_eq(_screen._compact_stack(), [RuleRegistry.R01_TOWARD_LIGHT] as Array[int],
-		"lâchée en 3, la règle se compacte en 1")
+		"lâchée en 2, la règle se compacte en 1")
 
 func test_dragging_between_slots_swaps_them() -> void:
 	_pick_then_place(RuleRegistry.R01_TOWARD_LIGHT, 0)
@@ -201,3 +202,40 @@ func test_the_next_free_slot_is_marked_and_the_others_are_not() -> void:
 	assert_true(_screen._slots[1]._next_available, "le suivant est marqué")
 	assert_false(_screen._slots[2]._next_available)
 	assert_false(_screen._slots[0]._next_available, "un emplacement occupé n'invite rien")
+
+
+# --- rangs déclarés par le niveau (`slots`) -------------------------------
+#
+# Le validateur n'énumère les piles que jusqu'à `slots`. Un joueur capable de
+# remplir quatre rangs sur un niveau qui en déclare deux pourrait donc gagner
+# par une pile que personne n'a validée — et le niveau ne prouverait plus rien.
+
+func test_the_level_declares_how_many_ranks_are_open() -> void:
+	assert_eq(_screen._open_slots, 2, "ch1_02 déclare slots: 2")
+	assert_false(_screen._slots[0].locked)
+	assert_false(_screen._slots[1].locked)
+	assert_true(_screen._slots[2].locked, "le rang 3 n'existe pas sur ce niveau")
+	assert_true(_screen._slots[3].locked)
+
+func test_a_locked_rank_refuses_every_path() -> void:
+	# Les deux chemins, sans glissement et par glissement.
+	_pick_then_place(RuleRegistry.R01_TOWARD_LIGHT, 2)
+	assert_eq(_screen._compact_stack(), [] as Array[int], "rien n'entre par un rang fermé")
+	_screen._on_rule_dropped(3, RuleRegistry.R01_TOWARD_LIGHT, -1)
+	assert_eq(_screen._compact_stack(), [] as Array[int], "ni par glissement")
+
+func test_a_locked_rank_is_not_a_greyed_copy_of_an_open_one() -> void:
+	# ENF-20 : l'indisponibilité ne peut pas tenir au seul ton. Le rang fermé
+	# est aussi plus étroit, donc distinguable sans percevoir la couleur.
+	assert_lt(_screen._slots[2].size_flags_stretch_ratio,
+		_screen._slots[0].size_flags_stretch_ratio,
+		"un rang fermé se distingue par sa taille, pas seulement par son ton")
+	assert_eq(_screen._slots[2].mouse_filter, Control.MOUSE_FILTER_IGNORE)
+
+func test_a_locked_rank_is_never_offered_as_the_next_free_one() -> void:
+	_pick_then_place(RuleRegistry.R01_TOWARD_LIGHT, 0)
+	_pick_then_place(RuleRegistry.R02_FLEE_DANGER, 1)
+	# La pile est pleine pour CE niveau : plus aucune invitation.
+	for slot in _screen._slots:
+		assert_false(slot._next_available,
+			"pile pleine : aucun rang ne doit inviter, surtout pas un rang fermé")
