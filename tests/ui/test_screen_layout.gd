@@ -70,6 +70,14 @@ func test_summary_screen_on_defeat_fills_too() -> void:
 	await _settle()
 	_assert_fills(screen, "SummaryScreen (défaite)")
 
+func test_settings_screen_fills_its_parent() -> void:
+	var host := _host()
+	var screen := SettingsScreen.new()
+	host.add_child(screen)
+	screen.setup(Settings.new())
+	await _settle()
+	_assert_fills(screen, "SettingsScreen")
+
 func test_game_screen_fills_its_parent() -> void:
 	var host := _host()
 	var screen := GameScreen.new()
@@ -81,13 +89,48 @@ func test_game_screen_fills_its_parent() -> void:
 
 ## Le harnais de captures doit couvrir TOUS les écrans du jeu : c'est lui qui
 ## sert de preuve, il ne peut pas en oublier un.
+##
+## LA LISTE N'EST PLUS ÉCRITE À LA MAIN. Elle l'était, et c'était la même
+## faiblesse que celle qui avait laissé passer l'écran de bilan : un garde-fou
+## qu'il faut penser à mettre à jour ne garde rien. Les écrans sont maintenant
+## DÉCOUVERTS dans `game/ui/`, et tout écran non déclaré ici fait échouer le
+## test — impossible d'en ajouter un en silence.
+const CAPTURE_MARKERS := {
+	"MenuScreen": ["01-menu"],
+	"LevelSelectScreen": ["02-selecteur"],
+	"GameScreen": ["05-nuee"],
+	"SummaryScreen": ["08-bilan", "09-bilan"],
+	"SettingsScreen": ["10-reglages"],
+}
+
+func _declared_screens() -> Array[String]:
+	var found: Array[String] = []
+	var dir := DirAccess.open("res://game/ui")
+	if dir == null:
+		return found
+	dir.list_dir_begin()
+	var entry := dir.get_next()
+	while entry != "":
+		if entry.ends_with(".gd"):
+			var text := FileAccess.get_file_as_string("res://game/ui/" + entry)
+			for line in text.split("\n"):
+				if line.begins_with("class_name ") and line.strip_edges().ends_with("Screen"):
+					found.append(line.substr(11).strip_edges())
+		entry = dir.get_next()
+	dir.list_dir_end()
+	found.sort()
+	return found
+
+func test_every_screen_of_the_game_is_declared_here() -> void:
+	var declared := _declared_screens()
+	assert_gt(declared.size(), 0, "aucun écran découvert — le balayage est cassé")
+	for screen_name in declared:
+		assert_true(CAPTURE_MARKERS.has(screen_name),
+			"%s existe dans game/ui/ mais n'est ni capturé ni déclaré ici" % screen_name)
+
 func test_the_screenshot_harness_covers_every_screen() -> void:
 	var source := FileAccess.get_file_as_string("res://game/bench/screenshots.gd")
-	for screen_name in ["MenuScreen", "LevelSelectScreen", "GameScreen", "SummaryScreen"]:
-		var covered := false
-		match screen_name:
-			"MenuScreen": covered = source.contains("01-menu")
-			"LevelSelectScreen": covered = source.contains("02-selecteur")
-			"GameScreen": covered = source.contains("05-nuee")
-			"SummaryScreen": covered = source.contains("08-bilan") and source.contains("09-bilan")
-		assert_true(covered, "%s n'est pas capturé par le harnais" % screen_name)
+	for screen_name in CAPTURE_MARKERS:
+		for marker in CAPTURE_MARKERS[screen_name]:
+			assert_true(source.contains(String(marker)),
+				"%s n'est pas capturé par le harnais (marqueur « %s » absent)" % [screen_name, marker])

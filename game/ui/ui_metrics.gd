@@ -46,7 +46,10 @@ const LONG_PRESS_SECONDS := 0.45
 
 const MARGIN := 36.0
 const GAP := 24.0
-const SLOT_COUNT := 4  # RG-05 : la pile compte quatre emplacements
+## RG-05. Dérivé, jamais redéclaré : `LevelSpec` fixe le plafond, et une
+## interface qui compterait ses rangs autrement rouvrirait la brèche que
+## l'invariant n°11 vient de fermer.
+const SLOT_COUNT := LevelSpec.MAX_SLOTS
 
 ## Marges de zone sûre (encoches, barre gestuelle). Sur ordinateur la zone
 ## sûre couvre toute la fenêtre : la fonction est alors sans effet.

@@ -61,6 +61,11 @@ func _capture_all() -> void:
 	_app._open_select()
 	await _shot("02-selecteur")
 
+	# Réglages : un seul réglage, et il doit se lire dans le TEXTE (ENF-20).
+	_app._open_menu()
+	_app._open_settings()
+	await _shot("10-reglages")
+
 	var game := _app._open_game("ch1_01", false)
 	await _shot("03-objectif-ouverture")
 	game._hide_objective_panel()

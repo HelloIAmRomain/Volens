@@ -226,8 +226,10 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 		allowed.append(int(v))
 
 	# Emplacements offerts par le niveau (CDC §12.2.1) : borne l'énumération.
-	# Sans clé `slots`, comportement historique (4, plafond RG-05).
-	var slots := clampi(int(level_data.get("slots", StackEnumerator.MAX_SLOTS)), 1, StackEnumerator.MAX_SLOTS)
+	# LECTURE UNIQUE — `LevelSpec` est la seule à connaître la clé `slots`.
+	# L'écran de jeu lit la même fonction : l'espace que le joueur peut
+	# atteindre et celui que l'on énumère ne peuvent plus diverger.
+	var slots := LevelSpec.open_slots(level_data)
 
 	# Contrôles structurels — avant toute énumération (revue S3).
 	var structural_errors: Array[String] = []

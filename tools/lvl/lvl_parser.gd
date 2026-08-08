@@ -212,7 +212,7 @@ static func parse(text: String, min_cycle_period: int) -> Dictionary:
 			errors.append("cycle : active=%d invalide (attendu 1 <= active < période %d)" % [active, period])
 
 	var allowed_rules := _parse_allowed_rules(String(header.get("allowed_rules", "")), errors)
-	var slots := int(header.get("slots", "4"))
+	var slots := int(header.get("slots", str(LevelSpec.MAX_SLOTS)))
 	if slots < 1 or slots > StackEnumerator.MAX_SLOTS:
 		errors.append("slots=%d invalide (attendu 1 à %d, RG-05)" % [slots, StackEnumerator.MAX_SLOTS])
 	if max_ticks < 1:

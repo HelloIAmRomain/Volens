@@ -248,6 +248,61 @@ divergences ressembleraient à une régression pure.
 
 ---
 
+## Source de vérité unique et réglages (8 août 2026)
+
+86. **INVARIANT N°11 — `slots` a une source de vérité unique** (`LevelSpec.open_slots()`,
+    dans `core/sim/`). Fermer les rangs excédentaires réglait le CAS de
+    ch1_02 ; l'invariant règle la CLASSE.
+    **La brèche était plus grave que je ne l'avais dit.** Je l'avais présentée
+    comme « le joueur pourrait gagner par une pile non validée ». C'est
+    l'inverse qu'il faut lire : si le joueur atteint un espace non énuméré,
+    **`expected_wins` devient faux**, et `N_win` cesse d'être une propriété du
+    NIVEAU pour devenir celle d'un sous-ensemble arbitraire de ce que le
+    joueur peut faire. `expected_wins = 1` sur ch1_02 veut dire « une seule
+    pile gagne, et c'est l'ordre qui décide » : toute la leçon du niveau
+    s'effondre avec le chiffre. QN-01 et QN-02, qui raisonnent sur des classes
+    de piles, perdent leur objet en même temps.
+    **Où vit la fonction, et pourquoi.** Le validateur est dans `tools/`, le
+    jeu dans `game/` : leur seul ancêtre commun autorisé est `core/` (règles
+    de dépendance 3 et 4). `core/sim/` porte déjà le schéma des données de
+    niveau, `SimCore.load_level` en consomme le même dictionnaire ; la pureté
+    tient (aucun import, aucun fichier, aucun flottant).
+    **Trois tests, dont un lexical.** Pour chaque niveau du catalogue : les
+    rangs ouverts par l'écran égalent la longueur maximale réellement
+    énumérée ; toute pile que l'interface peut produire appartient à l'espace
+    énuméré (vérifié en saturant l'écran par le chemin sans glissement) ; et
+    la clé `slots` ne se lit nulle part ailleurs. Les rapports du validateur
+    PORTENT une clé `slots` — les lire n'est pas lire un niveau, d'où
+    l'indexation directe qui les distingue lexicalement.
+
+87. **HAPTIQUE : j'ai tranché pour l'écran de réglages minimal**, contre
+    l'option « désactivée par défaut jusqu'à ce que l'écran existe ».
+    Raison : couper le retour par défaut prive les testeurs de la seule chose
+    qu'on veut leur faire juger, et un réglage qu'on n'a jamais senti ne se
+    règle pas. On rend donc le réglage, pas le silence.
+    Le constat qui a forcé la décision est juste et vaut d'être gardé :
+    **livrer une vibration qu'un testeur ne peut pas couper est un défaut,
+    pas un manque.** ENF-24 dit « présent mais désactivable » — je n'avais
+    rendu que la première moitié et je l'avais rapporté comme un reste.
+    L'écran ne contient QUE ce réglage. Le mouvement réduit (ENF-23) est déjà
+    porté par `Settings` et honoré par les shaders, mais reste non exposé : un
+    écran de réglages qui grossit tout seul est la porte d'entrée habituelle
+    du sentiment de configuration obligatoire (P2). L'état se lit dans le
+    TEXTE (« activées » / « coupées »), pas dans une nuance de fond (ENF-20),
+    et basculer sur « activé » déclenche une impulsion — c'est la seule façon
+    de vérifier un retour haptique sans notice.
+
+88. **Le test de couverture du harnais n'énumérait plus rien.** Il listait les
+    écrans à la main : exactement la faiblesse qui avait laissé passer
+    l'écran de bilan. Un garde-fou qu'il faut penser à mettre à jour ne garde
+    rien. Les écrans sont désormais **découverts** dans `game/ui/` par leur
+    `class_name *Screen`, et tout écran non déclaré dans la table des
+    marqueurs fait échouer le test — on ne peut plus en ajouter un en silence.
+    C'est la troisième fois que la même leçon se paie : **la preuve ne doit
+    jamais dépendre de la mémoire de celui qui l'écrit.**
+
+---
+
 ## Charte des couleurs et hiérarchie visuelle (8 août 2026)
 
 74. **CHARTE DES COULEURS — trois familles étanches.** Le langage des couleurs

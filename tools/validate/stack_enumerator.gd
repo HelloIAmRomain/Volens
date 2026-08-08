@@ -11,7 +11,10 @@ extends RefCounted
 ## autorisées : P(12,0..4) = 1 + 12 + 132 + 1320 + 11880 = 13 345 piles —
 ## l'ordre de grandeur du DCT §8.3.
 
-const MAX_SLOTS: int = 4  # RG-05 : la pile compte quatre emplacements
+## Plafond RG-05. Repris de `LevelSpec`, qui en est la source de vérité
+## unique — le validateur et l'écran de jeu doivent compter les mêmes rangs
+## (invariant n°11, docs/ARCHITECTURE.md).
+const MAX_SLOTS: int = LevelSpec.MAX_SLOTS
 
 ## `max_len` : nombre d'emplacements offerts par le niveau (`slots`,
 ## CDC §12.2.1) — N_total dépend de allowed_rules ET de slots. La pile

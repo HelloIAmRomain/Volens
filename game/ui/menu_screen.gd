@@ -1,12 +1,16 @@
 class_name MenuScreen
 extends Control
-## Menu principal : titre, Jouer / Continuer, numéro de version, remise à
-## zéro. **Rien d'autre** — le périmètre est fermé (carnet, 6 août 2026).
+## Menu principal : titre, Jouer / Continuer, Niveaux, Réglages, numéro de
+## version, remise à zéro. **Rien d'autre** — le périmètre est fermé
+## (carnet, 6 août 2026). « Réglages » y entre le 8 août pour une seule
+## raison : ENF-24 exige que le retour haptique soit désactivable, et il ne
+## l'était pas. Une exigence, pas un élargissement.
 ##
 ## Aucun compteur culpabilisant, aucun badge d'appel (P2).
 
 signal play_requested
 signal select_requested
+signal settings_requested
 signal reset_requested
 
 var _progress: Progress
@@ -55,6 +59,10 @@ func _build() -> void:
 	var levels := _make_button("Niveaux", 32)
 	levels.pressed.connect(func() -> void: select_requested.emit())
 	column.add_child(levels)
+
+	var settings := _make_button("Réglages", 32)
+	settings.pressed.connect(func() -> void: settings_requested.emit())
+	column.add_child(settings)
 
 	column.add_child(_spacer(UiMetrics.GAP * 3))
 
