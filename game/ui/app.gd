@@ -13,6 +13,7 @@ enum Screen { MENU, SELECT, GAME, SUMMARY }
 
 var progress: Progress
 var session: Session
+var settings: Settings
 
 var _current: Control
 var _screen: int = Screen.MENU
@@ -22,6 +23,9 @@ func _ready() -> void:
 	RenderingServer.set_default_clear_color(ViewPalette.BACKGROUND)
 	progress = Progress.load_from_disk()
 	session = Session.load_from_disk()
+	# Les réglages s'appliquent AVANT le premier écran : le retour haptique
+	# doit être coupé dès le premier geste si le joueur l'a coupé (ENF-24).
+	settings = Settings.load_from_disk()
 	# Reprise : si une session valide existe, on y retourne sans détour.
 	if session.is_valid() and not LevelCatalog.path_of(session.level_id).is_empty():
 		_open_game(session.level_id, true)
@@ -35,7 +39,7 @@ func _notification(what: int) -> void:
 		_persist_session()
 
 func _persist_session() -> void:
-	if _screen == Screen.GAME and _current != null and _current is GameScreen:
+	if _screen == Screen.GAME and _current != null and is_instance_valid(_current) and _current is GameScreen:
 		(_current as GameScreen).store_session(session)
 		session.save_to_disk()
 
@@ -66,11 +70,15 @@ func _open_select() -> void:
 	_swap(select, Screen.SELECT)
 	select.setup(progress)
 
-func _open_game(level_id: String, resume: bool) -> void:
+## Renvoie l'écran ouvert. Le harnais de captures en a besoin : chercher
+## « le premier GameScreen enfant » ramenait l'écran PRÉCÉDENT, encore vivant
+## le temps de son `queue_free()`, et produisait des captures qui ne montraient
+## pas ce qu'elles annonçaient (carnet décision 80).
+func _open_game(level_id: String, resume: bool) -> GameScreen:
 	var level_data := LevelCatalog.load_level_data(level_id)
 	if level_data.is_empty():
 		_open_menu()
-		return
+		return null
 	var rules: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/rules.json"))
 	var screen := GameScreen.new()
 	screen.finished.connect(_on_level_finished)
@@ -96,6 +104,7 @@ func _open_game(level_id: String, resume: bool) -> void:
 	# chargement lui-même émet `state_changed` et réécrit la session avec le
 	# tick zéro, effaçant précisément ce qu'on s'apprêtait à restaurer.
 	screen.state_changed.connect(_persist_session)
+	return screen
 
 func _on_play_requested() -> void:
 	_open_game(LevelCatalog.next_playable(progress), false)

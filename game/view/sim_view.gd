@@ -15,19 +15,32 @@ extends Node2D
 ## suivant, au prorata du temps écoulé — 60 i/s quelle que soit la cadence de
 ## simulation, sans contact avec `sim` (DT-06 : la simulation n'a pas d'horloge).
 
-## Calques, dans l'ordre du DCT §6.3 : décor < dangers < nuée < buts.
-enum Layer { DECOR = 0, DANGER = 10, TRAIL = 20, AGENT = 30, GOAL = 40 }
+## Calques. L'ordre en z n'est PAS la hiérarchie de dominance de DA-02 : la
+## sortie est une feature du sol, elle passe donc sous la nuée ; la lumière
+## aussi, un agent qui la foule doit la masquer. La dominance, elle, tient à
+## la luminosité par unité de surface — voir `ViewPalette`.
+enum Layer { DECOR = 0, EXIT = 5, DANGER = 10, LIGHT = 15, TRAIL = 20, AGENT = 30, GOAL = 40 }
 
 const AGENT_SHADER := preload("res://game/view/shaders/agent.gdshader")
 const HALO_SHADER := preload("res://game/view/shaders/halo.gdshader")
 const HATCH_SHADER := preload("res://game/view/shaders/hatch.gdshader")
+const LIGHT_SHADER := preload("res://game/view/shaders/light.gdshader")
+const EXIT_SHADER := preload("res://game/view/shaders/exit.gdshader")
 
 ## Traînée : longueur en TICKS, pas en images — c'est la forme collective
 ## dans le temps de simulation qui est en question (DA-01), pas un flou.
 var trail_ticks: int = 6
-## Faux par défaut : on ne juge pas si quelque chose est beau en fixant une
-## surcouche de diagnostic. Esthétique d'abord, diagnostic ensuite (touche C).
-var show_decision_colors: bool = false
+## Coloration des agents par règle décisionnaire — SURCOUCHE DE DIAGNOSTIC,
+## jamais l'état normal du jeu. DA-01 fait de la forme collective le
+## personnage principal, et une nuée à quatre couleurs détruit cette lecture.
+## Elle n'est allumée que depuis le banc (`game/bench/`, jetable) ; l'écran de
+## jeu ne l'expose pas. Quand elle s'allume, le terrain se désature pour que
+## les teintes réservées aux éléments ne puissent pas être confondues avec les
+## teintes modales du diagnostic (charte, `ViewPalette`).
+var show_decision_colors: bool = false:
+	set(value):
+		show_decision_colors = value
+		_apply_diagnostic_mode()
 var reduced_motion: bool = false:
 	set(value):
 		reduced_motion = value
@@ -55,6 +68,8 @@ var _reversals: int = 0
 
 var _walls_mm: MultiMeshInstance2D
 var _danger_mm: MultiMeshInstance2D
+var _exit_mm: MultiMeshInstance2D
+var _light_mm: MultiMeshInstance2D
 var _goal_mm: MultiMeshInstance2D
 var _trail_mm: MultiMeshInstance2D
 var _agent_mm: MultiMeshInstance2D
@@ -64,6 +79,11 @@ var _grid_lines: Node2D
 ## Marques de mort : { cell, age }. Purement visuelles, jamais un état.
 var _death_marks: Array = []
 
+## Émis quand des agents franchissent la sortie au tick écoulé. La vue ne
+## décide rien : elle constate une différence de compteur et le dit. Sert au
+## retour haptique (ENF-24), qui n'est jamais porteur d'information exclusive.
+signal agents_exited(count: int)
+
 # --- construction ------------------------------------------------------------
 
 func _ready() -> void:
@@ -72,7 +92,9 @@ func _ready() -> void:
 	add_child(_grid_lines)
 
 	_walls_mm = _make_layer(Layer.DECOR, null)
+	_exit_mm = _make_layer(Layer.EXIT, EXIT_SHADER)
 	_danger_mm = _make_layer(Layer.DANGER, HATCH_SHADER)
+	_light_mm = _make_layer(Layer.LIGHT, LIGHT_SHADER)
 	_goal_mm = _make_layer(Layer.GOAL, HALO_SHADER)
 	_trail_mm = _make_layer(Layer.TRAIL, AGENT_SHADER)
 	_agent_mm = _make_layer(Layer.AGENT, AGENT_SHADER)
@@ -98,9 +120,17 @@ func _make_layer(z: int, shader: Shader) -> MultiMeshInstance2D:
 	return node
 
 func _apply_reduced_motion() -> void:
-	for node in [_danger_mm, _goal_mm]:
+	for node in [_danger_mm, _goal_mm, _light_mm, _exit_mm]:
 		if node != null and node.material is ShaderMaterial:
 			(node.material as ShaderMaterial).set_shader_parameter("reduced_motion", reduced_motion)
+
+## Diagnostic allumé : le terrain se désature, la surcouche prend les teintes
+## vives. Les deux palettes ne se disputent jamais l'écran (charte, famille 3).
+func _apply_diagnostic_mode() -> void:
+	var wash: float = 0.35 if show_decision_colors else 1.0
+	for node in [_walls_mm, _exit_mm, _danger_mm, _light_mm, _goal_mm]:
+		if node != null:
+			node.modulate = Color(1.0, 1.0, 1.0, wash)
 
 # --- pilotage ----------------------------------------------------------------
 
@@ -189,6 +219,9 @@ func _step_one_tick() -> void:
 	_from = _to
 	_to = _session.step_forward()
 	_record_tick(_from, _to)
+	var gone: int = _to.counters.exited - _from.counters.exited
+	if gone > 0:
+		agents_exited.emit(gone)
 
 ## Historique des traînées et comptage des demi-tours : purement descriptif.
 func _record_tick(from_state: SimState, to_state: SimState) -> void:
@@ -353,36 +386,46 @@ func _rebuild_static_layers() -> void:
 		walls.append(_region_item(r, ViewPalette.WALL, 0.0))
 	_fill_items(_walls_mm, walls)
 
-	# Les buts débordent de leur région : le halo doit rayonner autour de la
-	# forme entière, d'où le débord et la proportion de noyau transmise.
+	# CHAQUE BUT A SON TRAITEMENT, et c'est le fond du sujet : les rendre tous
+	# avec le même halo faisait de la sortie — large — l'élément dominant, et
+	# de la lumière — étroite — un bloc inerte. La hiérarchie DA-02 se joue
+	# dans la MANIÈRE de dessiner, pas seulement dans la teinte.
+	_fill_items(_exit_mm, _regions_of(GridState.CellType.EXIT, ViewPalette.EXIT, EXIT_BLEED))
+	_fill_items(_light_mm, _regions_of(GridState.CellType.LIGHT_SOURCE, ViewPalette.LIGHT, LIGHT_BLEED))
+
 	var goals: Array = []
-	for spec in [[GridState.CellType.EXIT, ViewPalette.EXIT],
-			[GridState.CellType.LIGHT_SOURCE, ViewPalette.LIGHT],
-			[GridState.CellType.RESOURCE, ViewPalette.RESOURCE],
-			[GridState.CellType.DROPOFF, ViewPalette.DROPOFF]]:
-		var wanted: int = spec[0]
-		for r in _rects_of(func(p: Vector2i) -> bool: return grid.cell_type_at(p) == wanted):
-			goals.append(_region_item(r, spec[1], GOAL_BLEED))
+	goals.append_array(_regions_of(GridState.CellType.RESOURCE, ViewPalette.RESOURCE, GOAL_BLEED))
+	goals.append_array(_regions_of(GridState.CellType.DROPOFF, ViewPalette.DROPOFF, GOAL_BLEED))
 	_fill_items(_goal_mm, goals)
 
-## Débord du halo autour d'une région de but, en cases.
+## Débords, en cases. La lumière déborde LARGEMENT — c'est ce débord qui la
+## fait lire comme une source et non comme une case remplie. La sortie déborde
+## à peine : un seuil ne rayonne pas.
 const GOAL_BLEED := 0.45
+const LIGHT_BLEED := 1.35
+const EXIT_BLEED := 0.12
+
+func _regions_of(wanted: int, color: Color, bleed: float) -> Array:
+	var grid := _to.grid
+	var out: Array = []
+	for r in _rects_of(func(p: Vector2i) -> bool: return grid.cell_type_at(p) == wanted):
+		out.append(_region_item(r, color, bleed))
+	return out
 
 ## Construit l'instance d'une région : quad élargi de `bleed` cases, couleur,
-## et données par instance. Pour un but, ces données portent la PROPORTION du
-## noyau dans le quad ; pour une région pleine, la taille en CASES.
+## et données par instance — (largeur, hauteur, débord) en CASES. Une seule
+## convention pour tous les shaders de région : chacun retrouve seul ses
+## coordonnées en cases, et la densité d'un motif ne dépend jamais de la
+## taille du quad.
 func _region_item(r: Rect2i, color: Color, bleed: float) -> Dictionary:
 	var cells := Vector2(r.size.x, r.size.y)
 	var span := cells + Vector2(bleed, bleed) * 2.0
 	var centre := Vector2(r.position.x, r.position.y) + cells * 0.5
-	var custom := Color(cells.x, cells.y, 0.0, 0.0)
-	if bleed > 0.0:
-		custom = Color(cells.x / span.x, cells.y / span.y, 0.0, 0.0)
 	return {
 		"pos": _grid_origin + centre * _cell_size,
 		"size": span * _cell_size,
 		"color": color,
-		"custom": custom,
+		"custom": Color(cells.x, cells.y, bleed, 0.0),
 	}
 
 ## Durée d'une marque de mort ⚙️ : assez pour être vue, pas au point de
@@ -528,14 +571,25 @@ class _GridLines extends Node2D:
 		_origin = origin
 		queue_redraw()
 
+	## LE MAILLAGE DÉFAISAIT LE TRAVAIL SUR LES RÉGIONS (carnet décision 77).
+	## Fusionner les cases contiguës en formes uniques ne sert à rien si l'on
+	## retrace ensuite chaque frontière : l'œil redescend au niveau de la case
+	## et le plateau se couvre d'un bruit constant.
+	##
+	## Le monde reste discret, et c'est une information de jeu — mais elle se
+	## porte à trois niveaux, du plus fort au plus faible :
+	##   1. le POURTOUR du plateau, net : c'est lui qui dit où le monde s'arrête ;
+	##   2. les frontières INTÉRIEURES, très atténuées, présentes sans être lues ;
+	##   3. rien d'autre.
 	func _draw() -> void:
 		if _grid.x <= 0 or _grid.y <= 0:
 			return
 		var span := Vector2(_grid.x, _grid.y) * _cell
-		draw_rect(Rect2(_origin, span), ViewPalette.BACKGROUND.lightened(0.02), true)
-		for x in range(_grid.x + 1):
+		draw_rect(Rect2(_origin, span), ViewPalette.PLATE, true)
+		for x in range(1, _grid.x):
 			var px := _origin.x + x * _cell
 			draw_line(Vector2(px, _origin.y), Vector2(px, _origin.y + span.y), ViewPalette.GRID_LINE, 1.0)
-		for y in range(_grid.y + 1):
+		for y in range(1, _grid.y):
 			var py := _origin.y + y * _cell
 			draw_line(Vector2(_origin.x, py), Vector2(_origin.x + span.x, py), ViewPalette.GRID_LINE, 1.0)
+		draw_rect(Rect2(_origin, span), ViewPalette.GRID_EDGE, false, 2.0)

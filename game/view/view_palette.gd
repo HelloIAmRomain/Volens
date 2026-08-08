@@ -1,55 +1,73 @@
 class_name ViewPalette
 extends RefCounted
-## Palette du rendu [DA-02] : fond très sombre, agents lumineux, hiérarchie
-## visuelle stricte but > danger > nuée > décor. Aucune texture : toutes les
-## couleurs sont procédurales (DT-13, ENF-11).
+## CHARTE DES COULEURS [DA-02, ENF-20/22, carnet décision 74].
 ##
-## Le danger est porté par la couleur ET des hachures, jamais par la seule
-## couleur (ENF-20/22, DCT §6.3) : aucune information mono-canal.
+## Le problème qu'elle résout : sans teintes réservées, la couleur ne veut
+## rien dire. Au chapitre 1 on s'en sort à l'œil ; au chapitre 4, avec
+## ressources, dépôts, portes à pression et sens uniques à l'écran en même
+## temps, une teinte qui sert à deux choses rend le plateau illisible.
+##
+## TROIS FAMILLES, ÉTANCHES ENTRE ELLES.
+##
+## 1. ÉLÉMENTS DE NIVEAU — une teinte réservée par entrée du vocabulaire
+##    RG-14. Les neuf sont attribuées d'avance, y compris celles qu'aucun
+##    niveau n'utilise encore : c'est le seul moment où l'attribution est
+##    gratuite. Aucune autre famille n'a le droit d'emprunter ces teintes.
+##
+## 2. EMPLACEMENTS DE PILE — **aucune teinte propre**. Un emplacement est
+##    identifié par sa POSITION et son NUMÉRO, pas par sa couleur. C'est
+##    d'ailleurs plus juste : la pile est un ordre, et un ordre se lit par
+##    des rangs, pas par un arc-en-ciel. La famille est un gris-ardoise
+##    désaturé qui ne peut être confondu avec aucun élément.
+##
+## 3. DIAGNOSTIC — palette MODALE. Elle ne coexiste jamais avec la lecture
+##    normale : quand le diagnostic s'allume, le terrain se désature
+##    (`diagnostic_mode`), ce qui libère les teintes vives. Une nuée
+##    multicolore détruirait la lecture de la forme collective, et DA-01 fait
+##    de cette forme le personnage principal — le diagnostic est donc une
+##    surcouche que l'on allume, jamais l'état par défaut.
+##
+## HIÉRARCHIE DE DOMINANCE (DA-02) : but > danger > nuée > décor. Elle ne
+## tient pas à la saturation mais à la LUMINOSITÉ PAR UNITÉ DE SURFACE. La
+## lumière domine sur une petite surface ; la sortie, large, doit donc rester
+## sous elle — un seuil, pas un phare.
 
 const BACKGROUND := Color(0.027, 0.031, 0.047)
-const GRID_LINE := Color(0.10, 0.11, 0.14)
-const WALL := Color(0.13, 0.14, 0.19)
 
-## Registre calme : un obstacle, pas une alarme (DS-03 étendu au visuel).
-## Rouge profond et désaturé plutôt que vif — il doit se lire sans crier, et
-## rester sous les buts dans la hiérarchie DA-02.
-const DANGER := Color(0.74, 0.22, 0.24)
-const DANGER_DORMANT := Color(0.34, 0.17, 0.20)  # cyclique en phase calme  # cyclique en phase calme
-const EXIT := Color(0.16, 0.92, 0.62)
-const LIGHT := Color(1.0, 0.90, 0.62)
-const RESOURCE := Color(0.75, 0.55, 0.95)
-const DROPOFF := Color(0.45, 0.60, 0.95)
+## Maillage : présent mais presque muet. Le monde est discret, c'est une
+## information de jeu — mais tracer 250 frontières ramène l'œil au niveau de
+## la case et défait le travail de fusion en régions.
+const GRID_LINE := Color(0.10, 0.11, 0.14, 0.30)
+## Pourtour du plateau : c'est LUI qui dit où le monde s'arrête, pas le
+## maillage intérieur.
+const GRID_EDGE := Color(0.22, 0.25, 0.33, 0.55)
+const PLATE := Color(0.035, 0.040, 0.058)
 
-## Couleur d'un agent selon l'EMPLACEMENT de pile qui a décidé pour lui à ce
-## tick. C'est l'instrument qui répond de visu à la question des zones
-## d'action : si deux règles ne décident jamais au même moment, leurs deux
-## couleurs ne se mélangent jamais à l'écran.
-const SLOT_COLORS := [
-	Color(0.35, 0.85, 1.00),  # emplacement 1 — cyan
-	Color(1.00, 0.72, 0.25),  # emplacement 2 — ambre
-	Color(1.00, 0.40, 0.80),  # emplacement 3 — magenta
-	Color(0.55, 1.00, 0.45),  # emplacement 4 — vert
-]
-## Aucune règle applicable : l'agent est immobile par défaut (RG-05).
-const SLOT_NONE := Color(0.45, 0.47, 0.55)
+# --- famille 1 : éléments de niveau (teintes réservées) ----------------------
+#
+# Les teintes sont réparties sur la roue pour rester distinguables deux à deux,
+# y compris côte à côte : ambre 45°, vert-sarcelle 150°, cyan 195°, bleu 215°,
+# violet 280°, magenta 320°, rouge 358°. Le mur n'a pas de teinte — c'est du
+# décor, et lui en donner une le ferait entrer dans le vocabulaire signifiant.
 
-## Nuée en couleur unie, quand le diagnostic par règle est désactivé.
-const AGENT_PLAIN := Color(0.82, 0.93, 1.00)
+const WALL := Color(0.13, 0.14, 0.19)                    # décor, sans teinte
+const EXIT := Color(0.20, 0.78, 0.56)                    # 150° — le seuil
+const DANGER := Color(0.74, 0.22, 0.24)                  # 358° — registre calme
+const DANGER_DORMANT := Color(0.34, 0.17, 0.20)          # même élément, autre phase
+const RESOURCE := Color(0.72, 0.48, 0.95)                # 280°
+const DROPOFF := Color(0.38, 0.56, 0.95)                 # 215°
+const PRESSURE_DOOR := Color(0.95, 0.45, 0.78)           # 320° — réservé, inutilisé
+const ONE_WAY := Color(0.30, 0.82, 0.90)                 # 195° — réservé, inutilisé
+const LIGHT := Color(1.0, 0.92, 0.68)                    # 45° — la plus lumineuse
 
-static func slot_color(slot: int) -> Color:
-	if slot < 0 or slot >= SLOT_COLORS.size():
-		return SLOT_NONE
-	return SLOT_COLORS[slot]
-
-static func cell_color(cell_type: int, danger_active: bool) -> Color:
+## Teinte réservée d'un élément du vocabulaire. Sert de point d'entrée unique :
+## toute nouvelle couleur d'élément passe par ici, jamais en dur ailleurs.
+static func element_color(cell_type: int, danger_active: bool = true) -> Color:
 	match cell_type:
 		GridState.CellType.WALL:
 			return WALL
 		GridState.CellType.EXIT:
 			return EXIT
-		GridState.CellType.LIGHT_SOURCE:
-			return LIGHT
 		GridState.CellType.STATIC_DANGER:
 			return DANGER
 		GridState.CellType.CYCLIC_DANGER:
@@ -58,4 +76,49 @@ static func cell_color(cell_type: int, danger_active: bool) -> Color:
 			return RESOURCE
 		GridState.CellType.DROPOFF:
 			return DROPOFF
+		GridState.CellType.PRESSURE_DOOR:
+			return PRESSURE_DOOR
+		GridState.CellType.ONE_WAY:
+			return ONE_WAY
+		GridState.CellType.LIGHT_SOURCE:
+			return LIGHT
 	return BACKGROUND
+
+## Conservé pour compatibilité d'appel ; `element_color` est le nom qui dit ce
+## que la fonction garantit — une teinte RÉSERVÉE, pas une couleur au choix.
+static func cell_color(cell_type: int, danger_active: bool) -> Color:
+	return element_color(cell_type, danger_active)
+
+# --- famille 2 : emplacements de pile (aucune teinte) ------------------------
+
+## Gris-ardoise. Le rang se lit au numéro et à la position ; l'emplacement
+## occupé emprunte la LUMINOSITÉ, jamais une teinte propre.
+const SLOT_IDLE := Color(0.42, 0.46, 0.56)
+const SLOT_FILLED := Color(0.72, 0.78, 0.90)
+## Emplacement verrouillé : le niveau déclare moins de rangs que la pile n'en
+## comptera (RG-05). Il est montré — le joueur doit savoir que la pile
+## grandira — mais il est visiblement d'une autre nature, pas un rang grisé.
+const SLOT_LOCKED := Color(0.26, 0.28, 0.34)
+
+# --- famille 3 : diagnostic (modale) -----------------------------------------
+
+## Couleur d'un agent selon l'EMPLACEMENT qui a décidé pour lui à ce tick.
+## MODALE : n'apparaît que `show_decision_colors` allumé, et le terrain est
+## alors désaturé pour qu'aucune confusion avec un élément ne soit possible.
+const SLOT_COLORS := [
+	Color(0.35, 0.85, 1.00),  # rang 1
+	Color(1.00, 0.72, 0.25),  # rang 2
+	Color(1.00, 0.40, 0.80),  # rang 3
+	Color(0.55, 1.00, 0.45),  # rang 4
+]
+## Aucune règle applicable : l'agent est immobile par défaut (RG-05).
+const SLOT_NONE := Color(0.45, 0.47, 0.55)
+
+## Nuée en couleur unie — l'état NORMAL du jeu. DA-01 : la nuée est le
+## personnage, et un personnage n'a pas quatre couleurs.
+const AGENT_PLAIN := Color(0.82, 0.93, 1.00)
+
+static func slot_color(slot: int) -> Color:
+	if slot < 0 or slot >= SLOT_COLORS.size():
+		return SLOT_NONE
+	return SLOT_COLORS[slot]

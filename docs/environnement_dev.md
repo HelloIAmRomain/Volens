@@ -113,13 +113,23 @@ d'attendre l'appareil pour regarder les écrans.
 # Le jeu, en fenêtre portrait 540x1200
 ~/bin/godot --path .
 
-# Captures automatiques de chaque écran dans reports/screens/
-# (ouvre une fenêtre quelques secondes, écrit 9 images, se ferme seule)
-~/bin/godot --path . game/bench/screenshots.tscn
+# Captures automatiques de chaque écran (13 images, se ferme seule).
+# La taille est celle du RENDU, pas de la fenêtre : le harnais dessine dans
+# un SubViewport, donc la capture ne dépend plus de la dalle du poste.
+~/bin/godot --path . game/bench/screenshots.tscn -- --out=res://reports/screens --size=1080x2400
+
+# Petit écran (~5,8") : MÊME largeur de base, hauteur plus courte.
+~/bin/godot --path . game/bench/screenshots.tscn -- --out=res://reports/screens-petit --size=1080x1920
 ```
 
 La base de rendu reste 1080x2400 ; seule la fenêtre est réduite, à ratio
 identique (`window_width_override` dans `project.godot`).
+
+> **Ne jamais simuler un petit écran en réduisant la largeur.** L'étirement
+> `canvas_items` conserve la base de 1080 et n'ajuste que la hauteur : un
+> rendu de 480 de large mesure une interface qui n'existe sur aucun appareil,
+> et fait apparaître des débordements imaginaires. Le petit écran, ici, c'est
+> **1080x1920** — un ratio plus court, pas une largeur plus faible.
 
 **Ce qui exige vraiment l'appareil**, et rien d'autre : la lisibilité au
 soleil et à luminosité minimale (DA-02), le temps de reprise réel (EF-20/21,

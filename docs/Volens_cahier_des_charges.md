@@ -490,6 +490,15 @@ Cette section fixe des intentions et des critères de jugement, pas des choix de
 Critères de jugement :
 - **DA-01.** Le personnage principal est la nuée : sa forme collective en mouvement doit être belle et **informative** à la fois — un joueur expérimenté doit pouvoir diagnostiquer sa pile d'un regard sur la silhouette de la nuée.
 - **DA-02.** Fond très sombre, agents lumineux, hiérarchie visuelle stricte : but > danger > nuée > décor. En plein soleil, ces quatre plans restent discernables (testé en §13.4).
+- **DA-02 bis — charte des couleurs.** La hiérarchie de DA-02 se mesure en
+  **luminosité par unité de surface**, pas en saturation : la lumière domine
+  sur une petite surface, la sortie — large — reste sous elle. Trois familles
+  de teintes étanches : une teinte **réservée** par entrée du vocabulaire
+  RG-14 (les neuf attribuées d'avance) ; les emplacements de pile identifiés
+  par leur **rang**, sans teinte propre ; une palette de **diagnostic** modale
+  qui ne coexiste jamais avec la lecture normale. Détail et justification au
+  carnet de bord (décisions 74-78) ; implémentation de référence :
+  `game/view/view_palette.gd`.
 - **DA-03.** Chaque état de jeu (marche, pause, succès, échec) est identifiable en une demi-seconde sans lire aucun texte.
 - **DA-04.** Une capture d'écran quelconque du jeu doit être identifiable comme Volens — la signature visuelle est un actif marketing (§14.3).
 

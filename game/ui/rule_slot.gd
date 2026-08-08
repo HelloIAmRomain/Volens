@@ -1,17 +1,26 @@
 class_name RuleSlot
 extends RuleTouchTarget
-## Un des quatre emplacements de la pile [RG-05, DCT §9.2].
+## Un emplacement de la pile [RG-05, DCT §9.2].
 ##
-## L'emplacement porte une COULEUR FIXE (1 cyan, 2 ambre, 3 magenta, 4 vert),
-## la même dont la vue teinte les agents décidés par cet emplacement. Le
-## joueur lit donc directement « la plupart des agents sont cyan, donc c'est
-## ma première règle qui gouverne » — la règle d'or, sans un mot.
+## L'EMPLACEMENT N'A PAS DE TEINTE PROPRE (charte des couleurs, `ViewPalette`).
+## Il en portait une — 1 cyan, 2 ambre, 3 magenta, 4 vert — et c'était une
+## erreur de fond : ambre est la teinte de la lumière, vert celle de la
+## sortie. La couleur de l'emplacement 2 était donc celle du but. Tenable au
+## chapitre 1, ingérable au chapitre 4 avec neuf éléments à l'écran.
+##
+## Un emplacement est un RANG. Il s'identifie par sa position et son numéro —
+## ce qui est d'ailleurs plus juste, puisque tout le jeu tient à l'ordre et
+## qu'un ordre ne se lit pas dans un arc-en-ciel.
 
 signal rule_dropped(slot_index: int, rule_id: int, from_slot: int)
 signal remove_requested(slot_index: int)
 
 var slot_index: int = 0
 var rule_id: int = RuleRegistry.EMPTY
+## Le niveau déclare moins de rangs que la pile n'en comptera (`slots`).
+## L'emplacement est montré — le joueur doit savoir que la pile grandira —
+## mais il n'est ni utilisable ni de la même nature qu'un rang ouvert.
+var locked: bool = false
 var selected: bool = false:
 	set(value):
 		selected = value
@@ -19,6 +28,7 @@ var selected: bool = false:
 
 var _label: Label
 var _glyph: Label
+var _rank: Label
 var _style: StyleBoxFlat
 var _remove: _RemoveButton
 var _content: VBoxContainer
@@ -42,6 +52,15 @@ func _ready() -> void:
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(box)
 	_content = box
+
+	# Le RANG est écrit en permanence, occupé ou non : c'est lui, et non une
+	# couleur, qui identifie l'emplacement (charte des couleurs).
+	_rank = Label.new()
+	_rank.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_rank.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_rank.add_theme_font_size_override("font_size", 18)
+	_rank.text = str(slot_index + 1)
+	box.add_child(_rank)
 
 	_glyph = Label.new()
 	_glyph.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -83,25 +102,52 @@ func set_rule(new_rule_id: int, slide: bool = false) -> void:
 		tween.set_trans(Tween.TRANS_CUBIC)
 		tween.tween_property(_content, "position:x", 0.0, 0.20)
 
+## Verrouille ou ouvre le rang. Un rang verrouillé ne reçoit aucun geste.
+func set_locked(value: bool) -> void:
+	if locked == value:
+		return
+	locked = value
+	mouse_filter = Control.MOUSE_FILTER_IGNORE if locked else Control.MOUSE_FILTER_STOP
+	# Le verrou se voit à la TAILLE autant qu'au ton : un rang fermé est plus
+	# étroit, il ne peut pas se confondre avec un rang ouvert simplement
+	# assombri. Sur un niveau à un seul rang, les trois autres deviennent une
+	# indication de ce qui vient, pas trois quarts de barre en décor.
+	size_flags_stretch_ratio = 0.42 if locked else 1.0
+	_refresh()
+
 func _refresh() -> void:
 	if _label == null:
 		return
-	var color := ViewPalette.slot_color(slot_index)
+	if locked:
+		_glyph.text = ""
+		_rank.add_theme_color_override("font_color", Color(ViewPalette.SLOT_LOCKED, 0.85))
+		_label.text = ""
+		_style.bg_color = Color(0.05, 0.055, 0.07, 0.5)
+		_style.set_border_width_all(2)
+		_style.border_color = Color(ViewPalette.SLOT_LOCKED, 0.55)
+		_style.shadow_size = 0
+		if _remove != null:
+			_remove.visible = false
+		return
+	var color := ViewPalette.SLOT_IDLE
 	if rule_id == RuleRegistry.EMPTY:
-		_glyph.text = str(slot_index + 1)
-		_glyph.add_theme_color_override("font_color", Color(color, 0.20))
+		_glyph.text = ""
 		_label.text = ""
 		_style.bg_color = Color(0.09, 0.10, 0.13, 0.85)
-		# Le PROCHAIN emplacement libre invite ; les suivants sont du décor.
-		_style.border_color = Color(color, 0.45 if _next_available else 0.14)
-		_glyph.add_theme_color_override("font_color", Color(color, 0.34 if _next_available else 0.12))
+		# Le PROCHAIN rang libre invite ; les suivants sont du décor.
+		_style.border_color = Color(color, 0.55 if _next_available else 0.20)
+		_rank.add_theme_color_override("font_color", Color(color, 0.85 if _next_available else 0.40))
 	else:
+		# Rang occupé : le GLYPHE de la règle porte l'identité, l'emplacement
+		# n'apporte que sa luminosité. Aucune teinte n'est empruntée.
+		color = ViewPalette.SLOT_FILLED
 		_glyph.text = RuleCatalog.glyph_of(rule_id)
 		_glyph.add_theme_color_override("font_color", color)
 		_label.text = RuleCatalog.name_of(rule_id)
 		_label.add_theme_color_override("font_color", Color(0.90, 0.93, 1.0))
-		_style.bg_color = Color(color.r, color.g, color.b, 0.16)
+		_style.bg_color = Color(0.16, 0.18, 0.23, 0.95)
 		_style.border_color = color
+		_rank.add_theme_color_override("font_color", Color(color, 0.65))
 	_apply_selection(color)
 	if _remove != null:
 		# Visible seulement quand un emplacement OCCUPÉ est sélectionné :

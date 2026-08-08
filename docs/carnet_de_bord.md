@@ -248,6 +248,131 @@ divergences ressembleraient à une régression pure.
 
 ---
 
+## Charte des couleurs et hiérarchie visuelle (8 août 2026)
+
+74. **CHARTE DES COULEURS — trois familles étanches.** Le langage des couleurs
+    n'avait aucune sémantique réservée : les emplacements de pile étaient
+    cyan, ambre, magenta, vert, alors qu'**ambre est la teinte de la lumière
+    et vert celle de la sortie**. La couleur de l'emplacement 2 était donc
+    celle du but. Tenable au chapitre 1, ingérable au chapitre 4 avec
+    ressources, dépôts, portes à pression et sens uniques à l'écran.
+    - **1. Éléments de niveau** — une teinte réservée par entrée du
+      vocabulaire RG-14. **Les neuf sont attribuées d'avance**, y compris
+      celles qu'aucun niveau n'utilise : c'est le seul moment où
+      l'attribution est gratuite. Réparties sur la roue pour rester
+      distinguables deux à deux : ambre 45° (lumière), vert-sarcelle 150°
+      (sortie), cyan 195° (sens unique), bleu 215° (dépôt), violet 280°
+      (ressource), magenta 320° (porte à pression), rouge 358° (danger). Le
+      mur n'a **pas** de teinte — lui en donner le ferait entrer dans le
+      vocabulaire signifiant.
+    - **2. Emplacements de pile** — **aucune teinte propre**. Un emplacement
+      est un RANG : il s'identifie par sa position et son numéro, sur une
+      famille gris-ardoise désaturée. C'est plus juste que ce qu'il
+      remplace — tout le jeu tient à l'ordre, et un ordre ne se lit pas dans
+      un arc-en-ciel. Le numéro est écrit en permanence, occupé ou non.
+    - **3. Diagnostic** — palette **MODALE**. Quand elle s'allume, le terrain
+      se désature ; les deux palettes ne se disputent jamais l'écran.
+
+75. **La coloration des agents par règle est un DIAGNOSTIC, jamais le jeu
+    normal.** Vérifié : `show_decision_colors` n'est allumée que depuis le
+    banc jetable, l'écran de jeu ne l'expose pas. C'est structurel, pas un
+    oubli — DA-01 fait de la forme collective le personnage principal, et une
+    nuée à quatre couleurs détruit cette lecture.
+
+76. **LA LUMIÈRE EST UNE SOURCE, PAS UNE CASE REMPLIE.** J'avais surcorrigé :
+    écarter la dalle lumineuse écrasante était juste, mais la rendre
+    translucide l'a rendue **inerte** — un bloc kaki, donc un obstacle, alors
+    que c'est ce que R01 poursuit. Une source a un noyau clair surexposé vers
+    le blanc, une décroissance qui déborde de 1,35 case ⚙️ sur les voisines,
+    et une respiration lente à **0,5 Hz** ⚙️ — à la limite basse du
+    perceptible, car une source qui bat vite devient une alarme.
+    **La hiérarchie DA-02 ne tient pas à la saturation mais à la LUMINOSITÉ
+    PAR UNITÉ DE SURFACE.** La lumière domine sur une petite surface : c'est
+    ce qui la rend attirante sans qu'elle écrase.
+
+77. **LA SORTIE EST UN SEUIL, PAS UN PHARE.** L'aplat saturé en faisait
+    l'élément le plus lumineux de l'écran, ce qui inversait DA-02 : elle
+    dominait la lumière et la nuée. Une sortie n'a pas à attirer l'œil, elle
+    a à **se laisser reconnaître quand on la cherche**. On la dessine donc
+    comme une ouverture — liseré net qu'on franchit, intérieur presque vide,
+    extinction douce vers le dehors. **Changement de matière, pas
+    d'intensité.** Elle n'est plus jamais l'élément le plus lumineux.
+
+78. **Test opposable de la hiérarchie : plisser les yeux sur la capture.**
+    Ce qui reste visible en premier doit être la lumière, puis le danger,
+    puis la nuée. Si c'est la sortie, ce n'est pas fini. C'est ce test qui a
+    imposé deux réglages de plus après la première correction : liseré de
+    sortie descendu à 0,40 ⚙️, densité du danger remontée — le danger tient
+    souvent en **une case**, sa densité doit compenser sa surface.
+
+79. **LE MAILLAGE DÉFAISAIT LE TRAVAIL SUR LES RÉGIONS.** Fusionner les cases
+    contiguës en formes uniques ne sert à rien si l'on retrace ensuite chaque
+    frontière : l'œil redescend au niveau de la case et le plateau se couvre
+    d'un bruit constant. Le monde reste discret — c'est une information de
+    jeu, pas du décor — mais elle se porte désormais à deux niveaux : le
+    **pourtour** du plateau, net, qui dit où le monde s'arrête ; les
+    frontières intérieures, **fortement atténuées**, présentes sans être lues.
+
+80. **POURQUOI LA CAPTURE `07-ch1-02-detour` NE MONTRAIT PAS UN DÉTOUR.**
+    Le harnais cherchait « le premier `GameScreen` enfant » pour agir dessus.
+    Après un changement de niveau, l'écran précédent est encore vivant le
+    temps de son `queue_free()` : les gestes partaient donc dans l'écran
+    **mort**, et la capture montrait le nouveau, intact, à tick zéro avec une
+    pile vide. **Une image qui ne montre pas ce qu'elle annonce est pire
+    qu'une image absente** — on en tire des conclusions. `_open_game` renvoie
+    désormais l'écran ouvert : on ne devine plus.
+
+81. **LE FLOU DES CAPTURES ÉTAIT L'INSTRUMENT, PAS LE RENDU.** La fenêtre
+    était bornée par la dalle de la machine : demander 1080×2400 rendait
+    1080×1131, donc un cadrage faux et une image molle. Le harnais rend
+    maintenant dans un **SubViewport dimensionné à la main** — la capture ne
+    dépend plus de l'écran qui la produit.
+    **Corollaire à ne pas oublier** : simuler un petit écran ne consiste pas
+    à réduire la largeur. L'étirement `canvas_items` conserve la base 1080 et
+    n'ajuste que la hauteur ; un SubViewport de 480 de large mesure une
+    interface qui n'existe sur aucun appareil. Le petit écran, c'est
+    **1080×1920**, pas 480×1067.
+
+82. **Les rangs de pile sont ceux que le NIVEAU déclare.** L'interface
+    affichait quatre rangs utilisables sur un niveau qui en déclare deux —
+    et le validateur n'énumère les piles que jusqu'à `slots`. Un joueur
+    pouvait donc gagner par une pile que **personne n'a validée**, et le
+    niveau ne prouvait plus rien. Les rangs fermés restent visibles — il faut
+    savoir que la pile grandira — mais ils sont **plus étroits** et non
+    seulement plus sombres : l'indisponibilité ne peut pas tenir au seul ton
+    (ENF-20). Deux tests d'interface changent de rang cible en conséquence :
+    ce n'est pas le contrat de compaction qui bouge, c'est le rang 3 qui
+    n'existe pas sur ch1_02.
+
+83. **Le panneau d'objectif masquait le niveau qu'il décrit.** Il occupait le
+    centre du plateau, opaque, et cachait le danger de ch1_02 — précisément
+    l'élément que l'énoncé donne à comprendre. Trois corrections cumulées :
+    il descend au bas de la vue, il se dimensionne **sur son contenu** au
+    lieu d'une hauteur fixe de 300, et il devient translucide.
+
+84. **Quatre boutons identiques, c'est quatre fois rien.** Lecture est
+    l'action la plus fréquente de l'écran, fermer la plus coûteuse à
+    déclencher par erreur : les donner à voir de la même façon oblige à LIRE
+    un glyphe avant chaque geste, et le glyphe est justement ce que le pouce
+    recouvre. Trois registres — primaire (plein, accentué, **1,24× plus
+    grand** ⚙️), secondaire (contour), discret (sans fond). La hiérarchie
+    porte sur la forme et la taille, pas sur la seule couleur (ENF-20).
+
+85. **RETOUR HAPTIQUE (ENF-24) — quatre événements, pas un de plus.**
+    Sélection 12 ms, dépôt 22 ms, refus 2×14 ms, sortie d'agent 9 ms ⚙️.
+    Il existe parce que la discrimination appui/glissement se joue **sur une
+    cible que le doigt lui-même cache** : sans retour, il faut REGARDER la
+    pile pour savoir ce qui a été compris — donc quitter la grille des yeux
+    au moment où la nuée bouge. Deux règles non négociables : **jamais
+    porteur d'information exclusive** (tout ce qu'une vibration annonce est
+    aussi visible, ENF-22), et **désactivable** avec état persistant. Le refus
+    est le seul motif double, parce qu'un refus doit se remarquer.
+    Nouveau fichier de sauvegarde `settings.json`, avec son propre
+    `schema_version` : on n'ajoute pas un champ à `progress.json`, qui porte
+    des données que le joueur ne veut pas perdre.
+
+---
+
 ## Lisibilité, objectifs et direction visuelle (7 août 2026)
 
 64. **R02 renommée « Fuir le danger »** (CDC v2.5, libellé seul). Deux
