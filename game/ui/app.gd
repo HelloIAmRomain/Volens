@@ -131,6 +131,7 @@ func _on_level_finished(level_id: String, won: bool, ticks: int, lost: int, stac
 	var summary := SummaryScreen.new()
 	summary.retry_requested.connect(func() -> void: _open_game(level_id, false))
 	summary.select_requested.connect(_open_select)
+	summary.next_level_requested.connect(func(next_id: String) -> void: _open_game(next_id, false))
 	_swap(summary, Screen.SUMMARY)
 	summary.setup(level_id, won, ticks, lost, stack, reason)
 	# Le niveau est terminé : plus rien à reprendre.

@@ -6,6 +6,7 @@ extends Control
 
 signal retry_requested
 signal select_requested
+signal next_level_requested(level_id: String)
 
 func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array, reason: String = "") -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -51,11 +52,21 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array, rea
 	grow.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_child(grow)
 
-	# Deux boutons de même poids : le jeu ne pousse pas à enchaîner (P2).
+	# « Niveau suivant » n'apparaît QUE sur une victoire, et seulement s'il
+	# existe un niveau après celui-ci. Sur un échec, proposer d'avancer serait
+	# absurde — et le niveau suivant est de toute façon verrouillé.
+	#
+	# P2 tient malgré tout : le bouton a le MÊME poids visuel que les autres,
+	# et aucun texte ne pousse à enchaîner. On rend le geste disponible, on ne
+	# le sollicite pas.
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", int(UiMetrics.GAP))
 	column.add_child(row)
 	row.add_child(_make_button("Rejouer", func() -> void: retry_requested.emit()))
+	var next_id := LevelCatalog.level_after(level_id)
+	if won and not next_id.is_empty():
+		row.add_child(_make_button("Niveau suivant",
+			func() -> void: next_level_requested.emit(next_id)))
 	row.add_child(_make_button("Niveaux", func() -> void: select_requested.emit()))
 
 func _reason(won: bool, lost: int) -> String:

@@ -3,9 +3,10 @@ extends Control
 ## Sélecteur des cinq niveaux du chapitre 1 : état résolu / non résolu d'un
 ## coup d'œil, sans compteur culpabilisant (P2, EF-10).
 ##
-## Les niveaux 3 à 5 sont **en attente de conception** : ils s'affichent en
-## grisé avec la mention explicite, plutôt que d'être cachés — le joueur voit
-## la forme du chapitre, et le testeur comprend qu'il n'a pas raté une porte.
+## Un niveau non encore ouvert s'affiche **en grisé avec un cadenas**, jamais
+## caché : le joueur voit la forme du chapitre et comprend qu'il n'a pas raté
+## une porte. Il lit aussi ce qui l'ouvrira — « terminez le niveau N » — parce
+## qu'un verrou sans condition affichée se lit comme une panne.
 
 signal level_chosen(level_id: String)
 signal back_requested
@@ -46,25 +47,29 @@ func setup(progress: Progress) -> void:
 
 func _make_tile(entry: Dictionary, index: int, progress: Progress) -> Control:
 	var level_id := String(entry["id"])
-	var ready_to_play := bool(entry["ready"])
+	var built := bool(entry["ready"])
+	var unlocked: bool = LevelCatalog.is_unlocked(level_id, progress)
 	var solved: bool = progress.is_solved(level_id)
 
 	var button := Button.new()
 	button.custom_minimum_size = Vector2(UiMetrics.MIN_TOUCH_TARGET, UiMetrics.MIN_TOUCH_TARGET)
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button.add_theme_font_size_override("font_size", 30)
-	button.disabled = not ready_to_play
+	button.disabled = not unlocked
 
-	var mark := "✓" if solved else "·"
-	button.text = "  %s   %d.  %s" % [mark, index + 1, String(entry["name"])]
-	if not ready_to_play:
+	if not built:
 		button.text = "  ⋯   %d.  en attente de conception" % [index + 1]
-		button.tooltip_text = "Ce niveau sera conçu après la révision du système de règles."
-	elif solved:
-		var best: int = progress.best_ticks(level_id)
-		button.text += "      %d ticks" % best
-		button.add_theme_color_override("font_color", ViewPalette.EXIT)
-
-	if ready_to_play:
+	elif not unlocked:
+		# Le nom du niveau reste caché : le découvrir fait partie du niveau.
+		# En revanche la CONDITION est écrite, sinon le verrou se lit comme
+		# une panne de l'application.
+		var previous := String(LevelCatalog.entry(index - 1)["name"])
+		button.text = "  🔒   %d.  terminez « %s »" % [index + 1, previous]
+	else:
+		var mark := "✓" if solved else "·"
+		button.text = "  %s   %d.  %s" % [mark, index + 1, String(entry["name"])]
+		if solved:
+			button.text += "      %d ticks" % progress.best_ticks(level_id)
+			button.add_theme_color_override("font_color", ViewPalette.EXIT)
 		button.pressed.connect(func() -> void: level_chosen.emit(level_id))
 	return button

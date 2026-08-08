@@ -33,6 +33,29 @@ static func path_of(level_id: String) -> String:
 	var i := index_of(level_id)
 	return "" if i < 0 else String(LEVELS[i]["path"])
 
+## Niveau suivant dans l'ordre du chapitre, ou "" s'il n'y en a pas.
+## Sert au bouton « Niveau suivant » du bilan.
+static func level_after(level_id: String) -> String:
+	var i := index_of(level_id)
+	if i < 0 or i + 1 >= LEVELS.size():
+		return ""
+	return String(LEVELS[i + 1]["id"])
+
+## PROGRESSION VERROUILLÉE : un niveau n'est ouvert que si le précédent est
+## résolu. Le chapitre est une rampe d'apprentissage (CDC §8.5) — chaque
+## niveau suppose acquise la leçon du précédent. Y entrer sans elle, c'est
+## buter sur un dispositif qu'on n'a pas les moyens de lire, et conclure que
+## le jeu est obscur alors qu'il est simplement lu dans le désordre.
+##
+## Le premier niveau est toujours ouvert : il n'a pas de prédécesseur.
+static func is_unlocked(level_id: String, progress: Progress) -> bool:
+	var i := index_of(level_id)
+	if i < 0 or not bool(LEVELS[i]["ready"]):
+		return false
+	if i == 0:
+		return true
+	return progress.is_solved(String(LEVELS[i - 1]["id"]))
+
 ## Premier niveau non résolu et jouable, ou le dernier jouable si tout est
 ## résolu. Sert au bouton « Continuer » du menu.
 static func next_playable(progress: Progress) -> String:
