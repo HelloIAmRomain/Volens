@@ -248,6 +248,49 @@ divergences ressembleraient à une régression pure.
 
 ---
 
+## Parades mécaniques et critère du cas d'épreuve (8 août 2026)
+
+95. **LE CAS D'ÉPREUVE EST CELUI OÙ LE MÉCANISME EST SOLLICITÉ, JAMAIS CELUI
+    OÙ IL EST CONFORTABLE.** Formulé ici comme **critère de conception**, pas
+    de test — c'est là qu'il sert, et c'est là qu'il a manqué.
+    Trois fois le même piège, dans trois domaines sans rapport :
+    - **R03** : trois semaines à la juger sur des nuées compactes, où elle n'a
+      rien à maintenir. Les archétypes ne se séparent que sur une nuée
+      **dispersée près d'un danger**.
+    - **Contention R2/R3** : nulle sur un bloc compact, 15 à 23 sur une nuée
+      dispersée. Mesurée sur le cas confortable, elle affirmait « ces deux
+      règles ne se disputent jamais » — faux.
+    - **Cadrage plein écran** : juste par accident sur le ratio haut, où la
+      grille est limitée en largeur. Faux uniquement sur le **ratio court**,
+      le seul où le calcul de hauteur travaille.
+    Le point commun n'est pas la négligence : c'est qu'un mécanisme observé là
+    où il n'a rien à faire **paraît toujours correct**. Paraître correct est
+    exactement ce qui coûte cher, parce que ça clôt l'examen.
+    **Application directe à N3-N5** : un niveau censé départager des familles
+    de piles se dessine sur la géométrie où elles divergent, et se vérifie là.
+    Une grille où les trois familles se comportent pareil ne prouve rien, même
+    si elle se joue bien — et c'est précisément ce qui rendait les fiches
+    invalidées séduisantes. Inscrit en invariant n°12 (docs/ARCHITECTURE.md).
+
+96. **UNE ENTRÉE AU CARNET N'A PAS EMPÊCHÉ SA PROPRE RÉCIDIVE.** Le
+    remplacement textuel muet a frappé trois fois, la dernière **après** que
+    la leçon ait été écrite (décision 67). Ce qui est seulement déconseillé
+    finit par être fait : la parade devait cesser d'être documentaire.
+    Elle est désormais **mécanique**, à deux niveaux :
+    - `tools/dev/patch.py`, crochet `PreToolUse` sur Bash :
+      il refuse `sed -i`, `perl -i` et tout script Python combinant
+      `.replace()`/`re.sub()` avec une écriture de fichier, dès lors qu'une
+      source du dépôt est visée. Aucun chemin d'édition ne le contourne — il
+      s'exécute avant la commande, pas après une décision.
+    - `tools/dev/patch.py` pour les lots d'éditions : chaque ancre doit
+      correspondre à un nombre EXACT d'occurrences ; si une seule manque,
+      **rien n'est écrit** et le code de sortie est 1.
+    Les deux ont été éprouvés sur le cas réel — l'ancre `var title` absente de
+    `summary_screen.gd` — et non sur un cas d'école. C'est l'invariant n°12
+    appliqué à sa propre parade.
+
+---
+
 ## Le jeu au premier plan (8 août 2026)
 
 89. **L'ÉCRAN DE JEU RESSEMBLAIT À UN ÉCRAN DANS UN ÉCRAN.** La vue occupait
