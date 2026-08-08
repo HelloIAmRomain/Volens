@@ -92,11 +92,8 @@ func _stat(label: String, value: String) -> Control:
 	return row
 
 func _make_button(text: String, action: Callable) -> Button:
-	var b := Button.new()
-	b.text = text
-	b.custom_minimum_size = Vector2(UiMetrics.MIN_TOUCH_TARGET, UiMetrics.MIN_TOUCH_TARGET)
+	var b := UiButtons.make(text, UiButtons.Rank.PLAIN, 32)
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	b.add_theme_font_size_override("font_size", 32)
 	b.pressed.connect(action)
 	return b
 

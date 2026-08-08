@@ -52,9 +52,7 @@ func _build() -> void:
 
 	column.add_child(_spacer(UiMetrics.GAP * 2))
 
-	_toggle = Button.new()
-	_toggle.custom_minimum_size = Vector2(UiMetrics.MIN_TOUCH_TARGET, UiMetrics.MIN_TOUCH_TARGET)
-	_toggle.add_theme_font_size_override("font_size", 32)
+	_toggle = UiButtons.make("", UiButtons.Rank.PLAIN, 32)
 	_toggle.pressed.connect(_on_toggle)
 	column.add_child(_toggle)
 
@@ -63,19 +61,14 @@ func _build() -> void:
 	# L'effacement vient du menu, où il était à un geste du bouton « Jouer ».
 	# Il est ici parce que c'est la seule action irréversible du jeu, et que
 	# les réglages sont l'endroit où l'on va délibérément.
-	_reset_button = Button.new()
-	_reset_button.custom_minimum_size = Vector2(UiMetrics.MIN_TOUCH_TARGET, UiMetrics.MIN_TOUCH_TARGET)
-	_reset_button.add_theme_font_size_override("font_size", 26)
+	_reset_button = UiButtons.make("", UiButtons.Rank.PLAIN, 26)
 	_reset_button.add_theme_color_override("font_color", Color(0.72, 0.45, 0.45))
 	_reset_button.pressed.connect(_on_reset_pressed)
 	column.add_child(_reset_button)
 
 	column.add_child(_spacer(UiMetrics.GAP * 2))
 
-	var back := Button.new()
-	back.text = "Retour"
-	back.custom_minimum_size = Vector2(UiMetrics.MIN_TOUCH_TARGET, UiMetrics.MIN_TOUCH_TARGET)
-	back.add_theme_font_size_override("font_size", 30)
+	var back := UiButtons.make("Retour")
 	back.pressed.connect(func() -> void: back_requested.emit())
 	column.add_child(back)
 
