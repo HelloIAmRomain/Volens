@@ -83,11 +83,6 @@ static func element_color(cell_type: int, danger_active: bool = true) -> Color:
 			return LIGHT
 	return BACKGROUND
 
-## Conservé pour compatibilité d'appel ; `element_color` est le nom qui dit ce
-## que la fonction garantit — une teinte RÉSERVÉE, pas une couleur au choix.
-static func cell_color(cell_type: int, danger_active: bool) -> Color:
-	return element_color(cell_type, danger_active)
-
 # --- famille 2 : emplacements de pile (aucune teinte) ------------------------
 
 ## Gris-ardoise. Le rang se lit au numéro et à la position ; l'emplacement

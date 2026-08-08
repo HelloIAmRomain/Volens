@@ -72,11 +72,7 @@ func _build() -> void:
 	column.add_child(version)
 
 func _make_button(text: String, font_size: int) -> Button:
-	var b := Button.new()
-	b.text = text
-	b.custom_minimum_size = Vector2(UiMetrics.MIN_TOUCH_TARGET, UiMetrics.MIN_TOUCH_TARGET)
-	b.add_theme_font_size_override("font_size", font_size)
-	return b
+	return UiButtons.make(text, UiButtons.Rank.PLAIN, font_size)
 
 func _spacer(height: float) -> Control:
 	var c := Control.new()

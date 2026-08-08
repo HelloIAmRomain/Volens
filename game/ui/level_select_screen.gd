@@ -38,10 +38,7 @@ func setup(progress: Progress) -> void:
 	grow.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_child(grow)
 
-	var back := Button.new()
-	back.text = "Retour"
-	back.custom_minimum_size = Vector2(UiMetrics.MIN_TOUCH_TARGET, UiMetrics.MIN_TOUCH_TARGET)
-	back.add_theme_font_size_override("font_size", 30)
+	var back := UiButtons.make("Retour")
 	back.pressed.connect(func() -> void: back_requested.emit())
 	column.add_child(back)
 
@@ -51,10 +48,8 @@ func _make_tile(entry: Dictionary, index: int, progress: Progress) -> Control:
 	var unlocked: bool = LevelCatalog.is_unlocked(level_id, progress)
 	var solved: bool = progress.is_solved(level_id)
 
-	var button := Button.new()
-	button.custom_minimum_size = Vector2(UiMetrics.MIN_TOUCH_TARGET, UiMetrics.MIN_TOUCH_TARGET)
+	var button := UiButtons.make("", UiButtons.Rank.PLAIN, 30)
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	button.add_theme_font_size_override("font_size", 30)
 	button.disabled = not unlocked
 
 	if not built:

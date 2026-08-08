@@ -170,10 +170,10 @@ func _build() -> void:
 	right_row.name = "RightBar"
 	right_row.add_theme_constant_override("separation", int(UiMetrics.GAP))
 	add_child(right_row)
-	_play_button = _make_button("▶", "Marche / pause — ou appui sur la grille", ButtonRank.PRIMARY)
+	_play_button = _make_button("▶", "Marche / pause — ou appui sur la grille", UiButtons.Rank.PRIMARY)
 	_play_button.pressed.connect(_toggle_play)
 	right_row.add_child(_play_button)
-	_speed_button = _make_button("▷", "Vitesse de lecture", ButtonRank.SECONDARY)
+	_speed_button = _make_button("▷", "Vitesse de lecture", UiButtons.Rank.SECONDARY)
 	_speed_button.pressed.connect(_cycle_speed)
 	right_row.add_child(_speed_button)
 
@@ -212,52 +212,10 @@ func _build_stack_bar() -> void:
 		row.add_child(slot)
 		_slots.append(slot)
 
-## QUATRE BOUTONS IDENTIQUES, C'EST QUATRE FOIS RIEN. Lecture est l'action la
-## plus fréquente de l'écran ; fermer est la plus coûteuse à déclencher par
-## erreur. Les donner à voir de la même façon oblige à LIRE un glyphe avant
-## chaque geste, et le glyphe est justement ce que le pouce recouvre.
-##
-## Trois registres : PRIMAIRE (lecture) — plein, accentué, plus grand ;
-## SECONDAIRE (vitesse) — contour ; DISCRET (fermer, réinitialiser) — sans
-## fond, ton bas. La hiérarchie porte sur la forme et la taille, pas sur la
-## seule couleur (ENF-20).
-enum ButtonRank { PRIMARY, SECONDARY, QUIET }
-
-func _make_button(text: String, tip: String, rank: int = ButtonRank.QUIET) -> Button:
-	var b := Button.new()
-	b.text = text
-	b.tooltip_text = tip
-	var scale: float = 1.24 if rank == ButtonRank.PRIMARY else 1.0
-	b.custom_minimum_size = Vector2(UiMetrics.MIN_TOUCH_TARGET * scale, UiMetrics.MIN_TOUCH_TARGET * scale)
-	b.add_theme_font_size_override("font_size", int(30 * scale))
-	_style_button(b, rank)
-	return b
-
-func _style_button(b: Button, rank: int) -> void:
-	var normal := StyleBoxFlat.new()
-	normal.set_corner_radius_all(16)
-	match rank:
-		ButtonRank.PRIMARY:
-			normal.bg_color = Color(0.20, 0.42, 0.62, 0.95)
-			normal.set_border_width_all(2)
-			normal.border_color = Color(0.62, 0.86, 1.0, 0.9)
-			b.add_theme_color_override("font_color", Color(0.96, 0.99, 1.0))
-		ButtonRank.SECONDARY:
-			normal.bg_color = Color(0.08, 0.10, 0.14, 0.85)
-			normal.set_border_width_all(2)
-			normal.border_color = Color(0.40, 0.48, 0.60, 0.75)
-			b.add_theme_color_override("font_color", Color(0.80, 0.86, 0.95))
-		_:
-			normal.bg_color = Color(0.06, 0.07, 0.10, 0.55)
-			normal.set_border_width_all(1)
-			normal.border_color = Color(0.28, 0.32, 0.40, 0.45)
-			b.add_theme_color_override("font_color", Color(0.62, 0.68, 0.78))
-	var hovered := normal.duplicate() as StyleBoxFlat
-	hovered.bg_color = normal.bg_color.lightened(0.10)
-	b.add_theme_stylebox_override("normal", normal)
-	b.add_theme_stylebox_override("hover", hovered)
-	b.add_theme_stylebox_override("pressed", hovered)
-	b.add_theme_stylebox_override("focus", normal)
+## Les boutons passent par `UiButtons` : la cible tactile minimale (ENF-01)
+## et les registres visuels y sont posés une seule fois, pour tous les écrans.
+func _make_button(text: String, tip: String, rank: int = UiButtons.Rank.QUIET) -> Button:
+	return UiButtons.make(text, rank, 30, tip)
 
 func _build_panel() -> void:
 	_panel = PanelContainer.new()
@@ -646,7 +604,7 @@ func _hide_explain() -> void:
 ## panneaux qui doivent rester dans le jeu sans passer sous l'interface.
 func _field_top() -> float:
 	var m := UiMetrics.safe_area_margins(get_viewport_rect().size)
-	return m.y + UiMetrics.MIN_TOUCH_TARGET * 1.24 + UiMetrics.GAP * 0.5 + 40 + UiMetrics.GAP
+	return m.y + UiMetrics.MIN_TOUCH_TARGET * UiButtons.PRIMARY_SCALE + UiMetrics.GAP * 0.5 + 40 + UiMetrics.GAP
 
 func _field_bottom() -> float:
 	var vp := get_viewport_rect().size
@@ -679,14 +637,14 @@ func _layout() -> void:
 	if right_row != null:
 		# Le bouton de lecture est plus grand : la barre droite l'est aussi, et
 		# elle est alignée par le BAS pour que les glyphes restent sur une ligne.
-		var play_h := bar_h * 1.24
+		var play_h := bar_h * UiButtons.PRIMARY_SCALE
 		var w := play_h + bar_h + UiMetrics.GAP
 		right_row.position = Vector2(right - w, top)
 		right_row.size = Vector2(w, play_h)
 		right_row.alignment = BoxContainer.ALIGNMENT_END
 
 	if _objective_label != null:
-		_objective_label.position = Vector2(left, top + bar_h * 1.24 + UiMetrics.GAP * 0.5)
+		_objective_label.position = Vector2(left, top + bar_h * UiButtons.PRIMARY_SCALE + UiMetrics.GAP * 0.5)
 		_objective_label.size = Vector2(width, 40)
 
 	# La pile occupe le bas — et rien d'autre : le concepteur y tient.
