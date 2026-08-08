@@ -26,7 +26,14 @@ signal state_changed
 
 ## ×1 → ×2 → ×3 → ×1 (RG-10 : « au moins trois vitesses »).
 const SPEEDS: Array[float] = [1.0, 2.0, 3.0]
-const SPEED_GLYPHS: Array[String] = ["▷", "▷▷", "▷▷▷"]
+## LA VITESSE NE SE DESSINE PLUS AVEC UN TRIANGLE. Elle en portait un, creux,
+## à côté du triangle plein de la lecture : deux formes identiques au pouce,
+## qui obligeaient à comparer un remplissage pour savoir sur quoi on appuie.
+## Tout glyphe fléché rouvrirait la confusion — chevrons, doubles pointes,
+## bobine : ce sont tous des triangles. Le multiplicateur écrit est la seule
+## forme qui ne ressemble à rien d'autre à l'écran, se lit sans apprentissage
+## et ne dépend d'aucun caractère exotique.
+const SPEED_GLYPHS: Array[String] = ["×1", "×2", "×3"]
 
 var _view: SimView
 var _view_host: SubViewportContainer
@@ -123,6 +130,27 @@ func set_speed_index(index: int) -> void:
 # --- construction ---------------------------------------------------------
 
 func _build() -> void:
+	# LE JEU EST LE FOND. La vue est le PREMIER enfant, donc le plus bas de la
+	# pile de dessin comme de l'entrée : tout ce qui suit — barres, bandeau,
+	# pile, panneaux — se pose au-dessus d'elle. L'ordre inverse produisait
+	# l'effet d'un écran encastré dans un autre, et donnait l'entrée à la vue
+	# par-dessus les boutons.
+	_view_host = SubViewportContainer.new()
+	_view_host.stretch = true
+	_view_host.mouse_filter = Control.MOUSE_FILTER_STOP
+	_view_host.gui_input.connect(_on_view_input)
+	add_child(_view_host)
+	_viewport = SubViewport.new()
+	_viewport.transparent_bg = true
+	_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	_view_host.add_child(_viewport)
+	_viewport.size_changed.connect(func() -> void: if _view != null: _view._on_viewport_resized())
+	_view = SimView.new()
+	# Une sortie d'agent se voit (le compteur monte, l'agent s'efface) ET se
+	# sent. Jamais l'inverse : le retour haptique double, il n'informe pas seul.
+	_view.agents_exited.connect(func(_count: int) -> void: Haptics.exited())
+	_viewport.add_child(_view)
+
 	# Barre haute gauche : quitter, puis réinitialiser (EF-04). Loin du
 	# transport, exprès.
 	var left_row := HBoxContainer.new()
@@ -152,27 +180,17 @@ func _build() -> void:
 	_objective_label = Label.new()
 	_objective_label.add_theme_font_size_override("font_size", 28)
 	_objective_label.add_theme_color_override("font_color", Color(0.86, 0.90, 1.0))
+	# L'interface est PAR-DESSUS le jeu : elle doit rester lisible sur
+	# n'importe quel fond, y compris le halo d'une source de lumière. Un
+	# contour sombre suffit et n'ajoute aucune boîte — poser un bandeau opaque
+	# recréerait le cadre qu'on vient d'enlever.
+	_objective_label.add_theme_color_override("font_outline_color", Color(0.02, 0.03, 0.05, 0.9))
+	_objective_label.add_theme_constant_override("outline_size", 8)
 	_objective_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	# Le bandeau est CLIQUABLE : il rouvre l'énoncé complet à tout moment.
 	_objective_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	_objective_label.gui_input.connect(_on_banner_input)
 	add_child(_objective_label)
-
-	_view_host = SubViewportContainer.new()
-	_view_host.stretch = true
-	_view_host.mouse_filter = Control.MOUSE_FILTER_STOP
-	_view_host.gui_input.connect(_on_view_input)
-	add_child(_view_host)
-	_viewport = SubViewport.new()
-	_viewport.transparent_bg = true
-	_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
-	_view_host.add_child(_viewport)
-	_viewport.size_changed.connect(func() -> void: if _view != null: _view._on_viewport_resized())
-	_view = SimView.new()
-	# Une sortie d'agent se voit (le compteur monte, l'agent s'efface) ET se
-	# sent. Jamais l'inverse : le retour haptique double, il n'informe pas seul.
-	_view.agents_exited.connect(func(_count: int) -> void: Haptics.exited())
-	_viewport.add_child(_view)
 
 	_build_stack_bar()
 	_build_panel()
@@ -314,7 +332,7 @@ func _build_objective_panel() -> void:
 	_objective_panel.gui_input.connect(func(e: InputEvent) -> void:
 		if (e is InputEventMouseButton and (e as InputEventMouseButton).pressed) \
 				or (e is InputEventScreenTouch and (e as InputEventScreenTouch).pressed):
-			_hide_objective_panel())
+			_dismiss_objective_panel())
 	add_child(_objective_panel)
 
 	var box := VBoxContainer.new()
@@ -340,23 +358,52 @@ func _build_objective_panel() -> void:
 	box.add_child(_objective_panel_label)
 
 	var hint := Label.new()
-	hint.text = "toucher pour fermer"
+	hint.name = "Hint"
+	hint.text = ""
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint.add_theme_font_size_override("font_size", 20)
 	hint.add_theme_color_override("font_color", Color(0.45, 0.50, 0.60))
 	hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(hint)
 
+## DURÉES DE L'ÉNONCÉ ⚙️.
+##
+## `OBJECTIVE_MIN_SECONDS` : le panneau ne peut PAS être renvoyé avant ce
+## délai. Sans plancher, le geste qui ouvre le niveau chasse l'énoncé avant
+## qu'il soit lu — et le joueur découvre qu'il a raté quelque chose sans
+## savoir quoi. Deux secondes : le temps d'une phrase courte.
+##
+## `OBJECTIVE_MAX_SECONDS` : au-delà, il s'efface seul. Dix secondes, c'est
+## trois fois le temps de lecture de l'énoncé le plus long du chapitre —
+## assez pour une lecture posée, trop court pour rester en travers du plateau
+## si le joueur a regardé ailleurs. Le bandeau, lui, rouvre l'énoncé à
+## volonté : rien n'est perdu.
+const OBJECTIVE_MIN_SECONDS := 2.0
+const OBJECTIVE_MAX_SECONDS := 10.0
+var _objective_elapsed: float = -1.0
+
 func show_objective_panel() -> void:
 	var total: int = _view.current_state().agents.size() if _view != null and _view.current_state() != null else 0
 	var lines := RuleCatalog.objective_brief(_level_data.get("objectives", []), total)
 	_objective_panel_label.text = "\n".join(PackedStringArray(lines))
 	_objective_panel.visible = true
+	_objective_elapsed = 0.0
 	_layout()
 
 func _hide_objective_panel() -> void:
 	if _objective_panel != null:
 		_objective_panel.visible = false
+	_objective_elapsed = -1.0
+
+## Renvoi PAR UN GESTE : refusé tant que le plancher n'est pas écoulé.
+## Renvoie vrai si le geste a bien été consommé par le panneau.
+func _dismiss_objective_panel() -> bool:
+	if _objective_panel == null or not _objective_panel.visible:
+		return false
+	if _objective_elapsed >= 0.0 and _objective_elapsed < OBJECTIVE_MIN_SECONDS:
+		return true   # geste absorbé : l'énoncé reste, mais rien ne se passe derrière
+	_hide_objective_panel()
+	return true
 
 ## À la reprise (EF-21) : pas de panneau — il coûterait un geste avant le
 ## premier geste utile. Le bandeau se souligne brièvement, c'est tout.
@@ -538,6 +585,10 @@ func _on_view_input(event: InputEvent) -> void:
 		return
 	if not pressed:
 		return
+	# L'énoncé d'ouverture passe avant tout le reste : tant qu'il est affiché,
+	# le premier geste le renvoie et ne fait rien d'autre.
+	if _dismiss_objective_panel():
+		return
 	# Un appui hors des règles annule la sélection et referme le panneau.
 	if _has_selection or _panel.visible:
 		_clear_selection()
@@ -580,8 +631,7 @@ func _position_explain_panel() -> void:
 	var width: float = vp.x - m.x - m.z
 	var lines: int = maxi(_explain_label.text.split("\n").size(), 1)
 	var height: float = pad * 2.0 + lines * 32.0
-	_explain_panel.position = Vector2(
-		m.x, _view_host.position.y + _view_host.size.y - height - UiMetrics.GAP)
+	_explain_panel.position = Vector2(m.x, _field_bottom() - height - UiMetrics.GAP)
 	_explain_panel.size = Vector2(width, height)
 	_explain_label.position = Vector2(pad, pad)
 	_explain_label.size = Vector2(width - pad * 2.0, height - pad * 2.0)
@@ -591,6 +641,17 @@ func _hide_explain() -> void:
 		_explain_panel.visible = false
 
 # --- disposition ----------------------------------------------------------
+
+## Bande verticale réellement libre entre les barres : sert à poser les
+## panneaux qui doivent rester dans le jeu sans passer sous l'interface.
+func _field_top() -> float:
+	var m := UiMetrics.safe_area_margins(get_viewport_rect().size)
+	return m.y + UiMetrics.MIN_TOUCH_TARGET * 1.24 + UiMetrics.GAP * 0.5 + 40 + UiMetrics.GAP
+
+func _field_bottom() -> float:
+	var vp := get_viewport_rect().size
+	var m := UiMetrics.safe_area_margins(vp)
+	return vp.y - m.w - UiMetrics.MIN_TOUCH_TARGET * 1.25 - UiMetrics.GAP
 
 func _panel_height() -> float:
 	return UiMetrics.MIN_TOUCH_TARGET + UiMetrics.MARGIN * 2.0
@@ -635,11 +696,13 @@ func _layout() -> void:
 		stack_bar.position = Vector2(left, bottom - stack_h)
 		stack_bar.size = Vector2(width, stack_h)
 
-	var view_top: float = top + bar_h * 1.24 + UiMetrics.GAP * 0.5 + 40 + UiMetrics.GAP
-	var view_bottom: float = bottom - stack_h - UiMetrics.GAP
+	# La vue couvre TOUT l'écran ; ce sont ses marges de contenu qui gardent la
+	# nuée hors des barres, pas un découpage du rectangle.
 	if _view_host != null:
-		_view_host.position = Vector2(left, view_top)
-		_view_host.size = Vector2(width, maxf(view_bottom - view_top, 100.0))
+		_view_host.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	if _view != null:
+		_view.content_margin = Vector4(
+			left, _field_top(), vp.x - right, vp.y - _field_bottom())
 
 	if _panel != null:
 		_panel.size = Vector2(width, _panel_height())
@@ -654,7 +717,7 @@ func _layout() -> void:
 		var body_lines: int = maxi(_objective_panel_label.text.split("\n").size(), 1)
 		var oh: float = 24.0 * 2.0 + 40.0 + body_lines * 34.0 + 28.0 + 28.0
 		_objective_panel.position = Vector2(left + (width - ow) * 0.5,
-			_view_host.position.y + _view_host.size.y - oh - UiMetrics.GAP)
+			_field_bottom() - oh - UiMetrics.GAP)
 		_objective_panel.size = Vector2(ow, oh)
 		var box := _objective_panel.get_child(0) as Control
 		if box != null:
@@ -746,6 +809,18 @@ func _process(delta: float) -> void:
 	var state := _view.current_state()
 	if _objective_label != null:
 		_objective_label.text = RuleCatalog.objective_line(_level_data.get("objectives", []), state)
+	if _objective_elapsed >= 0.0:
+		_objective_elapsed += delta
+		# L'invite n'apparaît QUE lorsqu'elle devient vraie. Annoncer
+		# « toucher pour fermer » pendant les deux secondes où le toucher ne
+		# fait rien apprendrait au joueur que l'interface ne répond pas.
+		var hint := _objective_panel.get_node_or_null("../ObjectivePanel/Hint")
+		if hint == null:
+			hint = _objective_panel.get_child(0).get_node_or_null("Hint")
+		if hint is Label:
+			(hint as Label).text = "" if _objective_elapsed < OBJECTIVE_MIN_SECONDS else "toucher pour fermer"
+		if _objective_elapsed >= OBJECTIVE_MAX_SECONDS:
+			_hide_objective_panel()
 	if _banner_flash > 0.0:
 		_banner_flash -= delta
 		var t2: float = fmod(_banner_flash, 0.4) / 0.4

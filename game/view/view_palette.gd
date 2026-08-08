@@ -38,10 +38,9 @@ const BACKGROUND := Color(0.027, 0.031, 0.047)
 ## information de jeu — mais tracer 250 frontières ramène l'œil au niveau de
 ## la case et défait le travail de fusion en régions.
 const GRID_LINE := Color(0.10, 0.11, 0.14, 0.30)
-## Pourtour du plateau : c'est LUI qui dit où le monde s'arrête, pas le
-## maillage intérieur.
-const GRID_EDGE := Color(0.22, 0.25, 0.33, 0.55)
-const PLATE := Color(0.035, 0.040, 0.058)
+## Ni pourtour ni dalle : ensemble ils dessinaient une boîte, et le jeu se
+## lisait comme une fenêtre encastrée dans l'interface. Le maillage s'arrête
+## au bord du monde — c'est suffisant, et ça ne fabrique pas de cadre.
 
 # --- famille 1 : éléments de niveau (teintes réservées) ----------------------
 #

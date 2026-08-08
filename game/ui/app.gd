@@ -57,7 +57,6 @@ func _open_menu() -> void:
 	menu.play_requested.connect(_on_play_requested)
 	menu.select_requested.connect(_open_select)
 	menu.settings_requested.connect(_open_settings)
-	menu.reset_requested.connect(_on_reset_requested)
 	# L'écran entre dans l'arbre AVANT d'être configuré : des ancres posées
 	# hors de l'arbre sont perdues, et le contenu retombe sur sa taille
 	# minimale — d'où une colonne collée en haut à gauche.
@@ -67,6 +66,7 @@ func _open_menu() -> void:
 func _open_settings() -> void:
 	var screen := SettingsScreen.new()
 	screen.back_requested.connect(_open_menu)
+	screen.reset_requested.connect(_on_reset_requested)
 	_swap(screen, Screen.SETTINGS)
 	screen.setup(settings)
 
