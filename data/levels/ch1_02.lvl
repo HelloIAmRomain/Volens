@@ -49,6 +49,7 @@ objective: extraction 100
 lesson: "L'ordre change tout : Lumiere en tete fauche, Fuir en tete sauve."
 expected_wins: 1
 expected_classes: 1
+calibrated_on: db6a41f9e387111d
 ---
 . . . . . L . . . . .
 # # # # E E E # # # #

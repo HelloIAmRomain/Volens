@@ -39,6 +39,7 @@ objective: preservation 0
 lesson: "La meme regle sauve ici ce qu'elle tuait la : c'est le terrain qui decide."
 expected_wins: 6
 expected_classes: 2
+calibrated_on: 22ee843286e91bca
 ---
 . . . . . L . . . . .
 # # # # E E E # # # #

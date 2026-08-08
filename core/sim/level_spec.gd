@@ -37,3 +37,46 @@ const MAX_SLOTS := 4
 ## entière, et le validateur énumère la pile entière.
 static func open_slots(level_data: Dictionary) -> int:
 	return clampi(int(level_data.get("slots", MAX_SLOTS)), 1, MAX_SLOTS)
+
+## EMPREINTE DE GÉOMÉTRIE [invariant n°15]. Résume tout ce dont dépendent les
+## temps de parcours : dimensions, contenu de la grille, positions initiales.
+##
+## POURQUOI ELLE EXISTE. Les paramètres calibrés d'un niveau — échéance de
+## célérité, seuil de préservation, pourcentage d'extraction, limite de ticks —
+## sont MESURÉS sur une géométrie donnée. Un mur déplacé d'une case change des
+## temps de parcours, donc des marges, donc des verdicts : le niveau cesse de
+## valider ce qu'il prétend valider, sans que rien dans son en-tête n'ait
+## bougé. C'est arrivé — l'échéance de ch1_04, calibrée à 19 sur une bande
+## pleine largeur, ne laissait plus qu'un tick de marge après le passage à
+## l'entonnoir.
+##
+## Le `.lvl` archive donc l'empreinte sous laquelle il a été calibré, et le
+## convertisseur refuse le niveau si elle ne correspond plus. Même dispositif
+## que le `rules_hash` des recettes d'or, et pour la même raison : distinguer
+## « le code a régressé » de « l'entrée a changé ».
+##
+## N'entrent PAS dans l'empreinte : les objectifs, `max_ticks`, `slots`,
+## `allowed_rules`. Ce sont les paramètres eux-mêmes — les inclure rendrait
+## l'empreinte circulaire, et changer une échéance invaliderait sa propre
+## calibration.
+static func geometry_hash(level_data: Dictionary) -> String:
+	var grid: Dictionary = level_data.get("grid", {})
+	var size: Array = grid.get("size", [0, 0])
+	var h: int = StateHash.OFFSET_BASIS
+	h = StateHash.feed_int(h, int(size[0]) if size.size() > 0 else 0)
+	h = StateHash.feed_int(h, int(size[1]) if size.size() > 1 else 0)
+	for c in grid.get("cells", []):
+		h = StateHash.feed_int(h, int(c))
+	for ci in grid.get("cycle_index", []):
+		h = StateHash.feed_int(h, int(ci))
+	for cycle in grid.get("cycles", []):
+		var d: Dictionary = cycle
+		h = StateHash.feed_int(h, int(d.get("period", 0)))
+		h = StateHash.feed_int(h, int(d.get("active_ticks", 0)))
+	var agents: Array = level_data.get("agents", [])
+	h = StateHash.feed_int(h, agents.size())
+	for a in agents:
+		var pos: Array = (a as Dictionary).get("pos", [0, 0])
+		h = StateHash.feed_int(h, int(pos[0]))
+		h = StateHash.feed_int(h, int(pos[1]))
+	return StateHash.to_hex(h)

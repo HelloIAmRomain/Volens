@@ -285,6 +285,30 @@ static func parse(text: String, min_cycle_period: int, flee_range_sq: int = 25) 
 		level["expected_wins"] = int(header["expected_wins"])
 	if header.has("expected_classes"):
 		level["expected_classes"] = int(header["expected_classes"])
+
+	# --- Calibration : les paramètres valent-ils encore ? [invariant n°15] ---
+	#
+	# Échéance, seuil de préservation, pourcentage d'extraction et limite de
+	# ticks sont MESURÉS sur une géométrie donnée. Si la grille ou les
+	# positions initiales ont bougé depuis, ils ne décrivent plus rien.
+	# Le niveau archive donc l'empreinte sous laquelle il a été calibré ; on la
+	# recalcule ici, et l'on refuse si elle a changé.
+	var geometry := LevelSpec.geometry_hash(level)
+	level["geometry_hash"] = geometry
+	if header.has("calibrated_on"):
+		var declared := String(header["calibrated_on"]).strip_edges()
+		level["calibrated_on"] = declared
+		if declared != geometry:
+			errors.append(("la géométrie a changé depuis la calibration : `calibrated_on: %s` "
+				+ "mais la grille actuelle vaut %s. Les paramètres mesurés (échéance, "
+				+ "préservation, extraction, max_ticks) ont été calibrés sur une AUTRE carte "
+				+ "et ne décrivent plus ce niveau (invariant n°15). Remesurer, puis inscrire "
+				+ "`calibrated_on: %s`.") % [declared, geometry, geometry])
+			return {"level": {}, "errors": errors, "warnings": warnings}
+	else:
+		warnings.append(("aucun `calibrated_on` : les paramètres de ce niveau ne sont "
+			+ "protégés par rien. Inscrire `calibrated_on: %s` une fois les mesures faites "
+			+ "(invariant n°15).") % geometry)
 	return {"level": level, "errors": errors, "warnings": warnings}
 
 ## --- Contraintes de géométrie -------------------------------------------

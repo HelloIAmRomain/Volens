@@ -65,6 +65,14 @@ static func hash_state(state: SimState) -> int:
 
 	return h
 
+## Absorption publique d'un entier, pour les empreintes qui ne portent pas
+## sur un `SimState` — l'empreinte de GÉOMÉTRIE d'un niveau, notamment
+## (`LevelSpec.geometry_hash`, invariant n°15). Une seule implémentation du
+## pas FNV-1a dans tout le dépôt : deux variantes divergeraient un jour, et
+## une empreinte qui diverge ne prouve plus rien.
+static func feed_int(h: int, value: int) -> int:
+	return _feed_int(h, value)
+
 ## Absorbe un int64 octet par octet, poids faible d'abord (petit-boutiste,
 ## fixe par convention — indépendant de la machine puisque réalisé par
 ## décalages, jamais par réinterprétation mémoire). Le masque & 0xFF annule

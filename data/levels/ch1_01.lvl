@@ -31,6 +31,7 @@ objective: extraction 100
 lesson: "Une regle gouverne tout le monde a la fois."
 expected_wins: 1
 expected_classes: 1
+calibrated_on: 9e478de26edda57b
 ---
 . . . . . L . . . . .
 # # # # E E E # # # #
