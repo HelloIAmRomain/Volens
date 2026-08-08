@@ -82,7 +82,9 @@ func load_level(level_data: Dictionary, params: RuleParams, level_id: String = "
 	_allowed = []
 	for v in level_data.get("allowed_rules", [1]):
 		_allowed.append(int(v))
-	_open_slots = clampi(int(level_data.get("slots", UiMetrics.SLOT_COUNT)), 1, UiMetrics.SLOT_COUNT)
+	# LECTURE UNIQUE, partagée avec le validateur (`LevelSpec`). Toute autre
+	# lecture de la clé `slots` est un défaut : voir invariant n°11.
+	_open_slots = LevelSpec.open_slots(level_data)
 	for i in range(_slots.size()):
 		_slots[i].set_locked(i >= _open_slots)
 	_stack = []
