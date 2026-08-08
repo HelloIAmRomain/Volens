@@ -110,23 +110,48 @@ func test_no_stack_solves_the_whole_chapter() -> void:
 		assert_lt(int(_multiplicity()[key]), LEVELS.size(),
 			"la pile %s résout TOUT le chapitre (QN-02)" % key)
 
-func test_no_stack_solves_more_than_two_levels() -> void:
-	# S3, la version exigeante. **Ce test échoue aujourd'hui, et c'est le
-	# constat qu'il est là pour porter** : le chapitre 1 laisse deux piles en
-	# résoudre trois. Il est déclaré `pending` plutôt que supprimé — un
-	# objectif qu'on efface parce qu'il n'est pas atteint cesse d'être un
-	# objectif.
-	var offenders := PackedStringArray()
+## S3 — CLIQUET, et pourquoi ce n'est pas encore la cible.
+##
+## **La cible (aucune pile au-delà de DEUX niveaux) est aujourd'hui hors
+## d'atteinte, et c'est démontrable.** Cinq niveaux, trois familles, des
+## ensembles de familles gagnantes deux à deux distincts (S2) : les cinq plus
+## petits sous-ensembles non vides distincts ont pour tailles 1+1+1+2+2 = 7.
+## La somme des multiplicités de familles vaut donc **au moins 7** — donc au
+## moins une famille gagne **trois** niveaux. S2 et « toute famille ≤ 2 » sont
+## incompatibles à cinq niveaux.
+##
+## L'issue n'est pas de renoncer à S3 mais de **découpler la pile de sa
+## famille** : une famille peut gagner un niveau sans que sa pile d'UNE SEULE
+## RÈGLE y gagne. Il faut pour cela que `[1]` seule échoue là où `[1,3]`
+## réussit — c'est-à-dire des niveaux où R01 **s'abstient** (cul-de-sac, mur),
+## laissant la parole au reste de la pile. C'est la voie identifiée pour la
+## suite du chapitre, et l'exigence naturelle des chapitres à douze règles.
+##
+## En attendant, ce test est un **cliquet** : il fige le pire cas mesuré et
+## refuse toute aggravation. Un objectif qu'on efface parce qu'il n'est pas
+## atteint cesse d'être un objectif ; un objectif sans cliquet se dégrade en
+## silence.
+const S3_TARGET := 2
+const S3_CURRENT_CEILING := 3
+
+func test_no_stack_solves_more_than_the_measured_ceiling() -> void:
 	var count := _multiplicity()
+	var worst := 0
+	var offenders := PackedStringArray()
 	for key in count:
-		if int(count[key]) > 2:
+		worst = maxi(worst, int(count[key]))
+		if int(count[key]) > S3_TARGET:
 			var where := PackedStringArray()
 			for level_id in LEVELS:
 				if (_winners[level_id] as Array).has(key):
 					where.append(level_id)
-			offenders.append("%s résout %d niveaux (%s)" % [key, int(count[key]), ", ".join(where)])
-	if offenders.is_empty():
-		assert_true(true, "aucune pile ne résout plus de deux niveaux")
-		return
+			offenders.append("%s → %s" % [key, ", ".join(where)])
 	offenders.sort()
-	pending("S3 non tenue — %s. Cible : aucune pile au-delà de deux niveaux." % " · ".join(offenders))
+	assert_lte(worst, S3_CURRENT_CEILING,
+		"AGGRAVATION de la transposabilité : une pile résout %d niveaux (plafond mesuré %d). %s" % [
+			worst, S3_CURRENT_CEILING, " · ".join(offenders)])
+	# Le jour où la cible est atteinte, ce test le dit et demande qu'on abaisse
+	# le cliquet — sans quoi il protégerait un plafond devenu faux.
+	assert_gt(worst, S3_TARGET,
+		"S3 est ATTEINTE (plus aucune pile au-delà de %d niveaux) : abaisser S3_CURRENT_CEILING à %d" % [
+			S3_TARGET, S3_TARGET])
