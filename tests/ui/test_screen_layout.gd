@@ -134,3 +134,44 @@ func test_the_screenshot_harness_covers_every_screen() -> void:
 		for marker in CAPTURE_MARKERS[screen_name]:
 			assert_true(source.contains(String(marker)),
 				"%s n'est pas capturé par le harnais (marqueur « %s » absent)" % [screen_name, marker])
+
+## LA NUÉE NE PASSE JAMAIS SOUS L'INTERFACE.
+##
+## Depuis que la vue occupe tout l'écran — le jeu est le fond, l'interface se
+## pose dessus — plus rien ne DÉCOUPE le rectangle de jeu : c'est un calcul de
+## marges qui tient la grille à l'écart des barres. Un calcul se perd sans
+## bruit ; c'est déjà arrivé, un correctif textuel ayant manqué son ancre et
+## laissé le cadrage plein écran. Ce test le refuse.
+func _fitted_screen(size: Vector2i) -> GameScreen:
+	var sub := SubViewport.new()
+	sub.size = size
+	sub.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	add_child_autofree(sub)
+	var screen := GameScreen.new()
+	sub.add_child(screen)
+	screen.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	var level: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/levels/ch1_02.json"))
+	screen.load_level(level, RuleParams.new(), "ch1_02")
+	return screen
+
+func _assert_grid_clears_the_bars(size: Vector2i) -> void:
+	var screen := _fitted_screen(size)
+	await _settle()
+	await _settle()
+	var view: SimView = screen._view
+	var grid: Vector2i = view.current_state().grid.size
+	var top: float = view._grid_origin.y
+	var bottom: float = top + float(grid.y) * view._cell_size
+	assert_gt(view._cell_size, 1.0, "%s : la grille n'a pas été cadrée" % str(size))
+	assert_gte(top, screen._field_top() - 1.0,
+		"%s : la grille remonte sous la barre haute (%.0f < %.0f)" % [str(size), top, screen._field_top()])
+	assert_lte(bottom, screen._field_bottom() + 1.0,
+		"%s : la grille descend sous la pile (%.0f > %.0f)" % [str(size), bottom, screen._field_bottom()])
+
+func test_the_swarm_never_slides_under_the_bars_on_a_tall_screen() -> void:
+	await _assert_grid_clears_the_bars(Vector2i(1080, 2400))
+
+func test_the_swarm_never_slides_under_the_bars_on_a_short_screen() -> void:
+	# Le ratio court est le cas qui casse : la grille y est limitée en HAUTEUR,
+	# donc c'est là que le cadrage doit vraiment travailler.
+	await _assert_grid_clears_the_bars(Vector2i(1080, 1920))

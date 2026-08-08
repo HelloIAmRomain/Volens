@@ -12,15 +12,22 @@ extends Control
 ## écran existe. Écartée : elle prive les testeurs de la seule chose qu'on
 ## veut leur faire juger. On rend donc le réglage, pas le silence.
 ##
+## Il porte aussi l'effacement de la progression, arrivé du menu : c'est la
+## seule action irréversible du jeu, et elle n'avait rien à faire à un geste
+## du bouton « Jouer ». Les réglages sont l'endroit où l'on va délibérément.
+##
 ## RIEN D'AUTRE N'ENTRE ICI sans demande explicite. Le mouvement réduit
 ## (ENF-23) est déjà porté par `Settings` et honoré par les shaders, mais il
 ## n'est pas exposé : un écran de réglages qui grossit tout seul est la porte
 ## d'entrée habituelle du sentiment de configuration obligatoire (P2).
 
 signal back_requested
+signal reset_requested
 
 var _settings: Settings
 var _toggle: Button
+var _reset_button: Button
+var _confirming_reset: bool = false
 
 func setup(settings: Settings) -> void:
 	_settings = settings
@@ -51,15 +58,19 @@ func _build() -> void:
 	_toggle.pressed.connect(_on_toggle)
 	column.add_child(_toggle)
 
-	var note := Label.new()
-	note.text = "Une vibration brève confirme les gestes de composition\net les sorties d'agents. Aucune information n'en dépend."
-	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	note.add_theme_font_size_override("font_size", 22)
-	note.add_theme_color_override("font_color", Color(0.48, 0.53, 0.64))
-	column.add_child(note)
-
 	column.add_child(_spacer(UiMetrics.GAP * 3))
+
+	# L'effacement vient du menu, où il était à un geste du bouton « Jouer ».
+	# Il est ici parce que c'est la seule action irréversible du jeu, et que
+	# les réglages sont l'endroit où l'on va délibérément.
+	_reset_button = Button.new()
+	_reset_button.custom_minimum_size = Vector2(UiMetrics.MIN_TOUCH_TARGET, UiMetrics.MIN_TOUCH_TARGET)
+	_reset_button.add_theme_font_size_override("font_size", 26)
+	_reset_button.add_theme_color_override("font_color", Color(0.72, 0.45, 0.45))
+	_reset_button.pressed.connect(_on_reset_pressed)
+	column.add_child(_reset_button)
+
+	column.add_child(_spacer(UiMetrics.GAP * 2))
 
 	var back := Button.new()
 	back.text = "Retour"
@@ -79,9 +90,21 @@ func _on_toggle() -> void:
 	if _settings.haptics:
 		Haptics.select()
 
+## Deux appuis pour effacer : le premier avertit, le second exécute. Pas de
+## fenêtre modale (P3), pas de perte accidentelle non plus.
+func _on_reset_pressed() -> void:
+	if not _confirming_reset:
+		_confirming_reset = true
+		_reset_button.text = "Confirmer l'effacement"
+		_reset_button.add_theme_color_override("font_color", Color(0.95, 0.40, 0.40))
+		return
+	reset_requested.emit()
+
 func _refresh() -> void:
 	if _toggle == null:
 		return
+	if _reset_button != null and not _confirming_reset:
+		_reset_button.text = "Effacer la progression"
 	# L'état se lit dans le TEXTE, pas dans une nuance de fond : ENF-20
 	# interdit qu'une information tienne à la seule couleur.
 	_toggle.text = "Vibrations : activées" if _settings.haptics else "Vibrations : coupées"

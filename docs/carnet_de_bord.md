@@ -248,6 +248,72 @@ divergences ressembleraient à une régression pure.
 
 ---
 
+## Le jeu au premier plan (8 août 2026)
+
+89. **L'ÉCRAN DE JEU RESSEMBLAIT À UN ÉCRAN DANS UN ÉCRAN.** La vue occupait
+    un rectangle découpé entre les barres, et le plateau portait une dalle
+    plus claire cerclée d'un pourtour net. Les deux ensemble dessinaient une
+    BOÎTE : le jeu se lisait comme une fenêtre encastrée dans l'interface,
+    alors que c'est lui qui compte et l'interface qui se pose dessus.
+    Trois changements solidaires : la vue **couvre tout l'écran** et devient
+    le PREMIER enfant — donc le plus bas au dessin comme à l'entrée, tout le
+    reste flotte au-dessus ; ni dalle ni pourtour, le maillage dit où le monde
+    s'arrête **en s'arrêtant** ; et le cadrage de la grille passe par des
+    MARGES DE CONTENU (`SimView.content_margin`) au lieu d'un découpage.
+    Corollaire à ne pas perdre : l'interface posée sur le jeu doit rester
+    lisible sur n'importe quel fond. Le bandeau d'objectif prend un contour
+    sombre — un bandeau opaque recréerait le cadre qu'on vient d'enlever.
+
+90. **LE MÊME MODE DE PANNE QUE LA DÉCISION 67, TROIS SEMAINES PLUS TARD.**
+    Mon correctif de `_fit_to_viewport` était un remplacement textuel dont
+    l'ancre ne correspondait pas : `replace` n'a rien remplacé et **n'a rien
+    dit**. La propriété `content_margin` existait, était correctement
+    calculée, et n'était lue nulle part. Le défaut ne s'est vu que sur le
+    ratio court — le seul où la grille est limitée en hauteur, donc le seul
+    où le cadrage travaille vraiment.
+    **Deux règles qui en sortent, et elles sont définitives.**
+    a) Pour modifier du code existant, utiliser un outil qui **échoue
+    bruyamment** quand l'ancre manque, jamais un `replace` silencieux.
+    b) Un calcul qui remplace une structure (ici : des marges au lieu d'un
+    découpage) doit être **testé sur le cas où il travaille**, pas sur le cas
+    confortable. D'où les deux tests de cadrage : ratio haut ET ratio court.
+
+91. **La vitesse cesse d'être un triangle.** Elle en portait un, creux, à côté
+    du triangle plein de la lecture : deux formes identiques au pouce, qui
+    obligeaient à comparer un REMPLISSAGE pour savoir sur quoi on appuie.
+    Tout glyphe fléché rouvrirait la confusion — chevrons, doubles pointes :
+    ce sont tous des triangles. Le multiplicateur écrit (`×1 ×2 ×3`) est la
+    seule forme qui ne ressemble à rien d'autre à l'écran, se lit sans
+    apprentissage, et ne dépend d'aucun caractère exotique.
+
+92. **La sortie et la lumière se distinguent par la FORME.** Deux zones
+    colorées côte à côte ne disent pas ce qu'elles font. La sortie porte
+    désormais des chevrons pointant **hors du plateau** : c'est un passage, et
+    un passage a un sens. La lumière rayonne et respire sans direction — on la
+    vise, on ne la traverse pas. Les deux se distinguent en silhouette, écran
+    en noir et blanc compris (ENF-20).
+    Piège tombé dedans : la direction de sortie ne peut pas être « le bord le
+    plus proche ». Une bande **pleine largeur** touche les bords gauche ET
+    droit à distance nulle, et sortait de côté. Les axes que la région
+    traverse entièrement sont exclus du calcul.
+
+93. **L'énoncé d'ouverture tient au moins 2 s ⚙️ et au plus 10 s ⚙️.**
+    Sans plancher, le geste qui ouvre le niveau chasse l'énoncé avant qu'il
+    soit lu, et le joueur découvre qu'il a raté quelque chose sans savoir
+    quoi. Sans plafond, il reste en travers du plateau. Dix secondes valent
+    trois fois le temps de lecture de l'énoncé le plus long du chapitre.
+    Détail qui n'en est pas un : l'invite « toucher pour fermer » n'apparaît
+    **qu'une fois vraie**. L'afficher pendant les deux secondes où le toucher
+    ne fait rien apprendrait au joueur que l'interface ne répond pas.
+
+94. **L'effacement de la progression quitte le menu pour les réglages.**
+    Le menu sert à ENTRER dans le jeu, et il offrait, à un geste du bouton
+    « Jouer », la seule action irréversible de toute l'application. Les
+    réglages sont l'endroit où l'on va délibérément. La double confirmation
+    part avec lui.
+
+---
+
 ## Source de vérité unique et réglages (8 août 2026)
 
 86. **INVARIANT N°11 — `slots` a une source de vérité unique** (`LevelSpec.open_slots()`,

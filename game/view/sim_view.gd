@@ -59,6 +59,14 @@ var _alpha: float = 0.0
 
 var _cell_size: float = 32.0
 var _grid_origin: Vector2 = Vector2.ZERO
+## Marges réservées à l'interface (gauche, haut, droite, bas), en pixels.
+## LA VUE OCCUPE TOUT L'ÉCRAN — c'est le jeu qui est le fond, et l'interface
+## qui flotte au-dessus. Mais la nuée ne doit pas se glisser sous les barres :
+## le cadrage se calcule donc dans le rectangle libre, pas dans le viewport.
+var content_margin: Vector4 = Vector4.ZERO:
+	set(value):
+		content_margin = value
+		_fit_to_viewport()
 ## Historique des positions par agent, en cases, du plus ancien au plus récent.
 var _trails: Array[Array] = []
 ## Direction accordée au dernier tick, par agent : sert au comptage des
@@ -75,6 +83,7 @@ var _trail_mm: MultiMeshInstance2D
 var _agent_mm: MultiMeshInstance2D
 var _deaths_mm: MultiMeshInstance2D
 var _grid_lines: Node2D
+var _exit_marks: Node2D
 
 ## Marques de mort : { cell, age }. Purement visuelles, jamais un état.
 var _death_marks: Array = []
@@ -90,6 +99,10 @@ func _ready() -> void:
 	_grid_lines = _GridLines.new()
 	_grid_lines.z_index = Layer.DECOR
 	add_child(_grid_lines)
+
+	_exit_marks = _ExitMarks.new()
+	_exit_marks.z_index = Layer.EXIT + 1
+	add_child(_exit_marks)
 
 	_walls_mm = _make_layer(Layer.DECOR, null)
 	_exit_mm = _make_layer(Layer.EXIT, EXIT_SHADER)
@@ -264,12 +277,20 @@ func _fit_to_viewport() -> void:
 	var grid := _to.grid.size
 	if grid.x <= 0 or grid.y <= 0:
 		return
-	# Marge : 6 % de la plus petite dimension, pour que la nuée ne colle pas
-	# aux bords (l'atteignabilité au pouce viendra avec l'UI, T-032).
-	var usable := vp * 0.88
+	# Rectangle LIBRE : le viewport moins ce que l'interface recouvre. La vue
+	# occupe tout l'écran — c'est le jeu qui est le fond — mais la nuée ne doit
+	# pas se glisser sous les barres, d'où un cadrage calculé ici et non un
+	# découpage du rectangle de la vue.
+	var free_pos := Vector2(content_margin.x, content_margin.y)
+	var free_size := vp - free_pos - Vector2(content_margin.z, content_margin.w)
+	if free_size.x <= 0.0 or free_size.y <= 0.0:
+		free_pos = Vector2.ZERO
+		free_size = vp
+	# Marge : 6 % pour que la nuée ne colle pas aux bords.
+	var usable := free_size * 0.94
 	_cell_size = minf(usable.x / float(grid.x), usable.y / float(grid.y))
 	var span := Vector2(grid.x, grid.y) * _cell_size
-	_grid_origin = (vp - span) * 0.5
+	_grid_origin = free_pos + (free_size - span) * 0.5
 	if _grid_lines != null:
 		_grid_lines.configure(grid, _cell_size, _grid_origin)
 	_rebuild_static_layers()
@@ -390,7 +411,13 @@ func _rebuild_static_layers() -> void:
 	# avec le même halo faisait de la sortie — large — l'élément dominant, et
 	# de la lumière — étroite — un bloc inerte. La hiérarchie DA-02 se joue
 	# dans la MANIÈRE de dessiner, pas seulement dans la teinte.
-	_fill_items(_exit_mm, _regions_of(GridState.CellType.EXIT, ViewPalette.EXIT, EXIT_BLEED))
+	var exit_rects := _rects_of(func(p: Vector2i) -> bool: return grid.cell_type_at(p) == GridState.CellType.EXIT)
+	var exit_items: Array = []
+	for r in exit_rects:
+		exit_items.append(_region_item(r, ViewPalette.EXIT, EXIT_BLEED))
+	_fill_items(_exit_mm, exit_items)
+	if _exit_marks != null:
+		(_exit_marks as _ExitMarks).configure(exit_rects, grid.size, _cell_size, _grid_origin)
 	_fill_items(_light_mm, _regions_of(GridState.CellType.LIGHT_SOURCE, ViewPalette.LIGHT, LIGHT_BLEED))
 
 	var goals: Array = []
@@ -578,18 +605,106 @@ class _GridLines extends Node2D:
 	##
 	## Le monde reste discret, et c'est une information de jeu — mais elle se
 	## porte à trois niveaux, du plus fort au plus faible :
-	##   1. le POURTOUR du plateau, net : c'est lui qui dit où le monde s'arrête ;
-	##   2. les frontières INTÉRIEURES, très atténuées, présentes sans être lues ;
-	##   3. rien d'autre.
+	##   1. les frontières INTÉRIEURES, très atténuées, présentes sans être lues ;
+	##   2. rien d'autre.
+	##
+	## NI DALLE NI POURTOUR. Ils y étaient — un fond légèrement éclairci et un
+	## cadre net censé dire « le monde s'arrête ici ». Ensemble ils dessinaient
+	## une BOÎTE, et le jeu se lisait comme une fenêtre encastrée dans
+	## l'interface : un écran dans l'écran. Or c'est le jeu qui compte, et
+	## l'interface qui se pose dessus. Les lignes intérieures suffisent à dire
+	## que le monde est discret, et elles disent où il s'arrête en s'arrêtant.
 	func _draw() -> void:
 		if _grid.x <= 0 or _grid.y <= 0:
 			return
 		var span := Vector2(_grid.x, _grid.y) * _cell
-		draw_rect(Rect2(_origin, span), ViewPalette.PLATE, true)
 		for x in range(1, _grid.x):
 			var px := _origin.x + x * _cell
 			draw_line(Vector2(px, _origin.y), Vector2(px, _origin.y + span.y), ViewPalette.GRID_LINE, 1.0)
 		for y in range(1, _grid.y):
 			var py := _origin.y + y * _cell
 			draw_line(Vector2(_origin.x, py), Vector2(_origin.x + span.x, py), ViewPalette.GRID_LINE, 1.0)
-		draw_rect(Rect2(_origin, span), ViewPalette.GRID_EDGE, false, 2.0)
+
+
+## LA SORTIE ET LA LUMIÈRE NE DOIVENT PAS SE CONFONDRE. Deux zones colorées
+## côte à côte, l'une verte l'autre lumineuse, ne disent pas ce qu'elles
+## font : le joueur voit deux buts sans savoir lequel est lequel, ni ce que
+## la nuée va en faire. Une teinte ne suffit pas — et ENF-20 interdit de toute
+## façon qu'une information tienne à la seule couleur.
+##
+## D'où la FORME. La sortie porte des chevrons qui pointent hors du plateau :
+## c'est un passage, et un passage a un sens. La lumière, elle, rayonne et
+## respire sans direction — on la vise, on ne la traverse pas. Les deux se
+## distinguent désormais en silhouette, écran en noir et blanc compris.
+class _ExitMarks extends Node2D:
+	var _rects: Array = []
+	var _grid: Vector2i = Vector2i.ZERO
+	var _cell: float = 32.0
+	var _origin: Vector2 = Vector2.ZERO
+
+	func configure(rects: Array, grid: Vector2i, cell: float, origin: Vector2) -> void:
+		_rects = rects
+		_grid = grid
+		_cell = cell
+		_origin = origin
+		queue_redraw()
+
+	## Direction de sortie : le bord du plateau dont la région est la plus
+	## proche — mais SEULEMENT sur les axes où elle ne traverse pas déjà tout
+	## le plateau. Une bande pleine largeur touche les bords gauche ET droit à
+	## distance nulle : les prendre en compte la faisait sortir de côté alors
+	## qu'elle ne fait traverser que verticalement.
+	func _outward(r: Rect2i) -> Vector2:
+		var best: int = 1 << 30
+		var dir := Vector2(0, -1)
+		if r.size.y < _grid.y:
+			var to_top: int = r.position.y
+			var to_bottom: int = _grid.y - (r.position.y + r.size.y)
+			if to_top <= to_bottom and to_top < best:
+				best = to_top
+				dir = Vector2(0, -1)
+			elif to_bottom < best:
+				best = to_bottom
+				dir = Vector2(0, 1)
+		if r.size.x < _grid.x:
+			var to_left: int = r.position.x
+			var to_right: int = _grid.x - (r.position.x + r.size.x)
+			if to_left <= to_right and to_left < best:
+				best = to_left
+				dir = Vector2(-1, 0)
+			elif to_right < best:
+				best = to_right
+				dir = Vector2(1, 0)
+		return dir
+
+	func _draw() -> void:
+		if _rects.is_empty() or _cell <= 0.0:
+			return
+		var color := ViewPalette.EXIT.lightened(0.25)
+		color.a = 0.75
+		var arm: float = _cell * 0.17
+		var thickness: float = maxf(_cell * 0.05, 2.0)
+		for r in _rects:
+			var rect: Rect2i = r
+			var dir := _outward(rect)
+			# Axe long de la région : c'est le long de celui-ci qu'on répartit
+			# les chevrons, pour qu'une bande large en porte plusieurs et une
+			# sortie d'une case exactement un.
+			var along := Vector2(1, 0) if absf(dir.y) > 0.5 else Vector2(0, 1)
+			var count: int = int(along.x * rect.size.x + along.y * rect.size.y)
+			# Un chevron toutes les DEUX cases : un par case ferait une frise
+			# clignotante, un seul au centre ne dirait pas que toute la bande
+			# est traversable. Toujours au moins un.
+			var step: int = 2 if count > 2 else 1
+			var first: int = ((count - 1) % step) / 2
+			for i in range(first, count, step):
+				var cell_pos := Vector2(rect.position.x, rect.position.y) \
+					+ along * float(i) + Vector2(0.5, 0.5) \
+					+ (Vector2.ONE - along.abs()) * (Vector2(rect.size.x, rect.size.y) - Vector2.ONE) * 0.5
+				var centre := _origin + cell_pos * _cell
+				# Chevron : deux segments qui se rejoignent dans la direction
+				# de sortie. Dessiné en primitives, jamais tiré d'une police.
+				var side := Vector2(-dir.y, dir.x)
+				var tip := centre + dir * arm
+				draw_line(tip, centre - dir * arm * 0.4 + side * arm, color, thickness)
+				draw_line(tip, centre - dir * arm * 0.4 - side * arm, color, thickness)
