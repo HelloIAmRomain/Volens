@@ -81,12 +81,17 @@ func test_no_sheet_describes_a_level_that_does_not_exist() -> void:
 	assert_not_null(dir, "docs/design/ introuvable")
 	if dir == null:
 		return
+	# `docs/design/` accueille aussi des notes de conception qui ne décrivent
+	# aucun niveau (paradigmes d'un chapitre à venir, par exemple). Seuls les
+	# fichiers nommés comme un niveau — `chN_MM.md` — sont des fiches.
+	var sheet_name := RegEx.create_from_string("^ch\\d_\\d\\d$")
 	dir.list_dir_begin()
 	var entry := dir.get_next()
 	while entry != "":
 		if entry.ends_with(".md"):
 			var level_id := entry.get_basename()
-			assert_ne(LevelCatalog.index_of(level_id), -1,
-				"%s décrit un niveau absent du catalogue" % entry)
+			if sheet_name.search(level_id) != null:
+				assert_ne(LevelCatalog.index_of(level_id), -1,
+					"%s décrit un niveau absent du catalogue" % entry)
 		entry = dir.get_next()
 	dir.list_dir_end()
