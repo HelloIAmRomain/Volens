@@ -150,11 +150,17 @@ deux seulement : il déclare `custom_features="test_build"`, et son
 `exclude_filter` n'exclut ni `tests/*` ni `game/selfcheck/*`. Modèle de
 préréglage commenté dans `docs/export_presets.cfg.exemple`.
 
-Vérification que la production est bien nette :
+**Vérification OBLIGATOIRE après chaque export de production.** Elle porte
+sur l'artefact, pas sur la configuration : aucun test de la suite ne peut la
+remplacer, puisque `export_presets.cfg` est hors dépôt et qu'un test portant
+sur un fichier non versionné n'est pas un test.
 
 ```bash
 unzip -l build/volens-debug.apk | grep -c "selfcheck\|golden"   # doit valoir 0
 ```
+
+Un résultat non nul signifie que le préréglage local a dérivé du modèle, et
+qu'une build de production embarque l'écran de diagnostic.
 
 Ce que le testeur fait : ouvrir Réglages → Auto-vérification, attendre la fin
 du rejeu, et **recopier à la main** le verdict, le code court et la ligne de

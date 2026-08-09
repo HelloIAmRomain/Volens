@@ -2,7 +2,7 @@
   "agents": [
     {
       "pos": [
-        3,
+        2,
         9
       ]
     },
@@ -132,10 +132,10 @@
     2,
     3
   ],
-  "calibrated_on": "875c3d9d8598e7ed",
-  "expected_classes": 2,
-  "expected_wins": 7,
-  "geometry_hash": "875c3d9d8598e7ed",
+  "calibrated_on": "82639d340544478d",
+  "expected_classes": 1,
+  "expected_wins": 2,
+  "geometry_hash": "82639d340544478d",
   "grid": {
     "cells": [
       0,
@@ -184,6 +184,7 @@
       0,
       0,
       0,
+      1,
       0,
       0,
       0,
@@ -193,10 +194,9 @@
       0,
       0,
       0,
+      1,
       0,
-      0,
-      0,
-      0,
+      1,
       0,
       0,
       0,
@@ -323,7 +323,7 @@
     ]
   },
   "id": "ch1_04",
-  "lesson": "Fuir ce qui ne menace pas coute du temps, et le temps est compte.",
+  "lesson": "Deux facons d'echouer, une seule de passer : detourner sans ralentir.",
   "max_ticks": 120,
   "name": "Le prix du temps",
   "objectives": [
