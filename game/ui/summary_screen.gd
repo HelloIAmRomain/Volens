@@ -85,9 +85,9 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array, rea
 ## un tutoriel ou si le chiffre n'est pas connu.
 static func _known_solutions(level_id: String) -> int:
 	var data := LevelCatalog.load_level_data(level_id)
-	if data.is_empty() or bool(data.get("tutorial", false)):
+	if data.is_empty() or LevelSpec.is_tutorial(data):
 		return 0
-	return int(data.get("expected_wins", 0))
+	return maxi(LevelSpec.expected_wins(data), 0)
 
 func _reason(won: bool, lost: int) -> String:
 	if won:

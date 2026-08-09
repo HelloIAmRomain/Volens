@@ -31,10 +31,18 @@
 # ECHEANCE : celerity 24, MESUREE. Cohesion 18 ticks, prudence 30 : six ticks
 # de marge de chaque cote, personne sur le fil (ENF-04).
 #
-# RESERVE ASSUMEE : 2 piles gagnantes sur 16, soit 12 %, sous la bande
-# indicative de 20-50 % (CDC §12.2.1, non opposable). C'est le prix de deux
-# pieges independants dans un meme niveau — et c'est ce qui rend N4 le seul
-# niveau du chapitre qu'aucune pile de deux regles ne resout par hasard.
+# DOUZE POUR CENT DE PILES GAGNANTES, ET C'EST VOULU.
+#
+# 2 sur 16, sous la bande indicative de 20-50 % (CDC §12.2.1, explicitement
+# non opposable). Ce n'est pas une tolerance : c'est la consequence directe de
+# deux pieges independants dans un meme niveau, et c'est ce qui fait de N4 le
+# seul niveau du chapitre **qu'aucune pile de deux regles ne resout par
+# hasard**. Un niveau a 40 % de gagnantes se traverse en essayant ; celui-ci
+# demande de comprendre pourquoi la vitesse reste coincee et pourquoi la
+# prudence arrive trop tard.
+#
+# La bande avait ete ecrite avant qu'un seul niveau existe. La mesure la
+# corrige ici, et le concepteur l'a arbitre : 12 % est la cible de ce niveau.
 id: ch1_04
 name: Le prix du temps
 tutorial: false

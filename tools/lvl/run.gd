@@ -75,7 +75,7 @@ func _init() -> void:
 	var summary: Dictionary = report["summary"]
 	print("piles simulées   : %d (slots : %d)" % [summary["n_stacks"], (int(summary["slots"]) if summary.has("slots") else LevelSpec.MAX_SLOTS)])
 	print("piles gagnantes  : %d / %d (%d %%)" % [summary["n_win"], summary.get("n_total", 0), summary.get("win_ratio_percent", 0)])
-	if int(summary.get("expected_wins", -1)) >= 0:
+	if summary.has("expected_wins") and int(summary["expected_wins"]) >= 0:
 		print("fiche            : attendu %d, constaté %d" % [summary["expected_wins"], summary["n_win"]])
 	if summary["min_ticks"] >= 0:
 		print("étalon efficience: %d ticks, pile %s" % [summary["min_ticks"], str(summary["best_stack"])])

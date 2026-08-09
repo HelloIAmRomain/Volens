@@ -116,7 +116,7 @@ func test_the_declared_predictions_match_the_simulation() -> void:
 	# refonte de ch1_04.
 	for level_id in LEVELS:
 		var data := LevelCatalog.load_level_data(level_id)
-		var declared: int = int(data.get("expected_wins", -1))
+		var declared: int = LevelSpec.expected_wins(data)
 		assert_gt(declared, 0, "%s : aucun expected_wins déclaré" % level_id)
 		assert_eq((_winners[level_id] as Dictionary).size(), declared,
 			"%s : piles gagnantes mesurées vs déclarées" % level_id)
