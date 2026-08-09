@@ -48,6 +48,18 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array, rea
 	column.add_child(_stat("Agents perdus", str(lost)))
 	column.add_child(_stat("Pile utilisée", _stack_label(stack)))
 
+	# CDC §8.5 : le bilan d'un niveau OUVERT annonce le nombre de solutions
+	# connues — « il n'y a pas UNE bonne réponse » (P5). Le chiffre vient du
+	# validateur, jamais d'une estimation : c'est `expected_wins`, confronté à
+	# la simulation par `tests/unit/test_design_sheets.gd`.
+	#
+	# Sur un niveau TUTORIEL, on se tait : ces niveaux n'ont qu'une leçon et
+	# souvent qu'une réponse ; annoncer « 1 solution connue » suggérerait qu'on
+	# en cherche d'autres.
+	var known := _known_solutions(level_id)
+	if won and known > 1:
+		column.add_child(_stat("Solutions connues", str(known)))
+
 	var grow := Control.new()
 	grow.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_child(grow)
@@ -68,6 +80,14 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array, rea
 		row.add_child(_make_button("Niveau suivant",
 			func() -> void: next_level_requested.emit(next_id)))
 	row.add_child(_make_button("Niveaux", func() -> void: select_requested.emit()))
+
+## Nombre de piles gagnantes d'un niveau non tutoriel, ou 0 si le niveau est
+## un tutoriel ou si le chiffre n'est pas connu.
+static func _known_solutions(level_id: String) -> int:
+	var data := LevelCatalog.load_level_data(level_id)
+	if data.is_empty() or bool(data.get("tutorial", false)):
+		return 0
+	return int(data.get("expected_wins", 0))
 
 func _reason(won: bool, lost: int) -> String:
 	if won:

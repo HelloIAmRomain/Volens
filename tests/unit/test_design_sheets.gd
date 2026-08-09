@@ -95,3 +95,37 @@ func test_no_sheet_describes_a_level_that_does_not_exist() -> void:
 					"%s décrit un niveau absent du catalogue" % entry)
 		entry = dir.get_next()
 	dir.list_dir_end()
+
+## CDC §8.5 : le bilan d'un niveau OUVERT annonce ses solutions connues.
+##
+## Le chiffre doit venir du validateur, jamais d'une estimation — sinon le
+## jeu annonce au joueur une pluralité qu'il n'a pas mesurée, et P5 (« il n'y
+## a pas UNE bonne réponse ») devient une affirmation gratuite.
+func test_open_levels_announce_a_measured_number_of_solutions() -> void:
+	for i in range(LevelCatalog.count()):
+		var entry: Dictionary = LevelCatalog.entry(i)
+		if not bool(entry["ready"]):
+			continue
+		var level_id := String(entry["id"])
+		var data := LevelCatalog.load_level_data(level_id)
+		if bool(data.get("tutorial", false)):
+			continue
+		var announced: int = SummaryScreen._known_solutions(level_id)
+		assert_eq(announced, int(data.get("expected_wins", -1)),
+			"%s : le bilan annonce %d solutions, le niveau en déclare %d" % [
+				level_id, announced, int(data.get("expected_wins", -1))])
+		assert_gt(announced, 1,
+			"%s est un niveau ouvert : annoncer une seule solution contredirait P5" % level_id)
+
+func test_tutorial_levels_announce_nothing() -> void:
+	# Annoncer « 1 solution connue » sur un tutoriel suggérerait qu'on en
+	# cherche d'autres, alors que le niveau n'en a qu'une par construction.
+	for i in range(LevelCatalog.count()):
+		var entry: Dictionary = LevelCatalog.entry(i)
+		if not bool(entry["ready"]):
+			continue
+		var level_id := String(entry["id"])
+		if not bool(LevelCatalog.load_level_data(level_id).get("tutorial", false)):
+			continue
+		assert_eq(SummaryScreen._known_solutions(level_id), 0,
+			"%s est un tutoriel : le bilan ne doit annoncer aucun compte" % level_id)
