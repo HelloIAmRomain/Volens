@@ -53,7 +53,13 @@ bout en bout**, donc rien n'a touché la sémantique de jeu.
     **extraction**, les mêmes piles donnent 84 % et 94 % — tout seuil
     inférieur ou égal à 84 % les confond, et personne ne remarque rien.
 
-    **Le filet devient décisif sans devenir une vague** — et sans qu'aucun
+    ~~**Le filet devient décisif sans devenir une vague**~~ — **FORMULE
+    CORRIGÉE le 9 août 2026, voir décision 132.** L'effet d'issue est bien
+    un filet (2 agents sur 19), mais l'effet VISIBLE est une vague : mesuré,
+    `[3,1]` et `[2,1]` divergent de 30 ticks et 33 cases sur ch1_05. Prendre
+    l'ampleur d'un effet mesuré pour l'ampleur de sa visibilité est l'erreur
+    de la décision 123 ; elle est ici sous sa première forme, et elle a
+    orienté deux lots. Ce qui reste vrai : sans qu'aucun
     niveau ait à sacrifier des agents pour être lisible. C'est cohérent avec
     ce que R03 v2 est devenue : elle récupère les traînards, et seul un
     objectif qui compte les pertes rend ce rôle visible.
@@ -245,6 +251,78 @@ que R01 en tête masque réellement la suite de la pile.
 (ajout 3.1 de la revue du 5 août) : il a signalé que `data/rules.json` avait
 changé, donc que la divergence pouvait être voulue. Sans lui, ces 15
 divergences ressembleraient à une régression pure.
+
+---
+
+## N5 dessine, et le mur qu'il revele (9 aout 2026)
+
+132. **RESERVE DE LA « TROISIEME FAMILLE PERCEPTIBLE EN FILET, JAMAIS EN
+     VAGUE » : CORRIGEE.** Elle reposait sur la meme erreur que ma decision
+     123 — prendre la contention pour une jauge d'intensite. Un effet mesure
+     faible n'est pas un effet peu visible : **une seule decision divergente
+     cascade**. Cette reserve a oriente deux lots ; elle est retiree.
+
+133. **N5 EST DESSINE, DEUX CONDITIONS TENUES AVANT LE PREMIER TRAIT.**
+     Contention R2/R3 = **5** (elle valait 0), et **aucune pile gagnante ne
+     boucle**. La premiere leve la reserve que je portais depuis trois lots :
+     **les trois paires du chapitre ont desormais un ordre observable**.
+     Six piles gagnantes en deux classes, conformes a la prediction.
+
+134. **LE MUR, ET IL EST STRUCTUREL.** `[2,3,1]` et `[3,2,1]` gagnent toutes
+     deux — mais suivent la **meme trajectoire**, zero tick d'ecart.
+     Ce n'est pas faute d'avoir cherche : dix-huit geometries balayees, deux
+     dessinees et mesurees. Le resultat est net et vaut plus que le niveau :
+
+     > **Ce qui separe `[2,3,1]` de `[3,2,1]` est une contradiction entre R02
+     > et R03 sur le meme agent — et une telle contradiction produit un cycle
+     > limite.** La geometrie qui les separait le mieux (39 ticks d'ecart)
+     > laissait trois piles GAGNANTES avec un agent oscillant a perpetuite.
+
+     Divergence et oscillation ont la meme cause : deux regles qui se
+     contredisent a une frontiere, sans hysteresis pour trancher. **On ne peut
+     pas avoir l'une sans l'autre** tant que la cascade reste « premier match
+     gagnant sans hysteresis ». C'est une **quatrieme manifestation** de la
+     cause commune de la decision 117, et la plus couteuse : elle ne casse pas
+     un niveau, elle **interdit une lecon**.
+     Verse au dossier des genres de regles. Le level design n'y peut rien.
+
+135. **LA CONTENTION SE MESURE SUR LES PILES DE DEUX, ET C'EST UNE LIMITE
+     REELLE DE L'INSTRUMENT.** Contention R2/R3 = 5 sur N5, et pourtant
+     `[2,3,1]` et `[3,2,1]` sont identiques. Ce n'est pas contradictoire : la
+     contention est mesuree sur `[2,3]` et `[3,2]`, qui n'atteignent jamais les
+     memes etats que les piles de trois — sans R01, la nuee n'avance pas
+     pareil. **L'instrument mesure sur une trajectoire, et l'on raisonne sur
+     une autre.**
+     A retenir pour les chapitres a douze regles, ou les piles de quatre seront
+     la norme : la contention par paire restera un detecteur binaire utile
+     (« l'ordre peut-il compter ? »), et jamais une prediction de ce que fera
+     une pile plus longue.
+
+136. **QN-03 : PAS DE SEUIL, ET LA DISTRIBUTION DIT POURQUOI** (arbitrage du
+     concepteur). Les chiffres ne sont pas a calibrer, ils revelent un fait :
+     **seuls les objectifs de PRESERVATION produisent de la frustration
+     productive.** Perdre de peu n'existe qu'en comptant des agents ; une
+     extraction ratee l'est de 20 a 25 %, ce qui n'est pas « proche ».
+     Un plancher opposable rendrait donc la preservation **obligatoire
+     partout** et appauvrirait le vocabulaire d'objectifs. Le seuil reste
+     **vide**, a reprendre avec de vrais joueurs.
+     **Effet de bord a rendre deliberatif** : N5 est le seul niveau ou l'on
+     echoue de peu, donc le seul ou l'on veut reessayer tout de suite. Bien
+     place pour une cloture — mais c'est un **accident**, pas une intention.
+     Aux chapitres suivants, placer sciemment les niveaux a forte densite
+     d'echecs proches.
+
+137. **UN ZERO SE VERIFIE COMME UN CHIFFRE INATTENDU — troisieme forme du meme
+     piege.** Apres « paraitre correct clot l'examen » et « paraitre casse clot
+     l'examen » (invariant n.12), voici la plus insidieuse : **un instrument
+     qui mesure la mauvaise quantite produit un zero parfaitement credible.**
+     Les deux faux zeros de QN-03 :
+     - le manque « tous objectifs confondus » masquait la preservation — une
+       partie perdue au tick 6 a forcement zero agent sorti ;
+     - la simulation coupee A l'echeance rendait le depassement de celerite
+       structurellement nul.
+     Aucun des deux ne ressemblait a un bug. Zero echec proche sur cinq
+     niveaux est une conclusion plausible, presque elegante — et fausse.
 
 ---
 

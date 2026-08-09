@@ -2,6 +2,12 @@
   "agents": [
     {
       "pos": [
+        1,
+        9
+      ]
+    },
+    {
+      "pos": [
         4,
         11
       ]
@@ -132,10 +138,10 @@
     2,
     3
   ],
-  "calibrated_on": "22ee843286e91bca",
+  "calibrated_on": "259c1034803b57c1",
   "expected_classes": 2,
   "expected_wins": 6,
-  "geometry_hash": "22ee843286e91bca",
+  "geometry_hash": "259c1034803b57c1",
   "grid": {
     "cells": [
       0,
@@ -323,7 +329,7 @@
     ]
   },
   "id": "ch1_05",
-  "lesson": "La meme regle sauve ici ce qu'elle tuait la : c'est le terrain qui decide.",
+  "lesson": "Deux ordres differents reussissent : il n'y a pas UNE bonne reponse.",
   "max_ticks": 120,
   "name": "Plusieurs verites",
   "objectives": [
