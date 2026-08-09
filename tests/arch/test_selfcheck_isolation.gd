@@ -8,6 +8,7 @@ extends GutTest
 
 const SELFCHECK_DIR := "res://game/selfcheck"
 const PRESETS := "res://export_presets.cfg"
+const PRESETS_TEMPLATE := "res://docs/export_presets.cfg.exemple"
 
 func _all_gd(dir_path: String, out: Array) -> void:
 	var dir := DirAccess.open(dir_path)
@@ -47,15 +48,26 @@ func test_the_entry_point_is_guarded_by_the_build_flag() -> void:
 
 func test_the_production_preset_excludes_the_directory() -> void:
 	# Verrou n°1 : les fichiers ne partent pas.
-	if not FileAccess.file_exists(PRESETS):
-		# Le fichier est hors dépôt sur les postes qui n'exportent pas.
-		pending("export_presets.cfg absent de ce poste")
-		return
-	var text := FileAccess.get_file_as_string(PRESETS)
-	assert_true(text.contains("game/selfcheck/*"),
+	#
+	# Le contrôle porte sur le MODÈLE VERSIONNÉ, pas sur `export_presets.cfg`
+	# — celui-ci est hors dépôt (il porte des chemins personnels) et absent de
+	# la CI. Contrôler un fichier qui peut manquer donnerait un test tantôt
+	# vert tantôt inexistant, c'est-à-dire aucun test.
+	var template := FileAccess.get_file_as_string(PRESETS_TEMPLATE)
+	assert_gt(template.length(), 0, "le modèle de préréglage doit être versionné")
+	assert_true(template.contains("game/selfcheck/*"),
 		"le préréglage de production doit exclure game/selfcheck/*")
-	assert_true(text.contains("tests/*"),
+	assert_true(template.contains("tests/*"),
 		"il doit aussi exclure tests/* : sans corpus, l'écran n'aurait rien à vérifier")
+	assert_true(template.contains("test_build"),
+		"le modèle doit documenter la variante de test, sinon elle sera recomposée à la main")
+
+	# Et si le préréglage local existe, il doit dire la même chose : c'est lui
+	# qui exporte réellement.
+	if FileAccess.file_exists(PRESETS):
+		var local := FileAccess.get_file_as_string(PRESETS)
+		assert_true(local.contains("game/selfcheck/*"),
+			"le préréglage LOCAL a dérivé du modèle : il exporterait l'écran de diagnostic")
 
 func test_the_short_code_is_deterministic_and_readable() -> void:
 	# Le code est recopié À LA MAIN par quelqu'un qui ne sait pas ce qu'il
