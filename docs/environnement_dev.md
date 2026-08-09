@@ -135,6 +135,31 @@ identique (`window_width_override` dans `project.godot`).
 soleil et à luminosité minimale (DA-02), le temps de reprise réel (EF-20/21,
 < 1,5 s) et la jouabilité à une main.
 
+## Build de test (DT-22) — auto-vérification d'empreinte
+
+Une **variante d'export**, pas une option : l'écran de diagnostic n'existe pas
+dans le paquet de production.
+
+```bash
+# Build de test : embarque l'écran ET le corpus d'or
+~/bin/godot --headless --path . --export-debug "Android (test)" build/volens-test.apk
+```
+
+Le préréglage `Android (test)` diffère de la production sur deux points, et
+deux seulement : il déclare `custom_features="test_build"`, et son
+`exclude_filter` n'exclut ni `tests/*` ni `game/selfcheck/*`. Modèle de
+préréglage commenté dans `docs/export_presets.cfg.exemple`.
+
+Vérification que la production est bien nette :
+
+```bash
+unzip -l build/volens-debug.apk | grep -c "selfcheck\|golden"   # doit valoir 0
+```
+
+Ce que le testeur fait : ouvrir Réglages → Auto-vérification, attendre la fin
+du rejeu, et **recopier à la main** le verdict, le code court et la ligne de
+contexte. Aucune transmission automatique — c'est la condition d'ENF-30.
+
 ## Poste Windows — vérifications de comportement Android
 
 - Android Studio, AVD API 36, AVD petit écran (~5,8").

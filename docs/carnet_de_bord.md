@@ -254,6 +254,67 @@ divergences ressembleraient à une régression pure.
 
 ---
 
+## DT-22 construit — le parc de testeurs devient un instrument (9 aout 2026)
+
+141. **DT-22 EXISTE. C'ETAIT LE DERNIER ELEMENT DU CHEMIN CRITIQUE DE LA
+     CAMPAGNE ENCORE DE MON RESSORT.** Sans lui, la moitie **arm64** de la
+     verification de determinisme reposait sur le seul appareil de reference,
+     et le parc de testeurs — recrute de toute facon pour l'obligation de test
+     ferme — ne servait a rien de ce cote.
+
+142. **COMPILATION CONDITIONNELLE, PAS MASQUAGE — et c'est verifie, pas
+     promis.** Un ecran cache derriere un geste secret finit par etre trouve,
+     et un ecran de diagnostic dans un jeu epure est un defaut, pas une
+     discretion. La garantie est structurelle : **les fichiers ne sont pas
+     dans le paquet.**
+     Trois verrous, dont deux mecaniques :
+     - le prereglage de production exclut `game/selfcheck/*` **et** `tests/*`
+       (sans corpus, l'ecran n'aurait rien a verifier) ;
+     - aucun fichier hors du dossier ne nomme `SelfCheckScreen` : l'entree
+       passe par un chargement dynamique garde par `OS.has_feature("test_build")`
+       ET par la presence reelle du fichier. Une reference statique empecherait
+       la build de production de **demarrer** ;
+     - `tests/arch/test_selfcheck_isolation.gd` verifie les trois.
+     **Preuve a l'export** : l'APK de production reconstruit ne contient ni
+     `selfcheck` ni `golden` — zero occurrence dans l'archive.
+
+143. **L'ECRAN TRANCHE, LE TESTEUR RECOPIE.** Le testeur ne connait pas la
+     valeur attendue : lui demander de comparer un code a rien serait lui
+     demander l'impossible. Les empreintes de reference etant dans la build,
+     l'ecran affiche lui-meme **CONFORME** ou **ECART DETECTE**, et nomme les
+     recettes divergentes. Le code recopie ne sert plus qu'au diagnostic —
+     il n'est vraiment utile qu'en cas d'ecart.
+
+144. **LE CODE PORTE SON CONTEXTE, SANS QUOI C'EST UNE DONNEE ORPHELINE.**
+     « Le hash correspond » sans savoir sur quel modele, quelle architecture et
+     quelle version d'Android ne prouve rien — or c'est precisement
+     l'architecture qu'on cherche a etablir (DCT §11.2, A6). Modele,
+     architecture et version sont affiches sous le code et recopies avec lui :
+     deux mots de plus pour le testeur.
+     **Alphabet sans caractere ambigu** (ni O/0, ni I/1, ni S/5) et tiret au
+     milieu : le code est transcrit A LA MAIN par quelqu'un qui ne sait pas ce
+     qu'il transcrit. Une paire ambigue produirait de **faux ecarts**, c'est-a-
+     dire exactement le contraire de ce que l'instrument cherche.
+
+145. **UNE SOURCE UNIQUE POUR LE REJEU, IMPOSEE PAR L'EXPORT.** `tools/` est
+     exclu du paquet : l'ecran ne peut pas appeler `GoldenRunner`.
+     Reimplementer la boucle donnerait **deux verites**, et une divergence
+     entre elles rendrait toute comparaison d'empreintes muette — precisement
+     la ou l'on cherche a en tirer une preuve.
+     La boucle est donc descendue dans `core/replay/recipe_runner.gd`, seul
+     endroit que `tools/` et `game/` ont le droit d'importer tous les deux
+     (regles 3 et 4). Elle est PURE : elle recoit des dictionnaires deja
+     charges, chaque appelant fait sa propre lecture de fichiers (DT-15).
+
+146. **UN REJEU ETALE SUR PLUSIEURS IMAGES.** Trente recettes de trois cents
+     ticks bloqueraient l'interface plusieurs secondes ; sur Android, un gel
+     de cette duree declenche le dialogue « l'application ne repond plus ».
+     Une recette par image, avec progression visible. Ce n'est pas du confort :
+     un testeur qui voit son telephone se figer ferme l'application et ne
+     recopie rien.
+
+---
+
 ## Dossier central, dette d'outillage, et gel (9 aout 2026)
 
 138. **LE DOSSIER DES GENRES DE REGLES DEVIENT LE DOCUMENT CENTRAL DU PROJET.**

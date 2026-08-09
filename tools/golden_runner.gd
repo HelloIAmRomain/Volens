@@ -60,18 +60,7 @@ static func run_recipe(level_path: String, stack_raw: Array, checkpoints: Array)
 	var rules_data := load_json(RULES_PATH)
 	if level_data.is_empty() or rules_data.is_empty():
 		return {}
-
-	var stack: Array[int] = []
-	for v in stack_raw:
-		stack.append(int(v))
-
-	var state := SimCore.load_level(level_data, RuleParams.from_dict(rules_data))
-	var out: Dictionary = {}
-	var last_tick: int = 0
-	for cp in checkpoints:
-		var target := int(cp)
-		while last_tick < target:
-			state = SimCore.step(state, stack)
-			last_tick += 1
-		out[str(target)] = StateHash.to_hex(SimCore.hash_state(state))
-	return out
+	# La boucle elle-même vit dans `core/replay/` : l'écran d'auto-vérification
+	# embarqué (DT-22) doit rejouer EXACTEMENT la même chose, et `tools/` est
+	# exclu de l'export. Ici on ne fait que charger — DT-15.
+	return RecipeRunner.run(level_data, RuleParams.from_dict(rules_data), stack_raw, checkpoints)
