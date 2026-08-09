@@ -254,6 +254,58 @@ divergences ressembleraient à une régression pure.
 
 ---
 
+## Dossier central, dette d'outillage, et gel (9 aout 2026)
+
+138. **LE DOSSIER DES GENRES DE REGLES DEVIENT LE DOCUMENT CENTRAL DU PROJET.**
+     Extrait du carnet, ou il vivait en morceaux, et ecrit comme un
+     DIAGNOSTIC : `docs/Volens_dossier_genres_de_regles.md`.
+     Une cause unique — la cascade « premier match gagnant, **sans
+     hysteresis** », avec un seul genre de regle — et quatre pathologies :
+     P1 une force dans un systeme qui n'accepte que des conditions ;
+     P2 l'evitement pur, contrainte inexprimable ;
+     P3 deux gradients opposes oscillent a leur frontiere ;
+     P4 divergence et oscillation ont la meme cause, donc **on ne peut pas
+     enseigner l'ordre de deux regles contradictoires**.
+     Trois chantiers en dependent, **tous au chapitre 1** : la lecon de N5
+     (P4), S4 (P3), la stigmergie de R08 (P1). Le dossier ne prepare donc pas
+     le chapitre 3 : il repare l'existant. Les nommer explicitement evite
+     qu'ils soient repris un par un comme des defauts isoles.
+
+139. **DETTE D'OUTILLAGE : LA CONTENTION EST ECHANTILLONNEE AU MAUVAIS
+     ENDROIT — a traiter AVANT le chapitre 3.**
+     Le validateur mesure la contention sur les piles de **deux** regles, ou
+     la paire concernee est seule a decider. On raisonne ensuite sur des piles
+     de **trois**. Les deux ne visitent jamais les memes etats : sans R01, la
+     nuee n'avance pas pareil, donc les situations de contention ne sont pas
+     les memes. **On mesure sur une trajectoire et l'on conclut sur une
+     autre.**
+     Constate sur N5 : contention R2/R3 = 5, et pourtant `[2,3,1]` et
+     `[3,2,1]` rigoureusement identiques. Le chiffre n'etait pas faux, il ne
+     portait pas sur ce qu'on lui faisait dire.
+     **Aux chapitres a douze regles, l'ecart devient la regle** : les piles de
+     quatre seront la norme, et une mesure faite sur des paires isolees n'en
+     dira plus rien. Correction attendue : **mesurer la contention sur les
+     piles COMPLETES**, en attribuant chaque agent-tick a la paire de regles
+     qui s'y disputent reellement la decision. Echeance : avant le premier
+     code du chapitre 3.
+
+140. **LE CHAPITRE 1 EST CLOS, ET LA REVISION EST GELEE.** Deux decisions du
+     concepteur, prises ensemble et pour la meme raison.
+     La revision des genres est **mure techniquement et prematuree
+     pedagogiquement** : toutes ses mesures viennent du validateur et de
+     sondes, aucune d'un joueur. Refondre le systeme de regles la-dessus
+     reproduirait, a plus grande echelle, l'erreur de l'arc QN-02 — optimiser
+     une propriete mesurable avant de savoir si elle correspond a quelque
+     chose de percu.
+     Argument decisif, et il est dans les chiffres de ce carnet : **trois des
+     quatre pathologies ont ete mal diagnostiquees au moins une fois** avant
+     d'etre comprises, et une quatrieme — « deux archetypes indiscernables » —
+     s'est revelee **inexistante**. Un dossier dont un quart des motifs
+     initiaux etait faux ne se tranche pas sans confrontation exterieure.
+     **Ce qui reste a savoir ne se mesure pas ici.**
+
+---
+
 ## N5 dessine, et le mur qu'il revele (9 aout 2026)
 
 132. **RESERVE DE LA « TROISIEME FAMILLE PERCEPTIBLE EN FILET, JAMAIS EN

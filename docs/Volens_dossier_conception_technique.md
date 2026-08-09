@@ -1,6 +1,6 @@
 # VOLENS — Dossier de conception technique
 
-**Version 1.3 — 8 août 2026**
+**Version 1.4 — 9 août 2026**
 *Réponse technique au cahier des charges fonctionnel v2.5 du projet nom commercial : Volens*
 
 ---
@@ -504,6 +504,14 @@ Couverture exhaustive ; « — » signale un point de pure conduite de projet sa
 
 ---
 
+## 14 bis. Dette d'outillage identifiée *(v1.4)*
+
+| Dette | Défaut | Échéance |
+|---|---|---|
+| **Échantillonnage de la contention** (EQ-06) | Mesurée sur les piles de **deux** règles, exploitée pour raisonner sur des piles de trois ou quatre. Les deux ne visitent jamais les mêmes états : on mesure sur une trajectoire et l'on conclut sur une autre. Constaté sur ch1_05 — contention R2/R3 = 5 et pourtant deux ordres rigoureusement identiques. Aux chapitres à douze règles, où les piles de quatre seront la norme, l'écart devient la règle. **Correction attendue : mesurer sur les piles complètes**, en attribuant chaque agent-tick à la paire qui s'y dispute réellement la décision | **Avant le premier code du chapitre 3** |
+
+---
+
 ## 15. Risques techniques et parades
 
 | # | Risque | Prob. | Parade |
@@ -535,7 +543,7 @@ Couverture exhaustive ; « — » signale un point de pure conduite de projet sa
 
 ---
 
-## Historique des révisions *(v1.3)*
+## Historique des révisions *(v1.4)*
 
 | Version | Date | Changements | Motif |
 |---|---|---|---|
@@ -543,5 +551,6 @@ Couverture exhaustive ; « — » signale un point de pure conduite de projet sa
 | 1.1 | 4 août 2026 | Arborescence à deux étages `core/`·`game/` et trois règles de dépendance testables (§2.2, remplace l'invariant DT-03) ; `minSdk` 26→33, identifiant `com.volensgame.volens` et nom Play « Draille » figés (§13.1) ; DT-21 réécrite (compte Google Play déjà créé et vérifié, risque T8 éteint) ; nouvelle obligation de test fermé documentée (§13.1 bis) ; nouveau DT-22, écran caché d'auto-vérification d'empreinte (§13.3 bis) ; vérification du déterminisme reformulée en deux architectures CPU (arm64/x86_64) plutôt qu'en nombre d'appareils physiques (§11.2, A6) ; avertissement sur l'écart de couverture Android 13/API 36 (§13.1, A7) | Série de décisions de cadrage prises entre J0 et le début de S2 ; les documents étaient périmés sur ces points |
 | 1.2 | 6 août 2026 | **DT-13 révisée** : cases rendues en MultiMesh 2D avec données par instance, et non en TileMapLayer — un atlas de texture contredirait « tout le visuel est procédural » ; nombre d'appels de dessin identique, grille plafonnée à 14×18 = 252 cases. Conséquence actée sur T-074 : l'éditeur de niveaux éditera le format `.lvl`, il ne sera pas un peintre de tuiles (§6.1) | Premier rendu implémenté (T-030/T-031) ; l'écart a été signalé à l'implémentation plutôt que tranché seul |
 | 1.3 | 8 août 2026 | **Matrice §14 remise à jour après les amendements du CDC v2.2 à v2.5** : ENF-11 corrigée (60 → 90 Mo) dans la ligne ENF-10→14, qui annonçait encore le seuil abandonné ; **EQ-06 n'était couverte par aucune ligne** — ajoutée avec EQ-05 ; §12.2.1 (QN-01 aux bibliothèques restreintes) explicitée ; DA-02 bis (charte des couleurs) nommée ; RG-08 reformulée — la matrice parlait d'une « phase » que `CycleDef` ne porte pas, l'activité étant une requête pure sans décalage. Deux lignes ajoutées pour des dispositifs sans exigence CDC dédiée : source de vérité unique de `slots` et empreinte de calibration des paramètres | Audit de traçabilité demandé par le concepteur : le DCT annonçait répondre au CDC v2.1 alors qu'il en était à v2.5, et une contradiction dormante finit par être relue comme une source |
+| 1.4 | 9 août 2026 | Nouvelle **§14 bis, dette d'outillage** : l'échantillonnage de la contention (EQ-06) est fait sur les piles de deux et exploité pour des piles plus longues — on mesure sur une trajectoire et l'on conclut sur une autre. À corriger avant le premier code du chapitre 3. Le **dossier des genres de règles** est sorti du carnet et devient un document autonome (`docs/Volens_dossier_genres_de_regles.md`), écrit comme un diagnostic à cause unique | Le défaut d'échantillonnage a été constaté sur ch1_05 : contention 5 et pourtant deux ordres identiques. Le dossier, lui, conditionne trois chantiers du chapitre 1 et méritait un document plutôt que des entrées éparses |
 
-*Fin du document — DCT v1.3. Toute décision DT ne peut être révisée qu'avec mise à jour de la matrice §14 ; les décisions DT-03, DT-04 et DT-15 sont structurantes et leur révision équivaut à une refonte.*
+*Fin du document — DCT v1.4. Toute décision DT ne peut être révisée qu'avec mise à jour de la matrice §14 ; les décisions DT-03, DT-04 et DT-15 sont structurantes et leur révision équivaut à une refonte.*
