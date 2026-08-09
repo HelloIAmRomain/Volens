@@ -2,42 +2,6 @@
   "agents": [
     {
       "pos": [
-        0,
-        10
-      ]
-    },
-    {
-      "pos": [
-        3,
-        10
-      ]
-    },
-    {
-      "pos": [
-        4,
-        10
-      ]
-    },
-    {
-      "pos": [
-        5,
-        10
-      ]
-    },
-    {
-      "pos": [
-        6,
-        10
-      ]
-    },
-    {
-      "pos": [
-        7,
-        10
-      ]
-    },
-    {
-      "pos": [
         3,
         11
       ]
@@ -63,6 +27,12 @@
     {
       "pos": [
         7,
+        11
+      ]
+    },
+    {
+      "pos": [
+        9,
         11
       ]
     },
@@ -124,6 +94,36 @@
       "pos": [
         7,
         13
+      ]
+    },
+    {
+      "pos": [
+        3,
+        14
+      ]
+    },
+    {
+      "pos": [
+        4,
+        14
+      ]
+    },
+    {
+      "pos": [
+        5,
+        14
+      ]
+    },
+    {
+      "pos": [
+        6,
+        14
+      ]
+    },
+    {
+      "pos": [
+        7,
+        14
       ]
     }
   ],
@@ -132,10 +132,10 @@
     2,
     3
   ],
-  "calibrated_on": "418a5244cecd08f6",
-  "expected_classes": 3,
-  "expected_wins": 8,
-  "geometry_hash": "418a5244cecd08f6",
+  "calibrated_on": "662f379acf03f0a4",
+  "expected_classes": 2,
+  "expected_wins": 4,
+  "geometry_hash": "662f379acf03f0a4",
   "grid": {
     "cells": [
       0,
@@ -213,7 +213,19 @@
       0,
       0,
       0,
+      1,
       0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      1,
       0,
       0,
       0,
@@ -301,20 +313,19 @@
       0,
       0,
       0,
-      0,
       0
     ],
     "cycle_index": [],
     "cycles": [],
     "size": [
       11,
-      15
+      16
     ]
   },
   "id": "ch1_03",
-  "lesson": "Ramener un trainard sans regarder ou : la cohesion est aveugle.",
+  "lesson": "Une nuee qui ne ramene pas ses trainards en abandonne un dans l'impasse.",
   "max_ticks": 120,
-  "name": "Les trainards",
+  "name": "Le trainard",
   "objectives": [
     {
       "percent": 100,

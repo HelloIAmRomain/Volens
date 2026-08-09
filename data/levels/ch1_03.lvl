@@ -1,54 +1,63 @@
-# N3 « Les trainards » — la cohesion est AVEUGLE.
+# N3 « Le trainard » — l'IMPASSE, et la seule regle qui l'ouvre.
 #
-# Ce que N3 corrige par rapport a sa premiere version : la pile [Lumiere]
-# seule y gagnait. C'etait le defaut de fond du chapitre — plusieurs niveaux
-# se resolvaient avec une seule regle, et la profondeur annoncee par la regle
-# d'or restait theorique. Ici, et dans tout ce qui suit, AUCUNE pile d'une
-# seule regle ne gagne. Le CDC §7.3 le demandait deja : la « nuee pressee »
-# fonce et se fait faucher, c'est l'erreur instructive.
+# CE QUE CE NIVEAU CORRIGE. Sa version precedente se gagnait avec [Lumiere]
+# seule : R01 conduisait toute la nuee a l'ouverture sans qu'aucune autre
+# regle ait a parler. La profondeur annoncee par la regle d'or restait
+# theorique. Ici, [Lumiere] seule PERD, et c'est structurel, pas un reglage.
 #
-# UN SEUL DANGER, ET C'EST L'INVARIANT N.13 QUI L'IMPOSE.
+# LE MECANISME : R01 s'abstient dans une impasse.
 #
-# Le premier jet en posait deux : un a l'ouest pour faucher la famille
-# directe, un a l'est pour faucher la cohesion. Mesure : niveau INSOLUBLE,
-# 15 agents bloques, la famille prudente prise entre les deux repulseurs.
-# La raison est celle deja etablie : R02 percoit a d² <= 25, R03 a d² <= 16.
-# Un danger place pour punir la cohesion doit border un trainard lui-meme
-# percu par le bloc — il est donc NECESSAIREMENT percu par le bloc, et deux
-# tels dangers en vis-a-vis enferment la nuee.
+# R01 ne propose un pas que si ce pas REDUIT strictement la distance de
+# Manhattan a la lumiere. En (9,7) — mur au Nord (9,6), murs a l'Est (10,7)
+# et a l'Ouest (8,7) — la seule case libre est le Sud, qui l'EN ELOIGNE.
+# R01 se tait. L'agent est immobile jusqu'a la fin des ticks.
 #
-# On ne peut donc pas punir deux familles par des dangers dans un meme
-# niveau. N3 punit la cohesion ; c'est N2 et N5 qui punissent la vitesse.
+# Une impasse est donc le seul dispositif qui rende une deuxieme regle
+# NECESSAIRE, et non simplement utile.
 #
-# LE DANGER EST A L'OUEST, ET C'EST LA TROISIEME CONTRAINTE. Pose a l'est du
-# bloc, il repoussait la nuee prudente LOIN de l'ouverture : 12 agents
-# bloques, niveau insoluble une fois de plus. Fuite et entonnoir doivent
-# tirer dans le meme sens (contrainte etablie en N2).
+# SEULE R03 PEUT L'OUVRIR — resultat etabli a la construction de ce niveau,
+# apres trois geometries mesurees, et generalise depuis :
 #
-# Le danger (1,10) ne tue personne sous R01 ni sous R02 — il est hors de
-# toute trajectoire. Il ne fauche QUE si la cohesion parle en premier : le
-# trainard de (0,10) est isole (d² = 9 > 2) mais percoit le bloc
-# (d² = 9 <= 16), et le barycentre est a l'EST. L'ordre N>E>S>O teste le
-# Nord, qui eloigne du barycentre, puis l'Est, qui l'en rapproche : droit
-# dans le feu.
+#   Une impasse ne peut pas etre ouverte par R02. Le seuil de fuite se
+#   declenche AVANT l'impasse — l'agent oscille de part et d'autre de la
+#   portee (pathologie P3 du dossier des genres de regles) — ou, s'il ne se
+#   declenche qu'a l'interieur, la direction de fuite est justement celle
+#   qui est muree : la seule case libre d'une impasse pointe vers le danger,
+#   sinon R01 l'aurait deja prise.
 #
-# Sous R01 en tete, ce meme trainard monte dans sa colonne et vit. Sous R02
-# en tete, il fuit vers le Nord — qui ELOIGNE du danger — et vit aussi.
-# C'est la cohesion, et elle seule, qui le tue.
+#   R03 y echappe parce que sa condition n'est PAS un seuil sur un point
+#   fixe : elle depend des congeneres, qui sont derriere. Le barycentre est
+#   au Sud, la sortie de l'impasse est au Sud, ils tirent dans le meme sens.
 #
-# Resultat attendu : seule la famille prudente passe. C'est le niveau ou l'on
-# apprend que ramener un trainard n'est pas gratuit.
+# Mesure de la geometrie fautive, conservee ici parce qu'elle a coute trois
+# iterations : une seconde impasse en (3,8) bordee d'un danger en (2,11)
+# rendait le niveau INSOLUBLE — 20 agents sortis sur 21 sous [2,3,1] comme
+# sous [3,2,1], l'agent restant immobile avec R01, R02 ET R03 abstenues.
+#
+# LE TRAINARD. L'agent de (9,11) est isole du bloc (d² = 4 > 2) mais le
+# percoit (d² = 4 <= 16) : R03 le ramene vers l'Ouest, hors de la colonne
+# de l'impasse. Il est hors de portee du danger (d² = 49 > 25) : R02 n'a
+# aucune prise sur lui. C'est la cohesion, et elle seule, qui le sauve.
+#
+# LE DANGER (2,11) NE TUE PERSONNE, et c'est assume. Il ne borde aucune
+# trajectoire gagnante ; son role est d'etre un DETOUR credible — les piles
+# qui placent la fuite en tete sortent en 27 ticks la ou [Cohesion, Lumiere]
+# sort en 18. Il rend [Fuite, Lumiere] plausible sans la rendre gagnante :
+# elle laisse le trainard dans l'impasse, exactement comme [Lumiere] seule.
+#
+# CE QUI GAGNE : 4 piles sur 16, en 2 classes structurelles. Toutes ont la
+# cohesion AVANT la lumiere. Aucune pile d'une seule regle ne gagne.
 id: ch1_03
-name: Les trainards
+name: Le trainard
 tutorial: true
 allowed_rules: [R01, R02, R03]
 slots: 3
 max_ticks: 120
 objective: extraction 100
-lesson: "Ramener un trainard sans regarder ou : la cohesion est aveugle."
-expected_wins: 8
-expected_classes: 3
-calibrated_on: 418a5244cecd08f6
+lesson: "Une nuee qui ne ramene pas ses trainards en abandonne un dans l'impasse."
+expected_wins: 4
+expected_classes: 2
+calibrated_on: 662f379acf03f0a4
 ---
 . . . . . L . . . . .
 # # # # E E E # # # #
@@ -56,11 +65,12 @@ calibrated_on: 418a5244cecd08f6
 . . . . . . . . . . .
 . . . . . . . . . . .
 . . . . . . . . . . .
+. . . . . . . . . # .
+. . . . . . . . # . #
 . . . . . . . . . . .
 . . . . . . . . . . .
 . . . . . . . . . . .
-. . . . . . . . . . .
-o X . o o o o o . . .
+. . X o o o o o . o .
 . . . o o o o o . . .
 . . . o o o o o . . .
 . . . o o o o o . . .
