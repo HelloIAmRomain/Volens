@@ -67,8 +67,19 @@ func _open_settings() -> void:
 	var screen := SettingsScreen.new()
 	screen.back_requested.connect(_open_menu)
 	screen.reset_requested.connect(_on_reset_requested)
+	screen.self_check_requested.connect(_open_self_check)
 	_swap(screen, Screen.SETTINGS)
 	screen.setup(settings)
+
+## DT-22 : uniquement dans une build de test. Chargement dynamique — la
+## classe n'est pas dans le paquet de production.
+func _open_self_check() -> void:
+	var script: Variant = load(SettingsScreen.SELF_CHECK_PATH)
+	if script == null:
+		return
+	var screen: Control = (script as GDScript).new()
+	screen.back_requested.connect(_open_settings)
+	_swap(screen, Screen.SETTINGS)
 
 func _open_select() -> void:
 	var select := LevelSelectScreen.new()

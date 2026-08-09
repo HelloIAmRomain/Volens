@@ -23,6 +23,12 @@ extends Control
 
 signal back_requested
 signal reset_requested
+signal self_check_requested
+
+## Chemin de l'écran DT-22, chargé dynamiquement : en production le fichier
+## n'est pas dans le paquet, et une référence statique empêcherait le
+## démarrage.
+const SELF_CHECK_PATH := "res://game/selfcheck/self_check_screen.gd"
 
 var _settings: Settings
 var _toggle: Button
@@ -68,6 +74,17 @@ func _build() -> void:
 
 	column.add_child(_spacer(UiMetrics.GAP * 2))
 
+	# DT-22 — n'existe QUE dans une build de test. Le drapeau `test_build` est
+	# déclaré par le préréglage d'export correspondant ; en production il est
+	# faux ET les fichiers sont absents du paquet, d'où le chargement
+	# dynamique : nommer la classe statiquement empêcherait la build de
+	# production de démarrer.
+	if OS.has_feature("test_build") and ResourceLoader.exists(SELF_CHECK_PATH):
+		var check := UiButtons.make("Auto-vérification", UiButtons.Rank.PLAIN, 26)
+		check.pressed.connect(_on_self_check)
+		column.add_child(check)
+		column.add_child(_spacer(UiMetrics.GAP))
+
 	var back := UiButtons.make("Retour")
 	back.pressed.connect(func() -> void: back_requested.emit())
 	column.add_child(back)
@@ -92,6 +109,9 @@ func _on_reset_pressed() -> void:
 		_reset_button.add_theme_color_override("font_color", Color(0.95, 0.40, 0.40))
 		return
 	reset_requested.emit()
+
+func _on_self_check() -> void:
+	self_check_requested.emit()
 
 func _refresh() -> void:
 	if _toggle == null:
