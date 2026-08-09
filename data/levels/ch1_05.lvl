@@ -1,33 +1,35 @@
 # N5 « Plusieurs verites » — cloture du chapitre.
 #
-# Place dans l'arc QN-02 : c'est ici que la famille R01-en-tete perd, et que
-# les deux autres gagnent. Aucune pile ne resout N3, N4 et N5 a la fois.
+# DEUX ORDRES DIFFERENTS REUSSISSENT, et c'est litteralement la lecon (CDC
+# §8.5 : « il n'y a pas UNE bonne reponse »). Le niveau ne demande pas de
+# trouver LA pile ; il demande de constater qu'il y en a plusieurs.
 #
-# LE RETOURNEMENT. En N3, la cohesion TUE le trainard : elle le tire vers le
-# groupe, et le feu est sur le chemin. Ici elle le SAUVE : le feu est sur sa
-# route naturelle vers la lumiere, et rejoindre le groupe l'en ecarte.
-# C'est la meme regle, la meme portee, le meme predicat de maintien — seule
-# la geometrie a change. Le joueur qui a appris « R03 est dangereuse » en N3
-# doit desapprendre, et c'est le sujet du niveau.
+# CE QUE LA MESURE A IMPOSE. Faire gagner [2,3,1] et [3,2,1] ne prouve rien
+# si ce sont deux noms de la meme trajectoire — et sur l'ancienne geometrie de
+# N5 elles etaient rigoureusement identiques, zero tick d'ecart. Un pluralisme
+# creux est pire qu'une solution unique : il ment.
 #
-# GEOMETRIE, et pourquoi elle est contrainte (invariant n.12) :
-#  · le trainard est en (1,12), le danger en (1,6) : MEME COLONNE. R01 vise
-#    la lumiere (5,0), le Nord rapproche, donc il monte tout droit dans le feu.
-#    C'est la seule facon de faire perdre la famille directe sans toucher au
-#    bloc — dont aucune colonne (4 a 8) ne croise la colonne 1.
-#  · le danger est a d² = 36 du trainard au depart, donc HORS de portee de R02
-#    (d² <= 25). La prudence ne se declenche donc pas tout de suite : l'agent
-#    monte d'abord, entre en portee a (1,11), et n'esquive qu'ensuite. Sans ce
-#    delai, R02 et R03 auraient la meme trajectoire et le niveau n'aurait
-#    qu'une seule verite au lieu de plusieurs.
-#  · le trainard est isole (le bloc commence en x=4 : d² = 9 > 2) mais percu
-#    (d² = 9 <= 16). R03 le tire vers l'EST — le Nord eloigne du barycentre —
-#    donc hors de la colonne fatale des le premier tick.
+# Condition necessaire : la contention R2/R3 doit etre strictement positive,
+# c'est-a-dire que les deux regles doivent se disputer au moins un agent au
+# moins un tick. Elle valait ZERO. Recette de ch1_03 : un trainard ISOLE (hors
+# du rayon de maintien, d² > 2) mais PERCU (d² <= 16), dont la route croise un
+# danger. Deux trainards plutot qu'un : c'est ce qui fait monter la contention.
 #
-# OBJECTIF : extraction 95 + preservation 0. Perdre le trainard laisse 20
-# sortis sur 21, soit 95 % : l'extraction PASSE. C'est la preservation qui
-# tranche, et c'est le coeur de la decision 54 — l'effet de R03 est invisible
-# sous une extraction seule, decisif sous une preservation.
+# ET CE QUE LA MESURE A CORRIGE. J'avais pose la contention comme une jauge —
+# « faible contention, faible separation ». C'est faux. Balayage de dix-huit
+# geometries : toutes separent les deux ordres, de 11 a 39 ticks, y compris a
+# contention 1. **Une seule decision divergente cascade** : un agent qui part
+# a gauche change sa position, donc celles de ses voisins au tick suivant,
+# donc tout l'aval. La contention dit SI l'ordre compte, jamais COMBIEN.
+#
+# GEOMETRIE. Bloc en x=3..7, deux trainards en colonne 0, danger en (1,10) —
+# a l'OUEST, donc la fuite pousse vers l'EST, c'est-a-dire vers l'ouverture.
+# Fuite et entonnoir tirent dans le meme sens (contrainte etablie en N2).
+#
+# OBJECTIF : extraction 95 + preservation 0. Perdre un trainard laisse 21
+# sortis sur 22, soit 95 % : l'extraction PASSE. C'est la preservation qui
+# tranche — decision 54, l'effet de R03 est invisible sous une extraction
+# seule, decisif sous une preservation.
 id: ch1_05
 name: Plusieurs verites
 tutorial: false
@@ -36,10 +38,10 @@ slots: 3
 max_ticks: 120
 objective: extraction 95
 objective: preservation 0
-lesson: "La meme regle sauve ici ce qu'elle tuait la : c'est le terrain qui decide."
+lesson: "Deux ordres differents reussissent : il n'y a pas UNE bonne reponse."
 expected_wins: 6
 expected_classes: 2
-calibrated_on: 22ee843286e91bca
+calibrated_on: 259c1034803b57c1
 ---
 . . . . . L . . . . .
 # # # # E E E # # # #
@@ -50,7 +52,7 @@ calibrated_on: 22ee843286e91bca
 . X . . . . . . . . .
 . . . . . . . . . . .
 . . . . . . . . . . .
-. . . . . . . . . . .
+. o . . . . . . . . .
 . . . . . . . . . . .
 . . . . o o o o o . .
 . o . . o o o o o . .
