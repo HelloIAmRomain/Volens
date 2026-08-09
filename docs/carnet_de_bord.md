@@ -248,6 +248,67 @@ divergences ressembleraient à une régression pure.
 
 ---
 
+## Audit du chapitre 1 : ce que la mesure des ORDRES revele (9 aout 2026)
+
+122. **EQ-05 N'EST PLUS VIOLE — la decision 34 est PERIMEE et se corrige ici.**
+     Le 6 aout, constat a l'oeil et a l'empreinte : « Fuir > Grouper > Lumiere »
+     et « Grouper > Fuir > Lumiere » sont indiscernables, deux des quatre
+     archetypes du CDC §7.3 sont le meme comportement, « fait acquis qui
+     attend la revision d'architecture ».
+     **C'etait vrai de la geometrie d'alors, pas des regles.** Mesure du jour
+     sur ch1_03, trajectoire par trajectoire (nombre de ticks ou les positions
+     different, ecart maximal d'un meme agent) :
+
+     | Paire | Ticks differents | Ecart max |
+     |---|---|---|
+     | `[2,3,1]` vs `[3,2,1]` | 13 | 27 cases |
+     | `[2,3,1]` vs `[1,2,3]` | 24 | 33 cases |
+     | `[2,3,1]` vs `[2,1]` | 5 | 25 cases |
+     | `[3,2,1]` vs `[1,2,3]` | 24 | 33 cases |
+     | `[3,2,1]` vs `[2,1]` | 12 | 27 cases |
+     | `[1,2,3]` vs `[2,1]` | 24 | 33 cases |
+
+     Les six paires different, et les issues aussi : `[3,2,1]` PERD la ou les
+     trois autres gagnent. **Les quatre archetypes du CDC §7.3 sont donc
+     visiblement et strategiquement distincts sur ch1_03.**
+     Ce n'etait pas un probleme de parametrage : c'etait un probleme de
+     TERRAIN. Un archetype ne se manifeste que sur une geometrie qui le
+     sollicite — invariant n.12, encore lui.
+
+123. **MAIS `[2,3,1]` ET `[3,2,1]` SONT IDENTIQUES SUR N4 ET N5 — zero tick
+     d'ecart.** Et cela invalide le plan de la decision 118 tel quel.
+     Faire gagner les deux sur N5 devait demontrer que « deux ordres
+     differents reussissent ». Or aujourd'hui, sur N5, **ce ne sont pas deux
+     ordres : c'est deux noms de la meme trajectoire.** Le niveau
+     enseignerait une pluralite qui n'existe pas — un pluralisme creux, pire
+     qu'une solution unique parce qu'il ment.
+     **Condition prealable, mesurable, a inscrire dans la fiche de N5 : la
+     contention R2/R3 doit y etre STRICTEMENT POSITIVE.** Elle vaut 0
+     aujourd'hui. Tant qu'elle vaut 0, les deux piles ne peuvent pas differer,
+     quelle que soit l'issue qu'on leur donne. C'est ch1_03 qui montre la
+     recette : contention R2/R3 = 6 y suffit a produire 13 ticks d'ecart.
+
+124. **`[1,x]` est invisible partout, et c'est structurel, pas un defaut.**
+     `[1,2,3]` vs `[1,3,2]` : zero tick d'ecart sur les trois niveaux. R01 ne
+     s'abstient jamais en terrain ouvert, donc tout ce qui la suit est mort.
+     Deja documente depuis S2 ; la mesure le confirme sur les cinq niveaux.
+     A ne pas confondre avec 123 : ici l'invisibilite est une propriete de la
+     cascade, la-bas c'est un manque de terrain.
+
+125. **DEUX EXIGENCES DU CDC N'ETAIENT PAS TENUES.**
+     - **§8.5 — « l'ecran de bilan mentionne N solutions connues »** : absent.
+       Corrige. Le chiffre vient de `expected_wins`, donc du validateur, jamais
+       d'une estimation — annoncer une pluralite non mesuree ferait de P5 une
+       affirmation gratuite. Les niveaux TUTORIELS se taisent : annoncer
+       « 1 solution connue » suggererait qu'on en cherche d'autres.
+     - **QN-03 — densite d'echecs proches** (piles echouant a moins de 10 % de
+       l'objectif) : **jamais mesuree**. Le CDC lui donne un seuil plancher
+       ⚙️ non fixe. Ni implementee dans le validateur, ni chiffree dans le
+       CDC : signale, non corrige — fixer un seuil est un arbitrage de
+       conception.
+
+---
+
 ## Cause commune, et quatre arbitrages (9 aout 2026)
 
 116. **UN CHANGEMENT NE SE LIVRE PAS PARCE QU'IL A COUTE CHER.** Enonce du
