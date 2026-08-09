@@ -54,6 +54,10 @@ func _init() -> void:
 		for k in keys:
 			parts.append("R%s %d" % [String(k).replace("-", "/R"), int(contention[k])])
 		print("contention RG-13 : %s   (0 = ordre inobservable)" % "   ".join(parts))
+	# QN-03 : l'outil MESURE, il ne juge pas — le seuil plancher n'est pas fixé.
+	print("echecs proches   : %d / %d perdantes (%d %%)   [QN-03, seuil plancher non fixe]" % [
+		int(summary.get("n_near_misses", 0)), int(summary.get("n_losses", 0)),
+		int(summary.get("near_miss_ratio_percent", 0))])
 	if int(summary.get("wins_with_oscillation", 0)) > 0:
 		print("sur-place        : %d pile(s) gagnante(s), jusqu'à %d agent(s) — à corriger au dessin" % [
 			summary["wins_with_oscillation"], summary["max_oscillating_agents"]])
@@ -73,14 +77,18 @@ func _parse_args() -> Dictionary:
 
 func _write_csv(path: String, rows: Array) -> void:
 	var file := FileAccess.open(path, FileAccess.WRITE)
-	file.store_line("stack;outcome;ticks;exited;lost;oscillating;stuck;final_hash;looped")
+	file.store_line("stack;outcome;ticks;exited;lost;manque_%;oscillating;stuck;final_hash;looped")
 	var outcome_names := ["RUNNING", "WON", "LOST"]
 	for row in rows:
 		var stack_str := "-".join(PackedStringArray(Array(row["stack"]).map(func(v: Variant) -> String: return str(int(v)))))
-		file.store_line("%s;%s;%d;%d;%d;%d;%d;%s;%s" % [
+		# `manque_%` : distance à l'objectif d'une pile perdante (QN-03).
+		# Vide pour une pile gagnante — elle n'a rien manqué.
+		var shortfall: String = "" if int(row["outcome"]) == SimState.Outcome.WON \
+			else str(int(row.get("shortfall_percent", 100)))
+		file.store_line("%s;%s;%d;%d;%d;%s;%d;%d;%s;%s" % [
 			stack_str if not stack_str.is_empty() else "(vide)",
 			outcome_names[row["outcome"]], row["ticks"], row["exited"],
-			row["lost"], row["oscillating"], row["stuck"],
+			row["lost"], shortfall, row["oscillating"], row["stuck"],
 			row["final_hash"], str(row["looped"])])
 	file.close()
 

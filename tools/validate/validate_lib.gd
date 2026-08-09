@@ -277,6 +277,23 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 			contention[key] = maxi(int(contention.get(key, 0)), int(row["contention"]))
 		if row["outcome"] == SimState.Outcome.WON:
 			wins.append(row)
+		else:
+			row["shortfall_percent"] = shortfall_percent(level_data, params, row)
+
+	# QN-03 — DENSITÉ D'ÉCHECS PROCHES. Une pile qui échoue de peu donne envie
+	# de réessayer ; une pile qui échoue de loin décourage. Le CDC en fait une
+	# mesure de « frustration productive » avec un seuil plancher ⚙️ **non
+	# fixé** : l'outil mesure, il ne juge pas.
+	var near_misses := 0
+	var losses := 0
+	for row in rows:
+		if int(row["outcome"]) == SimState.Outcome.WON:
+			continue
+		losses += 1
+		if int(row.get("shortfall_percent", 100)) < NEAR_MISS_PERCENT:
+			near_misses += 1
+	@warning_ignore("integer_division")
+	var near_miss_ratio: int = near_misses * 100 / losses if losses > 0 else 0
 
 	# Paires dont l'ordre est INOBSERVABLE sur ce niveau : elles ne créent
 	# aucun conflit de priorité, donc ne satisfont pas RG-13 ici.
@@ -395,8 +412,112 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 			"collect_out_of_chapter": collect_out_of_chapter,
 			"wins_with_oscillation": wins_with_oscillation,
 			"max_oscillating_agents": max_oscillating,
+			"n_losses": losses,
+			"n_near_misses": near_misses,
+			"near_miss_ratio_percent": near_miss_ratio,
 			"contention_by_pair": contention,
 			"blind_pairs": blind_pairs,
 			"qn01_verdict": verdict,
 		},
 	}
+
+## QN-03 — seuil de proximité d'un échec ⚙️. Le CDC parle de « piles échouant
+## à moins de 10 % de l'objectif » ; c'est cette borne, et elle reste une
+## convention d'outil tant que le concepteur n'a pas fixé le seuil PLANCHER de
+## densité (combien d'échecs proches un bon niveau doit produire).
+const NEAR_MISS_PERCENT := 10
+
+## Distance à l'objectif d'une pile PERDANTE, en pourcentage, 0 = a failli
+## gagner, 100 = n'en a jamais approché.
+##
+## Chaque objectif non satisfait donne un manque normalisé ; on retient le
+## PIRE, parce qu'il suffit d'un objectif manqué de loin pour que l'échec soit
+## décourageant, même si les autres étaient acquis.
+##
+##   extraction  — manque d'agents sortis, rapporté à l'effectif ;
+##   preservation — pertes en trop, rapportées à l'effectif ;
+##   celerity    — dépassement de l'échéance, rapporté à l'échéance ;
+##   interdiction — binaire : on y est entré ou non, jamais « de peu ».
+static func shortfall_percent(level_data: Dictionary, params: RuleParams, row: Dictionary) -> int:
+	var agents: Array = level_data.get("agents", [])
+	var total: int = agents.size()
+	if total <= 0:
+		return 100
+
+	# ORDRE DE PRIORITÉ IDENTIQUE À CELUI DU MOTEUR (SimCore._evaluate_outcome).
+	# Un premier jet mesurait le PIRE manque tous objectifs confondus, et
+	# rapportait zéro échec proche sur les cinq niveaux. C'était faux : une
+	# partie perdue au tick 6 sur une préservation a forcément zéro agent
+	# sorti, donc un manque d'extraction de 95 % — qui masquait la vraie
+	# cause, un seul agent perdu. On mesure donc l'objectif qui a REELLEMENT
+	# fait perdre, pas celui qui affiche le plus gros écart.
+
+	# 1. Contraintes-événement : la perte a eu lieu, elle prime sur tout.
+	for raw in level_data.get("objectives", []):
+		var obj: Dictionary = raw
+		if String(obj.get("type", "")) != "preservation":
+			continue
+		var excess: int = int(row["lost"]) - int(obj.get("max_lost", 0))
+		if excess > 0:
+			@warning_ignore("integer_division")
+			var pct: int = excess * 100 / total
+			return maxi(pct, 1)   # perdre d'un agent reste un échec, pas un nul
+	for raw2 in level_data.get("objectives", []):
+		if String((raw2 as Dictionary).get("type", "")) == "interdiction":
+			# Binaire : on y est entré ou non. Jamais « de peu ».
+			pass
+
+	# 2. Échéance de célérité — et il faut RE-SIMULER pour la mesurer.
+	#
+	# La simulation s'arrête au tick de l'échéance : `row["ticks"]` y est donc
+	# TOUJOURS égal à la borne, et le dépassement vaut toujours zéro. Un
+	# premier jet rapportait ainsi zéro échec proche sur tout ch1_04, alors
+	# que sa famille prudente rate l'échéance de six ticks. On rejoue donc la
+	# pile SANS l'échéance, pour savoir quand elle aurait gagné.
+	for raw3 in level_data.get("objectives", []):
+		var obj3: Dictionary = raw3
+		if String(obj3.get("type", "")) != "celerity":
+			continue
+		var bound: int = maxi(int(obj3.get("max_ticks", 1)), 1)
+		var would_win_at := _tick_without_deadline(level_data, params, row["stack"])
+		if would_win_at < 0:
+			continue   # elle n'aurait pas gagné même sans échéance : autre cause
+		var over: int = would_win_at - bound
+		if over > 0:
+			@warning_ignore("integer_division")
+			var pct3: int = over * 100 / bound
+			return maxi(pct3, 1)
+
+	# 3. Sinon, c'est un accomplissement manqué.
+	var worst := 100
+	var seen_achievement := false
+	for raw4 in level_data.get("objectives", []):
+		var obj4: Dictionary = raw4
+		if String(obj4.get("type", "")) != "extraction":
+			continue
+		seen_achievement = true
+		var required: int = int(obj4.get("percent", 100)) * total
+		var missing: int = required - int(row["exited"]) * 100
+		@warning_ignore("integer_division")
+		var pct4: int = maxi(missing, 0) / total
+		worst = mini(worst, pct4) if worst == 100 else maxi(worst, pct4)
+	return worst if seen_achievement else 100
+
+## Tick auquel une pile aurait gagné SANS échéance de célérité, ou -1 si elle
+## aurait perdu de toute façon. Sert uniquement à mesurer de combien elle a
+## raté l'échéance (QN-03) — jamais à décider d'une issue.
+static func _tick_without_deadline(level_data: Dictionary, params: RuleParams, stack_raw: Variant) -> int:
+	var relaxed: Dictionary = level_data.duplicate(true)
+	var kept: Array = []
+	for raw in relaxed.get("objectives", []):
+		if String((raw as Dictionary).get("type", "")) != "celerity":
+			kept.append(raw)
+	relaxed["objectives"] = kept
+	var stack: Array[int] = []
+	for v in (stack_raw as Array):
+		stack.append(int(v))
+	var state := SimCore.load_level(relaxed, params)
+	var cap: int = state.max_ticks if state.max_ticks > 0 else 300
+	while state.outcome == SimState.Outcome.RUNNING and state.tick < cap:
+		state = SimCore.step(state, stack)
+	return state.tick if state.outcome == SimState.Outcome.WON else -1
