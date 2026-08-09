@@ -1,63 +1,74 @@
-# N3 « Le trainard » — l'IMPASSE, et la seule regle qui l'ouvre.
+# N3 « Les deux trainards » — DEUX pieges, DEUX regles, et un ordre.
 #
 # CE QUE CE NIVEAU CORRIGE. Sa version precedente se gagnait avec [Lumiere]
 # seule : R01 conduisait toute la nuee a l'ouverture sans qu'aucune autre
-# regle ait a parler. La profondeur annoncee par la regle d'or restait
-# theorique. Ici, [Lumiere] seule PERD, et c'est structurel, pas un reglage.
+# regle ait a parler. Ici [Lumiere] seule PERD, et c'est structurel.
 #
-# LE MECANISME : R01 s'abstient dans une impasse.
+# DEUX TRAINARDS, DEUX PIEGES OPPOSES. C'est le premier niveau du chapitre
+# ou une pile de DEUX regles ne suffit pas.
 #
-# R01 ne propose un pas que si ce pas REDUIT strictement la distance de
-# Manhattan a la lumiere. En (9,7) — mur au Nord (9,6), murs a l'Est (10,7)
-# et a l'Ouest (8,7) — la seule case libre est le Sud, qui l'EN ELOIGNE.
-# R01 se tait. L'agent est immobile jusqu'a la fin des ticks.
+# --- PIEGE EST : l'impasse. R01 s'y abstient. ---
 #
-# Une impasse est donc le seul dispositif qui rende une deuxieme regle
-# NECESSAIRE, et non simplement utile.
+# R01 ne propose un pas que s'il REDUIT strictement la distance de Manhattan
+# a la lumiere. En (9,7) — mur au Nord (9,6), murs a l'Est (10,7) et a
+# l'Ouest (8,7) — la seule case libre est le Sud, qui l'EN ELOIGNE. R01 se
+# tait ; l'agent reste immobile jusqu'a la fin des ticks. Une impasse est le
+# seul dispositif qui rende une deuxieme regle NECESSAIRE, et non seulement
+# utile.
 #
-# SEULE R03 PEUT L'OUVRIR — resultat etabli a la construction de ce niveau,
-# apres trois geometries mesurees, et generalise depuis :
+# SEULE R03 PEUT L'OUVRIR — etabli ici apres trois geometries mesurees, et
+# generalise depuis :
 #
 #   Une impasse ne peut pas etre ouverte par R02. Le seuil de fuite se
 #   declenche AVANT l'impasse — l'agent oscille de part et d'autre de la
-#   portee (pathologie P3 du dossier des genres de regles) — ou, s'il ne se
-#   declenche qu'a l'interieur, la direction de fuite est justement celle
-#   qui est muree : la seule case libre d'une impasse pointe vers le danger,
-#   sinon R01 l'aurait deja prise.
+#   portee (pathologie P3) — ou, s'il ne se declenche qu'a l'interieur, la
+#   direction de fuite est justement celle qui est muree : la seule case
+#   libre d'une impasse pointe vers le danger, sinon R01 l'aurait prise.
 #
 #   R03 y echappe parce que sa condition n'est PAS un seuil sur un point
 #   fixe : elle depend des congeneres, qui sont derriere. Le barycentre est
-#   au Sud, la sortie de l'impasse est au Sud, ils tirent dans le meme sens.
+#   au Sud, la sortie de l'impasse est au Sud : ils tirent dans le meme sens.
 #
-# Mesure de la geometrie fautive, conservee ici parce qu'elle a coute trois
-# iterations : une seconde impasse en (3,8) bordee d'un danger en (2,11)
-# rendait le niveau INSOLUBLE — 20 agents sortis sur 21 sous [2,3,1] comme
-# sous [3,2,1], l'agent restant immobile avec R01, R02 ET R03 abstenues.
+# Le trainard de (9,11) est isole du bloc (d² = 4 > 2) mais le percoit
+# (d² = 4 <= 16). Il est hors de portee du danger (d² > 25) : R02 n'a aucune
+# prise sur lui. La cohesion, et elle seule, le sauve.
 #
-# LE TRAINARD. L'agent de (9,11) est isole du bloc (d² = 4 > 2) mais le
-# percoit (d² = 4 <= 16) : R03 le ramene vers l'Ouest, hors de la colonne
-# de l'impasse. Il est hors de portee du danger (d² = 49 > 25) : R02 n'a
-# aucune prise sur lui. C'est la cohesion, et elle seule, qui le sauve.
+# --- PIEGE OUEST : le feu, et c'est la COHESION qui y pousse. ---
 #
-# LE DANGER (2,11) NE TUE PERSONNE, et c'est assume. Il ne borde aucune
-# trajectoire gagnante ; son role est d'etre un DETOUR credible — les piles
-# qui placent la fuite en tete sortent en 27 ticks la ou [Cohesion, Lumiere]
-# sort en 18. Il rend [Fuite, Lumiere] plausible sans la rendre gagnante :
-# elle laisse le trainard dans l'impasse, exactement comme [Lumiere] seule.
+# Le trainard de (0,10) est isole (d² = 10 > 2) et percoit le bloc
+# (d² = 10 <= 16) ; le barycentre est au Sud-Est. L'ordre N>E>S>O teste le
+# Nord, qui eloigne du barycentre, puis l'EST — qui l'en rapproche et qui
+# est le danger (1,10). R03 l'y pousse au premier tick : mort au tick 1,
+# extraction 100 impossible.
 #
-# CE QUI GAGNE : 4 piles sur 16, en 2 classes structurelles. Toutes ont la
-# cohesion AVANT la lumiere. Aucune pile d'une seule regle ne gagne.
+# R02 le sauve : a d² = 1 le danger est bien en portee, et le Nord (d² = 2)
+# en eloigne. L'agent monte, sort de portee de fuite, puis sort aussi de
+# perception du bloc — R03 se tait, R01 le mene a l'ouverture. Pas de
+# va-et-vient : les deux seuils se quittent dans le meme sens.
+#
+# --- CE QUI GAGNE : UNE SEULE PILE, ET C'EST L'ORDRE QUI DECIDE. ---
+#
+#   [Lumiere]                 impasse      1 bloque
+#   [Fuite, Lumiere]          impasse      1 bloque
+#   [Cohesion, Lumiere]       le feu       1 mort, au tick 1
+#   [Cohesion, Fuite, Lumiere] le feu      1 mort, au tick 1
+#   [Fuite, Cohesion, Lumiere] GAGNE       22/22 en 30 ticks
+#
+# Fuir d'abord, regrouper ensuite. La cohesion est aveugle : elle ramene un
+# trainard sans regarder ou. C'est le premier niveau ou l'ordre de DEUX
+# regles autres que la lumiere se voit — la paire R02/R03 y est enfin
+# observable (RG-13), ce qu'aucun niveau anterieur ne montrait.
 id: ch1_03
-name: Le trainard
+name: Les deux trainards
 tutorial: true
 allowed_rules: [R01, R02, R03]
 slots: 3
 max_ticks: 120
 objective: extraction 100
-lesson: "Une nuee qui ne ramene pas ses trainards en abandonne un dans l'impasse."
-expected_wins: 4
-expected_classes: 2
-calibrated_on: 662f379acf03f0a4
+lesson: "Fuir d'abord, regrouper ensuite : la cohesion ramene un trainard sans regarder ou."
+expected_wins: 1
+expected_classes: 1
+calibrated_on: a83a833700fe848d
 ---
 . . . . . L . . . . .
 # # # # E E E # # # #
@@ -69,8 +80,8 @@ calibrated_on: 662f379acf03f0a4
 . . . . . . . . # . #
 . . . . . . . . . . .
 . . . . . . . . . . .
-. . . . . . . . . . .
-. . X o o o o o . o .
+o X . . . . . . . . .
+. . . o o o o o . o .
 . . . o o o o o . . .
 . . . o o o o o . . .
 . . . o o o o o . . .

@@ -2,6 +2,12 @@
   "agents": [
     {
       "pos": [
+        0,
+        10
+      ]
+    },
+    {
+      "pos": [
         3,
         11
       ]
@@ -132,10 +138,10 @@
     2,
     3
   ],
-  "calibrated_on": "662f379acf03f0a4",
-  "expected_classes": 2,
-  "expected_wins": 4,
-  "geometry_hash": "662f379acf03f0a4",
+  "calibrated_on": "a83a833700fe848d",
+  "expected_classes": 1,
+  "expected_wins": 1,
+  "geometry_hash": "a83a833700fe848d",
   "grid": {
     "cells": [
       0,
@@ -249,19 +255,19 @@
       0,
       0,
       0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
       3,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
       0,
       0,
       0,
@@ -323,9 +329,9 @@
     ]
   },
   "id": "ch1_03",
-  "lesson": "Une nuee qui ne ramene pas ses trainards en abandonne un dans l'impasse.",
+  "lesson": "Fuir d'abord, regrouper ensuite : la cohesion ramene un trainard sans regarder ou.",
   "max_ticks": 120,
-  "name": "Le trainard",
+  "name": "Les deux trainards",
   "objectives": [
     {
       "percent": 100,

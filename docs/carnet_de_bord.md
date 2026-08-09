@@ -2099,6 +2099,77 @@ cascade de décision) attend `SimCore.explain` (T-065, S8) ; retour haptique
     basse) et d'ENF-01. À trancher : produire la maquette, ou retirer la
     référence.
 
+## Fait — N3 refondu : S4 fermée, et ce que l'impasse a appris (9 août 2026)
+
+### 155. Une impasse ne peut être ouverte que par R03
+
+Établi en construisant N3, après trois géométries mesurées, dont une où
+`[2,3,1]` **et** `[3,2,1]` laissaient un agent immobile avec R01, R02 **et**
+R03 abstenues — 20 sortis sur 21, niveau insoluble.
+
+> R02 ne peut pas ouvrir une impasse. Son seuil se déclenche **avant**
+> l'impasse — l'agent oscille de part et d'autre de la portée (P3) — ou, s'il
+> ne se déclenche qu'à l'intérieur, la direction de fuite est justement celle
+> qui est murée : **la seule case libre d'une impasse pointe vers le danger,
+> sinon R01 l'aurait déjà prise.**
+>
+> R03 y échappe parce que sa condition n'est pas un seuil sur un point fixe :
+> elle dépend des congénères, qui sont **derrière**. Barycentre au Sud, sortie
+> d'impasse au Sud — ils tirent dans le même sens.
+
+C'est la démonstration constructive du chantier « S4 » du dossier des genres de
+règles, qui n'était jusqu'ici qu'un argument.
+
+### 156. Le premier correctif de N3 fermait S4 en cassant QN-02
+
+Battre `[1]` par une impasse fait de tout niveau anti-`[1]` un niveau de
+cohésion — et N4 l'était déjà. `[3,1]` gagnait alors N3, N4 et N5 : le joueur
+traversait le chapitre sans jamais réordonner. **QN-02 est une exigence du CDC,
+S4 une règle de conception interne : c'est S4 qui devait céder le pas, pas
+l'inverse.** Consigné parce que le premier réflexe fut le contraire.
+
+Résolu sans toucher à N4 : N3 porte désormais **deux pièges opposés** — une
+impasse à l'est que seule R03 ouvre, un feu à l'ouest où seule R03 pousse. Ni
+`[2,1]` ni `[3,1]` n'en sortent. Solution unique : `[2,3,1]`, 22/22 en 30 ticks.
+
+Conséquences mesurées : S4 **fermée** (`S4_KNOWN_BREACHES` vide), S3 **atteinte**
+(plafond abaissé de 3 à 2, cliquet refermé des deux côtés), QN-02 rétabli, et
+la paire R02/R03 enfin **observable** (RG-13) — aucun niveau antérieur ne la
+montrait.
+
+### 157. La famille par tête de pile est un indicateur trop grossier pour S2
+
+S2 déclarait « ch1_02 et ch1_03 posent la même question » parce que leurs
+gagnantes commencent toutes deux par la Fuite. C'est faux : ch1_02 offre
+`[R01, R02]` sur 2 rangs — il ne peut pas **énoncer** la question de l'ordre
+R02/R03, R03 n'y étant pas proposée.
+
+**Deux niveaux ne posent la même question que s'ils offrent le même espace de
+réponses** (mêmes règles disponibles, même nombre de rangs). S2 ne compare plus
+que des niveaux comparables. Sixième forme du piège de l'invariant 12 : *un
+indicateur qui agrège plus que la propriété qu'il mesure signale des défauts
+qui n'existent pas* — et un faux positif use la confiance dans le test aussi
+sûrement qu'un faux négatif la trompe.
+
+### Cérémonie d'or ch1_03 — PRÉDICTION ÉCRITE, en attente d'accord
+
+Vérification sans écriture faite le 9 août 2026 : **12 divergences, toutes sur
+ch1_03**. 13 recettes sur 17 concordent.
+
+| recette | prédiction | pourquoi |
+|---|---|---|
+| `ch1_03 [1]` | **change** aux 3 relevés | effectif 21 → 22, grille 15 → 16 rangs, danger déplacé |
+| `ch1_03 [2,1]` | **change** aux 3 relevés | idem |
+| `ch1_03 [2,3,1]` | **change** aux 3 relevés | idem |
+| `ch1_03 [3,1]` | **change** aux 3 relevés | idem, et l'agent meurt désormais au tick 1 |
+| les 13 autres | **inchangées** | aucune ne touche ch1_03 |
+
+Le confinement est donc **exactement** celui que prédit un changement de
+géométrie limité à un seul niveau. Rien d'autre n'a bougé, ce qui distingue
+« l'entrée a changé » de « le code a régressé ».
+
+`--write` n'a **pas** été exécuté et ne le sera pas sans accord explicite.
+
 ## Reste à faire
 
 **S3 : clos** — premier passage de la CI en ligne constaté vert le

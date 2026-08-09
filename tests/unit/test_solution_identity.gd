@@ -85,15 +85,42 @@ func test_no_two_levels_are_won_by_the_same_set_of_families() -> void:
 	# La règle en tête de pile détermine la manière de penser le niveau :
 	# foncer (R01), contourner (R02), rassembler (R03). Deux niveaux gagnés
 	# par les mêmes familles posent la même question.
+	#
+	# À CONDITION QU'ILS PUISSENT POSER LA MÊME. La famille est un indicateur
+	# GROSSIER : elle ne retient que la tête de pile. Comparer sur cette seule
+	# base deux niveaux dont les ESPACES DE RÉPONSES diffèrent produit un faux
+	# positif — c'est arrivé le 9 août 2026 entre ch1_02 (règles [R01, R02],
+	# 2 rangs, 5 piles énumérées) et ch1_03 (trois règles, 3 rangs, 16 piles).
+	# Les deux se gagnent par une pile menée par la Fuite, et l'indicateur en
+	# concluait « même question ». Elle est fausse : ch1_03 demande de
+	# départager R02 et R03, une question que ch1_03 est le SEUL à pouvoir
+	# formuler et que ch1_02 ne peut pas même énoncer, R03 n'y étant pas offerte.
+	#
+	# Deux niveaux ne posent donc la même question que s'ils offrent le même
+	# espace : mêmes règles disponibles, même nombre de rangs. `slots` se lit
+	# par `LevelSpec` — invariants 11 et 16.
 	for i in range(LEVELS.size()):
 		for j in range(i + 1, LEVELS.size()):
+			if _answer_space(LEVELS[i]) != _answer_space(LEVELS[j]):
+				continue
 			var a: Array = (_families[LEVELS[i]] as Dictionary).keys()
 			var b: Array = (_families[LEVELS[j]] as Dictionary).keys()
 			a.sort()
 			b.sort()
 			assert_ne(str(a), str(b),
-				"%s et %s se gagnent par les mêmes familles %s : même question posée deux fois" % [
-					LEVELS[i], LEVELS[j], str(a)])
+				("%s et %s offrent le MÊME espace de réponses %s et se gagnent par "
+				+ "les mêmes familles %s : même question posée deux fois") % [
+					LEVELS[i], LEVELS[j], _answer_space(LEVELS[i]), str(a)])
+
+## Signature de l'espace de réponses : ce que le joueur a le droit de composer.
+## Deux niveaux qui ne la partagent pas ne sont pas comparables famille à famille.
+func _answer_space(level_id: String) -> String:
+	var data := LevelCatalog.load_level_data(level_id)
+	var allowed: Array[int] = []
+	for v in data.get("allowed_rules", []):
+		allowed.append(int(v))
+	allowed.sort()
+	return "%s×%d" % [str(allowed), LevelSpec.open_slots(data)]
 
 # --- S3 : non-transposabilité ----------------------------------------------
 
@@ -132,7 +159,11 @@ func test_no_stack_solves_the_whole_chapter() -> void:
 ## atteint cesse d'être un objectif ; un objectif sans cliquet se dégrade en
 ## silence.
 const S3_TARGET := 2
-const S3_CURRENT_CEILING := 3
+## CLIQUET ATTEINT — 9 août 2026, avec la refonte de N3. La voie décrite
+## ci-dessus est exactement celle qui a été prise : N3 fait s'ABSTENIR R01
+## dans une impasse, et `[1]` seule y perd. Le plafond mesuré rejoint la
+## cible ; toute aggravation est désormais un défaut, plus une dette.
+const S3_CURRENT_CEILING := S3_TARGET
 
 func test_no_stack_solves_more_than_the_measured_ceiling() -> void:
 	var count := _multiplicity()
@@ -150,11 +181,13 @@ func test_no_stack_solves_more_than_the_measured_ceiling() -> void:
 	assert_lte(worst, S3_CURRENT_CEILING,
 		"AGGRAVATION de la transposabilité : une pile résout %d niveaux (plafond mesuré %d). %s" % [
 			worst, S3_CURRENT_CEILING, " · ".join(offenders)])
-	# Le jour où la cible est atteinte, ce test le dit et demande qu'on abaisse
-	# le cliquet — sans quoi il protégerait un plafond devenu faux.
-	assert_gt(worst, S3_TARGET,
-		"S3 est ATTEINTE (plus aucune pile au-delà de %d niveaux) : abaisser S3_CURRENT_CEILING à %d" % [
-			S3_TARGET, S3_TARGET])
+	# La cible étant atteinte, le cliquet se referme des DEUX côtés : un pire
+	# cas inférieur à la cible signifierait que la cible elle-même est trop
+	# lâche, et qu'on protège un plafond devenu faux dans l'autre sens.
+	assert_eq(worst, S3_TARGET,
+		("S3 : le pire cas vaut %d pour une cible de %d. S'il est INFÉRIEUR, "
+		+ "resserrer S3_TARGET ; le cliquet ne doit jamais protéger du vide.") % [
+			worst, S3_TARGET])
 
 # --- S4 : une seule règle ne gagne que le niveau qui l'introduit -----------
 #
@@ -186,10 +219,15 @@ func _single_rule_winners() -> Array:
 				out.append([level_id, int((stack as Array)[0])])
 	return out
 
-## Violations connues, nommément. Le jour où N4 cesse d'être gagné par la
-## seule Lumière, cette liste se vide et le test devient inconditionnel —
-## c'est ce que la seconde assertion exige.
-const S4_KNOWN_BREACHES := ["ch1_03:1"]
+## Violations connues, nommément. **La liste est VIDE depuis le 9 août 2026**
+## et le test est donc inconditionnel : plus aucune pile d'une seule règle ne
+## gagne un niveau autre que celui qui l'introduit.
+##
+## Ce qui a fermé le dernier manquement — `ch1_03:1`, la Lumière seule — mérite
+## d'être retenu, parce que ce n'était pas un réglage : il a fallu une IMPASSE,
+## seul dispositif où R01 s'abstient, et donc où une deuxième règle devient
+## nécessaire au lieu d'être utile. Rien de moins n'y suffisait.
+const S4_KNOWN_BREACHES: Array[String] = []
 
 func test_a_single_rule_only_wins_the_level_that_introduces_it() -> void:
 	var breaches := PackedStringArray()
