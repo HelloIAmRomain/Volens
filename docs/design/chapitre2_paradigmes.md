@@ -54,8 +54,11 @@ rien. Les activer coûte moins qu'inventer autre chose.
   S'écarter**, qui sans cela n'est qu'un anti-R03.
 - **Coût** : un champ « ouverte » recalculé à l'étape 1 du tick, une entrée
   dans l'empreinte d'état. Aucune donnée par agent.
-- **Risque** : une porte qui se referme sur un agent en transit. À trancher :
-  la case redevient-elle un mur (agent bloqué) ou est-elle létale ?
+- **TRANCHÉ (9 août) : mur, jamais mort.** Une porte qui tue est un danger de
+  plus, et R02 y répondrait — cela **brouille le vocabulaire au lieu de
+  l'étendre**. Une porte qui bloque introduit un **obstacle conditionnel**,
+  catégorie qui n'existe pas encore dans le jeu : une case qui change d'état
+  sans jamais changer de nature. C'est là qu'est la valeur.
 
 #### B. Sens unique — **bloqué par un manque identifié**
 
@@ -126,13 +129,33 @@ l'atteint.*
    bloque.
 4. Sens unique, brouillard, clé — seulement si un niveau précis les réclame.
 
+## Interdiction — le type d'objectif oublié, et le meilleur allié de R06
+
+`interdiction` est **implémentée et utilisée nulle part**. C'est le type le
+plus proche de « atteindre une zone », pris par l'autre bout : au lieu d'aller
+quelque part, il s'agit de n'y aller jamais.
+
+**Le fait à assumer : aucune règle ne répond à une zone interdite.** R02 fuit
+ce qui **tue**, pas ce qui est **défendu**. Un niveau à interdiction se résout
+donc par la **géométrie et l'ordre seuls** — c'est le premier objectif du jeu
+auquel aucune règle ne réagit, un puzzle de routage pur.
+
+Ce n'est pas un défaut à corriger : c'est la propriété du type, et elle rend
+**R06 « Longer le mur » nettement plus utile**. Contourner une zone défendue
+sans qu'aucune règle ne la perçoive est exactement ce qu'un suiveur de mur
+sait faire — et rien d'autre ne le sait.
+
 ## Ce qu'il faut trancher avant d'écrire une ligne
 
-- **Une porte qui se referme sur un agent : mur ou mort ?**
 - **Un courant qui pousse dans un danger : voulu ou interdit par le
   validateur ?**
 - **La clé rompt-elle DA-01 ?** — si un agent devient particulier, la nuée
   cesse d'être le personnage.
+- **Le cycle de frontière est architectural** (carnet, décision 117) : la
+  cascade est « premier match gagnant, sans hystérésis », et deux règles qui
+  se contredisent à un seuil se renvoient l'agent indéfiniment. Aucune
+  géométrie ne l'empêche partout. Ajouter des règles au chapitre 2 **avant**
+  la révision des genres, c'est ajouter des paires susceptibles de cycler.
 - **Le corpus d'or** : chaque ajout au pipeline change l'empreinte de tous les
   états. Ce n'est pas une régression, c'est une cérémonie — et elle demande un
   accord explicite.
