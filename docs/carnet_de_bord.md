@@ -248,6 +248,88 @@ divergences ressembleraient à une régression pure.
 
 ---
 
+## Cause commune, et quatre arbitrages (9 aout 2026)
+
+116. **UN CHANGEMENT NE SE LIVRE PAS PARCE QU'IL A COUTE CHER.** Enonce du
+     concepteur, verse ici tel quel. Le cout deja engage n'est pas un
+     argument : il ne dit rien de la valeur de ce qu'on livre. L'impasse de
+     N3 a demande une journee, elle fonctionnait, et elle rendait le chapitre
+     pire sur la propriete qui compte le plus. Elle n'est pas livree.
+
+117. **LE CYCLE DE FRONTIERE EST ARCHITECTURAL, PAS UNE AFFAIRE DE LEVEL
+     DESIGN — amendement a la decision 30.** J'avais formule la loi comme une
+     contrainte de dessin : « une impasse ne se franchit que si la regle qui
+     en sort decide avant celle qui y mene ». C'est vrai, mais c'est un
+     symptome. La cause est **la cascade elle-meme** : premier match gagnant,
+     **sans hysteresis**. Deux regles qui se contredisent de part et d'autre
+     d'un seuil se renvoient l'agent indefiniment, et **aucune geometrie ne
+     peut l'empecher partout**.
+
+     Le dossier de la decision 30 recense trois besoins que le genre
+     « proposeur » n'exprime pas. Ils ont tous les trois **la meme cause** :
+
+     | Pathologie | Manifestation | Ce qui manque |
+     |---|---|---|
+     | R03 forcait sans condition | gel de la nuee (dec. 20-24) | genre **condition de maintien** |
+     | L'evitement pur est inexprimable | R02 repousse au lieu d'eviter (dec. 33) | genre **filtre** |
+     | **Cycle de frontiere** | R01/R02 (dec. 31), **R01/R03 (dec. 112)** | **hysteresis / etat de decision** |
+
+     Ce n'est plus une necessite pour R08 seulement : c'est la **cause commune
+     de trois pathologies deja rencontrees**, dont deux dans le chapitre 1.
+     La revision des genres de regles cesse d'etre une preparation du
+     chapitre 3 ; elle repare le chapitre 1. Echeance inchangee — apres J-1,
+     la question est structurante et ne se tranche pas sous calendrier.
+
+118. **N5 EST LE NIVEAU DE LA PAIRE INSEPARABLE — arbitrage du concepteur, et
+     il corrige mon plan.** Mon plan a cinq solutions minimales distinctes
+     assignait une pile par niveau, N5 compris. Cela **contredisait le CDC
+     §8.5**, qui lui assigne « il n'y a pas UNE bonne reponse » : une solution
+     minimale unique enseigne exactement l'inverse.
+     N5 accueille donc `[2,3,1]` **et** `[3,2,1]`, toutes deux gagnantes.
+     L'inversion est elegante : au lieu de separer une paire quasi
+     inseparable, le niveau **demontre que deux ordres differents reussissent**
+     — ce qui est litteralement sa lecon.
+     **Mesure prealable (invariant n.12), faite avant de dessiner** : la
+     contention R2/R3 vaut **6 en N3, 3 en N4, 0 en N5**. Sous dix agents-ticks
+     partout : la distinction entre ces deux ordres est **imperceptible**, et
+     N5 est le seul endroit du chapitre ou cela n'a aucune importance.
+     N1 a N4 portent les quatre autres piles minimales : `[1]`, `[2,1]`,
+     `[3,1]`, et l'une des deux mixtes.
+
+119. **INTERDICTION : oui, et c'est un choix assume.** Aucune regle ne repond
+     a une zone interdite — R02 fuit ce qui TUE, pas ce qui est DEFENDU. Un
+     niveau a interdiction se resout donc **par la geometrie et l'ordre
+     seuls** : c'est le premier objectif auquel aucune regle ne reagit, un
+     puzzle de routage pur.
+     Ce n'est pas un defaut a corriger, c'est la propriete du type. Elle rend
+     **R06 « Longer le mur » nettement plus utile** : contourner une zone
+     defendue sans qu'aucune regle ne la percoive, c'est exactement ce qu'un
+     suiveur de mur sait faire.
+
+120. **PORTE A PRESSION : MUR, JAMAIS MORT.** Une porte qui tue est un danger
+     de plus, et R02 y repondrait — cela **brouille le vocabulaire au lieu de
+     l'etendre**. Une porte qui bloque introduit un **obstacle conditionnel**,
+     categorie qui n'existe pas encore dans le jeu : c'est la qu'est la
+     valeur. Une case qui change d'etat sans jamais changer de nature.
+
+121. **VERIFICATION DEMANDEE : le corpus decrit bien le ch1_03 REVENU EN
+     ARRIERE.** Une ceremonie suivie d'un revert est exactement l'enchainement
+     ou une empreinte se retrouve a decrire un niveau disparu. Confronte
+     explicitement plutot que deduit du test vert :
+
+     | Pile | Archive | Attendu (revert) | A ne pas voir (impasse) |
+     |---|---|---|---|
+     | `[1]` | `1cf5bf4b…` | `1cf5bf4b…` | `8e42f972…` |
+     | `[2,1]` | `d3b694c9…` | `d3b694c9…` | `4f8c7b8f…` |
+     | `[2,3,1]` | `ed6ba9a0…` | `ed6ba9a0…` | `329491c5…` |
+     | `[3,1]` | `8047c635…` | `8047c635…` | `fcacd92f…` |
+
+     Et le niveau lui-meme : 21 agents (22 avec l'impasse), 8 murs (12),
+     `expected_wins: 8` (2), `calibrated_on: 418a5244…` (`941c31ad…`).
+     Aucune empreinte orpheline.
+
+---
+
 ## L'impasse : un mecanisme qui marche et qu'on ne livre pas (9 aout 2026)
 
 111. **L'ABSTENTION DE R01 EST LE SEUL LEVIER DE PROFONDEUR DU CHAPITRE 1, ET
