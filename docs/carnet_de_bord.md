@@ -248,6 +248,107 @@ divergences ressembleraient à une régression pure.
 
 ---
 
+## Arbitrages de chef de projet (9 aout 2026)
+
+126. **DOSSIER DE LA REVISION DES GENRES : L'ARGUMENT DE L'ARCHETYPE MANQUANT
+     EST RETIRE.** Les decisions 33 et 34 justifiaient le genre « filtre » par
+     deux motifs : le cycle de frontiere, et le fait que deux des quatre
+     archetypes du CDC §7.3 soient indiscernables. **Le second n'existe pas** —
+     c'etait une erreur de mesure, pas un symptome d'architecture (decision
+     122). Il est retire du dossier.
+     **Les deux motifs qui restent, et ils sont reels :**
+     - **le cycle de frontiere** — propriete de la cascade elle-meme, premier
+       match gagnant SANS HYSTERESIS. Constate entre R01/R02 (dec. 31) et
+       entre R01/R03 (dec. 112) : ce n'est pas une affaire de regle
+       particuliere ;
+     - **la stigmergie de R08** — deposer un marqueur n'est pas proposer un
+       deplacement. Sous le genre « proposeur », soit la regle s'abstient et
+       n'est pas dans la pile, soit elle propose l'immobilite et masque tout
+       ce qui suit. Le chapitre 3 est entierement bati dessus.
+     Entamer la revision avec l'argument de l'archetype serait entamer avec un
+     **argument fantome** — et c'est le genre d'erreur qui fait trancher une
+     question structurante dans la mauvaise direction.
+
+127. **L'INVARIANT n.12 FONCTIONNE DANS LES DEUX SENS, ET C'EST LA MOITIE QUE
+     J'AVAIS MANQUEE.** Je l'avais ecrit ainsi : « un mecanisme observe la ou
+     il n'a rien a faire parait toujours correct ». Le symetrique est tout
+     aussi vrai et bien plus couteux : **un mecanisme juge casse la ou il n'a
+     rien a faire parait casse.** Les deux cloturent l'examen.
+     **Un constat d'echec doit etre etabli sur le terrain qui SOLLICITE le
+     mecanisme, exactement comme un constat de succes.** Trois semaines de
+     carnet ont porte « EQ-05 definitivement viole, fait acquis » parce que la
+     mesure avait ete faite sur des blocs compacts, ou les archetypes n'ont
+     rien a exprimer. Une affirmation fausse consignee coute plus cher qu'une
+     absence de consignation : elle est relue comme un fait.
+
+128. **N3 RESTE CHARGE, ET C'EST LA RAISON QUI COMPTE.** Le niveau porte trois
+     choses a la fois : l'apparition de la cohesion, le compromis
+     vitesse/securite du CDC §8.5, et la lecon « la cohesion est aveugle ».
+     C'est aussi le seul niveau ou les quatre archetypes se separent.
+     **Les deux faits sont le meme fait.** Une geometrie qui sollicite trois
+     regles simultanement est une geometrie riche, et la richesse produit a la
+     fois la separation ET la surcharge. Alleger N3 reviendrait tres
+     probablement a perdre la separation — donc a reperdre EQ-05, qui vient
+     tout juste d'etre etabli.
+     Le lien est consigne plutot que corrige. **L'arbitrage se tranchera avec
+     de vrais joueurs, pas avant** : « trop charge » est un jugement qui
+     demande quelqu'un qui decouvre, et personne dans ce projet ne decouvre.
+
+129. **QN-03 EST MESUREE. Chiffres du chapitre, seuil toujours non fixe.**
+
+     | Niveau | Echecs proches | Perdantes | Ratio |
+     |---|---|---|---|
+     | ch1_01 | 0 | 1 | 0 % |
+     | ch1_02 | 0 | 4 | 0 % |
+     | ch1_03 | 0 | 8 | 0 % |
+     | ch1_04 | 0 | 9 | 0 % |
+     | ch1_05 | **5** | 10 | **50 %** |
+
+     Un seul niveau produit de la frustration productive, et c'est celui ou
+     l'on perd **par un agent sur vingt et un** — 4 % de manque. Ailleurs on
+     echoue de loin : 20 a 25 % en N2 et N4, 95-100 % pour les piles sans
+     moteur.
+     **Deux faux zeros corriges en route**, et ils valent d'etre notes :
+     - mesurer le PIRE manque tous objectifs confondus donnait zero partout :
+       une partie perdue au tick 6 sur une preservation a forcement zero agent
+       sorti, donc 95 % de manque d'extraction — qui masquait la vraie cause,
+       un seul agent perdu. On mesure desormais **l'objectif qui a
+       reellement fait perdre**, dans l'ordre du moteur ;
+     - pour la celerite, la simulation s'arrete A l'echeance, donc le
+       depassement valait toujours zero. On **rejoue la pile sans l'echeance**
+       pour savoir quand elle aurait gagne. ch1_04 passe ainsi d'un faux 0 % a
+       un vrai 25 % de manque pour la famille prudente.
+     Le seuil plancher reste au concepteur : l'outil mesure, il ne juge pas.
+
+130. **LA CONTENTION N'EST PAS UNE MESURE DE VISIBILITE — correction de ma
+     propre decision 123.** J'avais pose comme condition prealable a N5 que la
+     contention R2/R3 y soit « strictement positive », en laissant entendre
+     qu'une contention faible donnerait une separation faible.
+     **Balayage de dix-huit geometries candidates : c'est faux.** Toutes
+     separent `[2,3,1]` de `[3,2,1]`, de 11 a 39 ticks d'ecart et jusqu'a 35
+     cases — **y compris celles dont la contention vaut 1 ou 2**.
+     La raison est evidente apres coup : **une seule decision divergente
+     cascade**. Un agent qui part a gauche plutot qu'a droite change sa
+     position, donc celles de ses voisins au tick suivant, donc tout l'aval.
+     Un agent-tick de contention suffit a produire deux nuees differentes.
+     **Ce que la contention mesure vraiment : SI l'ordre compte, jamais
+     COMBIEN.** Zero = l'ordre est inobservable ; tout ce qui est au-dessus de
+     zero se mesure a la trajectoire, pas au compteur. C'est la trajectoire
+     qui doit entrer dans les fiches, et la contention qui doit rester un
+     detecteur binaire.
+
+131. **N5 EST DONC FAISABLE, et la condition est bien plus facile que je ne le
+     croyais.** Il suffit d'un trainard isole dont la route croise un danger —
+     la recette de ch1_03. Meilleure candidate mesuree : **deux trainards,
+     danger au niveau du bloc, contention R2/R3 = 12, separation 39 ticks /
+     35 cases, 8 piles gagnantes**.
+     Reserve a lever au dessin : ces candidates laissent 3 a 8 piles en
+     boucle. C'est acceptable pour des piles perdantes, inacceptable pour une
+     gagnante (le joueur y verrait un bug) — le validateur le signale deja
+     pile par pile.
+
+---
+
 ## Audit du chapitre 1 : ce que la mesure des ORDRES revele (9 aout 2026)
 
 122. **EQ-05 N'EST PLUS VIOLE — la decision 34 est PERIMEE et se corrige ici.**
