@@ -1,67 +1,66 @@
-# N3 « Les trainards » — la cohesion est AVEUGLE.
+# N3 « L'impasse » — une regle qui s'abstient donne la parole a la suivante.
 #
-# Ce que N3 corrige par rapport a sa premiere version : la pile [Lumiere]
-# seule y gagnait. C'etait le defaut de fond du chapitre — plusieurs niveaux
-# se resolvaient avec une seule regle, et la profondeur annoncee par la regle
-# d'or restait theorique. Ici, et dans tout ce qui suit, AUCUNE pile d'une
-# seule regle ne gagne. Le CDC §7.3 le demandait deja : la « nuee pressee »
-# fonce et se fait faucher, c'est l'erreur instructive.
+# CE NIVEAU EXISTE POUR CASSER LA TRANSPOSABILITE. Jusqu'ici la pile [Lumiere]
+# seule resolvait N1, N3 et N4 : le joueur trouvait une reponse au premier
+# niveau et la reportait. Un chapitre dont on emporte la solution cesse d'etre
+# lu.
 #
-# UN SEUL DANGER, ET C'EST L'INVARIANT N.13 QUI L'IMPOSE.
+# LE LEVIER EST L'ABSTENTION DE R01, et c'est le seul disponible. R01 ne
+# s'abstient que dans trois cas : aucune lumiere, deja dessus, ou **aucune
+# direction franchissable ne rapproche**. Le troisieme se fabrique avec des
+# murs — une impasse dont toutes les sorties eloignent.
 #
-# Le premier jet en posait deux : un a l'ouest pour faucher la famille
-# directe, un a l'est pour faucher la cohesion. Mesure : niveau INSOLUBLE,
-# 15 agents bloques, la famille prudente prise entre les deux repulseurs.
-# La raison est celle deja etablie : R02 percoit a d² <= 25, R03 a d² <= 16.
-# Un danger place pour punir la cohesion doit border un trainard lui-meme
-# percu par le bloc — il est donc NECESSAIREMENT percu par le bloc, et deux
-# tels dangers en vis-a-vis enferment la nuee.
+# L'impasse est en (2,4) : murs au Nord (2,3), a l'Ouest (1,4) et a l'Est
+# (3,4), ouverte au Sud seulement. Depuis l'interieur, la lumiere est au
+# Nord-Ouest : le Nord et l'Ouest sont murs, l'Est est mur, et le Sud eloigne.
+# R01 se tait. **C'est la premiere fois du chapitre que la suite de la pile a
+# la parole**, et sans elle l'agent ne bouge plus jamais.
 #
-# On ne peut donc pas punir deux familles par des dangers dans un meme
-# niveau. N3 punit la cohesion ; c'est N2 et N5 qui punissent la vitesse.
+# QUI TOMBE DEDANS. Un eclaireur, seul dans la colonne 2, part en (2,8).
 #
-# LE DANGER EST A L'OUEST, ET C'EST LA TROISIEME CONTRAINTE. Pose a l'est du
-# bloc, il repoussait la nuee prudente LOIN de l'ouverture : 12 agents
-# bloques, niveau insoluble une fois de plus. Fuite et entonnoir doivent
-# tirer dans le meme sens (contrainte etablie en N2).
+# ET VOICI LA LOI DU NIVEAU, MESUREE ET NON DEVINEE. Une fois l'eclaireur dans
+# l'impasse, R03 le fait bien sortir par le Sud — mais R01, la case suivante,
+# l'y renvoie aussitot. Sonde tick par tick : entree t=4, sortie t=5, entree
+# t=6, sortie t=7, puis le bloc passe au Nord, R03 s'abstient a son tour et
+# l'agent reste coince pour de bon.
 #
-# Le danger (1,10) ne tue personne sous R01 ni sous R02 — il est hors de
-# toute trajectoire. Il ne fauche QUE si la cohesion parle en premier : le
-# trainard de (0,10) est isole (d² = 9 > 2) mais percoit le bloc
-# (d² = 9 <= 16), et le barycentre est a l'EST. L'ordre N>E>S>O teste le
-# Nord, qui eloigne du barycentre, puis l'Est, qui l'en rapproche : droit
-# dans le feu.
+# **C'est le cycle limite de l'invariant n.14, entre un attracteur et la
+# COHESION cette fois, et non entre un attracteur et un repulseur.** La loi est
+# donc plus generale que sa premiere formulation : deux regles qui se
+# contredisent a une frontiere produisent un cycle, quelles qu'elles soient.
 #
-# Sous R01 en tete, ce meme trainard monte dans sa colonne et vit. Sous R02
-# en tete, il fuit vers le Nord — qui ELOIGNE du danger — et vit aussi.
-# C'est la cohesion, et elle seule, qui le tue.
+# La consequence pour le level design est nette : **une impasse ne se franchit
+# que si la regle qui en sort decide AVANT celle qui y mene**. R03 derriere R01
+# ne sauve personne — elle ne parle qu'une case sur deux. R03 devant R01 sort
+# l'eclaireur, et le garde dehors.
 #
-# Resultat attendu : seule la famille prudente passe. C'est le niveau ou l'on
-# apprend que ramener un trainard n'est pas gratuit.
+# C'est la lecon, et elle n'est transposable sur aucun autre niveau du
+# chapitre : ailleurs, mettre la cohesion en tete tue (N5) ou ne sert a rien
+# (N4). Ici, c'est la seule chose qui marche.
 id: ch1_03
-name: Les trainards
+name: L'impasse
 tutorial: true
 allowed_rules: [R01, R02, R03]
 slots: 3
 max_ticks: 120
 objective: extraction 100
-lesson: "Ramener un trainard sans regarder ou : la cohesion est aveugle."
-expected_wins: 8
-expected_classes: 3
-calibrated_on: 418a5244cecd08f6
+lesson: "Une impasse ne se franchit que si la regle qui en sort decide AVANT celle qui y mene."
+expected_wins: 2
+expected_classes: 1
+calibrated_on: 941c31ad9bca973e
 ---
 . . . . . L . . . . .
 # # # # E E E # # # #
 . . . . . . . . . . .
+. . # . . . . . . . .
+. # . # . . . . . . .
 . . . . . . . . . . .
 . . . . . . . . . . .
 . . . . . . . . . . .
+. . o . . . . . . . .
 . . . . . . . . . . .
-. . . . . . . . . . .
-. . . . . . . . . . .
-. . . . . . . . . . .
-o X . o o o o o . . .
-. . . o o o o o . . .
-. . . o o o o o . . .
-. . . o o o o o . . .
+o X . . o o o o o . .
+. . . . o o o o o . .
+. . . . o o o o o . .
+. . . . o o o o o . .
 . . . . . . . . . . .

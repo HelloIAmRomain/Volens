@@ -2,18 +2,18 @@
   "agents": [
     {
       "pos": [
+        2,
+        8
+      ]
+    },
+    {
+      "pos": [
         0,
         10
       ]
     },
     {
       "pos": [
-        3,
-        10
-      ]
-    },
-    {
-      "pos": [
         4,
         10
       ]
@@ -38,8 +38,8 @@
     },
     {
       "pos": [
-        3,
-        11
+        8,
+        10
       ]
     },
     {
@@ -68,8 +68,8 @@
     },
     {
       "pos": [
-        3,
-        12
+        8,
+        11
       ]
     },
     {
@@ -98,8 +98,8 @@
     },
     {
       "pos": [
-        3,
-        13
+        8,
+        12
       ]
     },
     {
@@ -123,6 +123,12 @@
     {
       "pos": [
         7,
+        13
+      ]
+    },
+    {
+      "pos": [
+        8,
         13
       ]
     }
@@ -132,10 +138,10 @@
     2,
     3
   ],
-  "calibrated_on": "418a5244cecd08f6",
-  "expected_classes": 3,
-  "expected_wins": 8,
-  "geometry_hash": "418a5244cecd08f6",
+  "calibrated_on": "941c31ad9bca973e",
+  "expected_classes": 1,
+  "expected_wins": 2,
+  "geometry_hash": "941c31ad9bca973e",
   "grid": {
     "cells": [
       0,
@@ -173,6 +179,7 @@
       0,
       0,
       0,
+      1,
       0,
       0,
       0,
@@ -182,10 +189,9 @@
       0,
       0,
       0,
+      1,
       0,
-      0,
-      0,
-      0,
+      1,
       0,
       0,
       0,
@@ -312,9 +318,9 @@
     ]
   },
   "id": "ch1_03",
-  "lesson": "Ramener un trainard sans regarder ou : la cohesion est aveugle.",
+  "lesson": "Une impasse ne se franchit que si la regle qui en sort decide AVANT celle qui y mene.",
   "max_ticks": 120,
-  "name": "Les trainards",
+  "name": "L'impasse",
   "objectives": [
     {
       "percent": 100,
