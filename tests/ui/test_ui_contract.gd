@@ -211,7 +211,11 @@ func test_the_next_free_slot_is_marked_and_the_others_are_not() -> void:
 # par une pile que personne n'a validée — et le niveau ne prouverait plus rien.
 
 func test_the_level_declares_how_many_ranks_are_open() -> void:
-	assert_eq(_screen._open_slots, 2, "ch1_02 déclare slots: 2")
+	# La valeur attendue est lue DANS LE NIVEAU : la recopier ici en ferait une
+	# troisième vérité, qui dériverait au premier redessin (invariant n°11).
+	var level: Variant = JSON.parse_string(FileAccess.get_file_as_string(LEVEL_PATH))
+	assert_eq(_screen._open_slots, LevelSpec.open_slots(level),
+		"les rangs ouverts sont ceux que le niveau déclare")
 	assert_false(_screen._slots[0].locked)
 	assert_false(_screen._slots[1].locked)
 	assert_true(_screen._slots[2].locked, "le rang 3 n'existe pas sur ce niveau")

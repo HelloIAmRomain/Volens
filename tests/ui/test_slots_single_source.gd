@@ -138,7 +138,7 @@ func _all_gd_files(dir_path: String) -> Array[String]:
 func test_every_level_is_calibrated_on_its_current_geometry() -> void:
 	for level in _playable_levels():
 		var data: Dictionary = level["data"]
-		var declared := String(data.get("calibrated_on", ""))
+		var declared := LevelSpec.calibrated_on(data)
 		assert_ne(declared, "", "%s : aucune calibration déclarée" % level["id"])
 		assert_eq(declared, LevelSpec.geometry_hash(data),
 			"%s : paramètres calibrés sur une autre géométrie (invariant n°15)" % level["id"])

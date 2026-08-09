@@ -57,13 +57,13 @@ func test_the_sheets_match_the_levels_they_describe() -> void:
 			"%s : identifiant" % level_id)
 		assert_eq(int(sheet.get("agents", -1)), (data.get("agents", []) as Array).size(),
 			"%s : effectif" % level_id)
-		assert_eq(int(sheet.get("slots", -1)), int(data.get("slots", -1)),
+		assert_eq((int(sheet["slots"]) if sheet.has("slots") else -1), LevelSpec.open_slots(data),
 			"%s : nombre de rangs" % level_id)
-		assert_eq(int(sheet.get("expected_wins", -1)), int(data.get("expected_wins", -1)),
+		assert_eq((int(sheet["expected_wins"]) if sheet.has("expected_wins") else -1), LevelSpec.expected_wins(data),
 			"%s : piles gagnantes annoncées" % level_id)
 		# La calibration lie la fiche à une géométrie précise : c'est le champ
 		# qui rend l'écart détectable dès qu'un mur bouge.
-		assert_eq(String(sheet.get("calibrated_on", "")), String(data.get("calibrated_on", "")),
+		assert_eq((String(sheet["calibrated_on"]) if sheet.has("calibrated_on") else ""), LevelSpec.calibrated_on(data),
 			"%s : la fiche décrit une AUTRE géométrie que le niveau" % level_id)
 
 		var grid: Array = sheet.get("grid", [])
@@ -108,12 +108,12 @@ func test_open_levels_announce_a_measured_number_of_solutions() -> void:
 			continue
 		var level_id := String(entry["id"])
 		var data := LevelCatalog.load_level_data(level_id)
-		if bool(data.get("tutorial", false)):
+		if LevelSpec.is_tutorial(data):
 			continue
 		var announced: int = SummaryScreen._known_solutions(level_id)
-		assert_eq(announced, int(data.get("expected_wins", -1)),
+		assert_eq(announced, LevelSpec.expected_wins(data),
 			"%s : le bilan annonce %d solutions, le niveau en déclare %d" % [
-				level_id, announced, int(data.get("expected_wins", -1))])
+				level_id, announced, LevelSpec.expected_wins(data)])
 		assert_gt(announced, 1,
 			"%s est un niveau ouvert : annoncer une seule solution contredirait P5" % level_id)
 
@@ -125,7 +125,7 @@ func test_tutorial_levels_announce_nothing() -> void:
 		if not bool(entry["ready"]):
 			continue
 		var level_id := String(entry["id"])
-		if not bool(LevelCatalog.load_level_data(level_id).get("tutorial", false)):
+		if not LevelSpec.is_tutorial(LevelCatalog.load_level_data(level_id)):
 			continue
 		assert_eq(SummaryScreen._known_solutions(level_id), 0,
 			"%s est un tutoriel : le bilan ne doit annoncer aucun compte" % level_id)

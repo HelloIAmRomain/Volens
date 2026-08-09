@@ -341,13 +341,13 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 	# Métadonnées tutorielles (CDC §12.2.1) : transportées par le format et
 	# rapportées SANS verdict QN-01 — les bandes proportionnelles restent
 	# indicatives tant que T-040 n'est pas clos.
-	var tutorial := bool(level_data.get("tutorial", false))
+	var tutorial := LevelSpec.is_tutorial(level_data)
 	var has_expected: bool = level_data.has("expected_wins")
-	var expected_wins := int(level_data.get("expected_wins", -1))
+	var expected_wins := LevelSpec.expected_wins(level_data)
 	# Arbitrage du 6 août 2026 : expected_wins compte des PILES (convention
 	# de l'outil) ; expected_classes, optionnel, compte des classes
 	# structurelles — les deux sont confrontés et rapportés.
-	var expected_classes := int(level_data.get("expected_classes", -1))
+	var expected_classes := LevelSpec.expected_classes(level_data)
 
 	# Sur-place perpétuel parmi les piles GAGNANTES : le niveau est jouable et
 	# paraît cassé. Rapporté, jamais bloquant — c'est au concepteur de juger.

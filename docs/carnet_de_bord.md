@@ -254,6 +254,102 @@ divergences ressembleraient à une régression pure.
 
 ---
 
+## N4 corrige, hygiene de la suite, et le controle generique (9 aout 2026)
+
+147. **N4 SE GAGNAIT AVEC UNE SEULE REGLE — defaut signale par le concepteur,
+     corrige.** `[Lumiere]` seule y gagnait alors que N4 n'introduit pas R01 :
+     le joueur pouvait reporter la reponse de N1 sans jamais rien ordonner,
+     dans un chapitre entierement bati sur l'idee que l'ordre compte (S4).
+     **Correction par une impasse**, seul levier qui fait taire R01. N4 porte
+     desormais deux pieges independants : la famille directe bute sur
+     l'impasse, la prudente sur l'echeance, **seule la cohesion en tete passe
+     les deux** — l'arbitrage que le CDC §8.5 attend du premier objectif
+     compose.
+     Mesures : la directe echoue de **4 %** (un agent sur 21, visible et
+     localisable a l'ecran), la prudente de **25 %**. Echeance 24, cohesion 18,
+     prudence 30 : six ticks de marge de chaque cote.
+     **Manquement S4 restant : ch1_03.** Non corrige — le meme remede y ferait
+     de `[3,1]` une cle universelle (decision 113).
+
+148. **12 % DE PILES GAGNANTES EN N4 : LA CIBLE, PAS UNE TOLERANCE.**
+     Arbitrage du concepteur, et il renverse la charge de la preuve. La bande
+     indicative 20-50 % (CDC §12.2.1) a ete ecrite **avant qu'un seul niveau
+     existe**, et le CDC la declare lui-meme non opposable.
+     Douze pour cent est la consequence directe de deux pieges independants
+     dans un meme niveau, et c'est ce qui fait de N4 **le seul niveau du
+     chapitre qu'aucune pile de deux regles ne resout par hasard**. Un niveau a
+     40 % de gagnantes se traverse en essayant ; celui-ci demande de comprendre
+     pourquoi la vitesse reste coincee et pourquoi la prudence arrive trop
+     tard. Consigne comme voulu dans l'en-tete du niveau et dans sa fiche.
+
+149. **`pending()` EST BANNI DES TESTS, par controle lexical.** Deuxieme
+     occurrence a deux semaines d'intervalle, toutes deux sur un objectif non
+     atteint qu'on voulait garder visible. GUT sort en **code 1** dessus : la
+     CI passe au rouge, et **un rouge permanent cesse d'etre un signal** — on
+     apprend a le lire comme du bruit, et la vraie regression suivante passe
+     inapercue. La bonne forme existait deja dans la suite : le **cliquet**.
+
+150. **CINQUIEME FORME DU PIEGE DE L'INVARIANT n.12 : UN TEST DONT L'OBJET
+     N'EST PAS VERSIONNE N'EST PAS UN TEST.** Vert sur le poste qui possede le
+     fichier, absent partout ailleurs : il ne prouve rien tout en donnant
+     l'apparence d'une couverture.
+     La serie prise d'un bloc, et elle est plus instructive qu'aucune de ses
+     entrees isolee :
+     - paraitre correct clot l'examen (dec. 12) ;
+     - paraitre casse clot l'examen (dec. 127) ;
+     - un zero se verifie comme un chiffre inattendu (dec. 137) ;
+     - une note ne protege de rien (dec. 103) ;
+     - **un test qui ne s'execute nulle part ressemble a un test.**
+     Cas rencontre : un controle du prereglage d'export ecrit sur
+     `export_presets.cfg`, hors depot. **Le nouveau controle a attrape ma
+     propre reference residuelle des sa premiere execution** — un bloc
+     conditionnel « si le fichier existe », vert quand il est absent.
+     Correction de fond : la garantie qui compte porte sur l'**ARTEFACT**, pas
+     sur la configuration. Apres export, `unzip -l | grep -c` doit valoir zero.
+
+151. **TOUTE VALEUR DE NIVEAU RECOPIEE HORS DE SA SOURCE FINIT PAR DIVERGER.**
+     Constat, pas prudence — le motif s'est produit **trois fois**, sur trois
+     champs, et chaque fois la divergence n'a ete vue que par accident :
+     - `slots` : l'interface offrait quatre rangs la ou le validateur en
+       enumerait deux ; `expected_wins` devenait faux, et la lecon du niveau
+       avec lui (invariant n.11) ;
+     - `expected_wins` : une table en dur dans `test_chapter1_arc` recopiait
+       les valeurs des trois derniers niveaux. Elle a derive **des la premiere
+       refonte**, et le test a echoue en annoncant « 2 attendu 7 » alors que la
+       verite etait l'inverse ;
+     - `slots` de nouveau : une assertion recopiait « ch1_02 declare slots: 2 ».
+     **Trois corrections au cas par cas auraient laisse passer le quatrieme
+     champ.** D'ou un controle GENERIQUE (invariant n.16) : les champs
+     declaratifs ne se lisent que par `LevelSpec`, et un test lexical refuse
+     toute autre lecture. Il a attrape une lecture residuelle des sa premiere
+     execution.
+
+152. **LA LIGNE DE PARTAGE : DECRIRE contre FAIRE TOURNER.** `max_ticks`,
+     `objectives`, `allowed_rules` et `agents` restent libres — ce sont des
+     **entrees de la simulation**, lues par `SimCore` la ou c'est son travail ;
+     les proteger interdirait au moteur de fonctionner. `expected_wins`,
+     `expected_classes`, `tutorial`, `calibrated_on` et `slots` DECRIVENT le
+     niveau, ne pilotent rien, et sont donc recopies partout : ce sont eux qui
+     divergent.
+
+153. **LIRE UN RAPPORT N'EST PAS LIRE UN NIVEAU.** Les rapports du validateur
+     et les blocs de releve des fiches portent leur propre copie de ces
+     champs — et les confronter au niveau est justement leur raison d'etre. On
+     les distingue par l'**indexation directe** (`x["cle"]`), qui ne ressemble
+     pas a une lecture de niveau. Meme convention que pour `slots` : la garde
+     lexicale reste utilisable **sans liste d'exceptions a rallonge**, et c'est
+     ce qui la rend tenable.
+
+154. **UNE CHAINE `&&` A AVALE UNE CONSIGNATION.** Les decisions 147 a 150 ont
+     ete ecrites une premiere fois dans la meme commande qu'un `patch.py` qui a
+     echoue : le `&&` a empeche le script suivant de s'executer, et rien ne
+     l'a signale — la commande a rendu la main sans erreur visible.
+     Retrouve par hasard, en cherchant une autre ancre. **Une consignation ne
+     se chaine pas derriere une operation qui peut echouer** : elle part seule,
+     et l'on verifie qu'elle est arrivee.
+
+---
+
 ## DT-22 construit — le parc de testeurs devient un instrument (9 aout 2026)
 
 141. **DT-22 EXISTE. C'ETAIT LE DERNIER ELEMENT DU CHEMIN CRITIQUE DE LA

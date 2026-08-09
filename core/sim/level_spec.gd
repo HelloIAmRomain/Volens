@@ -80,3 +80,41 @@ static func geometry_hash(level_data: Dictionary) -> String:
 		h = StateHash.feed_int(h, int(pos[0]))
 		h = StateHash.feed_int(h, int(pos[1]))
 	return StateHash.to_hex(h)
+
+# --- Champs DÉCLARATIFS d'un niveau ------------------------------------------
+#
+# Ces valeurs ne pilotent pas la simulation : elles décrivent ce que le niveau
+# prétend être. Elles sont donc recopiées partout — fiche de conception, écran
+# de bilan, rapports du validateur, assertions de tests — et **c'est
+# exactement ce qui les fait diverger**.
+#
+# LE MOTIF, CONSTATÉ TROIS FOIS. `slots` était lu à deux endroits, et
+# l'interface a fini par en offrir quatre là où le validateur en énumérait deux
+# (invariant n°11). Une table en dur dans `test_chapter1_arc` recopiait les
+# `expected_wins` des trois derniers niveaux, et a dérivé dès la première
+# refonte. Une assertion recopiait le `slots` de ch1_02.
+#
+# **Toute valeur de niveau recopiée hors de son fichier source finit par
+# diverger.** La parade est la même que pour `slots` : un accesseur unique, et
+# un contrôle lexical qui refuse toute autre lecture de la clé
+# (`tests/arch/test_level_field_access.gd`).
+
+## Nombre de piles gagnantes annoncé par la fiche, ou -1 s'il n'est pas déclaré.
+## Contrat entre la conception et le moteur : le validateur le confronte à la
+## mesure, et l'écran de bilan l'affiche sur les niveaux ouverts (CDC §8.5).
+static func expected_wins(level_data: Dictionary) -> int:
+	return int(level_data.get("expected_wins", -1))
+
+## Nombre de classes structurelles annoncé, ou -1.
+static func expected_classes(level_data: Dictionary) -> int:
+	return int(level_data.get("expected_classes", -1))
+
+## Un niveau tutoriel est exempté de QN-01 et porte à la place un contrat
+## exact : `N_win` doit valoir `expected_wins`, ni plus ni moins (CDC §12.2.1).
+static func is_tutorial(level_data: Dictionary) -> bool:
+	return bool(level_data.get("tutorial", false))
+
+## Empreinte de la géométrie sous laquelle les paramètres ont été mesurés
+## (invariant n°15), ou "" si le niveau n'en déclare pas.
+static func calibrated_on(level_data: Dictionary) -> String:
+	return String(level_data.get("calibrated_on", ""))
