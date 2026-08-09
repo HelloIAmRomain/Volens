@@ -62,11 +62,12 @@ func _wins(level_id: String, stack: Array) -> bool:
 
 # --- l'arc, famille par famille -------------------------------------------
 
-func test_the_direct_family_wins_the_first_two_and_loses_the_last() -> void:
-	# La vitesse paie tant que rien ne se met en travers ; elle saigne dès
-	# qu'un traînard suit sa route naturelle dans le feu (N5).
+func test_the_direct_family_wins_only_the_third_level() -> void:
+	# La vitesse paie tant que rien ne se met en travers. Elle bute sur
+	# l'impasse de N4 — R01 s'y tait, et seule une règle placée AVANT elle en
+	# sort — et elle saigne en N5, où un traînard suit sa route dans le feu.
 	assert_true(_wins("ch1_03", FAMILY_A), "A doit gagner N3")
-	assert_true(_wins("ch1_04", FAMILY_A), "A doit gagner N4")
+	assert_false(_wins("ch1_04", FAMILY_A), "A doit PERDRE N4 (impasse)")
 	assert_false(_wins("ch1_05", FAMILY_A), "A doit PERDRE N5")
 
 func test_the_prudent_family_pays_in_time() -> void:
@@ -108,10 +109,14 @@ func test_every_level_is_winnable_and_none_is_a_formality() -> void:
 func test_the_declared_predictions_match_the_simulation() -> void:
 	# `expected_wins` est écrit dans le fichier de niveau et sert de contrat
 	# entre la fiche de conception et le moteur. S'il dérive, la fiche ment.
-	var expected := {"ch1_03": 8, "ch1_04": 7, "ch1_05": 6}
+	#
+	# La valeur attendue est lue DANS LE NIVEAU, jamais recopiée ici : une
+	# table en dur dans le test devient une troisième vérité, qu'il faut
+	# penser à mettre à jour — et qui a effectivement dérivé lors de la
+	# refonte de ch1_04.
 	for level_id in LEVELS:
 		var data := LevelCatalog.load_level_data(level_id)
-		assert_eq(int(data.get("expected_wins", -1)), expected[level_id],
-			"%s : expected_wins déclaré" % level_id)
-		assert_eq((_winners[level_id] as Dictionary).size(), expected[level_id],
-			"%s : piles gagnantes mesurées" % level_id)
+		var declared: int = int(data.get("expected_wins", -1))
+		assert_gt(declared, 0, "%s : aucun expected_wins déclaré" % level_id)
+		assert_eq((_winners[level_id] as Dictionary).size(), declared,
+			"%s : piles gagnantes mesurées vs déclarées" % level_id)

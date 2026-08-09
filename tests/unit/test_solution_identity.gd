@@ -189,7 +189,7 @@ func _single_rule_winners() -> Array:
 ## Violations connues, nommément. Le jour où N4 cesse d'être gagné par la
 ## seule Lumière, cette liste se vide et le test devient inconditionnel —
 ## c'est ce que la seconde assertion exige.
-const S4_KNOWN_BREACHES := ["ch1_03:1", "ch1_04:1"]
+const S4_KNOWN_BREACHES := ["ch1_03:1"]
 
 func test_a_single_rule_only_wins_the_level_that_introduces_it() -> void:
 	var breaches := PackedStringArray()

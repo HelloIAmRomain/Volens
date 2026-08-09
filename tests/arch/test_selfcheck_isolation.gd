@@ -7,7 +7,6 @@ extends GutTest
 ## paquet**. Ces tests vérifient les trois verrous qui le rendent vrai.
 
 const SELFCHECK_DIR := "res://game/selfcheck"
-const PRESETS := "res://export_presets.cfg"
 const PRESETS_TEMPLATE := "res://docs/export_presets.cfg.exemple"
 
 func _all_gd(dir_path: String, out: Array) -> void:
@@ -62,12 +61,15 @@ func test_the_production_preset_excludes_the_directory() -> void:
 	assert_true(template.contains("test_build"),
 		"le modèle doit documenter la variante de test, sinon elle sera recomposée à la main")
 
-	# Et si le préréglage local existe, il doit dire la même chose : c'est lui
-	# qui exporte réellement.
-	if FileAccess.file_exists(PRESETS):
-		var local := FileAccess.get_file_as_string(PRESETS)
-		assert_true(local.contains("game/selfcheck/*"),
-			"le préréglage LOCAL a dérivé du modèle : il exporterait l'écran de diagnostic")
+	# LE PRÉRÉGLAGE LOCAL N'EST PAS CONTRÔLÉ ICI, et c'est délibéré : il est
+	# hors dépôt, donc un test qui porte dessus serait vert sur ce poste et
+	# absent partout ailleurs — c'est-à-dire aucun test.
+	#
+	# La garantie qui compte porte de toute façon sur l'ARTEFACT, pas sur la
+	# configuration : après export, `unzip -l build/*.apk | grep -c
+	# "selfcheck\\|golden"` doit valoir zéro. C'est documenté dans la
+	# procédure d'export (`docs/environnement_dev.md`) et vérifié sur le
+	# paquet réel, ce qu'aucune lecture de préréglage ne peut faire.
 
 func test_the_short_code_is_deterministic_and_readable() -> void:
 	# Le code est recopié À LA MAIN par quelqu'un qui ne sait pas ce qu'il

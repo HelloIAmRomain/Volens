@@ -1,60 +1,40 @@
-# N4 « Le prix du temps » — la prudence coute des ticks.
+# N4 « Le prix du temps » — deux facons d'echouer, une seule de passer.
 #
-# Place dans l'arc QN-02 : c'est ici que la famille R02-en-tete perd.
+# CE QUE CE NIVEAU CORRIGE. La pile [Lumiere] SEULE y gagnait. C'etait un
+# defaut de game design : une regle unique resolvait un niveau qui n'est pas
+# celui ou on la decouvre (regle S4). Le joueur pouvait reporter la reponse de
+# N1 sans jamais rien ordonner.
 #
-# LE DISPOSITIF. Il n'y a RIEN a craindre sur ce niveau : aucun agent ne peut
-# mourir, quelle que soit la pile. Le danger est place a COTE du flux, jamais
-# dedans. C'est tout le propos : R02 ne distingue pas un danger qui menace
-# d'un danger qui passe a portee, et la portee (d² <= 25) est large.
+# DEUX PIEGES INDEPENDANTS, ET C'EST CE QUI FAIT LE NIVEAU.
 #
-# Geometrie, et pourquoi elle est contrainte (invariant n.12) :
-#  · le danger est en (1,8), donc AU NORD du bloc. C'est essentiel : R02 fuit
-#    en augmentant la distance de Manhattan, et pour un agent situe au SUD
-#    du danger, monter RAPPROCHE. Le Nord est donc refuse, l'Est l'emporte,
-#    et chaque tick de fuite est un tick qui ne monte pas.
-#    Un danger place au sud ou au niveau du bloc ferait fuir vers le Nord,
-#    c'est-a-dire gratuitement : le niveau ne prouverait rien.
-#  · UN trainard en (3,9), et il n'est pas decoratif. Sans lui le bloc est
-#    compact, R03 ne se declenche jamais, et le validateur a raison de le
-#    dire : l'ordre R01/R03 et R02/R03 devient INOBSERVABLE ici (RG-13,
-#    contention nulle). Un niveau qui laisse deux regles ne jamais se croiser
-#    n'enseigne rien sur leur ordre. Le trainard est place pour que les deux
-#    paires se disputent quelque chose :
-#      - il est isole (le sommet du bloc est a d² = 4 > 2) mais percu
-#        (d² = 4 <= 16), donc R03 le tire ;
-#      - il est a d² = 5 du danger, donc R02 le repousse aussi ;
-#      - sa colonne (3) ne croise pas le danger (colonne 1), donc R01 le
-#        laisse vivre : le niveau reste sans mort possible.
+# 1. **L'IMPASSE** en (2,5), muree au Nord, a l'Est et a l'Ouest, ouverte au
+#    Sud seulement. Depuis l'interieur, la lumiere est au Nord-Est : toutes les
+#    directions qui en rapprochent sont des murs, et celles qui restent
+#    eloignent. **R01 se tait.**
+#    L'eclaireur de (2,9) y monte tout droit et ne bouge plus jamais. La nuee
+#    sort a 20 sur 21 — il manque UN agent, soit 4 % : on echoue de peu, et
+#    l'on voit exactement ou (QN-03, frustration productive).
+#    **Seule une regle placee AVANT R01 l'en detourne.** Mesure a l'appui :
+#    R03 derriere R01 ne parle qu'une case sur deux et l'agent oscille a
+#    l'entree (carnet, decision 112). Devant elle, elle l'ecarte au premier
+#    tick et le garde dehors.
 #
-#    SA POSITION EST CONTRAINTE PAR LE CYCLE LIMITE DE PORTEE (decision 31).
-#    Premier essai en (0,10) : R02 y fuit vers le SUD — le Nord et l'Est
-#    rapprochent du danger — l'agent sort de portee, R01 le renvoie au Nord,
-#    il rentre en portee, et ainsi de suite. Boucle infinie, mesuree.
-#    En (3,9) la fuite part a l'EST : chaque pas AUGMENTE dx, l'agent quitte
-#    la portee pour de bon et remonte. Un repulseur a seuil dur ne doit
-#    jamais etre place la ou fuir ramene dans le seuil.
-#  · colonnes 3, 4, 5 dans la portee du danger, colonnes 6 et 7 hors portee :
-#    la nuee se scinde, une moitie derive a l'est, l'autre monte droit. La
-#    congestion qui s'ensuit est le vrai cout, pas la seule fuite.
+# 2. **L'ECHEANCE.** Le danger de (1,8) ne tue personne — il est a cote du
+#    flux. Mais R02 ne distingue pas un danger qui menace d'un danger qui
+#    passe a portee, et le detour coute six ticks de trop.
 #
-# IDIOME DU CHAPITRE (N1) : la lumiere est derriere le mur, la sortie est
-# l'ouverture. L'entonnoir ajoute ici une congestion qui n'existait pas avec
-# une bande pleine largeur — elle rallonge tout le monde, mais elle rallonge
-# SURTOUT la famille prudente, qui doit rejoindre l'ouverture apres avoir
-# derive. L'echeance a donc ete remesuree apres harmonisation.
+# La famille directe bute sur le premier piege, la prudente sur le second.
+# **Seule la cohesion placee en tete passe les deux** : elle detourne
+# l'eclaireur sans ralentir la nuee, puisqu'un bloc compact la fait s'abstenir.
+# C'est l'arbitrage que le CDC §8.5 attend du premier objectif compose.
 #
-# ECHEANCE : celerity 24, MESUREE et non devinee — et REMESUREE apres
-# l'harmonisation a l'idiome, qui a change tous les temps.
+# ECHEANCE : celerity 24, MESUREE. Cohesion 18 ticks, prudence 30 : six ticks
+# de marge de chaque cote, personne sur le fil (ENF-04).
 #
-# Simulation sans echeance : famille directe 17 ticks, cohesion 18, prudente
-# 30. 24 est pose entre les deux groupes — 6 ticks de marge pour la cohesion
-# (la plus lente des gagnantes), 6 de manque pour la prudente. Symetrique et
-# sans personne sur le fil, donc l'echec ne tient pas a un detail de conflit
-# de case (ENF-04 : gagner au tick exact de la borne est gagne).
-#
-# La premiere valeur, 19, avait ete calibree AVANT l'entonnoir : elle ne
-# laissait plus qu'un tick a la cohesion. Une echeance se recalibre a chaque
-# fois que la geometrie bouge — c'est un parametre de la carte, pas du niveau.
+# RESERVE ASSUMEE : 2 piles gagnantes sur 16, soit 12 %, sous la bande
+# indicative de 20-50 % (CDC §12.2.1, non opposable). C'est le prix de deux
+# pieges independants dans un meme niveau — et c'est ce qui rend N4 le seul
+# niveau du chapitre qu'aucune pile de deux regles ne resout par hasard.
 id: ch1_04
 name: Le prix du temps
 tutorial: false
@@ -63,21 +43,21 @@ slots: 3
 max_ticks: 120
 objective: extraction 100
 objective: celerity 24
-lesson: "Fuir ce qui ne menace pas coute du temps, et le temps est compte."
-expected_wins: 7
-expected_classes: 2
-calibrated_on: 875c3d9d8598e7ed
+lesson: "Deux facons d'echouer, une seule de passer : detourner sans ralentir."
+expected_wins: 2
+expected_classes: 1
+calibrated_on: 82639d340544478d
 ---
 . . . . . L . . . . .
 # # # # E E E # # # #
 . . . . . . . . . . .
 . . . . . . . . . . .
-. . . . . . . . . . .
-. . . . . . . . . . .
+. . # . . . . . . . .
+. # . # . . . . . . .
 . . . . . . . . . . .
 . . . . . . . . . . .
 . X . . . . . . . . .
-. . . o . . . . . . .
+. . o . . . . . . . .
 . . . . . . . . . . .
 . . . o o o o o . . .
 . . . o o o o o . . .
