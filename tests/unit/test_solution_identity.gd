@@ -155,3 +155,67 @@ func test_no_stack_solves_more_than_the_measured_ceiling() -> void:
 	assert_gt(worst, S3_TARGET,
 		"S3 est ATTEINTE (plus aucune pile au-delà de %d niveaux) : abaisser S3_CURRENT_CEILING à %d" % [
 			S3_TARGET, S3_TARGET])
+
+# --- S4 : une seule règle ne gagne que le niveau qui l'introduit -----------
+#
+# Règle posée par le concepteur, et c'est la plus exigeante du lot : **une
+# pile d'UNE SEULE RÈGLE ne peut gagner que le niveau qui introduit cette
+# règle.** Partout ailleurs, il faut au moins deux règles — donc un ORDRE,
+# donc la règle d'or du jeu.
+#
+# Sans elle, un chapitre peut se traverser sans jamais rien ordonner : c'est
+# exactement ce qui se passait, `[Lumière]` seule résolvant trois niveaux sur
+# cinq. Le niveau d'introduction est l'exception nécessaire — il faut bien un
+# endroit où l'on découvre ce que la règle fait, seule.
+
+## Premier niveau du chapitre où la règle apparaît dans `allowed_rules`.
+func _introduction_level(rule_id: int) -> String:
+	for level_id in LEVELS:
+		var data := LevelCatalog.load_level_data(level_id)
+		for v in data.get("allowed_rules", []):
+			if int(v) == rule_id:
+				return level_id
+	return ""
+
+func _single_rule_winners() -> Array:
+	var out: Array = []
+	for level_id in LEVELS:
+		for key in _winners[level_id]:
+			var stack: Variant = JSON.parse_string(String(key))
+			if stack is Array and (stack as Array).size() == 1:
+				out.append([level_id, int((stack as Array)[0])])
+	return out
+
+## Violations connues, nommément. Le jour où N4 cesse d'être gagné par la
+## seule Lumière, cette liste se vide et le test devient inconditionnel —
+## c'est ce que la seconde assertion exige.
+const S4_KNOWN_BREACHES := ["ch1_03:1", "ch1_04:1"]
+
+func test_a_single_rule_only_wins_the_level_that_introduces_it() -> void:
+	var breaches := PackedStringArray()
+	for pair in _single_rule_winners():
+		var level_id: String = pair[0]
+		var rule_id: int = pair[1]
+		if _introduction_level(rule_id) == level_id:
+			continue   # l'exception nécessaire : on y découvre la règle
+		breaches.append("%s:%d" % [level_id, rule_id])
+	breaches.sort()
+
+	var expected := PackedStringArray(S4_KNOWN_BREACHES)
+	expected.sort()
+	assert_eq(breaches, expected,
+		("S4 — une seule règle ne gagne que le niveau qui l'introduit. "
+		+ "Écart par rapport aux manquements connus : constaté %s, connu %s.") % [
+			str(breaches), str(expected)])
+
+func test_the_known_breaches_are_still_real() -> void:
+	# Un manquement qu'on a réparé sans mettre à jour la liste laisserait le
+	# test protéger une exception qui n'existe plus — et la prochaine
+	# régression passerait inaperçue.
+	var actual := PackedStringArray()
+	for pair in _single_rule_winners():
+		if _introduction_level(pair[1]) != pair[0]:
+			actual.append("%s:%d" % [pair[0], pair[1]])
+	for known in S4_KNOWN_BREACHES:
+		assert_true(actual.has(String(known)),
+			"%s n'est plus un manquement : retirer l'entrée de S4_KNOWN_BREACHES" % known)

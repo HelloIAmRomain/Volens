@@ -248,6 +248,63 @@ divergences ressembleraient à une régression pure.
 
 ---
 
+## L'impasse : un mecanisme qui marche et qu'on ne livre pas (9 aout 2026)
+
+111. **L'ABSTENTION DE R01 EST LE SEUL LEVIER DE PROFONDEUR DU CHAPITRE 1, ET
+     IL FONCTIONNE.** R01 ne se tait que si aucune direction franchissable ne
+     rapproche. Une impasse muree au Nord, a l'Est et a l'Ouest la fait taire :
+     c'est la premiere fois du chapitre que la suite de la pile a la parole.
+     Mesure : avec une impasse en (2,4) et un eclaireur seul dans la colonne 2,
+     **la pile [Lumiere] seule ne resout plus N3**. Le mecanisme n'est pas une
+     hypothese.
+
+112. **LA LOI DU CYCLE LIMITE EST PLUS GENERALE QUE SA PREMIERE FORMULATION.**
+     Sonde tick par tick sur l'impasse : R03 sort bien l'eclaireur par le Sud
+     (t=5, t=7), mais R01 l'y renvoie a la case suivante (t=4, t=6, t=8), puis
+     le bloc passe au Nord, R03 s'abstient a son tour et l'agent reste coince.
+     L'invariant n.14 parlait d'un repulseur a seuil et d'un attracteur. Le
+     vrai enonce est plus large : **deux regles qui se contredisent a une
+     frontiere produisent un cycle, quelles qu'elles soient** — ici un
+     attracteur et la COHESION.
+     Consequence de level design, opposable : **une impasse ne se franchit que
+     si la regle qui en sort decide AVANT celle qui y mene.** R03 derriere R01
+     ne parle qu'une case sur deux ; devant elle, elle sort l'agent et le
+     garde dehors.
+
+113. **ET C'EST POURQUOI JE NE L'AI PAS LIVRE.** Le corollaire de 112 est que
+     **[3,1] devient la seule pile capable de franchir une impasse**. En
+     ajoutant l'impasse a N3, [1] cessait de gagner N3 — mais [3,1] se mettait
+     a gagner N3, N4 **et** N5. Le plafond de transposabilite restait a trois,
+     l'offenseur changeait seulement d'identite, et le chapitre devenait pire
+     sur la propriete que le concepteur juge la plus importante.
+     **Un changement qui corrige un defaut en aggravant un autre ne se livre
+     pas parce qu'il a coute cher.** Le niveau est revenu a son etat anterieur ;
+     le savoir reste ici.
+
+114. **LA FORME QUE DOIT PRENDRE LE CHAPITRE, ET ELLE EST CALCULABLE.** Avec
+     trois regles, les comportements distincts atteignables sont exactement
+     cinq : `[1]`, `[2,1]`, `[3,1]`, `[2,3,1]`, `[3,2,1]`. Cinq niveaux, cinq
+     solutions minimales : **une par niveau, aucune transposable**, et le
+     plafond tombe a un.
+     Les deux dernieres exigent une pile de TROIS regles, donc **deux pieges
+     independants dans le meme niveau**, chacun demandant un sauveteur
+     different. C'est possible sans violer l'invariant n.13, qui n'interdit que
+     deux DANGERS : un piege peut etre une impasse (des murs, aucun danger) et
+     l'autre un danger. L'ordre relatif des deux sauveteurs departage alors
+     `[2,3,1]` de `[3,2,1]`.
+     C'est le plan du prochain lot, et il satisfait d'un coup S1, S2, S3 et la
+     regle S4 du concepteur.
+
+115. **REGLE S4, posee par le concepteur : une pile d'UNE SEULE REGLE ne peut
+     gagner que le niveau qui INTRODUIT cette regle.** Partout ailleurs il
+     faut au moins deux regles, donc un ordre, donc la regle d'or.
+     Transcrite en test avec ses manquements nommes — `ch1_03:1` et
+     `ch1_04:1` — et un second test qui verifie que ces manquements sont
+     **encore reels** : une exception qu'on repare sans mettre a jour la liste
+     laisserait le test proteger un trou qui n'existe plus.
+
+---
+
 ## Deux regles portees par des outils (8 aout 2026)
 
 109. **UN PARAMETRE CALIBRE EST UN PARAMETRE DE LA CARTE, PAS DU NIVEAU.**
