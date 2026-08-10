@@ -254,6 +254,23 @@ func test_the_known_breaches_are_still_real() -> void:
 	for pair in _single_rule_winners():
 		if _introduction_level(pair[1]) != pair[0]:
 			actual.append("%s:%d" % [pair[0], pair[1]])
+
+	# LA LISTE VIDE DOIT S'AFFIRMER, pas se taire. Tant qu'elle contenait une
+	# entrée, la boucle ci-dessous assertait ; le jour où S4 s'est fermée, elle
+	# n'a plus rien asserté du tout et GUT a signalé le test « risky ». Un test
+	# qui ne prouve rien tout en ressemblant à un test : c'est la SIXIÈME forme
+	# du piège de l'invariant 12, après « paraître correct », « paraître cassé »,
+	# « un zéro se vérifie comme un chiffre inattendu », « une note ne protège
+	# de rien » et « un test dont l'objet n'est pas versionné ».
+	#
+	# Et elle est plus sournoise que les cinq autres, parce qu'elle n'apparaît
+	# qu'au moment où l'objectif est ATTEINT — exactement quand on relit le
+	# moins attentivement.
+	if S4_KNOWN_BREACHES.is_empty():
+		assert_eq(actual, PackedStringArray(),
+			("S4 n'a plus de manquement connu : ce test doit constater qu'il n'y "
+			+ "en a effectivement aucun. Constaté : %s") % str(actual))
+		return
 	for known in S4_KNOWN_BREACHES:
 		assert_true(actual.has(String(known)),
 			"%s n'est plus un manquement : retirer l'entrée de S4_KNOWN_BREACHES" % known)

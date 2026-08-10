@@ -18,7 +18,25 @@
 Et RG-16 : à partir du chapitre 2, la majorité des niveaux porte un **objectif
 composé** — deux objectifs dont la satisfaction simultanée exige un arbitrage.
 
-## 2. Le résultat : deux règles sur trois exigent un état persistant
+> **CORRECTION DU 10 AOÛT 2026.** La première rédaction de ce document
+> concluait que le chapitre 2 exigeait d'**ajouter** un champ au modèle d'état,
+> et en tirait une cérémonie d'or sur les 30 recettes. **C'était faux, et sur la
+> prémisse.** `AgentState.dir` est spécifié au DCT §4.1 depuis le premier jour,
+> **peuplé** par `SimCore._apply_movements` à chaque déplacement effectif, et
+> **déjà parcouru** par `StateHash`. Je ne l'avais pas cherché.
+>
+> Conséquences : aucun ajout au modèle, aucune cérémonie d'état, aucun DCT à
+> amender. R04, R05 et R06 sont implémentées et testées depuis, à empreintes
+> d'état **inchangées** — les 30 recettes concordent. Le §2 ci-dessous est
+> conservé dans sa conclusion (R05 et R06 ont besoin d'une direction) et
+> corrigé dans sa conséquence (elle existe déjà).
+>
+> Ce que cela coûte : une journée d'analyse sur un champ à lire. **Vérifier
+> qu'un champ manque se fait en le cherchant, pas en raisonnant sur ce qu'il
+> faudrait.** Septième forme du piège de l'invariant 12 — cette fois, « paraître
+> absent clôt l'examen ».
+
+## 2. Le résultat : deux règles sur trois ont besoin d'une direction
 
 C'est le point qui doit être tranché avant le premier niveau.
 
@@ -61,7 +79,27 @@ Le gel du dossier porte sur les **genres**, pas sur le contenu de l'état.
 **Arbitrage : le chapitre 2 peut donc démarrer sans dégeler la révision.** Mais
 il ne peut pas démarrer sans le champ, et le champ a un prix — §4.
 
-## 4. Le prix, et pourquoi il demande une décision humaine
+## 4. Le prix — nul, et c'est mesuré
+
+**Il n'y en a pas.** `dir` étant déjà peuplé et déjà haché, écrire R04, R05 et
+R06 n'a déplacé aucune empreinte d'état : les **30 recettes concordent** après
+l'ajout. Le seul élément périmé fut le tampon de provenance `rules_hash`, que
+`data/rules.json` invalide dès qu'on y ajoute une clé — c'est son rôle, et il
+a fonctionné.
+
+La preuve est ainsi plus forte que toute parade argumentée : ce n'est pas une
+comparaison de positions finales, qui peuvent coïncider alors que les
+trajectoires diffèrent, c'est **la fonction d'empreinte elle-même** qui atteste
+que la simulation n'a pas bougé.
+
+### Ce que la première rédaction proposait, et pourquoi le noter
+
+Elle prévoyait de conserver temporairement l'ancienne fonction d'empreinte pour
+prouver la neutralité sous elle. Le dispositif était bon et reste la bonne
+réponse le jour où un champ sera *réellement* ajouté à l'état — chapitre 3, la
+stigmergie, en aura besoin. Il n'a simplement pas eu lieu d'être ici.
+
+## 4 bis. Ce qui demandait une décision humaine, et qui n'en demande plus
 
 Ajouter un champ à l'état de simulation le fait entrer dans `hash_state`. Donc :
 

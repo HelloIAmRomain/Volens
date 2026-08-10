@@ -47,6 +47,13 @@ jobs:
           ~/godot-bin/${GODOT_BIN} --headless --path . \
             -s addons/gut/gut_cmdln.gd -gdir=res://tests -ginclude_subdirs -gexit \
             | tee /tmp/gut.log
+          # Cette ligne exige le verdict PLEIN de GUT, et c'est voulu : GUT
+          # remplace « All tests passed! » par « N pending/risky tests. » dès
+          # qu'un test n'asserte rien. Un test sans assertion ressemble à un
+          # test et ne prouve rien — cas rencontré le 10 août 2026, quand une
+          # liste de manquements connus s'est vidée et que la boucle qui
+          # l'assertait n'a plus rien parcouru. Ne jamais assouplir en
+          # tolérant « risky » : c'est précisément ce qu'on veut voir.
           grep -q -- "---- All tests passed! ----" /tmp/gut.log
 
       - name: Cohérence du nombre de tests (aucune suite silencieusement ignorée)

@@ -2184,6 +2184,91 @@ géométrie limité à un seul niveau. Rien d'autre n'a bougé, ce qui distingue
 
 `--write` n'a **pas** été exécuté et ne le sera pas sans accord explicite.
 
+## Fait — Cérémonies d'or, et le moteur du chapitre 2 (10 août 2026)
+
+### 158. Cérémonie 1 — ch1_03, cause unique, prédiction tenue
+
+Autorisée explicitement. Confrontation faite sur le fichier avant/après :
+**4 recettes déplacées, toutes ch1_03 ; 26 inchangées** — exactement la
+prédiction écrite la veille. Aucune modification de `core/sim/` ne
+l'accompagne : l'entrée a changé, le code n'a pas bougé.
+
+### 159. `AgentState.dir` existait déjà — et je ne l'avais pas cherché
+
+L'analyse du chapitre 2 concluait qu'il fallait **ajouter** un champ à l'état,
+et en tirait une cérémonie sur les 30 recettes. Faux sur la prémisse : `dir`
+est au DCT §4.1 depuis le premier jour, peuplé par `SimCore._apply_movements`
+(ligne 207), initialisé au Nord au chargement (ligne 68), et déjà parcouru par
+`StateHash` (ligne 46).
+
+> **Vérifier qu'un champ manque se fait en le cherchant, pas en raisonnant sur
+> ce qu'il faudrait.** Septième forme du piège de l'invariant 12 : après
+> « paraître correct », « paraître cassé », « un zéro se vérifie comme un
+> chiffre inattendu », « une note ne protège de rien », « un test dont l'objet
+> n'est pas versionné » et « une liste vide n'asserte rien », voici **« paraître
+> absent clôt l'examen »**.
+
+Coût : une journée d'analyse sur un champ à lire. Gain : aucune cérémonie
+d'état, aucun DCT à amender.
+
+### 160. Cérémonie 2 — réduite à un tampon de provenance
+
+R04, R05 et R06 écrites, `data/rules.json` enrichi de deux blocs de
+paramètres. Mesure : **0 empreinte d'état déplacée sur 30**, 30 tampons
+`rules_hash` rafraîchis, aucune clé de premier niveau ajoutée ni retirée.
+
+La neutralité est donc **démontrée par la fonction d'empreinte elle-même** —
+meilleur témoin que la comparaison de positions finales envisagée d'abord, qui
+peuvent coïncider alors que les trajectoires diffèrent. Le dispositif proposé
+— conserver temporairement l'ancienne fonction d'empreinte — reste la bonne
+réponse le jour où un champ sera réellement ajouté ; le chapitre 3 en aura
+besoin pour la stigmergie.
+
+### 161. Un test « risky » est un test qui ne prouve rien
+
+`test_the_known_breaches_are_still_real` bouclait sur la liste des manquements
+S4 connus. La liste s'étant **vidée** — S4 fermée — la boucle n'a plus rien
+parcouru, et GUT a signalé le test « risky ». Sixième forme du même piège, et
+la plus sournoise : **elle n'apparaît qu'au moment où l'objectif est ATTEINT**,
+exactement quand on relit le moins attentivement.
+
+La liste vide doit désormais s'affirmer plutôt que se taire. Le garde-fou
+mécanique existait déjà et a tenu : la CI exige le verdict plein
+« All tests passed! », que GUT remplace par « N pending/risky tests » — la
+ligne est maintenant commentée pour qu'on ne l'assouplisse jamais en tolérant
+« risky ».
+
+### 162. Deux de mes propres tests du chapitre 2 étaient faux, pas le code
+
+- **« R04 est le miroir exact de R03 »** : faux. Minimiser la distance au
+  barycentre a ici un optimum unique, la maximiser en a deux à égalité, et
+  N>E>S>O tranche. Un « exact opposé » n'existe que si les deux optimisations
+  sont uniques, ce que rien ne garantit sur une grille. Remplacé par la
+  propriété réellement vraie : **elles ne proposent jamais le même pas**.
+- **« ce voisin n'a pas pu bouger »** : le cas construit était incohérent — un
+  agent en (1,1) de cap Ouest vient de (2,1), case libre. C'est le cap **Est**
+  qui est impossible là.
+
+Et c'est en corrigeant le second qu'un vrai défaut est apparu : **au tick 0,
+personne n'a bougé mais tous portent `dir = Nord`**. R05 aurait imposé le Nord
+à toute la nuée sur la foi d'une valeur par défaut. Elle se tait désormais au
+premier tick. Le défaut n'a pas été trouvé en relisant la règle.
+
+### 163. Les deux exigences du porteur, vérifiées sur le catalogue entier
+
+- **Aucune pile ne gagne plus de 2 niveaux sur 5.** Les quatre paires
+  concernées contiennent toutes ch1_05, dont la leçon *est* qu'il n'y a pas une
+  seule bonne réponse.
+- **`[Lumière]` seule ne gagne que ch1_01**, le niveau qui l'introduit.
+
+### 164. Aucun niveau du chapitre 2 ne sera dessiné avant les testeurs
+
+Douze niveaux bâtis avant qu'un joueur ait découvert le chapitre 1, ce serait
+l'invariant 12 appliqué au jeu entier : concevoir sur un terrain qui ne
+sollicite pas ce qu'on prétend mesurer. Le moteur est prêt ; les cartes
+attendent. Les paramètres ⚙️ de R04 et R05 sont des **valeurs de départ, pas
+des valeurs mesurées**, et le fichier le dit à l'endroit où elles sont écrites.
+
 ## Reste à faire
 
 **S3 : clos** — premier passage de la CI en ligne constaté vert le

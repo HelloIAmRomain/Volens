@@ -7,6 +7,13 @@
     "close_range_sq": 2,
     "min_neighbours": 1
   },
+  "s_ecarter": {
+    "range_sq": 2,
+    "max_neighbours": 3
+  },
+  "suivre_les_voisins": {
+    "perception_range_sq": 16
+  },
   "validation": {
     "min_cycle_period": 6
   }
