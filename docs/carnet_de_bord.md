@@ -2154,7 +2154,21 @@ sûrement qu'un faux négatif la trompe.
 ### Cérémonie d'or ch1_03 — PRÉDICTION ÉCRITE, en attente d'accord
 
 Vérification sans écriture faite le 9 août 2026 : **12 divergences, toutes sur
-ch1_03**. 13 recettes sur 17 concordent.
+ch1_03**.
+
+**Compte exact du corpus — et correction d'une erreur de dénombrement.** Le
+corpus tient **30 recettes × 3 relevés = 90 empreintes**. Sur ce total :
+**26 recettes concordent, 4 divergent** (les quatre de ch1_03), soit 12
+empreintes sur 90.
+
+J'avais d'abord annoncé « 13 concordantes sur 17 », deux chiffres faux tous les
+deux. Le « 17 » venait d'une ligne périmée du tableau des mesures, datée du
+5 août ; le « 13 » d'un `grep` dont le motif ne couvrait ni `golden_corridor`,
+ni `golden_field`, ni les six fixtures `sensi_*` — il a compté 13 lignes
+concordantes sur 26. **Une prédiction ne vaut que si l'on sait sur quel ensemble
+elle porte** : un dénombrement fait avec un motif qui ne couvre pas l'ensemble
+mesuré est la même faute que l'échantillonnage de contention, sous une autre
+forme. Le tableau des mesures est corrigé en bas de ce carnet.
 
 | recette | prédiction | pourquoi |
 |---|---|---|
@@ -2203,7 +2217,7 @@ décision humaine consignée ici).
 |---|---|---|
 | Empreinte de fumée (test_smoke, 200 ticks, pile 1,2,3,0) | `c8a7cc2c73394949` — **inchangée à travers la revue S3** | 5 août 2026 |
 | Tests (unitaires + architecture + or) | 125/125 (360 assertions), ~0,9 s | 5 août 2026 |
-| Recettes d'or | 17/17 concordantes (10 régénérées sous protocole + 7 fixtures de sensibilité) | 5 août 2026 |
+| Recettes d'or | **30 recettes × 3 relevés = 90 empreintes**, 30/30 concordantes après la cérémonie ch1_03 | 10 août 2026 |
 | Coupe de boucle du validateur | simulation statique tranchée en ~7 ticks au lieu de 300 | 4 août 2026 |
 | Godot | 4.7.1-stable, standard (pas .NET), Linux x86_64 | 4 août 2026 |
 | GUT | 9.6.1 | 4 août 2026 |
