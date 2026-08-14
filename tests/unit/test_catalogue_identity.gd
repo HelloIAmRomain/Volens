@@ -9,36 +9,12 @@ extends GutTest
 ## CE FICHIER SIMULE TOUT LE CATALOGUE. C'est lent — plusieurs milliers de
 ## piles — et c'est le prix d'une propriété qu'aucune relecture ne peut donner.
 
+## Partagé avec `test_eq04_regles_vivantes` : simuler tout le catalogue coûte
+## 86 % du temps de la suite, et le faire deux fois le doublait pour rien.
 var _winners: Dictionary = {}   # level_id -> Array[String] de clés de pile
 
 func before_all() -> void:
-	var rules: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/rules.json"))
-	var params := RuleParams.from_dict(rules if rules is Dictionary else {})
-	for i in range(LevelCatalog.count()):
-		var entry: Dictionary = LevelCatalog.entry(i)
-		if not bool(entry["ready"]):
-			continue
-		var level_id := String(entry["id"])
-		var data := LevelCatalog.load_level_data(level_id)
-		var allowed: Array[int] = []
-		for v in data.get("allowed_rules", []):
-			allowed.append(int(v))
-		var won: Array[String] = []
-		for stack_variant in StackEnumerator.enumerate(allowed, LevelSpec.open_slots(data)):
-			var stack: Array[int] = []
-			for v in stack_variant:
-				stack.append(int(v))
-			if _simulate(data, params, stack) == SimState.Outcome.WON:
-				won.append(str(stack))
-		_winners[level_id] = won
-
-func _simulate(data: Dictionary, params: RuleParams, stack: Array[int]) -> int:
-	var state := SimCore.load_level(data, params)
-	var guard := 0
-	while state.outcome == SimState.Outcome.RUNNING and guard < 400:
-		state = SimCore.step(state, stack)
-		guard += 1
-	return state.outcome
+	_winners = CatalogueSolutions.winners()
 
 # --- S1 : aucun niveau n'est une formalité ni une impasse ------------------
 

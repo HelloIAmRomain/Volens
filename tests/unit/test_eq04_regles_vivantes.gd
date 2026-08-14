@@ -42,38 +42,12 @@ const KNOWN_UNDER_USED: Array[String] = []
 
 var _alive: Dictionary = {}   # id de règle -> nombre de niveaux où elle gagne
 
+## L'espace des solutions est calculé UNE FOIS pour toute la suite : le simuler
+## ici en propre coûtait 78 secondes, exactement les mêmes que celles déjà
+## dépensées par `test_catalogue_identity`.
 func before_all() -> void:
-	var rules: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/rules.json"))
-	var params := RuleParams.from_dict(rules if rules is Dictionary else {})
 	for id in RuleRegistry.ALL:
-		_alive[id] = 0
-	for i in range(LevelCatalog.count()):
-		var entry: Dictionary = LevelCatalog.entry(i)
-		if not bool(entry["ready"]):
-			continue
-		var data := LevelCatalog.load_level_data(String(entry["id"]))
-		var allowed: Array[int] = []
-		for v in data.get("allowed_rules", []):
-			allowed.append(int(v))
-		var seen := {}
-		for stack_variant in StackEnumerator.enumerate(allowed, LevelSpec.open_slots(data)):
-			var stack: Array[int] = []
-			for v in stack_variant:
-				stack.append(int(v))
-			if _simulate(data, params, stack) != SimState.Outcome.WON:
-				continue
-			for r in stack:
-				seen[RuleRegistry.base_rule_id(r)] = true
-		for r in seen:
-			_alive[int(r)] += 1
-
-func _simulate(data: Dictionary, params: RuleParams, stack: Array[int]) -> int:
-	var state := SimCore.load_level(data, params)
-	var guard := 0
-	while state.outcome == SimState.Outcome.RUNNING and guard < 400:
-		state = SimCore.step(state, stack)
-		guard += 1
-	return state.outcome
+		_alive[id] = CatalogueSolutions.levels_won_with(id)
 
 func test_no_rule_is_dead_beyond_the_ones_named() -> void:
 	# UNE RÈGLE MORTE EST DU CODE MORT DÉGUISÉ EN CONTENU. Elle occupe une place
