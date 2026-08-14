@@ -1,6 +1,14 @@
 # Chapitre 2 — la coordination : ce qu'il exige avant le premier trait
 
-> **Statut : ANALYSE, aucun niveau dessiné.** Ce document répond à une seule
+> **STATUT : CLOS le 14 août 2026 — le chapitre 2 est construit et joué.**
+> Quatre niveaux, R04/R05/R06 implémentées et testées. Ce qui suit est
+> l'analyse qui a précédé le premier trait ; elle est conservée pour ce
+> qu'elle a coûté et pour ce qu'elle a manqué. Ses conclusions ont tenu sur
+> R05 et sur R04 ; elles étaient trop optimistes sur R06, dont la mesure a
+> révélé trois contraintes qu'aucun raisonnement n'avait vues (invariant
+> n°20). Le bilan mesuré vit dans les fiches `ch2_01` à `ch2_04`.
+
+> **Statut d'origine : ANALYSE, aucun niveau dessiné.** Ce document répond à une seule
 > question — *le chapitre 2 tel que le CDC le spécifie est-il constructible
 > avec le système de règles actuel ?* — et la réponse conditionne tout le reste.
 >
