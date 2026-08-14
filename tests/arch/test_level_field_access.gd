@@ -92,10 +92,12 @@ func test_level_spec_exposes_every_guarded_field() -> void:
 func test_the_accessors_agree_with_the_level_files() -> void:
 	# Le contrôle lexical garantit qu'on passe par l'accesseur ; celui-ci
 	# garantit que l'accesseur dit la vérité.
+	var examined := 0
 	for i in range(LevelCatalog.count()):
 		var entry: Dictionary = LevelCatalog.entry(i)
 		if not bool(entry["ready"]):
 			continue
+		examined += 1
 		var level_id := String(entry["id"])
 		var data := LevelCatalog.load_level_data(level_id)
 		var raw: Variant = JSON.parse_string(
@@ -108,3 +110,5 @@ func test_the_accessors_agree_with_the_level_files() -> void:
 			"%s : slots" % level_id)
 		assert_eq(LevelSpec.calibrated_on(data), String(d["calibrated_on"]),
 			"%s : calibrated_on" % level_id)
+	# Le filtre `ready` peut vider cette boucle sans qu'une ligne change ici.
+	assert_gt(examined, 0, "aucun niveau prêt examiné : le filtre a tout écarté")

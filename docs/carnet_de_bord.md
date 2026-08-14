@@ -2224,6 +2224,42 @@ peuvent coïncider alors que les trajectoires diffèrent. Le dispositif proposé
 réponse le jour où un champ sera réellement ajouté ; le chapitre 3 en aura
 besoin pour la stigmergie.
 
+### 161 bis. La sixième forme est la PIRE de la série, et voici pourquoi
+
+Les cinq premières formes du piège de l'invariant 12 se déclenchent sur un
+**incident** : une mesure surprenante, un test rouge, un zéro inattendu. On
+regarde, parce qu'il s'est passé quelque chose.
+
+La sixième se déclenche sur un **succès**.
+
+> **Un test dont l'objet se vide cesse d'asserter au moment exact où
+> l'objectif est atteint.** Le déclencheur est une bonne nouvelle — la liste
+> des manquements s'est vidée, le défaut a été réparé — donc personne ne
+> cherche un défaut à ce moment-là. La garantie disparaît le jour où l'on
+> relit le moins attentivement, et sans qu'une seule ligne ait changé.
+
+La règle, telle qu'elle est désormais tenue :
+
+> **Un test qui itère une liste doit échouer si la liste est vide, ou déclarer
+> explicitement que le vide est le succès attendu.**
+
+Mécanique, pas documentaire : `tests/arch/test_suite_hygiene.gd` refuse toute
+fonction `test_` dont **toutes** les assertions sont imbriquées dans une
+boucle, sauf marqueur `# VIDE-ATTENDU:` explicite.
+
+**Résultat de l'audit — et c'est le plus utile de la journée : 28 fonctions,
+dans onze fichiers sans rapport.** Ce n'était pas un test à corriger, c'était
+une habitude d'écriture. Deux classes, et la distinction gouverne l'ordre des
+réparations :
+
+- **collection filtrée** dans la boucle (`continue` sur `ready`, sur
+  `tutorial`…) : elle peut se vider sans qu'une ligne change — il suffit qu'un
+  niveau cesse d'être prêt. **Six cas, tous réparés** par un compteur
+  d'éléments examinés asserté hors boucle ;
+- **constante littérale** parcourue : elle ne se videra que si quelqu'un vide
+  la constante, geste visible en relecture. **Vingt-deux cas, gelés au
+  cliquet**, qui refuse toute aggravation et exige que la liste décroisse.
+
 ### 161. Un test « risky » est un test qui ne prouve rien
 
 `test_the_known_breaches_are_still_real` bouclait sur la liste des manquements

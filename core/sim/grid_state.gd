@@ -53,12 +53,109 @@ func is_danger_active_at(pos: Vector2i, tick: int) -> bool:
 		return cycles[idx].is_active_at(tick)
 	return false
 
+## SENS UNIQUE (RG-14) — direction AUTORISÉE de la case, indexée comme
+## `Directions` ; -1 sur toute case qui n'est pas un sens unique.
+##
+## Franchissable dans une seule direction : entrer dans la case en s'y
+## déplaçant vers `one_way_dir` est permis, tout autre sens est refusé. Le
+## contrôle porte sur le PAS, pas sur la case seule — d'où `can_traverse`, que
+## toutes les règles emploient à la place de `is_walkable`.
+var one_way_dir: PackedInt32Array = PackedInt32Array()
+
+## PORTE À PRESSION (RG-14) — index dans `doors` pour les cases PRESSURE_DOOR
+## ET pour leurs cases de commande ; -1 partout ailleurs.
+var door_index: PackedInt32Array = PackedInt32Array()
+var doors: Array[DoorDef] = []
+## État calculé, recalculé à la fin de chaque tick par `recompute_doors` : 1 si
+## la porte d'index i est ouverte. Dérivé des positions des agents, jamais saisi.
+var doors_open: PackedInt32Array = PackedInt32Array()
+
+func _ensure_layers() -> void:
+	var n: int = size.x * size.y
+	if one_way_dir.size() != n:
+		one_way_dir.resize(n)
+		one_way_dir.fill(-1)
+	if door_index.size() != n:
+		door_index.resize(n)
+		door_index.fill(-1)
+
+## Le PAS de `from` vers `to` est-il franchissable ? C'est la question que les
+## règles doivent poser — `is_walkable` ne connaît que le mur, et ni un sens
+## unique ni une porte fermée ne sont des murs.
+##
+## `from` est ignoré partout sauf sur un sens unique : le coût est nul et
+## l'appel reste lisible.
+func can_traverse(from: Vector2i, to: Vector2i) -> bool:
+	return can_traverse_ignoring(from, to, -1)
+
+## `ignored` : type de case neutralisé par R16, ou -1. Le mur n'est JAMAIS
+## ignorable — le joker ouvrirait sinon tous les niveaux d'un coup, et un jeu
+## dont la dernière règle annule la géométrie n'a plus de niveaux.
+func can_traverse_ignoring(from: Vector2i, to: Vector2i, ignored: int) -> bool:
+	if not is_in_bounds(to):
+		return false
+	var idx: int = index_of(to)
+	var t: int = cells[idx]
+	if t == CellType.WALL:
+		return false
+	if t == CellType.PRESSURE_DOOR and not is_door_open_at(to) and ignored != CellType.PRESSURE_DOOR:
+		return false
+	if not one_way_dir.is_empty() and ignored != CellType.ONE_WAY:
+		var allowed: int = one_way_dir[idx]
+		if allowed >= 0 and to - from != Directions.offset(allowed):
+			return false
+	return true
+
+func is_door_open_at(pos: Vector2i) -> bool:
+	if door_index.is_empty():
+		return true
+	var d: int = door_index[index_of(pos)]
+	if d < 0 or d >= doors_open.size():
+		return true
+	return doors_open[d] == 1
+
+## Recalcule l'état des portes à partir des positions des agents PRÉSENTS.
+## Ordre total garanti : les portes sont parcourues par index croissant et les
+## cases de commande dans l'ordre du fichier de niveau. Aucun `Dictionary`.
+func recompute_doors(agents: Array[AgentState]) -> void:
+	if doors.is_empty():
+		return
+	if doors_open.size() != doors.size():
+		doors_open.resize(doors.size())
+	var counts := PackedInt32Array()
+	counts.resize(doors.size())
+	for agent in agents:
+		if not agent.is_present():
+			continue
+		var idx: int = index_of(agent.pos)
+		var d: int = door_index[idx]
+		# Une case de commande est une case ORDINAIRE rattachée à une porte ;
+		# le panneau lui-même n'est pas sa propre commande, sans quoi un agent
+		# debout dans l'embrasure la maintiendrait ouverte tout seul.
+		if d >= 0 and cells[idx] != CellType.PRESSURE_DOOR:
+			counts[d] += 1
+	for i in range(doors.size()):
+		doors_open[i] = 1 if counts[i] >= doors[i].required else 0
+
+## R13 « Boucher » : le danger cesse définitivement d'exister. Irréversible —
+## c'est ce qui fait du sacrifice un choix et non une dépense renouvelable.
+func neutralize_danger(pos: Vector2i) -> void:
+	var idx: int = index_of(pos)
+	if cells[idx] == CellType.STATIC_DANGER or cells[idx] == CellType.CYCLIC_DANGER:
+		cells[idx] = CellType.EMPTY
+		if not cycle_index.is_empty():
+			cycle_index[idx] = -1
+
 func clone() -> GridState:
 	var copy := GridState.new()
 	copy.size = size
 	copy.cells = cells.duplicate()
 	copy.pheromone = pheromone.duplicate()
 	copy.cycle_index = cycle_index.duplicate()
+	copy.one_way_dir = one_way_dir.duplicate()
+	copy.door_index = door_index.duplicate()
+	copy.doors_open = doors_open.duplicate()
+	copy.doors = doors        # immuable après chargement : partagé, jamais muté
 	copy.cycles = []
 	for c in cycles:
 		copy.cycles.append(c.clone())

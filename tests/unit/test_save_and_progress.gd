@@ -76,14 +76,17 @@ func test_next_playable_skips_solved_levels() -> void:
 func test_every_ready_level_actually_loads() -> void:
 	# Un niveau annoncé prêt et introuvable donnerait un écran noir. La garde
 	# vaut pour tout le catalogue, pas pour un identifiant écrit à la main.
+	var examined := 0
 	for i in range(LevelCatalog.count()):
 		var item: Dictionary = LevelCatalog.entry(i)
 		if not bool(item["ready"]):
 			continue
+		examined += 1
 		var level_id := String(item["id"])
 		assert_ne(LevelCatalog.path_of(level_id), "", "%s : prêt mais sans chemin" % level_id)
 		assert_false(LevelCatalog.load_level_data(level_id).is_empty(),
 			"%s : prêt mais illisible" % level_id)
+	assert_gt(examined, 0, "aucun niveau prêt examiné : le filtre a tout écarté")
 
 func test_an_unknown_level_yields_nothing() -> void:
 	# Le repli doit rester propre pour un identifiant qui n'existe pas — une

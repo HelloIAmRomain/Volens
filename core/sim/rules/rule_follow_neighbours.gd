@@ -76,7 +76,7 @@ func evaluate(agent: AgentState, state: SimState, params: RuleParams) -> Vector2
 			best_dir = dir
 
 	var offset: Vector2i = Directions.offset(best_dir)
-	if not state.grid.is_walkable(agent.pos + offset):
+	if not state.grid.can_traverse(agent.pos, agent.pos + offset):
 		return ABSTAIN  # la direction majoritaire est murée : la suite décide
 	return offset
 
@@ -93,4 +93,4 @@ func evaluate(agent: AgentState, state: SimState, params: RuleParams) -> Vector2
 ## conservateur — il retire des voix, il n'en invente aucune.
 static func _has_moved(other: AgentState, state: SimState) -> bool:
 	var came_from: Vector2i = other.pos - Directions.offset(other.dir)
-	return state.grid.is_walkable(came_from)
+	return state.grid.is_walkable(came_from) and state.grid.can_traverse(came_from, other.pos)

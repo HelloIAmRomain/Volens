@@ -171,7 +171,11 @@ func test_rejects_cycle_declared_without_cyclic_cell() -> void:
 # --- rejets : règles et espace -------------------------------------------------
 
 func test_rejects_unimplemented_rule() -> void:
-	var result := _parse({"allowed_rules": "[R01, R07]"})
+	# R99 n'existe pas et n'existera jamais : la bibliothèque est FERMÉE à seize
+	# règles (CDC §7.2). Ce test visait R07 jusqu'au 14 août 2026, date à
+	# laquelle R07 a été implémentée — un test dont l'exemple devient valide
+	# cesse de tester ce qu'il annonce, sans jamais le dire.
+	var result := _parse({"allowed_rules": "[R01, R99]"})
 	assert_string_contains(_errors_joined(result), "non implémentée")
 
 func test_rejects_duplicate_rule() -> void:

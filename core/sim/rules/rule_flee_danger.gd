@@ -35,7 +35,7 @@ func evaluate(agent: AgentState, state: SimState, params: RuleParams) -> Vector2
 	if state.grid.is_danger_active_at(agent.pos, arrival_tick):
 		for dir in Directions.ORDER:
 			var candidate: Vector2i = agent.pos + Directions.offset(dir)
-			if state.grid.is_walkable(candidate) and not state.grid.is_danger_active_at(candidate, arrival_tick):
+			if state.grid.can_traverse(agent.pos, candidate) and not state.grid.is_danger_active_at(candidate, arrival_tick):
 				return Directions.offset(dir)
 		return ABSTAIN  # aucune issue sûre : la cascade continue, l'étape 5 tranchera
 
@@ -51,7 +51,7 @@ func evaluate(agent: AgentState, state: SimState, params: RuleParams) -> Vector2
 	var current_dist: int = _manhattan(agent.pos, target)
 	for dir in Directions.ORDER:
 		var candidate: Vector2i = agent.pos + Directions.offset(dir)
-		if not state.grid.is_walkable(candidate):
+		if not state.grid.can_traverse(agent.pos, candidate):
 			continue
 		if state.grid.is_danger_active_at(candidate, arrival_tick):
 			continue  # jamais un pas vers une case létale à l'arrivée

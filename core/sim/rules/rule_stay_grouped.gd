@@ -57,7 +57,7 @@ func evaluate(agent: AgentState, state: SimState, params: RuleParams) -> Vector2
 	var current_dist: int = _scaled_distance(agent.pos, sum_x, sum_y, count)
 	for dir in Directions.ORDER:
 		var candidate: Vector2i = agent.pos + Directions.offset(dir)
-		if state.grid.is_walkable(candidate) and _scaled_distance(candidate, sum_x, sum_y, count) < current_dist:
+		if state.grid.can_traverse(agent.pos, candidate) and _scaled_distance(candidate, sum_x, sum_y, count) < current_dist:
 			return Directions.offset(dir)
 	return ABSTAIN  # déjà au plus près (franchissable) du barycentre perçu
 

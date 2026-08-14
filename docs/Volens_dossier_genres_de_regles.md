@@ -114,6 +114,42 @@ prépare pas le chapitre 3, il répare l'existant.
 | **S4** — une règle seule ne gagne que le niveau qui l'introduit | Faire perdre `[1]` demande que R01 s'abstienne, donc des impasses ; la seule échappée fait de `[3,1]` une clé universelle | **P3** |
 | **Stigmergie R08/R09** (chapitre 3) | Déposer un marqueur n'est pas proposer un déplacement : sous le genre proposeur, la règle s'abstient et n'est pas dans la pile, ou propose l'immobilité et masque tout ce qui suit | **P1** (genre manquant : **effet**) |
 
+## 3 bis. R06 « Longer le mur » — la sortie d'impasse qui manquait
+
+*Ajouté le 10 août 2026, avec le moteur du chapitre 2. N'ouvre rien
+maintenant ; explique rétrospectivement pourquoi le chantier S4 était bloqué.*
+
+**R06 est le premier dispositif de sortie d'impasse indépendant d'un seuil et
+des congénères.** Dans un cul-de-sac, droite, tout droit et gauche sont murés :
+elle propose le demi-tour, et l'agent ressort. Rien d'autre n'entre en compte —
+ni une portée, ni un barycentre, ni le nombre de voisins.
+
+Mis en regard des trois règles du chapitre 1, cela dit ce qui manquait :
+
+| règle | sort d'une impasse ? | à quelle condition |
+|---|---|---|
+| R01 vers la lumière | **non** | le retour éloigne de la lumière ; elle s'abstient, par construction |
+| R02 fuir le danger | **non** | son seuil se déclenche AVANT l'impasse (P3), ou la seule case libre pointe vers le danger |
+| R03 rester groupé | **par accident** | seulement si le barycentre se trouve derrière l'agent — propriété de la géométrie, pas de la règle |
+| R06 longer le mur | **oui** | inconditionnellement : c'est ce que fait un suivi de paroi |
+
+> **Aucune règle du chapitre 1 ne sort d'une impasse autrement que par
+> accident.** C'est la formulation exacte de ce qui bloquait S4 — « une règle
+> seule ne gagne que le niveau qui l'introduit » — et qui a coûté trois
+> géométries mesurées puis une refonte complète de N3.
+
+Ce que cela change pour la révision, quand elle se dégèlera : la sortie
+d'impasse n'est **pas** un genre de règle manquant, contrairement à ce qu'on
+pouvait croire en butant sur S4. C'est une **capacité** qu'aucune règle du
+chapitre 1 ne portait, et qu'un proposeur ordinaire suffit à porter dès qu'il
+lit une orientation. Le diagnostic des §1-2 n'en est pas affaibli — P3 reste
+entier, et c'est bien lui qui interdit à R02 de le faire — mais il faut cesser
+de compter la sortie d'impasse parmi les symptômes du genre manquant.
+
+**À reprendre au dégel** : le tableau ci-dessus doit être refait avec R04 et
+R05, puis avec les règles du chapitre 3, pour savoir si d'autres capacités
+manquantes ont été prises à tort pour des genres manquants.
+
 ## 4. Ce qu'une révision devrait fournir
 
 Quatre genres, et une propriété transverse :

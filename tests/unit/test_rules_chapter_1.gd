@@ -292,7 +292,7 @@ func test_stack_first_applicable_rule_wins() -> void:
 	_set_cell(state, Vector2i(2, 0), GridState.CellType.LIGHT_SOURCE)
 
 	var flee_first: Array[int] = [RuleRegistry.R02_FLEE_DANGER, RuleRegistry.R01_TOWARD_LIGHT]
-	var dirs := SimCore._decide_agents(state, flee_first)
+	var dirs: Array = SimCore._decide_agents(state, flee_first)["directions"]
 	assert_eq(dirs[0], Directions.offset(Directions.NORTH), "R02 s'applique en premier")
 
 func test_stack_falls_through_an_abstaining_rule() -> void:
@@ -301,7 +301,7 @@ func test_stack_falls_through_an_abstaining_rule() -> void:
 	_set_cell(state, Vector2i(2, 4), GridState.CellType.LIGHT_SOURCE)
 
 	var stack: Array[int] = [RuleRegistry.R02_FLEE_DANGER, RuleRegistry.R01_TOWARD_LIGHT]
-	var dirs := SimCore._decide_agents(state, stack)
+	var dirs: Array = SimCore._decide_agents(state, stack)["directions"]
 	assert_eq(dirs[0], Directions.offset(Directions.SOUTH), "R02 abstenue, R01 décide")
 
 func test_stack_order_changes_behavior() -> void:
@@ -314,8 +314,8 @@ func test_stack_order_changes_behavior() -> void:
 	var flee_first: Array[int] = [RuleRegistry.R02_FLEE_DANGER, RuleRegistry.R01_TOWARD_LIGHT]
 	var light_first: Array[int] = [RuleRegistry.R01_TOWARD_LIGHT, RuleRegistry.R02_FLEE_DANGER]
 
-	var flee_dirs := SimCore._decide_agents(state, flee_first)
-	var light_dirs := SimCore._decide_agents(state, light_first)
+	var flee_dirs: Array = SimCore._decide_agents(state, flee_first)["directions"]
+	var light_dirs: Array = SimCore._decide_agents(state, light_first)["directions"]
 
 	assert_eq(flee_dirs[0], Directions.offset(Directions.NORTH), "prudent : fuit le danger")
 	assert_eq(light_dirs[0], Directions.offset(Directions.SOUTH), "pressé : fonce vers la lumière")
@@ -325,7 +325,7 @@ func test_stack_with_empty_slots_and_no_applicable_rule_stays_still() -> void:
 	var state := _make_state(3, 3, [Vector2i(1, 1)])
 	var stack: Array[int] = [RuleRegistry.EMPTY, RuleRegistry.R02_FLEE_DANGER, RuleRegistry.EMPTY, RuleRegistry.EMPTY]
 
-	var dirs := SimCore._decide_agents(state, stack)
+	var dirs: Array = SimCore._decide_agents(state, stack)["directions"]
 	assert_eq(dirs[0], Vector2i.ZERO, "aucune règle applicable : immobile (RG-05)")
 
 func test_full_step_with_rules_keeps_input_state_untouched() -> void:

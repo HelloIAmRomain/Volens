@@ -46,7 +46,7 @@ func evaluate(agent: AgentState, state: SimState, _params: RuleParams) -> Vector
 	for turn in [1, 0, 3, 2]:
 		var dir: int = (agent.dir + turn) % 4
 		var offset: Vector2i = Directions.offset(dir)
-		if state.grid.is_walkable(agent.pos + offset):
+		if state.grid.can_traverse(agent.pos, agent.pos + offset):
 			return offset
 	return ABSTAIN  # emmuré des quatre côtés : aucune règle ne peut l'aider
 
@@ -54,6 +54,6 @@ func evaluate(agent: AgentState, state: SimState, _params: RuleParams) -> Vector
 ## terminal de la règle : sans mur à longer, R06 n'a pas d'objet.
 static func _touches_obstacle(pos: Vector2i, state: SimState) -> bool:
 	for dir in Directions.ORDER:
-		if not state.grid.is_walkable(pos + Directions.offset(dir)):
+		if not state.grid.can_traverse(pos, pos + Directions.offset(dir)):
 			return true
 	return false
