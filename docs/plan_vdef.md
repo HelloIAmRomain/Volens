@@ -1,68 +1,56 @@
-# Plan vdef — de six règles à un jeu complet
+# Plan vdef — bilan de clôture
 
-**Ouvert le 14 août 2026.** Mandat : livrer une version définitive jouable,
-testée, avec toutes les mécaniques. Aucun retour attendu en cours de route.
+**Ouvert et clos le 14 août 2026.** Mandat : livrer une version définitive
+jouable, testée, avec toutes les mécaniques.
 
-## L'état au départ
+## Ce qui est livré
 
-| | fait | reste |
+| | au départ | à l'arrivée |
 |---|---|---|
-| Règles | R01-R06 (6/16) | **R07-R16 (10)** |
-| Types de case | Mur, Sortie, Danger statique, Danger cyclique, Lumière | **Ressource, Dépôt, Porte à pression, Sens unique** (reconnus, inertes) |
-| Objectifs | 5 types implémentés et testés unitairement | `collect` inerte, `interdiction` employée par aucun niveau |
-| Défis RG-18 | rien dans `core/` | **les trois** |
-| Niveaux | 5 (chapitre 1) | **chapitres 2 à 6** |
-| Écrans | menu, sélection, jeu, bilan, réglages, auto-vérification | catalogue à 16 règles, défis, progression par chapitre |
+| Règles | R01-R06 (6/16) | **16/16**, chacune avec ses tests sur son cas d'épreuve |
+| Genres de règles | proposeur seul | **proposeur + effet** — P1 close |
+| Types de case | 5/9 actifs | **9/9**, tous dessinés à l'écran |
+| Objectifs | 5 implémentés, 2 employés | **5/5 employés** par au moins un niveau |
+| Défis RG-18 | rien | calculés dans `core/`, mesurés par le validateur, affichés au bilan |
+| Niveaux | 5 (chapitre 1) | **22, six chapitres**, tous validés |
+| Corpus d'or | 30 recettes | **60**, couvrant les seize règles et les deux genres |
+| Tests | 346 | **379**, 5110 assertions |
 
-## Le verrou, et comment il saute
+## Les cinq résultats que la construction a établis
 
-Le dossier des genres de règles nomme la cause de tout ce qui bloque : **un
-seul genre de règle, le proposeur**. R08 « marquer la piste » ne propose aucun
-déplacement — sous le genre proposeur, elle s'abstient (et n'existe pas) ou
-propose l'immobilité (et masque toute la suite de la pile). Trois règles du
-chapitre 4 ont le même problème.
+Aucun n'était prévisible sur le papier ; tous ont coûté une géométrie mesurée.
 
-**Décision : le genre `EFFET` est introduit, et lui seul.** Une règle d'effet
-agit sur le monde puis **rend la main** — la cascade continue. Les trois autres
-genres du dossier (filtre, condition de maintien, hystérésis) ne sont PAS
-introduits : R04 a montré qu'une condition de maintien s'écrit très bien comme
-un proposeur qui s'abstient, et l'hystérésis reste gelée faute de joueurs.
+1. **Un effet ne s'applique que si la cascade l'ATTEINT** — donc il se place en
+   tête, sans exception. Mesuré sur N14 : deux piles gagnantes sur soixante-cinq.
+2. **R06 et R01 se contredisent structurellement.** Trois dispositifs essayés,
+   trois oscillations. Sa seule carte propre est une carte sans lumière.
+3. **Une piste est une pente, et une trace de passage** — pas un tapis, pas une
+   trace d'occupation. Les deux erreurs figent la nuée exactement là où elle
+   doit avancer.
+4. **Le jeu est asymétrique gauche-droite.** Le miroir de N9 a été construit et
+   mesuré : il ne se résout pas. La symétrie visuelle n'est pas une symétrie de
+   jeu.
+5. **Une géométrie invisible est une géométrie injuste.** Trois éléments du
+   vocabulaire fonctionnaient parfaitement dans le moteur et n'étaient pas
+   dessinés. Aucun test de simulation ne pouvait le dire ; il a fallu regarder.
 
-La règle d'or s'énonce désormais ainsi, et c'est la seule reformulation :
+## Ce qui reste, et qui ne dépend pas de moi
 
-> **Pour chaque agent, à chaque tick, la première règle de DÉPLACEMENT
-> applicable de la pile l'emporte. Les règles d'effet s'appliquent au passage,
-> dans l'ordre de la pile, sans consommer la décision.**
+- **Le volume de contenu.** Le CDC vise 70 niveaux pour la v1.0 ; il y en a 22.
+  Ce qui est complet, c'est le **vocabulaire** — chaque règle, chaque type de
+  case et chaque type d'objectif est employé, enseigné et testé. Ajouter des
+  niveaux est désormais une affaire de dessin, pas de moteur : la boucle
+  d'écriture (`tools/dev/level.sh`) convertit, calibre, valide et résume en un
+  geste.
+- **P2, P3 et P4** du dossier des genres restent ouvertes, et l'hystérésis
+  gelée. Deux résultats du chapitre 2 les confirment plutôt qu'ils ne les
+  affaiblissent.
+- **La chaîne Android** (S9), l'appareil de référence (T-003) et le recrutement
+  des testeurs (T-008) : hors de portée d'ici.
 
-**La position d'une règle d'effet reste décisive**, et c'est ce qui la sauve de
-l'insignifiance : un effet ne s'applique que si la cascade *l'atteint*. R08 au
-rang 1 = « laisse toujours une trace » ; au rang 4 = « ne marque que si tu ne
-savais pas quoi faire ». Deux jeux différents avec la même règle.
+## Ce qui n'a pas bougé
 
-## Les six lots
-
-**A — Moteur.** Genre `EFFET` et cascade ; `decided_by` par agent (sert aussi
-à EF-05) ; sens unique et portes à pression dans `GridState` ; joker R16 encodé
-dans l'identifiant de règle, sans changer `Array[int]`.
-
-**B — Les dix règles manquantes**, chacune avec ses tests sur son cas
-d'épreuve, jamais sur un cas confortable (invariant n°12).
-
-**C — Objectifs et défis.** `collect` rendu atteignable par R11/R12 ;
-`interdiction` employée pour de vrai ; les trois défis RG-18 calculés dans
-`core/`, lus par `LevelSpec`, mesurés par le validateur.
-
-**D — Les niveaux des chapitres 2 à 6**, tous passés au validateur : solubles,
-non triviaux, et respectant les règles d'identité S1-S4 et QN-01/02/03.
-
-**E — Interface** : catalogue à seize règles, défis au bilan, progression par
-chapitre.
-
-**F — Vérification finale** : suite complète verte, corpus d'or concordant,
-validateur vert sur tout le catalogue, documents à jour.
-
-## Ce qui ne bouge pas
-
-Les invariants 1 à 16 de `docs/ARCHITECTURE.md`, la pureté de `core/sim/` (entiers, aucun
-aléatoire, aucune horloge), l'absence de dépendance externe, le protocole du
-corpus d'or (prédiction écrite avant toute régénération).
+Les invariants 1 à 20 de `docs/ARCHITECTURE.md`, la pureté de `core/sim/` (entiers, aucun
+aléatoire, aucune horloge), l'absence de toute dépendance externe, et le
+protocole du corpus d'or — chaque régénération a été précédée d'une prédiction
+écrite, et chacune l'a tenue au recipe près.

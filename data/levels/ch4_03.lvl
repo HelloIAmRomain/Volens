@@ -1,0 +1,64 @@
+# N23 « La navette » — porter sans savoir ou l'on va.
+#
+# IL RELIE LE CHAPITRE 3 AU CHAPITRE 4, et c'etait annonce des l'ecriture de
+# R12 : rien dans la pile ne dit « il reste des ressources », rien ne dit
+# « rentre au depot ». Aucune regle ne connait le but du transport. La seule
+# facon de faire faire un trajet a une nuee sans le lui dire, c'est de le lui
+# avoir TRACE.
+#
+# PAS DE LUMIERE. C'est la condition etablie au chapitre 3 : tant qu'une
+# lumiere est posee, R01 decide partout et la piste n'est qu'un doublon plus
+# lent. Ici il n'y a rien a viser — la nuee n'a que la trace d'une nuee
+# precedente, et cette trace passe par les ressources avant d'arriver au depot.
+#
+# QUATRE REGLES, TROIS RANGS. Le niveau en offre une de trop : R08 « marquer »,
+# R09 « suivre », R11 « porter », R12 « deposer ». Il faut en abandonner une, et
+# le choix n'est pas libre — la piste heritee couvre tout le trajet, donc
+# l'entretenir ne sert a rien ici. **C'est le premier niveau ou la bonne
+# reponse est de RETIRER une regle qui marche.**
+#
+# LES EFFETS SE METTENT EN TETE, sans exception. R11 et R12 ne s'appliquent que
+# si la cascade les atteint, et R09 decide partout ou il y a une trace —
+# c'est-a-dire partout. Une seule regle de deplacement au-dessus d'elles, et
+# plus personne ne ramasse jamais.
+#
+# LE DEPOT EST ADJACENT A LA PISTE, pas dessus. Un porteur depose sur une case
+# de depot VOISINE : il frole le but sans jamais s'y arreter, et continue son
+# chemin. C'est ce qui permet a la piste de traverser la zone de depot sans que
+# les agents s'y agglutinent.
+#
+# TROIS RESSOURCES, DEUX DEMANDEES, ET CE N'EST PAS UNE FACILITE. La piste fait
+# trois colonnes de large ; les depots bordent les deux colonnes exterieures.
+# Un porteur qui remonte par la colonne du MILIEU n'a jamais de depot a portee
+# de bras — il traverse la zone de livraison sans pouvoir livrer, et rien ne
+# peut le lui dire. La troisieme ressource est la marge de cette geometrie,
+# mesuree et assumee : **une nuee ne se range pas en file, et l'on ne choisit
+# pas qui passe au milieu.**
+id: ch4_03
+name: La navette
+tutorial: false
+allowed_rules: [R08, R09, R11, R12]
+slots: 3
+max_ticks: 180
+objective: collect 2
+lesson: "Aucune regle ne connait le but du transport. On ne fait faire un trajet a une nuee qu'en le lui ayant trace."
+expected_wins: 3
+expected_classes: 2
+calibrated_on: 3f1d7a5526365bb9
+trail: 4,0=196 5,0=196 6,0=196 4,1=184 5,1=184 6,1=184 4,2=172 5,2=172 6,2=172 4,3=160 5,3=160 6,3=160 4,4=148 5,4=148 6,4=148 4,5=136 5,5=136 6,5=136 4,6=124 5,6=124 6,6=124 4,7=112 5,7=112 6,7=112 4,8=100 5,8=100 6,8=100 4,9=88 5,9=88 6,9=88 4,10=76 5,10=76 6,10=76 4,11=64 5,11=64 6,11=64 4,12=52 5,12=52 6,12=52
+---
+. . . D . . . D . . .
+. . . D . . . D . . .
+. . . D . . . D . . .
+. . . . . . . . . . .
+. . . . r r r . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . o o o . . . .
+. . . . o o o . . . .
+. . . . o o o . . . .
+. . . . o o o . . . .
+. . . . o o o . . . .
+. . . . o o o . . . .
+. . . . o o o . . . .
