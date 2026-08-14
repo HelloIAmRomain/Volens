@@ -33,7 +33,12 @@ const KNOWN_DEAD := ["R10"]
 ## Règles vivantes mais sous-employées : présentes dans une ou deux solutions
 ## seulement. Cliquet — la liste doit décroître à mesure que le catalogue
 ## grandit, jamais s'allonger.
-const KNOWN_UNDER_USED := ["R05", "R06", "R13", "R15", "R16"]
+## VIDE depuis le 15 août 2026 : quinze règles sur seize atteignent la cible.
+## Trois niveaux ont été ajoutés pour cela — N24 sert R05 et R06, N25 sert R13
+## et R15, N26 sert R15 et R16 — et aucun n'a été écrit POUR le compteur : la
+## contrainte a servi de cahier des charges, pas de quota. Un niveau écrit pour
+## remplir une case aurait été un mauvais niveau, et EQ-04 n'aurait rien gagné.
+const KNOWN_UNDER_USED: Array[String] = []
 
 var _alive: Dictionary = {}   # id de règle -> nombre de niveaux où elle gagne
 

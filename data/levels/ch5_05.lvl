@@ -1,0 +1,54 @@
+# N25 « Deux fois le prix » — un sacrifice ne se divise pas.
+#
+# MEME MECANISME QU'EN N15, DOUBLE. Deux feux statiques bouchent deux
+# ouvertures successives : la nuee doit en payer un a chaque mur.
+#
+# CE QUE LE DOUBLEMENT AJOUTE, et ce n'est pas de la difficulte pour la
+# difficulte. En N15, un agent se consumait et tout le reste passait — le prix
+# etait ponctuel, presque abstrait. Ici il revient, et le joueur le voit venir :
+# le second mur est visible depuis le depart, et l'on sait en franchissant le
+# premier qu'il faudra recommencer.
+#
+# R13 EST UN PROPOSEUR, ET LA NEUTRALISATION UNE CONSEQUENCE. Le moteur verifie
+# que **c'est bien R13 qui a decide** ce pas : un agent pousse sur un feu par
+# une autre regle meurt sans rien ouvrir. Le joueur peut le constater en
+# glissant R13 sous la Lumiere — la cascade ne l'atteint plus, la nuee se jette
+# dans le premier feu par obeissance, et les deux passages restent fermes.
+#
+# CHAQUE MUR A DEUX OUVERTURES, DONC DEUX FEUX. C'est une contrainte de debit,
+# mesuree : a une seule ouverture par mur, vingt agents s'entassent derriere un
+# passage d'une case et la file ne s'ecoule jamais — six sortis sur vingt. Un
+# sacrifice qui ouvre un passage trop etroit ne sert a rien.
+#
+# LA PRESERVATION TOLERE EXACTEMENT QUATRE PERTES. Ni une de moins — il en faut
+# quatre —, ni une de plus : une pile qui gaspille un cinquieme agent echoue.
+# **C'est le premier niveau ou le prix juste est un chiffre, et non « le moins
+# possible ».**
+id: ch5_05
+name: Deux fois le prix
+tutorial: false
+allowed_rules: [R01, R03, R13, R15]
+slots: 3
+max_ticks: 200
+objective: extraction 80
+objective: preservation 4
+lesson: "Le prix juste est un chiffre, pas « le moins possible ». Quatre morts, ni une de plus."
+expected_wins: 5
+expected_classes: 1
+challenge: efficiency=19 abstinence=R03
+calibrated_on: e463f518de17c939
+---
+. . . . . L . . . . .
+# # # # E E # # # # #
+# # # # X X # # # # #
+. . . . . . . . . . .
+. . . . . . . . . . .
+# # # # X X # # # # #
+# # # # . . # # # # #
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . . . . . . . . .
