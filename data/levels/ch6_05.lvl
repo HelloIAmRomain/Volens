@@ -1,0 +1,47 @@
+# N30 « Le sas rouvert » — l'oubli cesse d'etre definitif.
+#
+# LA CARTE DE N14, A L'IDENTIQUE. On y apprenait qu'un sens unique rend l'oubli
+# definitif : la nuee qui franchissait le sas les mains vides ne pouvait plus
+# redescendre, et le niveau etait perdu bien avant sa fin.
+#
+# ICI LE SAS EST POSE CONTRE LA NUEE. Il ne se franchit qu'en DESCENDANT — et
+# la nuee vient d'en bas. Le depot est de l'autre cote d'un couloir qu'elle ne
+# peut pas emprunter : sans le joker, le niveau n'a aucune solution, et ce
+# n'est pas une difficulte, c'est une impossibilite.
+#
+# **C'EST LE SEUL NIVEAU DU JEU DONT UNE REGLE EST OBLIGATOIRE.** Partout
+# ailleurs le joueur choisit sa route ; ici il n'y en a qu'une, et le jeu la
+# lui montre en la lui interdisant. Un sens unique pose contre vous n'a qu'une
+# reponse — et il a fallu six chapitres pour l'avoir en main.
+#
+# LE NIVEAU OUVRE QUATRE RANGS, le seul du chapitre : il faut le joker, les
+# deux effets et une regle de deplacement, et aucun ne peut manquer.
+#
+# LES EFFETS SE METTENT EN TETE, sans exception — la lecon de N14, qui vaut
+# encore ici. Une seule regle de deplacement au-dessus de R11, et plus personne
+# ne ramasse jamais, joker ou pas.
+id: ch6_05
+name: Le sas rouvert
+tutorial: false
+allowed_rules: [R01, R11, R12, R16(v)]
+slots: 4
+max_ticks: 200
+objective: collect 2
+lesson: "Un sens unique pose contre vous n'a qu'une reponse — et il a fallu six chapitres pour l'avoir en main."
+expected_wins: 8
+expected_classes: 1
+calibrated_on: a37acc8160738b91
+---
+. . . . . L . . . . .
+. . . . D D D . . . .
+. . . . v v v . . . .
+# # # # v v v # # # #
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . r r r . . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . . . . . . . . .
+. . . . . . . . . . .

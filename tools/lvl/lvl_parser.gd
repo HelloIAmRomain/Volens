@@ -532,10 +532,19 @@ static func _parse_allowed_rules(value: String, errors: PackedStringArray) -> Ar
 		# et l'auteur de niveau designent donc la meme chose de la meme facon.
 		if token.begins_with("R16(") and token.ends_with(")"):
 			var symbol := token.substr(4, token.length() - 5)
-			if not _SYMBOLS.has(symbol):
+			# LES SENS UNIQUES ONT LEUR PROPRE TABLE, parce qu'ils portent une
+			# orientation : « ^ », « > », « v », « < » ne sont pas quatre types de
+			# case mais quatre écritures du même. Le joker ne neutralise pas une
+			# direction, il neutralise la CONTRAINTE — n'importe lequel des quatre
+			# symboles la désigne donc, et désigne la même chose.
+			var cell_type: int = -1
+			if _SYMBOLS.has(symbol):
+				cell_type = _SYMBOLS[symbol]
+			elif symbol in _ONE_WAY_SYMBOLS:
+				cell_type = GridState.CellType.ONE_WAY
+			else:
 				errors.append("allowed_rules : R16(%s) — symbole de case inconnu" % symbol)
 				continue
-			var cell_type: int = _SYMBOLS[symbol]
 			if cell_type == GridState.CellType.WALL:
 				errors.append(("allowed_rules : R16(#) — le mur n'est jamais ignorable. "
 					+ "Un joker qui annule la geometrie ouvre tous les niveaux d'un coup."))

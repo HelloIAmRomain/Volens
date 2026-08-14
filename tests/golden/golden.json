@@ -891,6 +891,59 @@
       "stack": [
         1.0
       ]
+    },
+    {
+      "hashes": {
+        "150": "fce8af8b72e32139",
+        "300": "fbfbd269f888e6f4",
+        "50": "69739f2bf5d1979d"
+      },
+      "level": "res://data/levels/ch5_06.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        14.0,
+        4.0,
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "5444058fd7a8d835",
+        "300": "c08769dc875ac37a",
+        "50": "50f004feb9d62211"
+      },
+      "level": "res://data/levels/ch5_06.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "abf915408170c649",
+        "300": "f50162a84df2cbe4",
+        "50": "fe5c655b3d95dead"
+      },
+      "level": "res://data/levels/ch6_05.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        11.0,
+        12.0,
+        1.0,
+        2064.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "fe4152ab6dd2182b",
+        "300": "8acb86588b91c584",
+        "50": "2056d6df141b6f0f"
+      },
+      "level": "res://data/levels/ch6_05.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        1.0
+      ]
     }
   ]
 }
