@@ -1,0 +1,68 @@
+# N17 « La fenetre » — la nuee ne passe qu'ensemble.
+#
+# IL INTRODUIT R15 « Suivre le plus lent », et il faut dire ce qu'elle est
+# vraiment : dans un jeu ou l'on avance d'une case ou de zero, « regler son
+# avance sur le plus lent » ne peut vouloir dire qu'une chose — **attendre**.
+# R15 est une regulation, pas une locomotion : elle ne conduit jamais nulle
+# part. Posee seule, la nuee se fige.
+#
+# LE DISPOSITIF. Une bande de feu cyclique barre tout le niveau : quatre ticks
+# active, six eteinte, indefiniment. Le cycle est visible et previsible —
+# RG-14 l'exige, et c'est ce qui rend le niveau resoluble plutot qu'injuste.
+#
+# LA NUEE COMMENCE DEJA COUPEE EN DEUX, et c'est la le vrai probleme : une
+# avant-garde de dix agents, une arriere-garde de dix, cinq rangees plus bas.
+# L'avant-garde atteint la bande pendant une fenetre ; l'arriere-garde arrive
+# au tick suivant, quand le feu a repris.
+#
+# LE CHAMP EST OUVERT, ET C'EST UNE CONDITION DE R15. Mesure faite sur un
+# couloir a trois cases : la nuee se fige definitivement — la tete attend une
+# queue qui ne peut pas la rejoindre, faute de place pour passer. **R15 ne se
+# pose que la ou les retardataires PEUVENT rattraper.** Dans un goulot, elle
+# transforme une lenteur en blocage.
+#
+# LE PIEGE EST L'ETIREMENT. Une nuee lancee sans regulation s'etire : la tete
+# franchit le feu pendant la fenetre, la queue arrive un tick trop tard et
+# brule. Ce n'est pas une question de vitesse — la nuee est assez rapide — mais
+# de FORME. Elle arrive en file la ou il fallait arriver en bloc.
+#
+# R15 RESSERRE EN RALENTISSANT. Un agent qui a plus de trois cases d'avance sur
+# le dernier qu'il percoit s'arrete et l'attend. La nuee progresse au rythme de
+# son dernier, se presente compacte devant le feu, et passe entiere dans une
+# seule fenetre.
+#
+# « LE PLUS EN RETARD » SE MESURE PAR RAPPORT AU BUT, pas par rapport a
+# l'agent : on compare les distances a la lumiere. Sans reference commune,
+# « en retard » n'aurait pas de sens — deux agents eloignes seraient chacun le
+# retardataire de l'autre, et la nuee entiere s'immobiliserait.
+#
+# SUR LE FIL EST TOLERE, comme partout ailleurs : un ecart EXACTEMENT egal au
+# seuil ne declenche pas l'attente. Le seuil est un maximum admis, pas un
+# maximum interdit.
+id: ch5_03
+name: La fenetre
+tutorial: false
+allowed_rules: [R01, R03, R15]
+slots: 3
+max_ticks: 180
+objective: extraction 80
+objective: preservation 1
+cycle: period=10 active=4
+lesson: "Ce n'est pas une question de vitesse mais de forme : elle arrivait en file la ou il fallait arriver en bloc."
+expected_wins: 4
+expected_classes: 1
+calibrated_on: c242630893772354
+---
+. . . . . L . . . . .
+E E E E E E E E E E E
+. . . . . . . . . . .
+C C C C C C C C C C C
+. . . . . . . . . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . . . . . . . . .

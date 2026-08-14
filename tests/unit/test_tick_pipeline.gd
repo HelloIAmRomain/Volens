@@ -148,7 +148,9 @@ func test_agent_entering_exit_is_flagged_sorti() -> void:
 	var state := _make_state(1, 1, [Vector2i(0, 0)])
 	state.grid.cells[0] = GridState.CellType.EXIT
 
-	SimCore._apply_environment_effects(state)
+	# `decided_by` vide : aucun agent n'a ete mene la par R13, donc aucun danger
+	# n'est neutralise — c'est ce que ces tests veulent observer.
+	SimCore._apply_environment_effects(state, PackedInt32Array([0, 0, 0, 0, 0, 0, 0, 0]))
 
 	assert_false(state.agents[0].is_present())
 	assert_eq(state.agents[0].flags & AgentState.SORTI, AgentState.SORTI)
@@ -158,7 +160,9 @@ func test_agent_entering_static_danger_is_flagged_perdu() -> void:
 	var state := _make_state(1, 1, [Vector2i(0, 0)])
 	state.grid.cells[0] = GridState.CellType.STATIC_DANGER
 
-	SimCore._apply_environment_effects(state)
+	# `decided_by` vide : aucun agent n'a ete mene la par R13, donc aucun danger
+	# n'est neutralise — c'est ce que ces tests veulent observer.
+	SimCore._apply_environment_effects(state, PackedInt32Array([0, 0, 0, 0, 0, 0, 0, 0]))
 
 	assert_false(state.agents[0].is_present())
 	assert_eq(state.agents[0].flags & AgentState.PERDU, AgentState.PERDU)
@@ -174,7 +178,9 @@ func test_agent_on_inactive_cyclic_danger_is_safe() -> void:
 	state.grid.cycles = [cycle]
 	state.tick = 2  # 2 mod 4 = 2 -> inactif
 
-	SimCore._apply_environment_effects(state)
+	# `decided_by` vide : aucun agent n'a ete mene la par R13, donc aucun danger
+	# n'est neutralise — c'est ce que ces tests veulent observer.
+	SimCore._apply_environment_effects(state, PackedInt32Array([0, 0, 0, 0, 0, 0, 0, 0]))
 
 	assert_true(state.agents[0].is_present())
 	assert_eq(state.counters.lost, 0)

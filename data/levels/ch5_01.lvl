@@ -1,0 +1,54 @@
+# N15 « Le passage » — un agent contre vingt.
+#
+# IL INTRODUIT R13 « Boucher », la seule regle du jeu qui demande de PERDRE
+# quelque chose. Toutes les autres cherchent a preserver, contourner,
+# regrouper. Celle-ci dit : envoie un agent mourir la, et le chemin s'ouvre
+# pour tous les autres.
+#
+# LE DISPOSITIF. Un mur perce d'une seule ouverture, et un feu occupe cette
+# ouverture. Il n'y a pas de contournement, pas de seconde porte, pas de
+# fenetre de danger cyclique a attendre : le feu est statique et il bouche la
+# seule issue. Aucune pile du chapitre 1 ne resout ce niveau, et c'est le but —
+# il n'a pas de solution qui ne coute rien.
+#
+# R13 EST UN PROPOSEUR, PAS UN EFFET, et la distinction est instructive.
+# Boucher EST un deplacement : l'agent va sur le danger. La neutralisation
+# n'est pas un effet de regle mais une consequence de l'arrivee, et le moteur
+# verifie que **c'est bien R13 qui a decide** ce pas.
+#
+# CE QUI DISTINGUE UN SACRIFICE D'UN ACCIDENT. Un agent pousse sur un danger
+# par une autre regle — par un conflit de case, par la Lumiere — meurt sans
+# rien neutraliser. Le joueur peut le verifier en placant R13 SOUS la Lumiere :
+# la cascade ne l'atteint jamais, la nuee entiere se jette dans le feu par
+# obeissance a R01, et le passage reste ferme. Vingt morts, aucune ouverture.
+#
+# LE COUT EST EXACTEMENT D'UN AGENT, et le niveau le demande : la preservation
+# tolere une perte, pas deux. Un joueur qui place R13 en tete sans reflechir
+# envoie tous les agents adjacents au feu s'y jeter en meme temps — le premier
+# le neutralise, les suivants meurent pour rien sur une case devenue vide.
+# **Un sacrifice mal ordonne n'est plus un sacrifice, c'est du gachis.**
+id: ch5_01
+name: Le passage
+tutorial: true
+allowed_rules: [R01, R03, R13]
+slots: 3
+max_ticks: 150
+objective: extraction 95
+objective: preservation 1
+lesson: "Un agent contre vingt. Mais un sacrifice mal ordonne n'est plus un sacrifice, c'est du gachis."
+expected_wins: 4
+expected_classes: 1
+calibrated_on: 63dd79a498898132
+---
+. . . . . L . . . . .
+# # # # # E # # # # #
+# # # # # X # # # # #
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . . . . . . . . .

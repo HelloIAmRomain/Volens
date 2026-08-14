@@ -1,0 +1,59 @@
+# N13 « Le premier fardeau » — ramasser n'est pas se deplacer.
+#
+# PREMIER NIVEAU DU CHAPITRE 4, et le premier du jeu dont l'objectif n'est pas
+# de sortir : il faut LIVRER. L'objectif `collect` existait dans le moteur
+# depuis le premier lot ; il etait inerte faute des regles qui lui donnent un
+# sens. Il s'allume ici.
+#
+# R11 « Porter » ET R12 « Deposer » SONT DEUX REGLES D'EFFET. Comme R08, elles
+# ne proposent aucun deplacement : elles agissent, puis rendent la main. Sans
+# ce genre, il aurait fallu les ecrire en proposeur — donc les faire proposer
+# l'immobilite, donc masquer toute la suite de la pile, donc rendre le
+# chapitre injouable. C'est la pathologie P1 du dossier des genres.
+#
+# LE DISPOSITIF. Quatre ressources sur le chemin, un depot au nord, et la
+# lumiere derriere lui. R01 conduit la nuee du sud au nord ; il suffit qu'elle
+# ramasse en passant et depose en arrivant.
+#
+# LE PIEGE EST LA POSITION DE R11. Placee SOUS la Lumiere, elle n'est jamais
+# atteinte : R01 decide partout sur ce terrain degage, la cascade s'arrete a
+# elle, et la nuee traverse les ressources sans les voir. Le joueur regarde
+# alors vingt agents marcher sur une ressource et ne rien faire — et c'est
+# exactement ce que la regle d'or prescrit. **Un effet ne s'applique que si la
+# cascade l'atteint.**
+#
+# UN PORTEUR NE SORT PAS DU NIVEAU. Sortir avec la ressource sur le dos, ce
+# serait la perdre en comptant un succes ; la sortie ignore donc les porteurs.
+# Il n'y a pas de sortie ici, mais la regle vaut pour tout le chapitre.
+#
+# LE DEPOT SE FAIT SUR UNE CASE ADJACENTE, jamais sous les pieds. Si l'on
+# deposait en marchant dessus, une case de depot serait une sortie de plus et
+# R12 ne servirait a rien : R01 y menerait seule. En exigeant l'adjacence, le
+# depot devient un point qu'il faut FROLER, et il faut donc une regle pour
+# reconnaitre ce moment.
+id: ch4_01
+name: Le premier fardeau
+tutorial: true
+allowed_rules: [R01, R11, R12]
+slots: 3
+max_ticks: 150
+objective: collect 4
+lesson: "Un effet ne s'applique que si la cascade l'atteint. Sous la lumiere, ramasser n'arrive jamais."
+expected_wins: 2
+expected_classes: 1
+calibrated_on: 136ada9f3b8efa7f
+---
+. . . . . L . . . . .
+. . . . D D D . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . r . . . r . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . r . . . r . . .
+. . . . . . . . . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . . . . . . . . .

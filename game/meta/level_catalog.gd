@@ -20,6 +20,12 @@ const LEVELS := [
 	{"id": "ch3_01", "name": "La trace des autres", "path": "res://data/levels/ch3_01.json", "ready": true},
 	{"id": "ch3_02", "name": "La trace qui s'efface", "path": "res://data/levels/ch3_02.json", "ready": true},
 	{"id": "ch3_03", "name": "Le repli", "path": "res://data/levels/ch3_03.json", "ready": true},
+	{"id": "ch4_01", "name": "Le premier fardeau", "path": "res://data/levels/ch4_01.json", "ready": true},
+	{"id": "ch4_02", "name": "Le sas", "path": "res://data/levels/ch4_02.json", "ready": true},
+	{"id": "ch5_01", "name": "Le passage", "path": "res://data/levels/ch5_01.json", "ready": true},
+	{"id": "ch5_02", "name": "Les deux vigies", "path": "res://data/levels/ch5_02.json", "ready": true},
+	{"id": "ch5_03", "name": "La fenêtre", "path": "res://data/levels/ch5_03.json", "ready": true},
+	{"id": "ch6_01", "name": "Le droit d'ignorer", "path": "res://data/levels/ch6_01.json", "ready": true},
 ]
 
 static func count() -> int:

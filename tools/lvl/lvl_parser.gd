@@ -526,6 +526,26 @@ static func _parse_allowed_rules(value: String, errors: PackedStringArray) -> Ar
 		var token := token_raw.strip_edges()
 		if token.is_empty():
 			continue
+		# LE JOKER PORTE SON ARGUMENT DANS SON NOM : `R16(X)` se lit « ignorer le
+		# danger », `R16(^)` « ignorer les sens uniques », `R16(P)` « ignorer les
+		# portes ». Le symbole entre parentheses est celui de la GRILLE — le joueur
+		# et l'auteur de niveau designent donc la meme chose de la meme facon.
+		if token.begins_with("R16(") and token.ends_with(")"):
+			var symbol := token.substr(4, token.length() - 5)
+			if not _SYMBOLS.has(symbol):
+				errors.append("allowed_rules : R16(%s) — symbole de case inconnu" % symbol)
+				continue
+			var cell_type: int = _SYMBOLS[symbol]
+			if cell_type == GridState.CellType.WALL:
+				errors.append(("allowed_rules : R16(#) — le mur n'est jamais ignorable. "
+					+ "Un joker qui annule la geometrie ouvre tous les niveaux d'un coup."))
+				continue
+			var joker := RuleRegistry.make_joker(cell_type)
+			if out.has(joker):
+				errors.append("allowed_rules : R16(%s) en double" % symbol)
+				continue
+			out.append(joker)
+			continue
 		if token.begins_with("R") or token.begins_with("r"):
 			token = token.substr(1)
 		var rule_id := int(token)
