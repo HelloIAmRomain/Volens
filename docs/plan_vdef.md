@@ -11,10 +11,11 @@ jouable, testée, avec toutes les mécaniques.
 | Genres de règles | proposeur seul | **proposeur + effet** — P1 close |
 | Types de case | 5/9 actifs | **9/9**, tous dessinés à l'écran |
 | Objectifs | 5 implémentés, 2 employés | **5/5 employés** par au moins un niveau |
-| Défis RG-18 | rien | calculés dans `core/`, mesurés par le validateur, affichés au bilan |
-| Niveaux | 5 (chapitre 1) | **22, six chapitres**, tous validés |
-| Corpus d'or | 30 recettes | **60**, couvrant les seize règles et les deux genres |
-| Tests | 346 | **379**, 5110 assertions |
+| Niveaux | 5 (chapitre 1) | **25, six chapitres**, tous validés |
+| Corpus d'or | 30 recettes | **66**, couvrant les seize règles et les deux genres |
+| Tests | 346 | **396** |
+| EQ-04 (règles vivantes) | jamais mesuré | **15 règles sur 16** à la cible du CDC |
+| Défis RG-18 | rien | **17 niveaux**, mesurés, enregistrés, affichés |
 
 ## Les cinq résultats que la construction a établis
 
@@ -34,9 +35,25 @@ Aucun n'était prévisible sur le papier ; tous ont coûté une géométrie mesu
    vocabulaire fonctionnaient parfaitement dans le moteur et n'étaient pas
    dessinés. Aucun test de simulation ne pouvait le dire ; il a fallu regarder.
 
+## Le risque d'intérêt, nommé
+
+**L'espace de piles est épuisable.** Seize des vingt-cinq niveaux offrent seize
+piles : un joueur qui renonce à comprendre les essaie toutes en quelques
+minutes. La difficulté du jeu n'est pas dans la recherche, elle est dans la
+compréhension — et rien n'oblige à comprendre.
+
+Agrandir l'espace ne répare rien : à quatre règles et quatre rangs on atteint
+65 piles, et un niveau résolu par épuisement en 65 essais est pire qu'un
+niveau résolu en 16. La réponse est ailleurs, et elle est posée : **les défis
+RG-18 sont le jeu de celui qui a compris**, et ils ne se brutalisent pas — la
+meilleure pile ne se trouve pas en les essayant toutes, elle se déduit.
+
+**C'est la question à poser aux testeurs**, et aucune mesure d'outil ne la
+remplacera : ont-ils essayé toutes les piles, ou raisonné ?
+
 ## Ce qui reste, et qui ne dépend pas de moi
 
-- **Le volume de contenu.** Le CDC vise 70 niveaux pour la v1.0 ; il y en a 22.
+- **Le volume de contenu.** Le CDC vise 70 niveaux pour la v1.0 ; il y en a 25.
   Ce qui est complet, c'est le **vocabulaire** — chaque règle, chaque type de
   case et chaque type d'objectif est employé, enseigné et testé. Ajouter des
   niveaux est désormais une affaire de dessin, pas de moteur : la boucle
@@ -45,6 +62,12 @@ Aucun n'était prévisible sur le papier ; tous ont coûté une géométrie mesu
 - **P2, P3 et P4** du dossier des genres restent ouvertes, et l'hystérésis
   gelée. Deux résultats du chapitre 2 les confirment plutôt qu'ils ne les
   affaiblissent.
+- **R10 « Rebrousser si seul » est morte au sens d'EQ-04**, et le CDC autorise
+  deux issues : la retravailler — ce qui demande l'hystérésis, donc le dégel —
+  ou la retirer de la bibliothèque. Les deux sont une décision de conception,
+  pas un niveau de plus.
+- **La localisation ENF-40** (français et anglais à parité) : les libellés sont
+  en dur, avec des clés stables déjà prêtes dans `RuleCatalog`.
 - **La chaîne Android** (S9), l'appareil de référence (T-003) et le recrutement
   des testeurs (T-008) : hors de portée d'ici.
 

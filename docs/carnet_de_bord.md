@@ -2391,6 +2391,99 @@ seize règles, les deux genres, la piste, le transport, la porte et le joker.
 Prédiction écrite tenue exactement : 30 anciennes inchangées, 0 déplacée, 26
 nouvelles renseignées.
 
+## Fait — Jouabilité et intérêt : ce que la mesure du parcours a révélé (15 août 2026)
+
+### 172. Le parcours de joueur ne se lit pas dans le rapport de validation
+
+Ce que le validateur dit d'un niveau isolé ne dit rien de l'EXPÉRIENCE. On
+mesure désormais, dans l'ordre du catalogue : la taille de l'espace de piles,
+le nombre de gagnantes, et surtout le **rang de la première gagnante dans
+l'ordre où un joueur méthodique les essaierait** — l'énumérateur va par
+longueur croissante, ce qui est exactement l'ordre d'exploration naturel.
+
+Trois défauts en sont sortis, invisibles autrement :
+
+- **deux niveaux à 68 % de piles gagnantes** (ch2_02, ch3_01). Presque tout
+  marchait, donc rien ne s'apprenait. Le troisième rang y était une règle
+  INERTE — un rang gaspillé, sans conséquence. Remplacé par un piège RÉEL :
+  68 % → 43 %, à espace constant ;
+- **ch4_02 : première gagnante au rang 59 sur 65.** Cinquante-huit échecs avant
+  de réussir — ce n'est plus de la compréhension, c'est de l'épuisement.
+  Ramené à 16 piles, première au rang 14 ;
+- **la courbe n'était pas monotone** : le deuxième niveau du chapitre 2 était
+  un cadeau entre deux murs.
+
+### 173. Deux objectifs se taisaient à l'échec
+
+`collect` et `interdiction` n'avaient aucune phrase. Le joueur lisait « le
+temps imparti s'est écoulé » alors que, sur une interdiction, la partie
+s'arrête au troisième tick.
+
+> **Un message faux vaut moins que pas de message.**
+
+Et le contrôle générique qui l'accompagne a d'abord été FAUX lui-même : sa
+sonde ne violait aucun objectif, si bien qu'elle accusait `extraction` et
+`preservation` d'être muets alors qu'ils parlent très bien quand on les
+enfreint. Une sonde qui ne sollicite pas le mécanisme — invariant n°12, encore.
+
+### 174. Le diagnostic EF-05 mentait sur les règles d'effet
+
+Il les faisait passer par `evaluate`, qui leur renvoie ABSTAIN par
+construction : le panneau annonçait que « Marquer la piste » ne s'appliquait
+pas, au tick même où elle marquait. **Un diagnostic qui ment est pire qu'un
+diagnostic absent** — c'est le pilier P4 retourné contre le joueur, qui forme
+une hypothèse fausse et la vérifie.
+
+### 175. Les défis RG-18 étaient une promesse vide
+
+Deux niveaux sur vingt-deux en déclaraient, et rien ne les conservait : un
+défi gagné disparaissait avec l'écran de bilan. Ils sont désormais mesurés
+(dix-sept niveaux peuvent en offrir un honnête), enregistrés, et affichés en
+trois pastilles dans la liste.
+
+La mesure a pris en défaut un défi posé à la main : abstinence sur R01 dans
+ch4_02, alors qu'aucune des deux gagnantes ne s'en passe. **Une case qu'on ne
+peut jamais cocher** — exactement ce que RG-19 interdit.
+
+La persistance a demandé le schéma 2. C'est le seul changement du dépôt qui
+puisse détruire quelque chose d'irremplaçable, et le repli propre l'aurait
+fait : la migration 1 → 2 est donc ÉCRITE, purement additive, et tenue par
+trois tests.
+
+### 176. EQ-04 mesuré : R10 est morte, et c'est une propriété de la règle
+
+« Une règle que l'espace des solutions ignore est une règle morte, à
+retravailler ou retirer. » Le critère n'avait jamais été mesuré. Résultat sur
+vingt-deux niveaux : dix règles à la cible, cinq sous-employées, **R10 offerte
+par aucun niveau**.
+
+R10 ne fait qu'UN demi-tour, et se déplacer met à jour le cap : si ce demi-tour
+ne suffit pas à retrouver un congénère, l'agent repart en sens inverse au tick
+suivant et fait la navette. Elle ne retient que celui qui s'écarte d'un pas.
+La rendre vivante demanderait qu'elle se SOUVIENNE qu'elle rebrousse —
+l'hystérésis, gelée. Le CDC autorise retravailler ou retirer ; les deux
+demandent une décision du concepteur, pas un niveau de plus.
+
+Trois niveaux ont porté les cinq autres à la cible. **Aucun n'a été écrit pour
+le compteur** : la contrainte a servi de cahier des charges, pas de quota.
+
+### 177. Le vrai risque d'intérêt : l'espace de piles est épuisable
+
+Seize des vingt-cinq niveaux offrent seize piles. Un joueur qui renonce à
+comprendre les essaie toutes en quelques minutes. **La difficulté du jeu n'est
+pas dans la recherche — elle est dans la compréhension**, et rien n'oblige à
+comprendre.
+
+Ce n'est pas réparable en agrandissant l'espace : à quatre règles et quatre
+rangs on atteint 65 piles, et un niveau qu'on résout par épuisement en 65
+essais est pire qu'un niveau qu'on résout en 16. La réponse est ailleurs, et
+elle est déjà posée : les défis RG-18 sont le jeu de celui qui a compris, et
+ils ne se brutalisent pas — la meilleure pile ne se trouve pas en les essayant
+toutes, elle se déduit.
+
+**À vérifier auprès des testeurs, et c'est la question à leur poser :** ont-ils
+essayé toutes les piles, ou raisonné ? Aucune mesure d'outil ne le dira.
+
 ## Reste à faire
 
 **S3 : clos** — premier passage de la CI en ligne constaté vert le
