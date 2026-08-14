@@ -108,7 +108,7 @@ func test_a_session_on_an_unknown_level_falls_back_to_the_menu() -> void:
 	# conçu » mais « identifiant inconnu », par exemple une sauvegarde écrite
 	# par une version antérieure ou postérieure.
 	var session := Session.new()
-	session.level_id = "ch2_01"  # inexistant, aucun fichier
+	session.level_id = "ch99_99"  # impossible par construction, aucun fichier
 	session.stack = [1]
 	session.save_to_disk()
 

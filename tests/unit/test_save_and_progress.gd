@@ -59,13 +59,20 @@ func test_unsolved_level_reports_no_best() -> void:
 
 # --- catalogue -----------------------------------------------------------------
 
-func test_catalog_exposes_five_levels_all_of_them_ready() -> void:
-	assert_eq(LevelCatalog.count(), 5, "le chapitre 1 compte cinq niveaux")
-	var ready := 0
+func test_every_catalogued_level_is_ready_and_none_is_a_placeholder() -> void:
+	# LE NOMBRE N'EST PLUS FIGE — il l'a ete tant que le catalogue s'arretait au
+	# chapitre 1, et l'inscrire en dur a coute une journee de rouge le jour ou le
+	# chapitre 2 est arrive. Ce qui doit rester vrai n'est pas « il y a cinq
+	# niveaux » mais « aucun niveau du catalogue n'est une promesse » : un niveau
+	# annonce et non pret est un ecran noir en puissance.
+	assert_gt(LevelCatalog.count(), 0, "catalogue vide")
+	var not_ready := PackedStringArray()
 	for i in range(LevelCatalog.count()):
-		if bool(LevelCatalog.entry(i)["ready"]):
-			ready += 1
-	assert_eq(ready, 5, "le chapitre 1 est complet : les cinq niveaux sont conçus et validés")
+		var entry: Dictionary = LevelCatalog.entry(i)
+		if not bool(entry["ready"]):
+			not_ready.append(String(entry["id"]))
+	assert_eq(not_ready, PackedStringArray(),
+		"niveaux annonces mais non prets : %s" % ", ".join(not_ready))
 
 func test_next_playable_skips_solved_levels() -> void:
 	var p := Progress.new()
@@ -91,8 +98,11 @@ func test_every_ready_level_actually_loads() -> void:
 func test_an_unknown_level_yields_nothing() -> void:
 	# Le repli doit rester propre pour un identifiant qui n'existe pas — une
 	# sauvegarde d'une version antérieure, par exemple.
-	assert_eq(LevelCatalog.path_of("ch2_01"), "")
-	assert_eq(LevelCatalog.load_level_data("ch2_01"), {})
+	# Identifiant volontairement impossible : « ch2_01 » servait ici jusqu'a ce
+	# que le chapitre 2 existe. Un test dont l'exemple devient valide cesse de
+	# tester ce qu'il annonce, sans jamais le dire — meme piege qu'en N7 sur R07.
+	assert_eq(LevelCatalog.path_of("ch99_99"), "")
+	assert_eq(LevelCatalog.load_level_data("ch99_99"), {})
 
 # --- session -------------------------------------------------------------------
 

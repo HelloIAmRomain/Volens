@@ -1,6 +1,6 @@
 class_name LevelCatalog
 extends RefCounted
-## Catalogue du chapitre 1 — les cinq niveaux, conçus et validés.
+## Catalogue des niveaux, conçus et valides — un chapitre apres l'autre.
 ##
 ## Les niveaux 3 à 5 portent l'arc QN-02 : trois familles de piles, chacune
 ## gagnante sur exactement deux niveaux, aucune sur les trois. La propriété
@@ -13,6 +13,10 @@ const LEVELS := [
 	{"id": "ch1_03", "name": "Les traînards", "path": "res://data/levels/ch1_03.json", "ready": true},
 	{"id": "ch1_04", "name": "Le prix du temps", "path": "res://data/levels/ch1_04.json", "ready": true},
 	{"id": "ch1_05", "name": "Plusieurs vérités", "path": "res://data/levels/ch1_05.json", "ready": true},
+	{"id": "ch2_01", "name": "Trois portes", "path": "res://data/levels/ch2_01.json", "ready": true},
+	{"id": "ch2_02", "name": "Sans lumière", "path": "res://data/levels/ch2_02.json", "ready": true},
+	{"id": "ch2_03", "name": "La mauvaise porte", "path": "res://data/levels/ch2_03.json", "ready": true},
+	{"id": "ch2_04", "name": "Le détour long", "path": "res://data/levels/ch2_04.json", "ready": true},
 ]
 
 static func count() -> int:

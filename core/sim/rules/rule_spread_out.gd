@@ -56,12 +56,33 @@ func evaluate(agent: AgentState, state: SimState, params: RuleParams) -> Vector2
 
 	# S'ÉLOIGNER, c'est augmenter la distance au barycentre des voisins serrés.
 	# Même produit croisé entier que R03, comparaison inversée.
+	#
+	# ELLE PREND LE PLUS GRAND ÉCART, PAS LE PREMIER QUI ÉCARTE — et c'est une
+	# correction du 14 août 2026, imposée par la mesure. La première rédaction
+	# renvoyait le premier pas de l'ordre N>E>S>O qui augmentait la distance.
+	# Or, pour une nuée qui monte, le Nord l'augmente presque toujours : R04 se
+	# comportait donc comme une R01 affaiblie, et poussait vers l'avant au lieu
+	# d'écarter. Mesuré sur un piège place au Nord : elle y jetait la nuée qu'elle
+	# était censée en détourner.
+	#
+	# En retenant le MAXIMUM, le pas latéral l'emporte partout où il écarte
+	# davantage — ce qui est le cas dès que la nuée est devant ou derrière, la
+	# seule situation où « s'écarter » veut dire quelque chose. L'ordre N>E>S>O
+	# ne départage plus que les ex æquo, ce qui est son rôle.
 	var current_dist: int = _scaled_distance(agent.pos, sum_x, sum_y, count)
+	var best_dir: int = -1
+	var best_dist: int = current_dist
 	for dir in Directions.ORDER:
 		var candidate: Vector2i = agent.pos + Directions.offset(dir)
-		if state.grid.can_traverse(agent.pos, candidate) and _scaled_distance(candidate, sum_x, sum_y, count) > current_dist:
-			return Directions.offset(dir)
-	return ABSTAIN  # aucune issue ne desserre : la règle suivante décide
+		if not state.grid.can_traverse(agent.pos, candidate):
+			continue
+		var d: int = _scaled_distance(candidate, sum_x, sum_y, count)
+		if d > best_dist:
+			best_dist = d
+			best_dir = dir
+	if best_dir < 0:
+		return ABSTAIN  # aucune issue ne desserre : la règle suivante décide
+	return Directions.offset(best_dir)
 
 static func _scaled_distance(p: Vector2i, sum_x: int, sum_y: int, count: int) -> int:
 	return absi(p.x * count - sum_x) + absi(p.y * count - sum_y)
