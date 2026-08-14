@@ -32,7 +32,7 @@ func kind() -> int:
 	return Kind.EFFECT
 
 func apply_effect(agent_index: int, state: SimState, next_state: SimState,
-		_params: RuleParams) -> bool:
+		_params: RuleParams, _moved: bool) -> bool:
 	var agent := state.agents[agent_index]
 	if not agent.is_present():
 		return false

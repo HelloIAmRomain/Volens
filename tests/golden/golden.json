@@ -13,7 +13,7 @@
         "50": "f56e9a97f1009bcf"
       },
       "level": "res://data/levels/test_smoke.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         1.0,
         2.0,
@@ -27,7 +27,7 @@
         "50": "cc3c9440cc4b4020"
       },
       "level": "res://data/levels/test_smoke.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         2.0,
         3.0,
@@ -41,7 +41,7 @@
         "50": "7a6046d990625827"
       },
       "level": "res://data/levels/test_smoke.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         3.0,
         1.0,
@@ -55,7 +55,7 @@
         "50": "a9964db5bc8c5a04"
       },
       "level": "res://data/levels/test_smoke.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": []
     },
     {
@@ -65,7 +65,7 @@
         "50": "07ff77225a68f589"
       },
       "level": "res://tests/golden/levels/golden_corridor.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         1.0
       ]
@@ -77,7 +77,7 @@
         "50": "9478d02727a5265d"
       },
       "level": "res://tests/golden/levels/golden_corridor.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         2.0,
         1.0
@@ -90,7 +90,7 @@
         "50": "07ff77225a68f589"
       },
       "level": "res://tests/golden/levels/golden_corridor.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         1.0,
         3.0
@@ -103,7 +103,7 @@
         "50": "ca9fdb8408c6cc24"
       },
       "level": "res://tests/golden/levels/golden_field.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         1.0,
         2.0
@@ -116,7 +116,7 @@
         "50": "003856c8be330a04"
       },
       "level": "res://tests/golden/levels/golden_field.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         2.0,
         3.0,
@@ -130,7 +130,7 @@
         "50": "92c9e6a3101491ee"
       },
       "level": "res://tests/golden/levels/golden_field.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         3.0,
         2.0,
@@ -144,7 +144,7 @@
         "50": "0c123dc3a0faae67"
       },
       "level": "res://tests/golden/levels/sensi_face_a_face.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         2.0
       ]
@@ -156,7 +156,7 @@
         "50": "254ce21223a52ea5"
       },
       "level": "res://tests/golden/levels/sensi_cadence.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         2.0,
         1.0
@@ -169,7 +169,7 @@
         "50": "d5408e4eeebb833f"
       },
       "level": "res://tests/golden/levels/sensi_cadence.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         1.0
       ]
@@ -181,7 +181,7 @@
         "50": "aa8c0cc0fb8ddb8f"
       },
       "level": "res://tests/golden/levels/sensi_celerite.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         1.0
       ]
@@ -193,7 +193,7 @@
         "50": "288e5d09b7c93549"
       },
       "level": "res://tests/golden/levels/sensi_damier.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         3.0
       ]
@@ -205,7 +205,7 @@
         "50": "c52acca4eee7d3c7"
       },
       "level": "res://tests/golden/levels/sensi_chaine_a.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         1.0
       ]
@@ -217,7 +217,7 @@
         "50": "07dfadb254a5cc27"
       },
       "level": "res://tests/golden/levels/sensi_chaine_b.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         1.0
       ]
@@ -229,7 +229,7 @@
         "50": "415b84cbd2f60130"
       },
       "level": "res://data/levels/ch1_01.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         1.0
       ]
@@ -241,7 +241,7 @@
         "50": "f937acd16f914a19"
       },
       "level": "res://data/levels/ch1_02.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         1.0
       ]
@@ -253,7 +253,7 @@
         "50": "111c89f6418e9a9a"
       },
       "level": "res://data/levels/ch1_02.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         2.0,
         1.0
@@ -266,7 +266,7 @@
         "50": "9379c11b9fadc431"
       },
       "level": "res://data/levels/ch1_03.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         1.0
       ]
@@ -278,7 +278,7 @@
         "50": "a820671670577d11"
       },
       "level": "res://data/levels/ch1_03.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         2.0,
         1.0
@@ -291,7 +291,7 @@
         "50": "0f84283e4b0a331e"
       },
       "level": "res://data/levels/ch1_03.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         2.0,
         3.0,
@@ -305,7 +305,7 @@
         "50": "b812612bd3a8393c"
       },
       "level": "res://data/levels/ch1_03.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         3.0,
         1.0
@@ -318,7 +318,7 @@
         "50": "9ecdc7be27de9e0c"
       },
       "level": "res://data/levels/ch1_04.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         1.0
       ]
@@ -330,7 +330,7 @@
         "50": "491d861d9ae0ab4a"
       },
       "level": "res://data/levels/ch1_04.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         3.0,
         1.0
@@ -343,7 +343,7 @@
         "50": "4a37d631fb441b08"
       },
       "level": "res://data/levels/ch1_04.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         2.0,
         1.0
@@ -356,7 +356,7 @@
         "50": "94b29f9dba97799f"
       },
       "level": "res://data/levels/ch1_05.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         1.0
       ]
@@ -368,7 +368,7 @@
         "50": "6b951ef938209f5c"
       },
       "level": "res://data/levels/ch1_05.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         2.0,
         1.0
@@ -381,7 +381,7 @@
         "50": "53127de339e4af3d"
       },
       "level": "res://data/levels/ch1_05.json",
-      "rules_hash": "cc8acd22eaa68fd5",
+      "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         3.0,
         1.0

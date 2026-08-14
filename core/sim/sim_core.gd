@@ -1,5 +1,10 @@
 class_name SimCore
 extends RefCounted
+
+## Intensité d'une piste posée par le fichier de niveau. Volontairement égale
+## au plafond de saturation par défaut : une trace héritée est une trace
+## fraîche, et le joueur doit pouvoir compter les ticks qu'il lui reste.
+const TRAIL_INITIAL: int = 60
 ## Cœur de simulation [DCT §4]. Module pur, headless, déterministe : aucune
 ## dépendance au rendu, aucun float, aucun aléatoire, aucune horloge.
 
@@ -44,6 +49,13 @@ static func _load_grid(grid_data: Dictionary) -> GridState:
 
 	grid.pheromone = PackedInt32Array()
 	grid.pheromone.resize(cell_count)  # initialisé à zéro
+	# PISTE INITIALE — la trace d'une nuée précédente. Elle s'évapore comme toute
+	# autre : un niveau qui commence avec une mémoire commence aussi avec un
+	# compte à rebours.
+	for pair in grid_data.get("trail", []):
+		var p: Array = pair
+		grid.pheromone[int(p[1]) * grid.size.x + int(p[0])] = \
+			int(p[2]) if p.size() > 2 else TRAIL_INITIAL
 
 	var cycle_index_arr: Array = grid_data.get("cycle_index", [])
 	grid.cycle_index = PackedInt32Array()
@@ -114,7 +126,7 @@ static func step(state: SimState, stack: Array[int]) -> SimState:
 	var decision := _decide_agents(state, stack)                  # 2. décision (lit `state`, jamais `next_state`)
 	var desired: Array[Vector2i] = decision["directions"]
 	var granted := _resolve_conflicts(state, desired)              # 3. conflits de case
-	_apply_rule_effects(state, next_state, decision["effects"])    # 4. effets de RÈGLES (sur les positions de t)
+	_apply_rule_effects(state, next_state, decision["effects"], granted)  # 4. effets de RÈGLES
 	_apply_movements(next_state, granted)                          # 5. application des mouvements
 	_apply_environment_effects(next_state, decision["decided_by"]) # 6. effets d'ENVIRONNEMENT
 	_evaporate_pheromones(next_state)                              # 7. évaporation des pistes
@@ -131,12 +143,14 @@ static func step(state: SimState, stack: Array[int]) -> SimState:
 ## décalée d'une case est une piste fausse.
 ##
 ## Ordre total : agents par id croissant, effets dans l'ordre de la pile.
-static func _apply_rule_effects(state: SimState, next_state: SimState, effects: Array) -> void:
+static func _apply_rule_effects(state: SimState, next_state: SimState, effects: Array,
+		granted: Array[Vector2i]) -> void:
 	for i in range(effects.size()):
+		var moved: bool = granted[i] != Vector2i.ZERO
 		for rule_id in (effects[i] as Array):
 			var rule := RuleRegistry.get_rule(int(rule_id))
 			if rule != null:
-				rule.apply_effect(i, state, next_state, state.rule_params)
+				rule.apply_effect(i, state, next_state, state.rule_params, moved)
 
 ## Étape 8 — état des portes à pression, recalculé sur les positions d'arrivée.
 ## Le cliché du tick t porte ainsi un état de porte déjà à jour : les règles

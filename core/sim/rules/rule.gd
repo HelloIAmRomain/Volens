@@ -72,6 +72,10 @@ func evaluate(_agent: AgentState, _state: SimState, _params: RuleParams) -> Vect
 ## ÉCRIT dans `next_state` — jamais l'inverse, jamais les deux dans le même
 ## sens. C'est l'invariant n°9 appliqué aux effets : aucun agent ne voit
 ## l'effet d'un autre agent du même tick.
+##
+## `moved` : l'agent a-t-il obtenu un déplacement à ce tick ? Certains effets
+## en dépendent — une piste est une trace de PASSAGE, pas d'occupation — et
+## d'autres non : ramasser et déposer se font aussi bien à l'arrêt.
 func apply_effect(_agent_index: int, _state: SimState, _next_state: SimState,
-		_params: RuleParams) -> bool:
+		_params: RuleParams, _moved: bool) -> bool:
 	return false

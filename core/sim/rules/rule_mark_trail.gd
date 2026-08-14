@@ -42,9 +42,18 @@ func kind() -> int:
 	return Kind.EFFECT
 
 func apply_effect(agent_index: int, state: SimState, next_state: SimState,
-		params: RuleParams) -> bool:
+		params: RuleParams, moved: bool) -> bool:
 	var agent := state.agents[agent_index]
 	if not agent.is_present():
+		return false
+	# UNE PISTE EST UNE TRACE DE PASSAGE, PAS D'OCCUPATION — et sans cette
+	# condition le mécanisme s'auto-détruit. Mesuré en construisant N10 : un
+	# agent immobile, atteint par la cascade à chaque tick, renforçait sa propre
+	# case jusqu'à saturation pendant que la trace devant lui s'évaporait. Il
+	# creusait un puits sous ses pieds, et R09 — qui ne va que vers PLUS intense
+	# que sa case — ne pouvait plus jamais l'en faire sortir. La nuée se figeait
+	# exactement là où elle avait le plus besoin d'avancer.
+	if not moved:
 		return false
 	# La case marquée est celle du CLICHÉ, pas celle d'arrivée : c'est là que
 	# l'agent était quand il a décidé. Une piste décalée d'une case est une

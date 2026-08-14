@@ -56,6 +56,31 @@ const _SYMBOLS := {
 ## les agents par le mauvais côté sans qu'aucun test de niveau ne le dise.
 const _ONE_WAY_SYMBOLS := ["^", ">", "v", "<"]
 
+## PISTE INITIALE — « * » depose un marqueur a saturation sur une case vide.
+##
+## Ce n'est pas un dixieme element du vocabulaire RG-14 : la piste n'est pas un
+## type de CASE, c'est une valeur portee par une case ordinaire, exactement
+## comme au cours d'une partie. Le symbole ne fait qu'ecrire dans la couche de
+## pheromone ce que R08 y ecrirait.
+##
+## CE QU'IL RACONTE : une nuee est deja passee ici. C'est le seul moyen qu'a un
+## niveau de commencer avec une memoire, et le chapitre 3 en a besoin — sans
+## trace prealable, R09 n'a rien a suivre au premier tick et le mecanisme ne
+## peut pas s'enseigner isolement.
+##
+## UNE PISTE DOIT ETRE UNE PENTE, PAS UN TAPIS. R09 va vers le marqueur voisin
+## STRICTEMENT plus intense que sa propre case — sans quoi un agent au sommet
+## d'une piste descendrait, puis remonterait, indefiniment (pathologie P3).
+## Consequence : une piste d'intensite uniforme n'oriente personne. Mesure
+## faite : vingt-cinq agents immobiles sur une colonne marquee a plat.
+##
+## Les chiffres 1 a 9 posent donc une intensite croissante — `_TRAIL_STEP` par
+## echelon — et « * » la saturation. On dessine la pente en ecrivant les
+## chiffres dans le sens de la marche.
+const _TRAIL_SYMBOL := "*"
+const _TRAIL_STEP := 6
+const _TRAIL_MAX := 60
+
 ## Analyse un texte `.lvl`. Renvoie { "level": Dictionary, "errors":
 ## PackedStringArray } — des erreurs non vides invalident le niveau.
 ## `flee_range_sq` : portée de perception de R02 (data/rules.json). Elle sert
@@ -81,6 +106,7 @@ static func parse(text: String, min_cycle_period: int, flee_range_sq: int = 25) 
 	var objectives: Array = []
 	var cycle: Dictionary = {}
 	var doors: Array = []
+	var header_trail: Array = []
 	for i in range(separator):
 		var line := lines[i].strip_edges()
 		if line.is_empty() or line.begins_with("#"):
@@ -98,6 +124,23 @@ static func parse(text: String, min_cycle_period: int, flee_range_sq: int = 25) 
 					objectives.append(obj)
 			"cycle":
 				cycle = _parse_cycle(value, i + 1, errors)
+			"trail":
+				# `trail: 4,0=60 5,0=60` — pose une piste sur des cases qui portent
+				# DEJA un symbole. Les chiffres de la grille suffisent pour une case
+				# vide ; ils ne peuvent rien dire d'une sortie ou d'une case de
+				# depart, qui portent leur propre lettre. Or R09 ne va que vers plus
+				# intense que sa case : une sortie non marquee est une sortie que la
+				# piste ne franchit pas, et la nuee s'arrete a une case du but.
+				for token in value.split(" "):
+					var tok := String(token).strip_edges()
+					if tok.is_empty():
+						continue
+					var halves := tok.split("=")
+					var xy := String(halves[0]).split(",")
+					if xy.size() != 2 or halves.size() != 2:
+						errors.append("ligne %d : « %s » n'est pas x,y=intensite" % [i + 1, tok])
+						continue
+					header_trail.append([int(xy[0]), int(xy[1]), int(halves[1])])
 			"door":
 				# `door: required=2 plates=1,4;2,4 panels=5,6;6,6`
 				# Répétable : un niveau peut porter plusieurs portes indépendantes.
@@ -141,6 +184,7 @@ static func parse(text: String, min_cycle_period: int, flee_range_sq: int = 25) 
 	var cycle_index: Array = []
 	var agents: Array = []
 	var one_way: Array = []
+	var trail: Array = []
 	var has_exit := false
 	var has_cyclic := false
 	var resource_count := 0
@@ -158,6 +202,10 @@ static func parse(text: String, min_cycle_period: int, flee_range_sq: int = 25) 
 				# la direction autorisée, pas celle qui est interdite — « > » se lit
 				# « on ne peut y entrer qu'en allant vers l'Est ».
 				one_way.append([x, y, _ONE_WAY_SYMBOLS.find(ch)])
+			elif ch == _TRAIL_SYMBOL:
+				trail.append([x, y, _TRAIL_MAX])
+			elif ch.length() == 1 and ch >= "1" and ch <= "9":
+				trail.append([x, y, int(ch) * _TRAIL_STEP])
 			elif _SYMBOLS.has(ch):
 				cell = _SYMBOLS[ch]
 			else:
@@ -270,7 +318,14 @@ static func parse(text: String, min_cycle_period: int, flee_range_sq: int = 25) 
 	# bornes. Les erreurs de structure se corrigent d'abord.
 	var warnings := PackedStringArray()
 	if errors.is_empty():
-		_check_geometry(cells, width, height, agents, flee_range_sq, errors, warnings)
+		# LES TROIS CONTROLES DE GEOMETRIE NE PORTENT QUE SUR R02. Ils decrivent
+		# tous des pathologies de la FUITE — refus d'avancer vers un danger plein
+		# nord, fuite opposee a l'ouverture, oscillation entre deux repulseurs. Sur
+		# un niveau qui n'offre pas R02, ils interdisent des cartes parfaitement
+		# jouables : un danger n'y est plus qu'un piege immobile, et deux dangers
+		# n'enferment personne puisque rien ne repousse.
+		if allowed_rules.has(RuleRegistry.R02_FLEE_DANGER):
+			_check_geometry(cells, width, height, agents, flee_range_sq, errors, warnings)
 
 	if not errors.is_empty():
 		return {"level": {}, "errors": errors, "warnings": warnings}
@@ -288,6 +343,7 @@ static func parse(text: String, min_cycle_period: int, flee_range_sq: int = 25) 
 			"cycles": [cycle] if not cycle.is_empty() else [],
 			"one_way": one_way,
 			"doors": doors,
+			"trail": trail + header_trail,
 		},
 		"agents": agents,
 		"objectives": objectives,
