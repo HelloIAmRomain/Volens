@@ -11,8 +11,8 @@ jouable, testée, avec toutes les mécaniques.
 | Genres de règles | proposeur seul | **proposeur + effet** — P1 close |
 | Types de case | 5/9 actifs | **9/9**, tous dessinés à l'écran |
 | Objectifs | 5 implémentés, 2 employés | **5/5 employés** par au moins un niveau |
-| Niveaux | 5 (chapitre 1) | **25, six chapitres**, tous validés |
-| Corpus d'or | 30 recettes | **66**, couvrant les seize règles et les deux genres |
+| Niveaux | 5 (chapitre 1) | **29, six chapitres**, tous validés |
+| Corpus d'or | 30 recettes | **74**, couvrant les seize règles et les deux genres |
 | Tests | 346 | **396** |
 | EQ-04 (règles vivantes) | jamais mesuré | **15 règles sur 16** à la cible du CDC |
 | Défis RG-18 | rien | **17 niveaux**, mesurés, enregistrés, affichés |
@@ -37,7 +37,7 @@ Aucun n'était prévisible sur le papier ; tous ont coûté une géométrie mesu
 
 ## Le risque d'intérêt, nommé
 
-**L'espace de piles est épuisable.** Seize des vingt-cinq niveaux offrent seize
+**L'espace de piles est épuisable.** La moitié des niveaux offrent seize
 piles : un joueur qui renonce à comprendre les essaie toutes en quelques
 minutes. La difficulté du jeu n'est pas dans la recherche, elle est dans la
 compréhension — et rien n'oblige à comprendre.
@@ -53,7 +53,7 @@ remplacera : ont-ils essayé toutes les piles, ou raisonné ?
 
 ## Ce qui reste, et qui ne dépend pas de moi
 
-- **Le volume de contenu.** Le CDC vise 70 niveaux pour la v1.0 ; il y en a 25.
+- **Le volume de contenu.** Le CDC vise 70 niveaux pour la v1.0 ; il y en a 29.
   Ce qui est complet, c'est le **vocabulaire** — chaque règle, chaque type de
   case et chaque type d'objectif est employé, enseigné et testé. Ajouter des
   niveaux est désormais une affaire de dessin, pas de moteur : la boucle
