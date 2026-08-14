@@ -131,7 +131,21 @@ func _capture_all() -> void:
 	game._hide_objective_panel()
 	await _shot("14-ch5-02-porte-a-pression")
 
-	# Selection : dix-huit niveaux groupes par chapitre, ecran defilant.
+	# LE JOKER A L'ECRAN. Son identifiant porte son argument dans ses bits hauts
+	# et vaut 784, pas 16 : toute la chaine d'interface doit le traverser sans
+	# broncher — catalogue, tuile, pile, explication. C'est le seul endroit du
+	# jeu ou un identifiant de regle n'est pas un petit entier.
+	game = _app._open_game("ch6_01", false)
+	game._hide_objective_panel()
+	game._on_slot_tapped(0)
+	game._on_chip_tapped(RuleRegistry.make_joker(GridState.CellType.STATIC_DANGER))
+	game._on_slot_tapped(1)
+	game._on_chip_tapped(RuleRegistry.R01_TOWARD_LIGHT)
+	for i in range(9):
+		game._view.step_forward()
+	await _shot("16-ch6-01-joker")
+
+	# Selection : vingt niveaux groupes par chapitre, ecran defilant.
 	_app._open_select()
 	await _shot("15-selection-chapitres")
 

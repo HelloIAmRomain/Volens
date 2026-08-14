@@ -127,6 +127,8 @@
     13
   ],
   "calibrated_on": "63dd79a498898132",
+  "expected_classes": 1,
+  "expected_wins": 4,
   "geometry_hash": "63dd79a498898132",
   "grid": {
     "cells": [

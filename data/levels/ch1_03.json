@@ -323,10 +323,13 @@
     ],
     "cycle_index": [],
     "cycles": [],
+    "doors": [],
+    "one_way": [],
     "size": [
       11,
       16
-    ]
+    ],
+    "trail": []
   },
   "id": "ch1_03",
   "lesson": "Fuir d'abord, regrouper ensuite : la cohesion ramene un trainard sans regarder ou.",

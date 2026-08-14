@@ -317,10 +317,13 @@
     ],
     "cycle_index": [],
     "cycles": [],
+    "doors": [],
+    "one_way": [],
     "size": [
       11,
       16
-    ]
+    ],
+    "trail": []
   },
   "id": "ch1_04",
   "lesson": "Deux facons d'echouer, une seule de passer : detourner sans ralentir.",

@@ -323,10 +323,13 @@
     ],
     "cycle_index": [],
     "cycles": [],
+    "doors": [],
+    "one_way": [],
     "size": [
       11,
       16
-    ]
+    ],
+    "trail": []
   },
   "id": "ch1_05",
   "lesson": "Deux ordres differents reussissent : il n'y a pas UNE bonne reponse.",
