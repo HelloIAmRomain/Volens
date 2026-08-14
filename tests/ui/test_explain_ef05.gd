@@ -122,3 +122,88 @@ func test_explaining_never_mutates_the_state() -> void:
 		RuleExplainer.explain(agent, s, stack)
 
 	assert_eq(SimCore.hash_state(s), before, "expliquer ne change rien à l'état")
+
+# --- les seize règles, et le mensonge sur les effets -----------------------
+#
+# UN DIAGNOSTIC QUI MENT EST PIRE QU'UN DIAGNOSTIC ABSENT. C'est le pilier P4
+# retourné contre le joueur : il forme une hypothèse fausse, la vérifie, et
+# conclut que le jeu est incohérent.
+#
+# Défaut mesuré le 14 août 2026 : le panneau faisait passer les règles d'EFFET
+# par `evaluate`, qui leur renvoie ABSTAIN par construction. Il annonçait donc
+# que « Marquer la piste » ne s'appliquait pas, au tick même où elle marquait.
+
+func _bare_state(cells: Array, positions: Array) -> SimState:
+	var s := SimState.new()
+	var grid := GridState.new()
+	grid.size = Vector2i(String(cells[0]).length(), cells.size())
+	var n: int = grid.size.x * grid.size.y
+	grid.cells = PackedInt32Array()
+	grid.cells.resize(n)
+	grid.pheromone = PackedInt32Array()
+	grid.pheromone.resize(n)
+	grid.cycle_index = PackedInt32Array()
+	grid.cycle_index.resize(n)
+	for i in range(n):
+		grid.cycle_index[i] = -1
+	for y in range(cells.size()):
+		var line: String = cells[y]
+		for x in range(grid.size.x):
+			match line[x]:
+				"#": grid.cells[y * grid.size.x + x] = GridState.CellType.WALL
+				"r": grid.cells[y * grid.size.x + x] = GridState.CellType.RESOURCE
+				"D": grid.cells[y * grid.size.x + x] = GridState.CellType.DROPOFF
+	grid._ensure_layers()
+	s.grid = grid
+	var agents: Array[AgentState] = []
+	for i in range(positions.size()):
+		var a := AgentState.new()
+		a.id = i
+		a.pos = positions[i]
+		a.flags = AgentState.PRESENT
+		agents.append(a)
+	s.agents = agents
+	s.counters = Counters.new()
+	s.rule_params = RuleParams.new()
+	s.tick = 1
+	return s
+
+func test_an_effect_rule_is_never_reported_as_abstaining() -> void:
+	var s := _bare_state([".r.", "...", "..."], [Vector2i(1, 0)])
+	var stack: Array[int] = [RuleRegistry.R11_CARRY, RuleRegistry.R07_WAIT]
+	var lines: Array = RuleExplainer.explain(s.agents[0], s, stack)["lines"]
+	assert_true(String(lines[0]).contains("ramasse"),
+		"R11 sur une ressource doit dire qu'elle ramasse : « %s »" % String(lines[0]))
+	assert_false(String(lines[0]).contains("ne s'applique pas"),
+		"un effet ne s'abstient jamais — il agit puis rend la main")
+
+func test_an_effect_says_when_it_has_nothing_to_do() -> void:
+	# Le symétrique compte autant : annoncer une action qui n'aura pas lieu
+	# vaut le même mensonge, dans l'autre sens.
+	var s := _bare_state(["...", "...", "..."], [Vector2i(1, 1)])
+	var stack: Array[int] = [RuleRegistry.R11_CARRY]
+	var lines: Array = RuleExplainer.explain(s.agents[0], s, stack)["lines"]
+	assert_true(String(lines[0]).contains("rien à ramasser"),
+		"R11 sur une case vide doit le dire : « %s »" % String(lines[0]))
+
+func test_a_carrier_without_a_dropoff_is_told_so() -> void:
+	var s := _bare_state(["...", "...", "..."], [Vector2i(1, 1)])
+	s.agents[0].flags |= AgentState.PORTEUR
+	var lines: Array = RuleExplainer.explain(s.agents[0], s,
+		[RuleRegistry.R12_DROP_AT_GOAL] as Array[int])["lines"]
+	assert_true(String(lines[0]).contains("aucun dépôt"),
+		"un porteur sans dépôt voisin doit savoir pourquoi rien ne se passe : « %s »" % String(lines[0]))
+
+func test_every_rule_of_the_library_has_a_reason_of_its_own() -> void:
+	# CONTRÔLE GÉNÉRIQUE : aucune des seize règles ne doit retomber sur le
+	# repli « ne s'applique pas », qui ne dit rien de ce qu'il faut corriger.
+	# Sans lui, la prochaine règle ajoutée serait muette en silence — c'est
+	# exactement ce qui est arrivé aux dix règles des chapitres 3 à 6.
+	var s := _bare_state(["...", "...", "..."], [Vector2i(1, 1)])
+	var mute := PackedStringArray()
+	for id in RuleRegistry.ALL:
+		var lines: Array = RuleExplainer.explain(s.agents[0], s, [id] as Array[int])["lines"]
+		if String(lines[0]).contains("ne s'applique pas"):
+			mute.append("R%02d" % id)
+	assert_eq(mute, PackedStringArray(),
+		"règles sans motif propre dans le diagnostic : %s" % ", ".join(mute))
