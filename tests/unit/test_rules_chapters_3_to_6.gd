@@ -375,6 +375,35 @@ func test_r16_lets_the_swarm_walk_through_fire() -> void:
 	assert_false(a.agents[0].is_present(), "sans joker, l'agent meurt sur le danger")
 	assert_true(b.agents[0].is_present(), "avec le joker, il traverse")
 
+func test_r16_makes_a_closed_door_and_a_one_way_traversable() -> void:
+	# DÉFAUT MESURÉ le 14 août 2026, et c'est le genre qu'aucune relecture ne
+	# trouve : le joker était consulté par la LÉTALITÉ (« l'agent meurt-il sur
+	# cette case ? ») mais pas par le FRANCHISSEMENT (« ce pas est-il
+	# possible ? »). « Ignorer les portes » ne franchissait donc aucune porte, et
+	# le niveau qui en dépendait restait insoluble sans qu'aucun test ne bronche.
+	#
+	# La correction porte sur `GridState.ignored_cell` : le joker vit là où les
+	# règles posent leur question, pas à côté.
+	var s := _state(["...", "...", "..."], [Vector2i(1, 2)])
+	var door := s.grid.index_of(Vector2i(1, 1))
+	s.grid.cells[door] = GridState.CellType.PRESSURE_DOOR
+	s.grid.door_index[door] = 0
+	s.grid.doors = [DoorDef.new()]
+	s.grid.doors_open = PackedInt32Array([0])   # fermée
+	assert_false(s.grid.can_traverse(Vector2i(1, 2), Vector2i(1, 1)),
+		"sans joker, une porte fermée n'est pas franchissable")
+	s.grid.ignored_cell = GridState.CellType.PRESSURE_DOOR
+	assert_true(s.grid.can_traverse(Vector2i(1, 2), Vector2i(1, 1)),
+		"avec le joker, elle doit l'être — c'est tout ce que le joker fait")
+
+	var t := _state(["...", "...", "..."], [Vector2i(1, 2)])
+	t.grid.one_way_dir[t.grid.index_of(Vector2i(1, 1))] = Directions.SOUTH
+	assert_false(t.grid.can_traverse(Vector2i(1, 2), Vector2i(1, 1)),
+		"sans joker, on n'entre pas à contresens dans un sens unique")
+	t.grid.ignored_cell = GridState.CellType.ONE_WAY
+	assert_true(t.grid.can_traverse(Vector2i(1, 2), Vector2i(1, 1)),
+		"avec le joker, le sens unique cesse de contraindre")
+
 func test_r16_never_opens_a_wall() -> void:
 	# Le joker qui annulerait les murs ouvrirait tous les niveaux d'un coup, et
 	# un jeu dont la dernière règle annule la géométrie n'a plus de niveaux.

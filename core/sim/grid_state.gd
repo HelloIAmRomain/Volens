@@ -85,8 +85,19 @@ func _ensure_layers() -> void:
 ##
 ## `from` est ignoré partout sauf sur un sens unique : le coût est nul et
 ## l'appel reste lisible.
+## TYPE DE CASE NEUTRALISÉ PAR R16, ou -1. Posé sur la grille par `SimCore.step`
+## à partir de la pile, jamais saisi et jamais haché : c'est une lecture de la
+## PILE, pas un état du monde, et la pile est constante pendant toute une
+## simulation.
+##
+## IL VIT ICI ET NON SUR `SimState` PARCE QUE C'EST ICI QU'IL SERT. Les règles
+## demandent « ce pas est-il franchissable ? » à la grille, pas à l'état ; un
+## joker rangé ailleurs n'aurait été consulté par personne — défaut mesuré en
+## construisant N22, où « ignorer les portes » ne franchissait aucune porte.
+var ignored_cell: int = -1
+
 func can_traverse(from: Vector2i, to: Vector2i) -> bool:
-	return can_traverse_ignoring(from, to, -1)
+	return can_traverse_ignoring(from, to, ignored_cell)
 
 ## `ignored` : type de case neutralisé par R16, ou -1. Le mur n'est JAMAIS
 ## ignorable — le joker ouvrirait sinon tous les niveaux d'un coup, et un jeu
@@ -155,6 +166,7 @@ func clone() -> GridState:
 	copy.one_way_dir = one_way_dir.duplicate()
 	copy.door_index = door_index.duplicate()
 	copy.doors_open = doors_open.duplicate()
+	copy.ignored_cell = ignored_cell
 	copy.doors = doors        # immuable après chargement : partagé, jamais muté
 	copy.cycles = []
 	for c in cycles:

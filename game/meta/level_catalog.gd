@@ -28,6 +28,7 @@ const LEVELS := [
 	{"id": "ch5_04", "name": "Trop et pas assez", "path": "res://data/levels/ch5_04.json", "ready": true},
 	{"id": "ch6_01", "name": "Le droit d'ignorer", "path": "res://data/levels/ch6_01.json", "ready": true},
 	{"id": "ch6_02", "name": "La piste interdite", "path": "res://data/levels/ch6_02.json", "ready": true},
+	{"id": "ch6_03", "name": "Personne ne reste", "path": "res://data/levels/ch6_03.json", "ready": true},
 ]
 
 static func count() -> int:

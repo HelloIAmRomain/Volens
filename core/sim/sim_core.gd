@@ -121,6 +121,9 @@ static func step(state: SimState, stack: Array[int]) -> SimState:
 	# que `step` est PURE — elle ne peut rien supposer de ce qui l'a précédée.
 	state.ignored_cell = _ignored_cell_of(stack)
 	next_state.ignored_cell = state.ignored_cell
+	# La grille porte la même lecture : c'est elle que les règles interrogent.
+	state.grid.ignored_cell = state.ignored_cell
+	next_state.grid.ignored_cell = state.ignored_cell
 
 	_update_cycles(next_state)                                    # 1. éléments cycliques
 	var decision := _decide_agents(state, stack)                  # 2. décision (lit `state`, jamais `next_state`)
