@@ -67,6 +67,7 @@ lesson: "Sans rien a viser, la nuee ne peut avancer qu'en suivant une forme."
 expected_wins: 7
 expected_classes: 1
 calibrated_on: 142da3ea7c47ebc8
+challenge: efficiency=23 abstinence=R01
 ---
 # # # # # # # # # # # #
 # # # # # # # # # # E #

@@ -70,7 +70,7 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array, rea
 	# Rien non plus sur un échec : féliciter pour un défi obtenu au cours d'une
 	# partie perdue serait au mieux confus.
 	if won:
-		for line in _challenges_earned(level_id, stack, ticks):
+		for line in challenges_earned(level_id, stack, ticks):
 			column.add_child(_stat("Défi", line))
 
 	var grow := Control.new()
@@ -97,7 +97,10 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array, rea
 ## Nombre de piles gagnantes d'un niveau non tutoriel, ou 0 si le niveau est
 ## un tutoriel ou si le chiffre n'est pas connu.
 ## Libellés des défis obtenus, dans l'ordre de RG-18. Vide si aucun.
-static func _challenges_earned(level_id: String, stack: Array, ticks: int) -> PackedStringArray:
+## Publique : `App` l'appelle pour ENREGISTRER les défis, l'écran pour les
+## AFFICHER. Une seconde implémentation du calcul divergerait de la première —
+## le joueur verrait un défi qui ne se conserve pas, ou l'inverse.
+static func challenges_earned(level_id: String, stack: Array, ticks: int) -> PackedStringArray:
 	var data := LevelCatalog.load_level_data(level_id)
 	var spec := LevelSpec.challenges(data)
 	var out := PackedStringArray()

@@ -42,6 +42,7 @@ lesson: "Un effet ne s'applique que si la cascade l'atteint. Sous la lumiere, ra
 expected_wins: 2
 expected_classes: 1
 calibrated_on: 136ada9f3b8efa7f
+challenge: efficiency=10
 ---
 . . . . . L . . . . .
 . . . . D D D . . . .

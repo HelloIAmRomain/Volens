@@ -42,6 +42,7 @@ lesson: "Deux ordres differents reussissent : il n'y a pas UNE bonne reponse."
 expected_wins: 6
 expected_classes: 2
 calibrated_on: 259c1034803b57c1
+challenge: efficiency=20 abstinence=R02
 ---
 . . . . . L . . . . .
 # # # # E E E # # # #

@@ -141,3 +141,72 @@ func test_session_stores_only_the_recipe_never_the_state() -> void:
 	assert_eq(keys, ["level_id", "schema_version", "speed_index", "stack", "tick"],
 		"aucune position d'agent dans le fichier de session")
 	s.clear()
+
+# --- défis obtenus, et la migration qui ne perd rien -----------------------
+#
+# LE FICHIER DE SAUVEGARDE A CHANGÉ DE FORME (schéma 1 -> 2, ajout des défis
+# RG-18 obtenus), et c'est le seul changement du dépôt qui puisse détruire
+# quelque chose d'irremplaçable : la progression d'un joueur. Le repli propre
+# — comportement par défaut sur une version inconnue — l'aurait effacée.
+#
+# Une migration ÉCRITE vaut donc infiniment mieux que le repli, et ces tests
+# la tiennent. Ils valent aussi pour toutes les suivantes : le motif est le
+# même, seule la version change.
+
+func test_a_schema_1_save_is_migrated_and_keeps_its_progress() -> void:
+	var f := FileAccess.open(TEST_PATH, FileAccess.WRITE)
+	f.store_string(JSON.stringify({
+		"schema_version": 1,
+		"solved": {"ch1_01": {"ticks": 14, "lost": 0}},
+	}))
+	f.close()
+
+	var data := SaveStore.read(TEST_PATH, 2)
+	assert_false(data.is_empty(), "une version connue ne doit JAMAIS tomber dans le repli")
+	assert_eq(int(((data["solved"] as Dictionary)["ch1_01"] as Dictionary)["ticks"]), 14,
+		"la progression du joueur est la seule chose du fichier qui ait de la valeur")
+	assert_true(data.has("earned"), "le champ neuf doit exister, vide")
+
+func test_an_unknown_schema_still_falls_back_cleanly() -> void:
+	# La migration écrite ne relâche pas la garde : une version qu'on ne
+	# connaît pas reste illisible, et deviner vaudrait moins que repartir.
+	var f := FileAccess.open(TEST_PATH, FileAccess.WRITE)
+	f.store_string(JSON.stringify({"schema_version": 47, "solved": {"x": {}}}))
+	f.close()
+	assert_eq(SaveStore.read(TEST_PATH, 2), {}, "schéma inconnu : repli propre")
+
+func test_earned_challenges_accumulate_and_are_never_taken_back() -> void:
+	# RG-19 : aucun défi ne conditionne rien, donc aucun ne se reprend. Voir un
+	# défi s'éteindre parce qu'on a rejoué moins bien punirait le fait de
+	# rejouer — exactement ce que le jeu ne doit pas faire (même raison que
+	# `best_ticks`, EF-11).
+	var p := Progress.new()
+	p.record_challenges("essai", PackedStringArray(["Efficience — 20 ticks, seuil 20"]))
+	p.record_challenges("essai", PackedStringArray(["Économie — résolu avec 2 règles"]))
+	assert_eq(p.earned_challenges("essai").size(), 2, "les deux défis sont conservés")
+	p.record_challenges("essai", PackedStringArray(["Économie — résolu avec 2 règles"]))
+	assert_eq(p.earned_challenges("essai").size(), 2, "un défi déjà obtenu ne se compte pas deux fois")
+	p.reset()
+
+func test_a_level_without_earned_challenges_reports_an_empty_list() -> void:
+	var p := Progress.new()
+	assert_eq(p.earned_challenges("jamais_joue"), PackedStringArray(),
+		"repli propre plutôt qu'une clé absente")
+
+func test_the_summary_and_the_save_compute_the_same_challenges() -> void:
+	# UNE SEULE IMPLÉMENTATION, et ce test la tient : `App` enregistre ce que
+	# `SummaryScreen` affiche. Deux calculs séparés divergeraient, et le joueur
+	# verrait un défi qui ne se conserve pas — ou l'inverse, pire encore.
+	var lines := SummaryScreen.challenges_earned("ch1_05", [3, 1], 20)
+	assert_gt(lines.size(), 0, "prémisse : cette pile obtient au moins un défi sur N5")
+	var p := Progress.new()
+	p.record_challenges("ch1_05", lines)
+	# L'ENREGISTREMENT TRIE, et c'est voulu : l'ordre d'affichage d'une liste
+	# conservée doit être stable d'une session à l'autre, alors que l'ordre
+	# d'obtention ne l'est pas. On compare donc les CONTENUS, ce que le test
+	# veut dire — et non l'ordre, qu'il n'a jamais voulu dire.
+	var shown := lines.duplicate()
+	shown.sort()
+	assert_eq(p.earned_challenges("ch1_05"), shown,
+		"ce qui est affiché est exactement ce qui est enregistré")
+	p.reset()

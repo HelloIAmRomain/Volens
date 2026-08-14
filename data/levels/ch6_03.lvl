@@ -38,6 +38,7 @@ lesson: "Ce qu'on croyait etre le cout des choses n'etait que le cout des regles
 expected_wins: 8
 expected_classes: 1
 calibrated_on: d7d4a43f60ed519b
+challenge: efficiency=26 abstinence=R04
 ---
 . . . . . L . . . . .
 # # # # # E # # # # #

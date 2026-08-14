@@ -44,7 +44,7 @@ objective: extraction 100
 lesson: "La symetrie visuelle n'est pas une symetrie de jeu : a egalite, tout prefere le Nord puis l'Est."
 expected_wins: 5
 expected_classes: 5
-challenge: efficiency=29
+challenge: efficiency=29 abstinence=R01
 calibrated_on: de5928aa6bbf8a7b
 ---
 . L . . . . . . . . .

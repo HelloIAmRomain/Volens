@@ -49,8 +49,8 @@ objective: collect 2
 lesson: "Un effet ne s'applique que si la cascade l'atteint : les effets se mettent en tete, sans exception."
 expected_wins: 2
 expected_classes: 1
-challenge: abstinence=R01
 calibrated_on: a37acc8160738b91
+challenge: efficiency=6
 ---
 . . . . . L . . . . .
 . . . . D D D . . . .

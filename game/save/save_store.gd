@@ -64,7 +64,22 @@ static func read(path: String, expected_version: int) -> Dictionary:
 
 ## Migrations ascendantes explicites. Aucune n'existe encore (schéma 1 est le
 ## premier) : toute version inattendue se replie proprement.
-static func _migrate(_data: Dictionary, from_version: int, to_version: int, path: String) -> Dictionary:
+## MIGRATIONS CONNUES. Le repli propre reste le comportement par défaut — un
+## fichier d'une version inconnue est illisible, et repartir de zéro vaut mieux
+## que deviner. Mais une migration ÉCRITE vaut infiniment mieux que le repli :
+## elle préserve ce que le joueur a fait, et c'est la seule chose du fichier
+## qui ait de la valeur pour lui.
+##
+## 1 -> 2 : ajout des défis RG-18 obtenus. Purement ADDITIF — `solved` est
+## repris tel quel, `challenges` naît vide. Un joueur qui met à jour ne perd
+## rien et n'a rien à refaire ; ses défis sont simplement à regagner, ce qui
+## est exact puisqu'ils n'avaient jamais été enregistrés.
+static func _migrate(data: Dictionary, from_version: int, to_version: int, path: String) -> Dictionary:
+	if from_version == 1 and to_version == 2:
+		var out: Dictionary = {"schema_version": 2, "earned": {}}
+		out["solved"] = data.get("solved", {})
+		print("[save] schéma 1 -> 2 pour %s : progression conservée" % path)
+		return out
 	print("[save] schéma %d -> %d sans migration pour %s : repli propre" % [from_version, to_version, path])
 	return {}
 

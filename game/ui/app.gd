@@ -139,6 +139,9 @@ func _on_reset_requested() -> void:
 func _on_level_finished(level_id: String, won: bool, ticks: int, lost: int, stack: Array, reason: String) -> void:
 	if won:
 		progress.record_win(level_id, ticks, lost)
+		# Les défis obtenus s'accumulent et ne se reprennent jamais (RG-19).
+		progress.record_challenges(level_id,
+			SummaryScreen.challenges_earned(level_id, stack, ticks))
 	var summary := SummaryScreen.new()
 	summary.retry_requested.connect(func() -> void: _open_game(level_id, false))
 	summary.select_requested.connect(_open_select)

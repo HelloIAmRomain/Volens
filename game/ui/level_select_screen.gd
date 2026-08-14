@@ -74,6 +74,14 @@ func _chapter_header(chapter: int, progress: Progress) -> Control:
 	box.add_child(status)
 	return box
 
+## Un défi est enregistré sous son libellé complet (« Économie — résolu avec 2
+## règles ») : on le reconnaît par son préfixe, seule partie stable.
+static func _has_challenge(earned: PackedStringArray, label: String) -> bool:
+	for line in earned:
+		if line.begins_with(label):
+			return true
+	return false
+
 func _make_tile(entry: Dictionary, index: int, progress: Progress) -> Control:
 	var level_id := String(entry["id"])
 	var built := bool(entry["ready"])
@@ -106,6 +114,17 @@ func _make_tile(entry: Dictionary, index: int, progress: Progress) -> Control:
 		button.text = "  %s   %d.  %s" % [mark, index + 1, String(entry["name"])]
 		if solved:
 			button.text += "      %d ticks" % progress.best_ticks(level_id)
+			# DÉFIS OBTENUS, en trois pastilles. Sans trace dans la liste, un défi
+			# gagné disparaît avec l'écran de bilan : la couche de rejouabilité
+			# n'existerait que le temps d'une phrase. Ce qui est obtenu est marqué,
+			# ce qui ne l'est pas reste vide — jamais barré ni grisé, RG-19
+			# interdit de transformer une victoire en échec partiel.
+			var earned := progress.earned_challenges(level_id)
+			if not earned.is_empty():
+				var marks := ""
+				for label in ["Économie", "Abstinence", "Efficience"]:
+					marks += "◆" if _has_challenge(earned, label) else "◇"
+				button.text += "   %s" % marks
 			button.add_theme_color_override("font_color", ViewPalette.EXIT)
 		button.pressed.connect(func() -> void: level_chosen.emit(level_id))
 	return button

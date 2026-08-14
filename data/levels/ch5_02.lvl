@@ -43,6 +43,7 @@ lesson: "Reussir veut parfois dire abandonner quelqu'un — et plus de monde qu'
 expected_wins: 2
 expected_classes: 1
 calibrated_on: d7d4a43f60ed519b
+challenge: efficiency=31 abstinence=R04
 ---
 . . . . . L . . . . .
 # # # # # E # # # # #

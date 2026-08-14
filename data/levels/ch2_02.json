@@ -127,8 +127,12 @@
     7
   ],
   "calibrated_on": "142da3ea7c47ebc8",
+  "challenges": {
+    "abstinence_rule": 1,
+    "efficiency_ticks": 23
+  },
   "expected_classes": 1,
-  "expected_wins": 11,
+  "expected_wins": 7,
   "geometry_hash": "142da3ea7c47ebc8",
   "grid": {
     "cells": [

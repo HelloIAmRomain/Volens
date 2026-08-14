@@ -134,6 +134,10 @@
     9
   ],
   "calibrated_on": "1282ffc6e245474e",
+  "challenges": {
+    "abstinence_rule": 1,
+    "efficiency_ticks": 27
+  },
   "expected_classes": 1,
   "expected_wins": 3,
   "geometry_hash": "1282ffc6e245474e",

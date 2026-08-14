@@ -145,7 +145,15 @@ func _capture_all() -> void:
 		game._view.step_forward()
 	await _shot("16-ch6-01-joker")
 
-	# Selection : vingt niveaux groupes par chapitre, ecran defilant.
+	# Selection : vingt-deux niveaux groupes par chapitre, ecran defilant, avec
+	# les defis CONSERVES en pastilles. Sans trace dans la liste, un defi gagne
+	# disparaitrait avec l'ecran de bilan.
+	_app.progress.record_win("ch1_01", 15, 0)
+	_app.progress.record_win("ch1_02", 29, 0)
+	_app.progress.record_challenges("ch1_01",
+		PackedStringArray(["Économie — résolu avec 1 règle"]))
+	_app.progress.record_challenges("ch1_02", PackedStringArray([
+		"Économie — résolu avec 2 règles", "Efficience — 29 ticks, seuil 29"]))
 	_app._open_select()
 	await _shot("15-selection-chapitres")
 
@@ -155,6 +163,15 @@ func _capture_all() -> void:
 
 	_app._on_level_finished("ch1_02", false, 6, 1, [RuleRegistry.R01_TOWARD_LIGHT], "1 agent perdu — l'objectif de 20 sur 20 est devenu inatteignable.")
 	await _shot("09-bilan-perdu")
+
+	# LES TROIS DEFIS RG-18 OBTENUS D'UN COUP. C'est la seule capture qui montre
+	# la couche de rejouabilite : sans elle, on ne saurait pas si un defi calibre
+	# se voit reellement. [Cohesion, Lumiere] sur N5 gagne en 20 ticks — deux
+	# regles (economie), sans la Fuite (abstinence), pile au seuil (efficience).
+	_app._on_level_finished("ch1_05", true, 20, 0,
+		[RuleRegistry.R03_STAY_GROUPED, RuleRegistry.R01_TOWARD_LIGHT],
+		"La nuée a rempli l'objectif.")
+	await _shot("17-bilan-defis")
 
 func _shot(name: String) -> void:
 	# Attendre que les transitions soient FINIES : saisir un panneau à
