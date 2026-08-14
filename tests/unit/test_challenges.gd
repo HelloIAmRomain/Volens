@@ -136,3 +136,93 @@ func test_a_fresh_player_has_only_the_first_chapter_open() -> void:
 	assert_gt(chapters.size(), 1, "prémisse : il faut au moins deux chapitres pour tester le verrou")
 	assert_false(LevelCatalog.is_chapter_unlocked(chapters[1], progress),
 		"le second chapitre reste verrouillé tant que rien n'est résolu")
+
+# --- pourquoi la partie s'est arrêtée --------------------------------------
+#
+# LE MESSAGE D'ÉCHEC EST LA MOITIÉ DE L'APPRENTISSAGE, et c'est le pilier P4 :
+# une partie perdue sans qu'on sache pourquoi n'enseigne rien. Deux objectifs
+# n'en avaient aucun jusqu'au 14 août 2026 — `collect` et `interdiction` — et
+# le joueur lisait à leur place « le temps imparti s'est écoulé », ce qui était
+# faux : sur une interdiction, la partie s'arrête au troisième tick.
+#
+# **Un message faux vaut moins que pas de message.**
+
+func _lost_state(agents: Array, delivered: int = 0) -> SimState:
+	var s := SimState.new()
+	s.outcome = SimState.Outcome.LOST
+	s.tick = 3
+	s.counters = Counters.new()
+	s.counters.delivered = delivered
+	var list: Array[AgentState] = []
+	for p in agents:
+		var a := AgentState.new()
+		a.pos = p
+		a.flags = AgentState.PRESENT
+		list.append(a)
+	s.agents = list
+	return s
+
+func test_an_interdiction_says_so_rather_than_blaming_the_clock() -> void:
+	var objectives := [{"type": "interdiction", "cells": [[4, 4], [5, 4]]}]
+	var breached := RuleCatalog.outcome_reason(objectives, _lost_state([Vector2i(5, 4)]))
+	assert_true(breached.contains("interdite"),
+		"une interdiction violée doit se nommer, pas se lire « le temps s'est écoulé » : « %s »" % breached)
+
+func test_an_untouched_interdiction_does_not_claim_a_breach() -> void:
+	# Le symétrique compte autant : accuser d'une faute qui n'a pas eu lieu
+	# envoie le joueur corriger ce qui marchait.
+	var objectives := [{"type": "interdiction", "cells": [[4, 4]]}]
+	var clean := RuleCatalog.outcome_reason(objectives, _lost_state([Vector2i(0, 0)]))
+	assert_false(clean.contains("interdite"), "aucun agent sur la zone : ne pas l'accuser")
+
+func test_a_collection_failure_is_counted_never_vague() -> void:
+	# « 1 sur 3 » situe l'écart ; « objectif non rempli » ne dit rien de ce
+	# qu'il faut corriger.
+	var objectives := [{"type": "collect", "count": 3}]
+	var none := RuleCatalog.outcome_reason(objectives, _lost_state([Vector2i(0, 0)], 0))
+	assert_true(none.contains("Aucune"), "zéro livraison doit se dire ainsi : « %s »" % none)
+	var partial := RuleCatalog.outcome_reason(objectives, _lost_state([Vector2i(0, 0)], 1))
+	assert_true(partial.contains("1") and partial.contains("3"),
+		"une livraison partielle doit donner les deux chiffres : « %s »" % partial)
+
+func test_every_objective_type_of_the_catalogue_has_a_failure_sentence() -> void:
+	# CONTRÔLE GÉNÉRIQUE : chaque type d'objectif réellement employé par un
+	# niveau doit produire une phrase qui lui est propre. Sans lui, le prochain
+	# type ajouté retomberait en silence sur le message générique — c'est
+	# exactement ce qui est arrivé deux fois.
+	var seen := PackedStringArray()
+	for i in range(LevelCatalog.count()):
+		var entry: Dictionary = LevelCatalog.entry(i)
+		if not bool(entry["ready"]):
+			continue
+		var data := LevelCatalog.load_level_data(String(entry["id"]))
+		for o in data.get("objectives", []):
+			var kind := String((o as Dictionary).get("type", ""))
+			if not seen.has(kind):
+				seen.append(kind)
+	assert_gt(seen.size(), 0, "aucun objectif au catalogue : le balayage est cassé")
+	# CHAQUE SONDE VIOLE RÉELLEMENT SON OBJECTIF, et c'est la seule façon de
+	# rendre ce contrôle honnête. Une sonde qui ne viole rien retombe forcément
+	# sur le message générique — et ce message est alors JUSTE : une partie
+	# perdue sans qu'aucun objectif ne soit enfreint l'a été sur le temps.
+	# Première rédaction : elle accusait `extraction` et `preservation` d'être
+	# muets alors qu'ils parlent très bien quand on les enfreint.
+	var generic := "Le temps imparti s'est écoulé avant l'objectif."
+	var mute := PackedStringArray()
+	for kind in seen:
+		var probe: Dictionary = {"type": kind, "count": 3, "max_lost": 0,
+			"percent": 100, "max_ticks": 1, "cells": [[0, 0]]}
+		var state := _lost_state([Vector2i(0, 0)], 0)
+		match kind:
+			"preservation", "extraction":
+				# Un agent perdu : l'extraction à 100 % devient inatteignable et la
+				# limite de préservation à zéro est franchie.
+				state.counters.lost = 1
+				state.agents[0].flags = AgentState.PERDU
+			"celerity":
+				state.tick = 99
+		if RuleCatalog.outcome_reason([probe], state) == generic:
+			mute.append(kind)
+	assert_eq(mute, PackedStringArray(),
+		"types d'objectif employés par un niveau et sans phrase d'échec propre : %s"
+		% ", ".join(mute))

@@ -13,18 +13,21 @@
 # alors perdu bien avant sa fin, et le joueur le voit : vingt agents devant un
 # depot vide, et un couloir dans le dos qu'ils ne peuvent plus redescendre.
 #
-# CE QUI SAUVE : ECARTER AVANT DE MONTER. R04 se declenche sur la densite —
-# exactement ce qu'est un bloc de vingt agents — et pousse les agents vers les
-# bords, donc sur les ressources. Elle ne les cherche pas : elle ne sait pas
-# qu'elles existent. Il se trouve que se desserrer suffit, et c'est le meme
-# raisonnement de deuxieme ordre que le joueur a fait au chapitre 2.
+# LES RESSOURCES SONT SUR LE CHEMIN, et c'est une correction assumee. La
+# premiere version les posait HORS de l'axe et demandait R04 pour les
+# atteindre : deux piles gagnaient sur soixante-cinq, et la premiere
+# n'apparaissait qu'au cinquante-neuvieme essai. Un joueur methodique y passait
+# par cinquante-huit echecs avant de reussir — ce n'est plus de la
+# comprehension, c'est de l'epuisement.
+#
+# Le niveau ne pose plus qu'UNE question, et il la pose nettement : ou se
+# placent les effets ? La geometrie ne fait plus obstacle, elle sert l'enonce.
 #
 # L'ORDRE EST TOTAL, ET C'EST LE NIVEAU LE PLUS EXIGEANT DU JEU : deux piles
 # gagnent sur soixante-cinq. Il faut, dans cet ordre :
 #
 #   1. les deux EFFETS en tete — R11 et R12, dans l'ordre qu'on veut ;
-#   2. R04 « S'ecarter » ;
-#   3. R01 « Vers la lumiere » en dernier.
+#   2. R01 « Vers la lumiere » en dernier.
 #
 # UN EFFET NE S'APPLIQUE QUE SI LA CASCADE L'ATTEINT, et une cascade s'arrete
 # au premier PROPOSEUR qui decide. Il suffit donc qu'une seule regle de
@@ -39,14 +42,15 @@
 id: ch4_02
 name: Le sas
 tutorial: false
-allowed_rules: [R01, R04, R11, R12]
-slots: 4
+allowed_rules: [R01, R11, R12]
+slots: 3
 max_ticks: 180
 objective: collect 2
 lesson: "Un effet ne s'applique que si la cascade l'atteint : les effets se mettent en tete, sans exception."
 expected_wins: 2
 expected_classes: 1
-calibrated_on: a5d4c87bfcb60674
+challenge: abstinence=R01
+calibrated_on: a37acc8160738b91
 ---
 . . . . . L . . . . .
 . . . . D D D . . . .
@@ -54,9 +58,9 @@ calibrated_on: a5d4c87bfcb60674
 # # # # ^ ^ ^ # # # #
 . . . . . . . . . . .
 . . . . . . . . . . .
-. . . . . . . . . . .
-. . r o o o o o r . .
-. . r o o o o o r . .
+. . . . r r r . . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
 . . . o o o o o . . .
 . . . o o o o o . . .
 . . . . . . . . . . .

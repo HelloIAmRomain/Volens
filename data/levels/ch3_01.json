@@ -600,6 +600,10 @@
     {
       "percent": 100,
       "type": "extraction"
+    },
+    {
+      "max_ticks": 18,
+      "type": "celerity"
     }
   ],
   "slots": 3,

@@ -133,7 +133,36 @@ static func outcome_reason(objectives: Array, state: SimState) -> String:
 					"s" if state.counters.lost > 1 else "", needed, total]
 		if kind == "celerity" and state.tick >= int(entry.get("max_ticks", 0)):
 			return "Le délai de %d ticks est écoulé." % int(entry.get("max_ticks", 0))
+		# INTERDICTION — le seul objectif dont la violation est INSTANTANÉE, et le
+		# seul dont l'échec ne se lit sur aucun compteur. Sans phrase dédiée, le
+		# joueur lisait « le temps imparti s'est écoulé » alors que la partie
+		# s'était arrêtée au troisième tick : un message faux vaut moins que pas
+		# de message.
+		if kind == "interdiction" and _anyone_on(entry, state):
+			return "La nuée est entrée dans la zone interdite."
+		# COLLECTE — l'échec y est un compteur qui n'a pas assez avancé, jamais un
+		# événement. Le dire chiffré : « 1 sur 3 » situe l'écart, « objectif non
+		# rempli » ne dit rien de ce qu'il faut corriger.
+		if kind == "collect":
+			var goal: int = int(entry.get("count", 1))
+			if state.counters.delivered < goal:
+				if state.counters.delivered == 0:
+					return "Aucune ressource livrée : %d étaient demandées." % goal
+				return "%d ressource%s livrée%s sur %d." % [
+					state.counters.delivered, "s" if state.counters.delivered > 1 else "",
+					"s" if state.counters.delivered > 1 else "", goal]
 	return "Le temps imparti s'est écoulé avant l'objectif."
+
+## Un agent se trouve-t-il sur une case interdite ? Les indices sont
+## pré-calculés au chargement du niveau (`ObjectiveDef.cells`) ; on les relit
+## ici sur le brut du fichier, qui porte des couples [x, y].
+static func _anyone_on(entry: Dictionary, state: SimState) -> bool:
+	for pair in entry.get("cells", []):
+		var p := Vector2i(int(pair[0]), int(pair[1]))
+		for a in state.agents:
+			if a.pos == p:
+				return true
+	return false
 
 static func _needed(entry: Dictionary, total: int) -> int:
 	return int(ceil(float(int(entry.get("percent", 100)) * total) / 100.0))

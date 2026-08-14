@@ -414,30 +414,6 @@
     },
     {
       "hashes": {
-        "150": "82629c17d116fe45",
-        "300": "8516c4fdd5111af8",
-        "50": "69241ba571671a21"
-      },
-      "level": "res://data/levels/ch2_02.json",
-      "rules_hash": "40ed3a60d8c2ba81",
-      "stack": [
-        6.0
-      ]
-    },
-    {
-      "hashes": {
-        "150": "9fccdd7339b9bdb6",
-        "300": "bb1e40226b375449",
-        "50": "b140aa73a922af12"
-      },
-      "level": "res://data/levels/ch2_02.json",
-      "rules_hash": "40ed3a60d8c2ba81",
-      "stack": [
-        1.0
-      ]
-    },
-    {
-      "hashes": {
         "150": "745df0de558224aa",
         "300": "245a31433e1ba5f7",
         "50": "58bb450ec64ef48e"
@@ -483,30 +459,6 @@
         "50": "f2e457fda5ebe795"
       },
       "level": "res://data/levels/ch2_04.json",
-      "rules_hash": "40ed3a60d8c2ba81",
-      "stack": [
-        1.0
-      ]
-    },
-    {
-      "hashes": {
-        "150": "d5bde27fa2cbca9d",
-        "300": "01ec902b4f6a0e5e",
-        "50": "bbafdebc0b476477"
-      },
-      "level": "res://data/levels/ch3_01.json",
-      "rules_hash": "40ed3a60d8c2ba81",
-      "stack": [
-        9.0
-      ]
-    },
-    {
-      "hashes": {
-        "150": "a9fd0b8455d2019f",
-        "300": "9c15f730d824a59c",
-        "50": "f897fb6db7fec057"
-      },
-      "level": "res://data/levels/ch3_01.json",
       "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         1.0
@@ -583,33 +535,6 @@
         "50": "faec57bb939aa7af"
       },
       "level": "res://data/levels/ch4_01.json",
-      "rules_hash": "40ed3a60d8c2ba81",
-      "stack": [
-        1.0
-      ]
-    },
-    {
-      "hashes": {
-        "150": "055882d22dd9077e",
-        "300": "b3562ba7ddec4073",
-        "50": "a998cd14947dd91a"
-      },
-      "level": "res://data/levels/ch4_02.json",
-      "rules_hash": "40ed3a60d8c2ba81",
-      "stack": [
-        11.0,
-        12.0,
-        4.0,
-        1.0
-      ]
-    },
-    {
-      "hashes": {
-        "150": "188997bf61dfa1a7",
-        "300": "422bb158ff36c688",
-        "50": "449809ee90ec8ac3"
-      },
-      "level": "res://data/levels/ch4_02.json",
       "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         1.0
@@ -761,6 +686,80 @@
         "50": "c8c888b88cbe7d01"
       },
       "level": "res://data/levels/ch6_03.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "82629c17d116fe45",
+        "300": "8516c4fdd5111af8",
+        "50": "69241ba571671a21"
+      },
+      "level": "res://data/levels/ch2_02.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        6.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "9fccdd7339b9bdb6",
+        "300": "bb1e40226b375449",
+        "50": "b140aa73a922af12"
+      },
+      "level": "res://data/levels/ch2_02.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "d5bde27fa2cbca9d",
+        "300": "01ec902b4f6a0e5e",
+        "50": "bbafdebc0b476477"
+      },
+      "level": "res://data/levels/ch3_01.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        9.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "a9fd0b8455d2019f",
+        "300": "9c15f730d824a59c",
+        "50": "384b1d2e7255a315"
+      },
+      "level": "res://data/levels/ch3_01.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "f2763e26a2d8b045",
+        "300": "56de3724f447d9e8",
+        "50": "a146ba6581eb94e1"
+      },
+      "level": "res://data/levels/ch4_02.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        11.0,
+        12.0,
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "2d0bd11a3f951ce2",
+        "300": "a27a9e03d450474d",
+        "50": "03e2336ffb77b006"
+      },
+      "level": "res://data/levels/ch4_02.json",
       "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
         1.0

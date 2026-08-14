@@ -21,10 +21,17 @@
 # UNE FORME. C'est la premiere fois que le joueur doit raisonner sur la
 # topologie plutot que sur une direction, et c'est le vrai sujet du chapitre 2.
 #
-# R01 EST OFFERTE, ET C'EST UN PIEGE HONNETE. Le joueur qui l'a utilisee cinq
-# niveaux durant la posera par reflexe. Elle ne fera rien — ni degat ni aide :
-# elle s'abstient partout. Un rang gaspille, et la decouverte qu'une regle peut
-# etre simplement HORS SUJET.
+# DEUX REGLES SONT OFFERTES EN PLUS DE R06, ET ELLES NE SE VALENT PAS.
+#
+# R01 « Vers la lumiere » est un piege HONNETE : le joueur qui l'a utilisee cinq
+# niveaux durant la posera par reflexe. Elle ne fera rien — ni degat ni aide,
+# elle s'abstient partout faute de lumiere. Un rang gaspille, et la decouverte
+# qu'une regle peut etre simplement HORS SUJET.
+#
+# R07 « Attendre » est un piege REEL. Elle ne s'abstient jamais : posee au-dessus
+# de R06, elle fige la nuee au premier tick et rend muet tout ce qui suit. La
+# difference entre les deux est exactement ce que le niveau demande de voir —
+# une regle inerte coute un rang, une regle terminale coute la partie.
 #
 # DEUX CONTRAINTES DE R06, TOUTES DEUX DECOUVERTES A LA MESURE, et toutes deux
 # structurelles — elles vaudront pour tout niveau de longeage :
@@ -52,12 +59,12 @@
 id: ch2_02
 name: Sans lumiere
 tutorial: true
-allowed_rules: [R01, R04, R06]
+allowed_rules: [R01, R06, R07]
 slots: 3
 max_ticks: 200
 objective: extraction 100
 lesson: "Sans rien a viser, la nuee ne peut avancer qu'en suivant une forme."
-expected_wins: 11
+expected_wins: 7
 expected_classes: 1
 calibrated_on: 142da3ea7c47ebc8
 ---
