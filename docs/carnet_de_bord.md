@@ -2305,6 +2305,92 @@ sollicite pas ce qu'on prétend mesurer. Le moteur est prêt ; les cartes
 attendent. Les paramètres ⚙️ de R04 et R05 sont des **valeurs de départ, pas
 des valeurs mesurées**, et le fichier le dit à l'endroit où elles sont écrites.
 
+## Fait — Le jeu complet : seize règles, six chapitres (14 août 2026)
+
+### 165. Le genre EFFET, et pourquoi un seul
+
+R08 « marquer la piste » ne propose aucun déplacement. Sous le seul genre
+proposeur, elle n'avait que deux formes, mauvaises toutes les deux : s'abstenir
+toujours, ou proposer l'immobilité et masquer toute la suite de la pile. C'est
+P1, et le chapitre 3 entier en dépendait.
+
+**Un seul genre a été ajouté, pas quatre.** Le filtre général, la condition de
+maintien et l'hystérésis restent hors du moteur : R04 a montré qu'une condition
+de maintien s'écrit très bien en proposeur, R16 est un filtre assez étroit pour
+tenir dans une lecture de la pile, et l'hystérésis attend toujours des joueurs.
+
+La règle d'or a été reformulée une fois, et une seule : *la première règle de
+DÉPLACEMENT applicable l'emporte ; les effets s'appliquent au passage.* Elle ne
+relâche rien — **un effet ne s'applique que si la cascade l'ATTEINT**, donc sa
+position reste décisive. C'est même la mécanique la plus tranchante du jeu :
+sur N14, deux piles gagnent sur soixante-cinq, et les deux ont les effets aux
+rangs 1 et 2.
+
+Neutralité prouvée, pas argumentée : les 30 recettes d'or concordent après
+l'extension.
+
+### 166. Trois découvertes imposées par la stigmergie
+
+1. **Une piste est une PENTE, pas un tapis.** R09 va vers plus intense que sa
+   propre case ; une trace uniforme n'oriente personne — 25 agents immobiles
+   mesurés sur une colonne marquée à plat.
+2. **Une piste est une trace de PASSAGE, pas d'occupation.** Sans cette
+   condition, un agent immobile renforce sa case à chaque tick pendant que la
+   trace devant lui s'évapore : il creuse un puits sous ses pieds dont R09 ne
+   peut plus le sortir. La nuée se fige exactement là où elle doit avancer.
+3. **Le dépôt doit être plus faible que le pas de la pente.** À 12 contre 6, la
+   case qu'on vient de quitter devient plus intense que celle devant : la nuée
+   se marche dessus.
+
+### 167. R06 n'a qu'une maison propre : une carte sans lumière
+
+Trois dispositifs essayés, trois oscillations. R06 et R01 se contredisent de
+part et d'autre de tout seuil (P3) : placée après R01 elle oscille, placée
+avant elle détourne tout ce qui frôle une paroi. **La seule sortie n'est pas de
+ruser avec la géométrie, c'est de retirer la contradiction** — sans lumière,
+R01 s'abstient partout.
+
+Trois conditions supplémentaires, toutes structurelles : tout agent doit
+toucher un mur au départ ; les couloirs font une case (à deux, le suivi de main
+droite décrit un carré de 2×2) ; le parcours n'a qu'un sens (deux agents face à
+face gèlent toute la file). D'où l'escalier monotone de N7.
+
+### 168. R04 prenait le premier écart, elle prend le plus grand
+
+Pour une nuée qui monte, le Nord augmente presque toujours la distance au
+barycentre : l'ordre N>E>S>O faisait donc de R04 une R01 affaiblie, qui
+poussait vers l'avant au lieu d'écarter — et jetait la nuée dans le piège dont
+elle devait la détourner. En retenant le maximum, le pas latéral l'emporte dès
+que la nuée est devant ou derrière, seule situation où « s'écarter » veut dire
+quelque chose.
+
+### 169. Le jeu est asymétrique gauche-droite
+
+Le miroir de N9 a été construit et mesuré : **il ne se résout pas.** À égalité,
+toute règle préfère le Nord puis l'Est ; une nuée qui doit s'écarter s'écarte
+plus volontiers vers l'Est, et un détour vers l'Ouest est structurellement plus
+dur. La symétrie visuelle n'est pas une symétrie de jeu — à retenir avant de
+dessiner, pas après.
+
+### 170. Trois éléments du vocabulaire étaient invisibles à l'écran
+
+Piste stigmergique jamais dessinée ; porte à pression sombre et ses **cases de
+commande pas dessinées du tout** ; sens unique cherché par `cell_type_at`, qui
+ne le trouve jamais puisqu'une case à sens unique reste de type EMPTY.
+
+**Aucun test de simulation ne pouvait le dire** : les trois mécanismes
+fonctionnaient parfaitement dans le moteur. Ils ont été trouvés en REGARDANT
+les captures — septième fois que l'invariant 12 se vérifie, et la première où
+le cas d'épreuve était l'œil plutôt qu'une mesure.
+
+### 171. Corpus d'or étendu de 30 à 56 recettes
+
+Les quatorze nouveaux niveaux n'avaient aucune protection de non-régression.
+Deux recettes chacun — une pile gagnante, une perdante — couvrent désormais les
+seize règles, les deux genres, la piste, le transport, la porte et le joker.
+Prédiction écrite tenue exactement : 30 anciennes inchangées, 0 déplacée, 26
+nouvelles renseignées.
+
 ## Reste à faire
 
 **S3 : clos** — premier passage de la CI en ligne constaté vert le

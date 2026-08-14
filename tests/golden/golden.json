@@ -386,6 +386,334 @@
         3.0,
         1.0
       ]
+    },
+    {
+      "hashes": {
+        "150": "03acea6601afbf86",
+        "300": "96b14cb9846f2f3b",
+        "50": "5b7d2cc58fcdb422"
+      },
+      "level": "res://data/levels/ch2_01.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        4.0,
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "8f2d9c3936bb96c5",
+        "300": "7bdac2083660a078",
+        "50": "75dbabfab5e4ec61"
+      },
+      "level": "res://data/levels/ch2_01.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "82629c17d116fe45",
+        "300": "8516c4fdd5111af8",
+        "50": "69241ba571671a21"
+      },
+      "level": "res://data/levels/ch2_02.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        6.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "9fccdd7339b9bdb6",
+        "300": "bb1e40226b375449",
+        "50": "b140aa73a922af12"
+      },
+      "level": "res://data/levels/ch2_02.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "745df0de558224aa",
+        "300": "245a31433e1ba5f7",
+        "50": "58bb450ec64ef48e"
+      },
+      "level": "res://data/levels/ch2_03.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        4.0,
+        5.0,
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "aa60f652cb47e855",
+        "300": "a989666a309dc18a",
+        "50": "b2124258390ca6b1"
+      },
+      "level": "res://data/levels/ch2_03.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "51101936f4dbef07",
+        "300": "d0e5086eab5d5b9a",
+        "50": "2cb4e0efc6d4f8e3"
+      },
+      "level": "res://data/levels/ch2_04.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        4.0,
+        5.0,
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "9e203cc1d5f54e31",
+        "300": "8fb74bd8579451ae",
+        "50": "f2e457fda5ebe795"
+      },
+      "level": "res://data/levels/ch2_04.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "d5bde27fa2cbca9d",
+        "300": "01ec902b4f6a0e5e",
+        "50": "bbafdebc0b476477"
+      },
+      "level": "res://data/levels/ch3_01.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        9.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "a9fd0b8455d2019f",
+        "300": "9c15f730d824a59c",
+        "50": "f897fb6db7fec057"
+      },
+      "level": "res://data/levels/ch3_01.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "c0932c541c3a1891",
+        "300": "01ec902b4f6a0e5e",
+        "50": "606bfb3437f4a401"
+      },
+      "level": "res://data/levels/ch3_02.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        8.0,
+        9.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "a9fd0b8455d2019f",
+        "300": "9c15f730d824a59c",
+        "50": "7513740e2ad12a15"
+      },
+      "level": "res://data/levels/ch3_02.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "5377c13cd1541707",
+        "300": "80ddd90c89ce0da5",
+        "50": "f626373e728f95b3"
+      },
+      "level": "res://data/levels/ch3_03.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        8.0,
+        9.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "0573979be586148a",
+        "300": "b56377210c018229",
+        "50": "699a633a9f959b3e"
+      },
+      "level": "res://data/levels/ch3_03.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "c4c2109b9668c62e",
+        "300": "7008bda009467173",
+        "50": "8e894e42d74e8d8a"
+      },
+      "level": "res://data/levels/ch4_01.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        11.0,
+        12.0,
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "0fcc3d2d5673c709",
+        "300": "6948680d99dbd314",
+        "50": "faec57bb939aa7af"
+      },
+      "level": "res://data/levels/ch4_01.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "055882d22dd9077e",
+        "300": "b3562ba7ddec4073",
+        "50": "a998cd14947dd91a"
+      },
+      "level": "res://data/levels/ch4_02.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        11.0,
+        12.0,
+        4.0,
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "188997bf61dfa1a7",
+        "300": "422bb158ff36c688",
+        "50": "449809ee90ec8ac3"
+      },
+      "level": "res://data/levels/ch4_02.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "3b621db96adb3da1",
+        "300": "db23b4c69e53579c",
+        "50": "75d282ac646aa305"
+      },
+      "level": "res://data/levels/ch5_01.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        13.0,
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "f285eadb4441d508",
+        "300": "30a666c5cf3d98b5",
+        "50": "0cc035fc734a786c"
+      },
+      "level": "res://data/levels/ch5_01.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "06fcaf09d7d70eaa",
+        "300": "a83a765239e9b307",
+        "50": "86e2fdd96b2c3e4e"
+      },
+      "level": "res://data/levels/ch5_02.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        14.0,
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "7a3a6e50079d68e5",
+        "300": "75085442e17c954a",
+        "50": "c8c888b88cbe7d01"
+      },
+      "level": "res://data/levels/ch5_02.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "a7cfd99fb1689648",
+        "300": "882dfdfa2a9845d5",
+        "50": "20bd67921fa56eec"
+      },
+      "level": "res://data/levels/ch5_03.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        15.0,
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "afab6d4e6779c277",
+        "300": "0621f1edc2cd9b2a",
+        "50": "0c114f7e2bf94293"
+      },
+      "level": "res://data/levels/ch5_03.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        1.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "c8f5ff6889dc00ab",
+        "300": "f3c29fd7145ee096",
+        "50": "bbec18abec9cad0f"
+      },
+      "level": "res://data/levels/ch6_01.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        1.0,
+        784.0
+      ]
+    },
+    {
+      "hashes": {
+        "150": "f285eadb4441d508",
+        "300": "30a666c5cf3d98b5",
+        "50": "0cc035fc734a786c"
+      },
+      "level": "res://data/levels/ch6_01.json",
+      "rules_hash": "40ed3a60d8c2ba81",
+      "stack": [
+        1.0
+      ]
     }
   ]
 }

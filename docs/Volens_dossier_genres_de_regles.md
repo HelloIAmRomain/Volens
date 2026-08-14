@@ -1,6 +1,34 @@
 # Dossier — révision des genres de règles
 
-**Ouvert le 6 août 2026 · réécrit en diagnostic le 9 août 2026 · GELÉ jusqu'aux testeurs**
+**Ouvert le 6 août 2026 · réécrit en diagnostic le 9 août 2026 · P1 CLOSE le 14 août 2026 · le reste GELÉ jusqu'aux testeurs**
+
+> ## P1 est close — le genre EFFET a été introduit
+>
+> **Ce que le dossier appelait « le genre manquant : effet » existe depuis le
+> 14 août 2026.** Une règle d'effet agit sur le monde puis rend la main ; la
+> cascade continue et une autre règle décide du déplacement.
+>
+> Ce qui l'a débloqué n'est pas une révision : c'est le chapitre 3. R08
+> « marquer la piste » ne pouvait pas s'écrire autrement, et le chapitre
+> entier en dépendait. L'ajout est resté **strictement minimal** — un seul
+> genre, pas quatre — et il est prouvé neutre : les 30 recettes d'or de
+> l'époque concordent après l'extension, aucune trajectoire du chapitre 1
+> n'a bougé d'un bit.
+>
+> **La règle d'or a été reformulée, et c'est sa seule reformulation :** la
+> première règle de DÉPLACEMENT applicable l'emporte ; les effets s'appliquent
+> au passage. La position d'un effet reste décisive — il ne s'applique que si
+> la cascade l'ATTEINT — si bien que le jeu n'a rien perdu de son sujet.
+>
+> **P2, P3 et P4 restent ouvertes**, et l'hystérésis reste gelée. Deux
+> résultats du chapitre 2 les ont d'ailleurs confirmées plutôt qu'affaiblies :
+> R06 et R01 se contredisent de part et d'autre de tout seuil (P3), au point
+> que la seule carte propre pour R06 est une carte sans lumière ; et R15 fige
+> définitivement une nuée dans un goulot, faute de pouvoir mémoriser qu'elle
+> attendait déjà.
+>
+> **Le chantier « effet » du tableau §3 est donc barré ; les deux autres
+> tiennent.**
 
 > Ce document ne recense plus des motifs épars. Il porte un **diagnostic
 > unique** : la cascade de règles, telle qu'elle est spécifiée, produit quatre
@@ -112,7 +140,7 @@ prépare pas le chapitre 3, il répare l'existant.
 |---|---|---|
 | **La leçon de N5** — « il n'y a pas UNE bonne réponse » | Les deux ordres gagnants sont la même trajectoire ; les rendre distincts impose un agent oscillant | **P4** |
 | **S4** — une règle seule ne gagne que le niveau qui l'introduit | Faire perdre `[1]` demande que R01 s'abstienne, donc des impasses ; la seule échappée fait de `[3,1]` une clé universelle | **P3** |
-| **Stigmergie R08/R09** (chapitre 3) | Déposer un marqueur n'est pas proposer un déplacement : sous le genre proposeur, la règle s'abstient et n'est pas dans la pile, ou propose l'immobilité et masque tout ce qui suit | **P1** (genre manquant : **effet**) |
+| ~~**Stigmergie R08/R09** (chapitre 3)~~ | **CLOS le 14 août 2026** — le genre `EFFET` existe, le chapitre 3 est construit et joué | ~~P1~~ |
 
 ## 3 bis. R06 « Longer le mur » — la sortie d'impasse qui manquait
 
