@@ -116,5 +116,13 @@ static func is_tutorial(level_data: Dictionary) -> bool:
 
 ## Empreinte de la géométrie sous laquelle les paramètres ont été mesurés
 ## (invariant n°15), ou "" si le niveau n'en déclare pas.
+## DÉFIS RG-18. Bloc déclaratif, donc lu ici et nulle part ailleurs
+## (invariant n°16). `efficiency_ticks` est un paramètre de la CARTE — mesuré
+## sur une géométrie donnée, faux dès qu'un mur bouge — et se trouve donc sous
+## la protection de `calibrated_on`, exactement comme l'échéance de célérité.
+static func challenges(level_data: Dictionary) -> Dictionary:
+	var raw: Variant = level_data.get("challenges", {})
+	return raw if raw is Dictionary else {}
+
 static func calibrated_on(level_data: Dictionary) -> String:
 	return String(level_data.get("calibrated_on", ""))

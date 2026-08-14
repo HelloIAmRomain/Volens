@@ -51,6 +51,9 @@ const _SYMBOLS := {
 	"D": GridState.CellType.DROPOFF,
 	"P": GridState.CellType.PRESSURE_DOOR,
 }
+## Ordre calqué sur `Directions` : NORTH, EAST, SOUTH, WEST. L'index dans ce
+## tableau EST l'identifiant de direction — les désynchroniser ferait entrer
+## les agents par le mauvais côté sans qu'aucun test de niveau ne le dise.
 const _ONE_WAY_SYMBOLS := ["^", ">", "v", "<"]
 
 ## Analyse un texte `.lvl`. Renvoie { "level": Dictionary, "errors":
@@ -77,6 +80,7 @@ static func parse(text: String, min_cycle_period: int, flee_range_sq: int = 25) 
 	var header: Dictionary = {}
 	var objectives: Array = []
 	var cycle: Dictionary = {}
+	var doors: Array = []
 	for i in range(separator):
 		var line := lines[i].strip_edges()
 		if line.is_empty() or line.begins_with("#"):
@@ -94,6 +98,12 @@ static func parse(text: String, min_cycle_period: int, flee_range_sq: int = 25) 
 					objectives.append(obj)
 			"cycle":
 				cycle = _parse_cycle(value, i + 1, errors)
+			"door":
+				# `door: required=2 plates=1,4;2,4 panels=5,6;6,6`
+				# Répétable : un niveau peut porter plusieurs portes indépendantes.
+				var parsed := _parse_door(value, i + 1, errors)
+				if not parsed.is_empty():
+					doors.append(parsed)
 			_:
 				header[key] = value
 
@@ -130,6 +140,7 @@ static func parse(text: String, min_cycle_period: int, flee_range_sq: int = 25) 
 	var cells: Array = []
 	var cycle_index: Array = []
 	var agents: Array = []
+	var one_way: Array = []
 	var has_exit := false
 	var has_cyclic := false
 	var resource_count := 0
@@ -142,7 +153,11 @@ static func parse(text: String, min_cycle_period: int, flee_range_sq: int = 25) 
 				# Convention n°1 : id = ordre de lecture (y puis x croissants).
 				agents.append({"pos": [x, y]})
 			elif ch in _ONE_WAY_SYMBOLS:
-				errors.append("(%d,%d) : sens unique « %s » non supporté en v1 — l'orientation n'est pas représentable dans core/sim (chapitre 2+)" % [x, y, ch])
+				# SENS UNIQUE, accepté depuis le 14 août 2026 : `GridState.one_way_dir`
+				# porte l'orientation et `can_traverse` la contrôle. Le symbole DÉSIGNE
+				# la direction autorisée, pas celle qui est interdite — « > » se lit
+				# « on ne peut y entrer qu'en allant vers l'Est ».
+				one_way.append([x, y, _ONE_WAY_SYMBOLS.find(ch)])
 			elif _SYMBOLS.has(ch):
 				cell = _SYMBOLS[ch]
 			else:
@@ -271,6 +286,8 @@ static func parse(text: String, min_cycle_period: int, flee_range_sq: int = 25) 
 			"cells": cells,
 			"cycle_index": cycle_index if has_cyclic else [],
 			"cycles": [cycle] if not cycle.is_empty() else [],
+			"one_way": one_way,
+			"doors": doors,
 		},
 		"agents": agents,
 		"objectives": objectives,
@@ -285,6 +302,35 @@ static func parse(text: String, min_cycle_period: int, flee_range_sq: int = 25) 
 		level["expected_wins"] = int(header["expected_wins"])
 	if header.has("expected_classes"):
 		level["expected_classes"] = int(header["expected_classes"])
+
+	# --- Défis facultatifs [RG-18] ---
+	#
+	# `challenge: abstinence=R02 efficiency=24`. Ni l'un ni l'autre n'est
+	# obligatoire : un niveau sans ligne `challenge:` n'en propose simplement
+	# aucun, et l'interface le dit plutôt que d'afficher trois cases éteintes
+	# que rien ne permet d'allumer.
+	if header.has("challenge"):
+		var spec: Dictionary = {}
+		for token in String(header["challenge"]).split(" "):
+			var t := String(token).strip_edges()
+			if t.begins_with("abstinence="):
+				var rule_token := t.substr(11).lstrip("Rr")
+				var rule_id := int(rule_token)
+				if RuleRegistry.get_rule(rule_id) == null:
+					errors.append("challenge : abstinence sur la règle %s, qui n'existe pas" % t.substr(11))
+				elif not allowed_rules.has(rule_id):
+					# Un défi d'abstinence sur une règle que le niveau n'offre
+					# pas est gagné d'avance : il ne demande rien.
+					errors.append(("challenge : abstinence sur R%02d, qui n'est pas dans "
+						+ "allowed_rules — le défi serait acquis sans rien faire") % rule_id)
+				else:
+					spec["abstinence_rule"] = rule_id
+			elif t.begins_with("efficiency="):
+				spec["efficiency_ticks"] = int(t.substr(11))
+			elif not t.is_empty():
+				errors.append("challenge : jeton « %s » inconnu (attendu abstinence=Rxx ou efficiency=N)" % t)
+		if not spec.is_empty():
+			level["challenges"] = spec
 
 	# --- Calibration : les paramètres valent-ils encore ? [invariant n°15] ---
 	#
@@ -468,6 +514,43 @@ static func _parse_objective(value: String, line: int, errors: PackedStringArray
 			return {}
 
 ## « period=6 active=3 » -> { period, active_ticks }.
+## `door: required=2 plates=1,4;2,4 panels=5,6;6,6`
+##
+## Les CASES DE COMMANDE ne sont pas un symbole de grille, et c'est délibéré :
+## le vocabulaire de RG-14 est fermé à neuf éléments, et lui en ajouter un
+## dixième pour un détail de représentation serait exactement l'inflation que
+## cette clôture interdit. Une commande est une case ordinaire que la ligne
+## `door:` rattache à sa porte.
+static func _parse_door(value: String, line: int, errors: PackedStringArray) -> Dictionary:
+	var out: Dictionary = {"required": 1, "plates": [], "panels": []}
+	for token in value.split(" "):
+		var t := String(token).strip_edges()
+		if t.is_empty():
+			continue
+		if t.begins_with("required="):
+			out["required"] = maxi(1, int(t.substr(9)))
+		elif t.begins_with("plates=") or t.begins_with("panels="):
+			var key := "plates" if t.begins_with("plates=") else "panels"
+			var list: Array = []
+			for pair in t.substr(t.find("=") + 1).split(";"):
+				var xy := String(pair).split(",")
+				if xy.size() != 2:
+					errors.append("ligne %d : « %s » n'est pas un couple x,y" % [line, pair])
+					continue
+				list.append([int(xy[0]), int(xy[1])])
+			out[key] = list
+		else:
+			errors.append("ligne %d : jeton de porte inconnu « %s »" % [line, t])
+	if (out["plates"] as Array).is_empty() or (out["panels"] as Array).is_empty():
+		errors.append(("ligne %d : une porte a besoin d'au moins une commande ET d'au moins "
+			+ "un panneau — sans quoi elle n'est ni ouvrable ni fermante") % line)
+		return {}
+	if int(out["required"]) > (out["plates"] as Array).size():
+		errors.append(("ligne %d : %d agents requis pour %d case(s) de commande — la porte "
+			+ "ne pourrait JAMAIS s'ouvrir") % [line, int(out["required"]), (out["plates"] as Array).size()])
+		return {}
+	return out
+
 static func _parse_cycle(value: String, line: int, errors: PackedStringArray) -> Dictionary:
 	var out: Dictionary = {}
 	for token in value.split(" ", false):

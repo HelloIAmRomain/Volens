@@ -36,7 +36,8 @@ extends GutTest
 ## `max_ticks`, `objectives`, `allowed_rules` et `agents` n'y figurent pas :
 ## ce sont des ENTRÉES de la simulation, lues par `SimCore` là où c'est son
 ## travail. Les protéger de la même façon interdirait au moteur de fonctionner.
-const GUARDED_FIELDS := ["expected_wins", "expected_classes", "tutorial", "calibrated_on", "slots"]
+const GUARDED_FIELDS := ["expected_wins", "expected_classes", "tutorial", "calibrated_on",
+	"slots", "challenges"]
 
 const ALLOWED := [
 	"res://core/sim/level_spec.gd",      # la source de vérité
