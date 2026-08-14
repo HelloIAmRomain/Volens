@@ -55,8 +55,18 @@ const DANGER := Color(0.74, 0.22, 0.24)                  # 358° — registre ca
 const DANGER_DORMANT := Color(0.34, 0.17, 0.20)          # même élément, autre phase
 const RESOURCE := Color(0.72, 0.48, 0.95)                # 280°
 const DROPOFF := Color(0.38, 0.56, 0.95)                 # 215°
-const PRESSURE_DOOR := Color(0.95, 0.45, 0.78)           # 320° — réservé, inutilisé
-const ONE_WAY := Color(0.30, 0.82, 0.90)                 # 195° — réservé, inutilisé
+const PRESSURE_DOOR := Color(0.95, 0.45, 0.78)           # 320°
+const ONE_WAY := Color(0.30, 0.82, 0.90)                 # 195°
+
+## PISTE STIGMERGIQUE (R08/R09). Ce n'est pas un élément du vocabulaire RG-14 —
+## le vocabulaire est fermé à neuf, et la piste n'est pas un type de case mais
+## une VALEUR portée par une case ordinaire. Elle n'a donc pas de teinte
+## réservée : elle emprunte celle des agents, en très basse opacité.
+##
+## C'est exact plutôt que commode : une piste EST la trace d'agents. Lui donner
+## une teinte propre en aurait fait un dixième élément, et la charte aurait
+## menti sur le nombre de choses que le joueur doit apprendre à reconnaître.
+const TRAIL := Color(0.68, 0.74, 0.88)
 const LIGHT := Color(1.0, 0.92, 0.68)                    # 45° — la plus lumineuse
 
 ## Teinte réservée d'un élément du vocabulaire. Sert de point d'entrée unique :

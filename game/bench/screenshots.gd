@@ -113,6 +113,28 @@ func _capture_all() -> void:
 	game._hide_objective_panel()
 	await _shot("11-ch1-05-terrain")
 
+	# LES ELEMENTS DES CHAPITRES 3 A 6 ONT LEUR CAPTURE, et c'est le seul moyen
+	# de verifier qu'ils sont DESSINES. Le moteur les reconnaissait depuis le
+	# premier lot alors que l'ecran les ignorait : une geometrie invisible est
+	# une geometrie injuste, et aucun test de simulation ne l'aurait dit.
+	game = _app._open_game("ch3_02", false)
+	game._hide_objective_panel()
+	for i in range(6):
+		game._view.step_forward()
+	await _shot("12-ch3-02-piste")
+
+	game = _app._open_game("ch4_02", false)
+	game._hide_objective_panel()
+	await _shot("13-ch4-02-ressources-sens-unique")
+
+	game = _app._open_game("ch5_02", false)
+	game._hide_objective_panel()
+	await _shot("14-ch5-02-porte-a-pression")
+
+	# Selection : dix-huit niveaux groupes par chapitre, ecran defilant.
+	_app._open_select()
+	await _shot("15-selection-chapitres")
+
 	# Les deux bilans, gagné puis perdu.
 	_app._on_level_finished("ch1_01", true, 14, 0, [RuleRegistry.R01_TOWARD_LIGHT], "La nuée a rempli l'objectif.")
 	await _shot("08-bilan-gagne")

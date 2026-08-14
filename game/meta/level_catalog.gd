@@ -81,6 +81,65 @@ static func next_playable(progress: Progress) -> String:
 			return last
 	return last
 
+## --- CHAPITRES ------------------------------------------------------------
+##
+## Le numero de chapitre est DEDUIT de l'identifiant (`ch3_02` -> 3), jamais
+## saisi a cote. Une seconde declaration serait une seconde verite, et l'on
+## sait ce qu'il advient de celles-la : elles divergent, et la divergence ne se
+## voit que par accident (invariant n°16).
+static func chapter_of(level_id: String) -> int:
+	if not level_id.begins_with("ch"):
+		return 0
+	var underscore := level_id.find("_")
+	if underscore < 2:
+		return 0
+	return int(level_id.substr(2, underscore - 2))
+
+## Titre de chapitre, tel que le CDC §7.2 les nomme.
+const CHAPTER_TITLES := {
+	1: "Le mouvement élémentaire",
+	2: "La coordination",
+	3: "La mémoire du monde",
+	4: "Le transport",
+	5: "Le sacrifice et la régulation",
+	6: "L'exception",
+}
+
+static func chapter_title(chapter: int) -> String:
+	return String(CHAPTER_TITLES.get(chapter, "Chapitre %d" % chapter))
+
+## Numeros de chapitre presents au catalogue, en ordre croissant. Calcule, pas
+## declare : ajouter un niveau suffit a faire apparaitre son chapitre.
+static func chapters() -> Array[int]:
+	var out: Array[int] = []
+	for entry_data in LEVELS:
+		var c := chapter_of(String(entry_data["id"]))
+		if c > 0 and not out.has(c):
+			out.append(c)
+	out.sort()
+	return out
+
+## Un chapitre est ouvert des que son PREMIER niveau l'est. Le verrouillage
+## reste celui des niveaux : on n'ajoute pas une seconde serrure par-dessus.
+static func is_chapter_unlocked(chapter: int, progress: Progress) -> bool:
+	for entry_data in LEVELS:
+		if chapter_of(String(entry_data["id"])) == chapter:
+			return is_unlocked(String(entry_data["id"]), progress)
+	return false
+
+## Niveaux resolus / total pour un chapitre — le seul chiffre que l'ecran de
+## selection ait besoin d'afficher a cote d'un titre.
+static func chapter_progress(chapter: int, progress: Progress) -> Vector2i:
+	var solved := 0
+	var total := 0
+	for entry_data in LEVELS:
+		if chapter_of(String(entry_data["id"])) != chapter:
+			continue
+		total += 1
+		if progress.is_solved(String(entry_data["id"])):
+			solved += 1
+	return Vector2i(solved, total)
+
 static func load_level_data(level_id: String) -> Dictionary:
 	var path := path_of(level_id)
 	if path.is_empty() or not FileAccess.file_exists(path):

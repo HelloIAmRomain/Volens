@@ -60,6 +60,19 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array, rea
 	if won and known > 1:
 		column.add_child(_stat("Solutions connues", str(known)))
 
+	# DÉFIS RG-18 — et RG-19 gouverne leur affichage autant que leur calcul :
+	# **aucun défi ne conditionne jamais la progression.** On ne montre donc que
+	# ce qui est OBTENU, et rien du reste. Une liste de cases à cocher dont deux
+	# sont vides transforme une victoire en échec partiel, et c'est exactement ce
+	# que RG-19 interdit ; le joueur qui veut savoir ce qui existe le découvre en
+	# rejouant, pas en lisant un reproche.
+	#
+	# Rien non plus sur un échec : féliciter pour un défi obtenu au cours d'une
+	# partie perdue serait au mieux confus.
+	if won:
+		for line in _challenges_earned(level_id, stack, ticks):
+			column.add_child(_stat("Défi", line))
+
 	var grow := Control.new()
 	grow.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_child(grow)
@@ -83,6 +96,27 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array, rea
 
 ## Nombre de piles gagnantes d'un niveau non tutoriel, ou 0 si le niveau est
 ## un tutoriel ou si le chiffre n'est pas connu.
+## Libellés des défis obtenus, dans l'ordre de RG-18. Vide si aucun.
+static func _challenges_earned(level_id: String, stack: Array, ticks: int) -> PackedStringArray:
+	var data := LevelCatalog.load_level_data(level_id)
+	var spec := LevelSpec.challenges(data)
+	var out := PackedStringArray()
+	if data.is_empty():
+		return out
+	var used := 0
+	for r in stack:
+		if int(r) != RuleRegistry.EMPTY:
+			used += 1
+	if used <= Challenges.ECONOMY_MAX_SLOTS:
+		out.append("Économie — résolu avec %d règles" % used)
+	var abstinence := int(spec.get("abstinence_rule", 0))
+	if abstinence != 0 and not stack.has(abstinence):
+		out.append("Abstinence — sans « %s »" % RuleCatalog.name_of(abstinence))
+	var deadline := int(spec.get("efficiency_ticks", 0))
+	if deadline > 0 and ticks <= deadline:
+		out.append("Efficience — %d ticks, seuil %d" % [ticks, deadline])
+	return out
+
 static func _known_solutions(level_id: String) -> int:
 	var data := LevelCatalog.load_level_data(level_id)
 	if data.is_empty() or LevelSpec.is_tutorial(data):

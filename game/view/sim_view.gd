@@ -80,6 +80,11 @@ var _exit_mm: MultiMeshInstance2D
 var _light_mm: MultiMeshInstance2D
 var _goal_mm: MultiMeshInstance2D
 var _trail_mm: MultiMeshInstance2D
+var _pheromone_mm: MultiMeshInstance2D
+var _door_mm: MultiMeshInstance2D
+var _plate_mm: MultiMeshInstance2D
+var _one_way_mm: MultiMeshInstance2D
+var _one_way_mark_mm: MultiMeshInstance2D
 var _agent_mm: MultiMeshInstance2D
 var _deaths_mm: MultiMeshInstance2D
 var _grid_lines: Node2D
@@ -109,6 +114,14 @@ func _ready() -> void:
 	_danger_mm = _make_layer(Layer.DANGER, HATCH_SHADER)
 	_light_mm = _make_layer(Layer.LIGHT, LIGHT_SHADER)
 	_goal_mm = _make_layer(Layer.GOAL, HALO_SHADER)
+	# LA PISTE STIGMERGIQUE EST DESSINEE SOUS TOUT LE RESTE, et sans halo. C'est
+	# une information de SOL — une trace laissee, pas un objet — et lui donner du
+	# relief la ferait concurrencer la nuee, qui est le personnage (DA-01).
+	_pheromone_mm = _make_layer(Layer.DECOR + 1, null)
+	_door_mm = _make_layer(Layer.GOAL, null)
+	_plate_mm = _make_layer(Layer.DECOR + 2, null)
+	_one_way_mm = _make_layer(Layer.DECOR + 3, null)
+	_one_way_mark_mm = _make_layer(Layer.DECOR + 4, null)
 	_trail_mm = _make_layer(Layer.TRAIL, AGENT_SHADER)
 	_agent_mm = _make_layer(Layer.AGENT, AGENT_SHADER)
 	_deaths_mm = _make_layer(Layer.GOAL - 1, AGENT_SHADER)
@@ -423,7 +436,35 @@ func _rebuild_static_layers() -> void:
 	var goals: Array = []
 	goals.append_array(_regions_of(GridState.CellType.RESOURCE, ViewPalette.RESOURCE, GOAL_BLEED))
 	goals.append_array(_regions_of(GridState.CellType.DROPOFF, ViewPalette.DROPOFF, GOAL_BLEED))
+	# PORTE A PRESSION ET SENS UNIQUE, huitieme et septieme elements de RG-14.
+	# Ils etaient reconnus par le moteur et absents de l'ecran : une geometrie
+	# invisible est une geometrie injuste, et le joueur aurait vu sa nuee butter
+	# sur du vide.
 	_fill_items(_goal_mm, goals)
+
+	# SENS UNIQUE — dessine depuis `one_way_dir`, PAS depuis le type de case.
+	# Defaut trouve a la capture : une case a sens unique reste de type EMPTY,
+	# son orientation vivant dans une couche a part. Le rendu la cherchait par
+	# `cell_type_at` et ne trouvait jamais rien : la geometrie la plus
+	# contraignante du jeu — celle qu'on ne peut pas defaire — etait invisible.
+	var one_ways: Array = []
+	var arrows: Array = []
+	for idx in range(grid.one_way_dir.size()):
+		var dir: int = grid.one_way_dir[idx]
+		if dir < 0:
+			continue
+		var p := Vector2(idx % grid.size.x, idx / grid.size.x)
+		var tint := ViewPalette.ONE_WAY
+		tint.a = 0.20
+		one_ways.append([p, tint])
+		# LA DIRECTION SE MONTRE, elle ne se devine pas : un marqueur decale vers
+		# le sens AUTORISE. Sans lui, deux sens uniques opposes seraient
+		# identiques a l'oeil, et le joueur ne pourrait pas planifier.
+		var mark := ViewPalette.ONE_WAY
+		mark.a = 0.90
+		arrows.append([p + Vector2(Directions.offset(dir)) * 0.26, mark])
+	_fill(_one_way_mm, one_ways, _cell_size * 0.92)
+	_fill(_one_way_mark_mm, arrows, _cell_size * 0.30)
 
 ## Débords, en cases. La lumière déborde LARGEMENT — c'est ce débord qui la
 ## fait lire comme une source et non comme une case remplie. La sortie déborde
@@ -469,6 +510,8 @@ func _process(dt: float) -> void:
 	_draw_deaths()
 	_draw_dangers()
 	_draw_trails()
+	_draw_pheromone()
+	_draw_doors()
 	_draw_agents()
 
 ## Les dangers se dessinent aussi par RÉGION, et séparément selon leur phase :
@@ -527,6 +570,71 @@ func _draw_agents() -> void:
 		color.a = alpha
 		items.append([cell, color])
 	_fill(_agent_mm, items, _cell_size * 0.70)
+
+## PISTE STIGMERGIQUE (R08/R09). Redessinee a chaque image parce qu'elle change
+## a chaque tick : elle s'evapore, et voir l'evaporation est la moitie de ce
+## que le chapitre 3 enseigne. Un joueur qui ne voit pas la trace faiblir ne
+## peut pas comprendre pourquoi sa queue de nuee s'arrete.
+##
+## L'INTENSITE PASSE PAR L'OPACITE, jamais par la teinte : la charte reserve
+## une teinte par element de vocabulaire (RG-14), et une piste qui changerait
+## de couleur en s'estompant en emprunterait a d'autres.
+## PORTES A PRESSION ET LEURS COMMANDES. Dessinees a chaque image parce que
+## l'etat d'une porte change a chaque tick, et parce que le voir changer EST le
+## mecanisme : une porte qui s'ouvre quand deux agents se posent, et se referme
+## quand ils repartent, s'explique toute seule si on la regarde.
+##
+## LES CASES DE COMMANDE SONT MARQUEES, ET C'ETAIT MANQUANT. Elles ne sont pas
+## un type de case — le vocabulaire RG-14 est ferme a neuf — mais des cases
+## ordinaires rattachees a une porte. Sans marque a l'ecran, le joueur voyait
+## une porte fermee et aucune facon d'apprendre ce qui l'ouvre : injouable, et
+## aucun test de simulation ne l'aurait dit.
+func _draw_doors() -> void:
+	if _door_mm == null or _to == null:
+		return
+	var grid := _to.grid
+	if grid.doors.is_empty():
+		_fill(_door_mm, [], _cell_size)
+		return
+	var panels: Array = []
+	var plates: Array = []
+	for idx in range(grid.door_index.size()):
+		if grid.door_index[idx] < 0:
+			continue
+		var p := Vector2(idx % grid.size.x, idx / grid.size.x)
+		var c := ViewPalette.PRESSURE_DOOR
+		if grid.cells[idx] == GridState.CellType.PRESSURE_DOOR:
+			# OUVERTE = EFFACEE. Une porte franchissable doit se lire comme un
+			# passage, pas comme un obstacle d'une autre couleur.
+			c.a = 0.22 if grid.doors_open[grid.door_index[idx]] == 1 else 0.92
+			panels.append([p, c])
+		else:
+			c.a = 0.40
+			plates.append([p, c])
+	_fill(_door_mm, panels, _cell_size * 0.96)
+	_fill(_plate_mm, plates, _cell_size * 0.42)
+
+func _draw_pheromone() -> void:
+	if _pheromone_mm == null or _to == null:
+		return
+	var grid := _to.grid
+	var items: Array = []
+	var ceiling: int = maxi(1, _to.rule_params.trail_max if _to.rule_params != null else 60)
+	for idx in range(grid.pheromone.size()):
+		var value: int = grid.pheromone[idx]
+		if value <= 0:
+			continue
+		var c := ViewPalette.TRAIL
+		# Plancher d'opacite : une trace presque eteinte doit rester VISIBLE, sinon
+		# elle disparait de l'ecran avant de disparaitre du modele, et le joueur
+		# voit ses agents suivre quelque chose qui n'est plus la.
+		# POIDS VISUEL : premiere version mesuree a 0,78 case et 0,62 d'opacite —
+		# la piste lisait comme un DALLAGE et dominait l'ecran, alors que la nuee
+		# est le personnage (DA-01). Une trace au sol doit se voir sans se
+		# regarder : plus petite que la case, et jamais au-dela du tiers d'opacite.
+		c.a = 0.08 + 0.30 * (float(mini(value, ceiling)) / float(ceiling))
+		items.append([Vector2(idx % grid.size.x, idx / grid.size.x), c])
+	_fill(_pheromone_mm, items, _cell_size * 0.52)
 
 func _draw_trails() -> void:
 	var items: Array = []
