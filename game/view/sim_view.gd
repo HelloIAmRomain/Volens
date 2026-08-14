@@ -85,6 +85,7 @@ var _door_mm: MultiMeshInstance2D
 var _plate_mm: MultiMeshInstance2D
 var _one_way_mm: MultiMeshInstance2D
 var _one_way_mark_mm: MultiMeshInstance2D
+var _carrier_mm: MultiMeshInstance2D
 var _agent_mm: MultiMeshInstance2D
 var _deaths_mm: MultiMeshInstance2D
 var _grid_lines: Node2D
@@ -124,6 +125,7 @@ func _ready() -> void:
 	_one_way_mark_mm = _make_layer(Layer.DECOR + 4, null)
 	_trail_mm = _make_layer(Layer.TRAIL, AGENT_SHADER)
 	_agent_mm = _make_layer(Layer.AGENT, AGENT_SHADER)
+	_carrier_mm = _make_layer(Layer.AGENT + 1, AGENT_SHADER)
 	_deaths_mm = _make_layer(Layer.GOAL - 1, AGENT_SHADER)
 
 func _make_layer(z: int, shader: Shader) -> MultiMeshInstance2D:
@@ -554,6 +556,7 @@ func _death_pulse() -> float:
 
 func _draw_agents() -> void:
 	var items: Array = []
+	var carried: Array = []
 	for i in range(_to.agents.size()):
 		var to_agent := _to.agents[i]
 		var from_agent := _from.agents[i] if i < _from.agents.size() else to_agent
@@ -569,7 +572,20 @@ func _draw_agents() -> void:
 			color = ViewPalette.slot_color(_deciding_slot(to_agent, _to))
 		color.a = alpha
 		items.append([cell, color])
+		# PORTEUR — un agent qui transporte une ressource porte sa MARQUE. Sans
+		# elle, tout le chapitre 4 se joue à l'aveugle : le joueur voit une nuée
+		# uniforme et ne peut pas savoir qui a ramassé, donc pas comprendre
+		# pourquoi le compteur de livraisons n'avance pas.
+		#
+		# ENF-20 : l'information n'est pas portée par la seule couleur. C'est un
+		# point AJOUTÉ sur l'agent — une forme — qui se voit en niveaux de gris
+		# comme en teinte, et sa couleur est celle de la ressource, déjà apprise.
+		if (to_agent.flags & AgentState.PORTEUR) != 0 and to_agent.is_present():
+			var load_color := ViewPalette.RESOURCE
+			load_color.a = alpha
+			carried.append([cell, load_color])
 	_fill(_agent_mm, items, _cell_size * 0.70)
+	_fill(_carrier_mm, carried, _cell_size * 0.30)
 
 ## PISTE STIGMERGIQUE (R08/R09). Redessinee a chaque image parce qu'elle change
 ## a chaque tick : elle s'evapore, et voir l'evaporation est la moitie de ce

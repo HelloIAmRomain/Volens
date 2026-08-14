@@ -125,6 +125,19 @@ func _capture_all() -> void:
 
 	game = _app._open_game("ch4_02", false)
 	game._hide_objective_panel()
+	# LES PORTEURS DOIVENT SE VOIR. Sans cette capture, on ne saurait pas si la
+	# marque de charge est lisible sur une nuee en mouvement — et tout le
+	# chapitre 4 se joue sur cette information.
+	# La pile est posee par la voie de reprise de session — trois gestes
+	# simules s'arretaient au deuxieme rang, et ce n'est pas l'interface qu'on
+	# veut eprouver ici mais le RENDU des porteurs.
+	var carry := Session.new()
+	carry.level_id = "ch4_02"
+	carry.stack = [RuleRegistry.R11_CARRY, RuleRegistry.R12_DROP_AT_GOAL,
+		RuleRegistry.R01_TOWARD_LIGHT]
+	game.restore_session(carry)
+	for i in range(3):
+		game._view.step_forward()
 	await _shot("13-ch4-02-ressources-sens-unique")
 
 	game = _app._open_game("ch5_02", false)
