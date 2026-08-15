@@ -21,6 +21,8 @@ extends Control
 signal chapter_chosen(chapter: int)
 signal back_requested
 
+var _drag: DragScroll
+
 func setup(progress: Progress) -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
@@ -50,6 +52,9 @@ func setup(progress: Progress) -> void:
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	column.add_child(scroll)
+	# Même défilement au doigt que le sélecteur de niveaux : une liste de tuiles
+	# ne se fait pas défiler par ses gouttières.
+	_drag = DragScroll.attach(scroll)
 
 	var list := VBoxContainer.new()
 	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -93,7 +98,10 @@ func _make_tile(chapter: int) -> Control:
 	var budget := levels * TrialRun.LAUNCHES_PER_LEVEL
 	var button := UiButtons.make("Chapitre %d — %s" % [
 		chapter, LevelCatalog.chapter_title(chapter)], UiButtons.Rank.PLAIN, 30)
-	button.pressed.connect(func() -> void: chapter_chosen.emit(chapter))
+	button.pressed.connect(func() -> void:
+		if _drag != null and _drag.consumed_drag():
+			return
+		chapter_chosen.emit(chapter))
 
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 2)

@@ -11,6 +11,8 @@ extends Control
 signal level_chosen(level_id: String)
 signal back_requested
 
+var _drag: DragScroll
+
 func setup(progress: Progress) -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
@@ -28,6 +30,10 @@ func setup(progress: Progress) -> void:
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	column.add_child(scroll)
+	# LE DOIGT DÉFILE PARTOUT, y compris posé sur une tuile. Sans cela, seules
+	# les gouttières entre deux niveaux répondaient — c'est-à-dire l'espace vide,
+	# soit exactement ce que personne ne vise.
+	_drag = DragScroll.attach(scroll)
 
 	var list := VBoxContainer.new()
 	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -138,5 +144,10 @@ func _make_tile(entry: Dictionary, index: int, progress: Progress) -> Control:
 					marks += "◆" if _has_challenge(earned, label) else "◇"
 				button.text += "   %s" % marks
 			button.add_theme_color_override("font_color", ViewPalette.EXIT)
-		button.pressed.connect(func() -> void: level_chosen.emit(level_id))
+		# Un relâchement qui termine un GLISSEMENT n'ouvre pas le niveau sous le
+		# doigt : sans ce contrôle, faire défiler lancerait une partie au hasard.
+		button.pressed.connect(func() -> void:
+			if _drag != null and _drag.consumed_drag():
+				return
+			level_chosen.emit(level_id))
 	return button
