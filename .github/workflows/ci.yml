@@ -18,7 +18,13 @@ env:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # PORTÉ DE 15 À 30 MINUTES. Les bibliothèques de niveaux sont passées de
+    # trois à cinq ou six règles le 15 août 2026 pour rendre au joueur un vrai
+    # choix : l'espace énuméré est passé de 15 piles par niveau à 85-516, et la
+    # suite de quatre minutes à une quinzaine. Le plafond de 15 devenait la
+    # cause d'échec la plus probable, ce qui est exactement ce qu'un plafond ne
+    # doit pas être.
+    timeout-minutes: 30
     steps:
       - name: Dépôt
         uses: actions/checkout@v4
@@ -38,6 +44,24 @@ jobs:
             "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/${GODOT_BIN}.zip"
           unzip -q /tmp/godot.zip -d ~/godot-bin
           chmod +x ~/godot-bin/${GODOT_BIN}
+
+      # ESPACE DES SOLUTIONS — le poste le plus cher de la suite, et il est
+      # PUREMENT DÉRIVÉ des niveaux et des paramètres de règles. Le calculer à
+      # neuf à chaque passage coûte une dizaine de minutes pour un résultat
+      # identique tant qu'aucun de ces fichiers n'a bougé.
+      #
+      # LA CLÉ EST L'EMPREINTE DES ENTRÉES, pas une date ni un numéro de
+      # passage : un cache dont la clé ne couvre pas tout ce dont le résultat
+      # dépend sert une réponse périmée sans le dire, et c'est le seul mode de
+      # panne d'un cache qui coûte plus cher que l'absence de cache.
+      # `CatalogueSolutions` vérifie la même empreinte de son côté et jette le
+      # fichier s'il ne correspond pas : la clé GitHub est une optimisation, pas
+      # la garantie.
+      - name: Cache de l'espace des solutions
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/godot/app_userdata/Volens
+          key: solutions-${{ hashFiles('data/levels/*.json', 'data/rules.json') }}
 
       - name: Importer le projet (enregistrement des class_name)
         run: ~/godot-bin/${GODOT_BIN} --headless --path . --import
