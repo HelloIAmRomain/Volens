@@ -300,6 +300,7 @@ func _mark_departures(before: SimState, after: SimState) -> void:
 	for a in after.agents:
 		if a.is_present():
 			remaining += 1
+	var announced := false
 	for i in range(mini(before.agents.size(), after.agents.size())):
 		if not before.agents[i].is_present() or after.agents[i].is_present():
 			continue
@@ -319,7 +320,14 @@ func _mark_departures(before: SimState, after: SimState) -> void:
 		# LE DERNIER SORTI, ET LUI SEUL. Un anneau par sortie ferait vingt anneaux
 		# sur une victoire : du bruit, pas de l'information. C'est l'instant qui
 		# TRANCHE qu'il faut montrer — celui apres lequel il ne reste personne.
-		if left > 0 and remaining == 0:
+		#
+		# UN SEUL ECHO MEME QUAND PLUSIEURS SORTENT ENSEMBLE. Deux agents peuvent
+		# franchir la sortie au MEME tick ; « il ne reste personne » est alors vrai
+		# pour les deux, et deux anneaux se superposaient. L'instant est unique,
+		# l'echo aussi — le premier par identifiant, l'ordre etant total et fixe
+		# (invariant n°8).
+		if left > 0 and remaining == 0 and not announced:
+			announced = true
 			_death_marks.append({"cell": landed, "age": 0.0, "fatal": false})
 			last_agent_exited.emit(landed)
 
