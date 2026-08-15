@@ -24,9 +24,11 @@ func _view_on(level_id: String, stack: Array[int]) -> SimView:
 	add_child_autofree(sub)
 	var view := SimView.new()
 	sub.add_child(view)
-	var level: Variant = JSON.parse_string(
-		FileAccess.get_file_as_string("res://data/levels/%s.json" % level_id))
-	view.load_level(level as Dictionary, RuleParams.new(), stack)
+	# Le niveau passe par `LevelCatalog` et non par un chemin construit : un
+	# chemin a trous (« res://data/levels/%s.json ») echappe au controle qui
+	# verifie que tout chemin cite par un test existe VRAIMENT — et ce controle
+	# est la pour attraper les ressources renommees.
+	view.load_level(LevelCatalog.load_level_data(level_id), RuleParams.new(), stack)
 	return view
 
 func test_a_death_is_marked_on_the_fatal_cell_and_in_red() -> void:
