@@ -183,6 +183,13 @@ func _capture_all() -> void:
 	doomed._edge_echo.play(false)
 	await _shot("20-echo-de-mort")
 
+	# ZONE INTERDITE. Entrer sur une de ses cases fait perdre A L'INSTANT, et
+	# elle n'etait pas dessinee du tout : le joueur perdait sur une zone qui
+	# n'existait nulle part a l'ecran.
+	var banned := _app._open_game("ch6_02", false)
+	banned._hide_objective_panel()
+	await _shot("21-zone-interdite")
+
 	# Selection : vingt-deux niveaux groupes par chapitre, ecran defilant, avec
 	# les defis CONSERVES en pastilles. Sans trace dans la liste, un defi gagne
 	# disparaitrait avec l'ecran de bilan.

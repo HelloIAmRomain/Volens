@@ -93,6 +93,7 @@ var _exit_marks: Node2D
 var _cargo_marks: Node2D
 var _carried_marks: Node2D
 var _echoes: Node2D
+var _forbidden: Node2D
 
 ## Marques de mort : { cell, age }. Purement visuelles, jamais un état.
 var _death_marks: Array = []
@@ -132,6 +133,12 @@ func _ready() -> void:
 	_echoes = _Echoes.new()
 	_echoes.z_index = Layer.GOAL + 2
 	add_child(_echoes)
+
+	# ZONE INTERDITE : sous la nuee, au-dessus du sol. C'est une contrainte de
+	# TERRAIN, pas un evenement.
+	_forbidden = _ForbiddenZone.new()
+	_forbidden.z_index = Layer.LIGHT + 2
+	add_child(_forbidden)
 
 	_walls_mm = _make_layer(Layer.DECOR, null)
 	_exit_mm = _make_layer(Layer.EXIT, EXIT_SHADER)
@@ -521,6 +528,19 @@ func _rebuild_static_layers() -> void:
 	_fill_items(_exit_mm, exit_items)
 	if _exit_marks != null:
 		(_exit_marks as _ExitMarks).configure(exit_rects, grid.size, _cell_size, _grid_origin)
+
+	# ZONE INTERDITE — lue depuis les OBJECTIFS, pas depuis le type de case : une
+	# case interdite reste une case vide pour le moteur. C'est exactement ce qui
+	# l'a rendue invisible pendant tout le developpement du chapitre 6.
+	if _forbidden != null:
+		var banned: Array[Vector2i] = []
+		for entry in _level_data.get("objectives", []):
+			var o: Dictionary = entry
+			if String(o.get("type", "")) != "interdiction":
+				continue
+			for pair in (o.get("cells", []) as Array):
+				banned.append(Vector2i(int(pair[0]), int(pair[1])))
+		(_forbidden as _ForbiddenZone).configure(banned, _cell_size, _grid_origin)
 	_fill_items(_light_mm, _regions_of(GridState.CellType.LIGHT_SOURCE, ViewPalette.LIGHT, LIGHT_BLEED))
 
 	# RESSOURCE ET DEPOT NE SONT PLUS DES ZONES TEINTEES.
@@ -1123,3 +1143,73 @@ class _Echoes extends Node2D:
 				var core := tint
 				core.a = (1.0 - age / 0.34) * 0.95
 				draw_circle(centre, _cell * 0.30, core)
+
+## ZONE INTERDITE (objectif `interdiction`) — des cases où l'on ne doit pas
+## mettre les pieds, sous peine de perdre À L'INSTANT.
+##
+## POURQUOI CETTE CLASSE EXISTE. Ces cases n'étaient **pas dessinées du tout**.
+## Un agent y entrait, la partie était perdue au même tick, et rien à l'écran
+## n'avait jamais indiqué qu'il y avait là quoi que ce soit. C'est le onzième
+## élément du vocabulaire qui vivait dans le moteur sans exister à l'écran, et
+## le plus injuste des onze : les autres rendaient le jeu incompréhensible,
+## celui-ci le rendait **arbitraire**.
+##
+## Elles sont invisibles pour une raison structurelle qu'il faut retenir : une
+## case interdite **reste une case VIDE** pour le moteur — l'interdiction vit
+## dans l'objectif, pas dans la grille. Le rendu, qui parcourt les types de
+## case, ne pouvait donc pas la trouver. Tout ce qui décrit le terrain sans être
+## un type de case est un candidat au même oubli.
+##
+## HACHURES AMBRE, PAS DE ROUGE. Le rouge appartient au danger, qui TUE l'agent
+## qui y entre ; l'interdiction ne tue personne, elle disqualifie la tentative.
+## Deux conséquences différentes ne portent jamais la même teinte (RG-14).
+class _ForbiddenZone extends Node2D:
+	var _cells: Array[Vector2i] = []
+	var _cell: float = 32.0
+	var _origin: Vector2 = Vector2.ZERO
+
+	func configure(cells: Array[Vector2i], cell: float, origin: Vector2) -> void:
+		_cells = cells
+		_cell = cell
+		_origin = origin
+		queue_redraw()
+
+	func _draw() -> void:
+		if _cells.is_empty() or _cell <= 0.0:
+			return
+		var fill := ViewPalette.FORBIDDEN
+		fill.a = 0.10
+		var edge := ViewPalette.FORBIDDEN
+		edge.a = 0.55
+		var thickness: float = maxf(_cell * 0.05, 1.5)
+		for p in _cells:
+			var top_left: Vector2 = _origin + Vector2(p) * _cell
+			var rect := Rect2(top_left, Vector2(_cell, _cell))
+			draw_rect(rect, fill)
+			# Hachures : une trame se lit en niveaux de gris (ENF-20), là où un
+			# aplat pâle se confond avec le sol.
+			var step: float = _cell * 0.28
+			var x: float = step
+			while x < _cell * 2.0:
+				var a := top_left + Vector2(minf(x, _cell), maxf(x - _cell, 0.0))
+				var b := top_left + Vector2(maxf(x - _cell, 0.0), minf(x, _cell))
+				draw_line(a, b, edge, thickness)
+				x += step
+		# Le CONTOUR de la zone, trace en bordant chaque case dont le voisin
+		# n'est pas interdit : une zone se lit par sa frontiere, pas par son
+		# remplissage.
+		var lookup := {}
+		for p in _cells:
+			lookup[p] = true
+		var border := ViewPalette.FORBIDDEN
+		border.a = 0.95
+		for p in _cells:
+			var tl: Vector2 = _origin + Vector2(p) * _cell
+			if not lookup.has(p + Vector2i(0, -1)):
+				draw_line(tl, tl + Vector2(_cell, 0), border, thickness * 2.0)
+			if not lookup.has(p + Vector2i(0, 1)):
+				draw_line(tl + Vector2(0, _cell), tl + Vector2(_cell, _cell), border, thickness * 2.0)
+			if not lookup.has(p + Vector2i(-1, 0)):
+				draw_line(tl, tl + Vector2(0, _cell), border, thickness * 2.0)
+			if not lookup.has(p + Vector2i(1, 0)):
+				draw_line(tl + Vector2(_cell, 0), tl + Vector2(_cell, _cell), border, thickness * 2.0)

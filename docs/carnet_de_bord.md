@@ -2745,6 +2745,32 @@ le danger ; marquer sa position d'avant dessinait l'anneau à côté de la case
 rouge, et le contrôle de létalité y répondait « pas de danger ici ». Deux
 erreurs d'un coup, dans quatre lignes, invisibles autrement qu'en regardant.
 
+### 186. Onzième « géométrie invisible », et la plus injuste : la zone interdite
+
+Cherchée exprès après la dixième, en balayant ce que le moteur reconnaît et que
+le rendu ignore. Trouvée du premier coup.
+
+L'objectif `interdiction` déclare une liste de cases ; y entrer fait perdre le
+niveau **à l'instant même**. Ces cases n'étaient **pas dessinées du tout**. Le
+joueur perdait donc sur une zone qui n'existait nulle part à l'écran — les dix
+précédentes rendaient le jeu incompréhensible, celle-ci le rendait
+**arbitraire**.
+
+**La cause est structurelle et vaut avertissement :** une case interdite reste
+une case **VIDE** pour le moteur. L'interdiction vit dans l'OBJECTIF, pas dans
+la grille. Le rendu, qui parcourt les types de case, ne pouvait pas la trouver.
+
+> **Tout ce qui décrit le terrain sans être un type de case est candidat au même
+> oubli.** C'était déjà vrai du sens unique (une couche à part) et de la porte à
+> pression. Le balayage « quels types de case sont dessinés ? » ne suffit pas :
+> il faut demander « quelles DONNÉES changent ce qui arrive à un agent ? ».
+
+Rendue en hachures **ambre**, jamais en rouge : le rouge appartient au danger,
+qui TUE l'agent qui y entre ; l'interdiction ne tue personne, elle disqualifie
+la tentative. Deux conséquences différentes ne portent pas la même teinte
+(RG-14). Contour tracé par frontière — une zone se lit par son bord, pas par son
+remplissage.
+
 ## Reste à faire
 
 **S3 : clos** — premier passage de la CI en ligne constaté vert le

@@ -57,6 +57,18 @@ const RESOURCE := Color(0.72, 0.48, 0.95)                # 280°
 const DROPOFF := Color(0.38, 0.56, 0.95)                 # 215°
 const PRESSURE_DOOR := Color(0.95, 0.45, 0.78)           # 320°
 const ONE_WAY := Color(0.30, 0.82, 0.90)                 # 195°
+## ZONE INTERDITE (objectif `interdiction`) — 35°, ambre.
+##
+## ELLE N'ETAIT PAS DESSINEE DU TOUT. Entrer sur une de ses cases fait perdre
+## le niveau A L'INSTANT ; le joueur perdait donc sur une zone qui n'existait
+## nulle part a l'ecran. Onzieme element du vocabulaire vivant dans le moteur et
+## absent du rendu.
+##
+## AMBRE ET NON ROUGE, deliberement : le rouge est reserve au DANGER, qui tue
+## l'agent qui y entre. Une interdiction ne tue personne — elle disqualifie la
+## tentative. Deux consequences differentes ne peuvent pas porter la meme teinte
+## (RG-14, une teinte par element).
+const FORBIDDEN := Color(0.95, 0.72, 0.25)               # 35°
 
 ## PISTE STIGMERGIQUE (R08/R09). Ce n'est pas un élément du vocabulaire RG-14 —
 ## le vocabulaire est fermé à neuf, et la piste n'est pas un type de case mais
