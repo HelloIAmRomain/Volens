@@ -31,10 +31,15 @@ signal state_changed
 ## les attentes sont frustrantes » — essai sur l'appareil, 15 aout 2026.
 ##
 ## Le probleme n'etait pas le nombre de vitesses (RG-10 en exige trois, il y en
-## a trois) mais leur ECHELLE. A quatre ticks par seconde, le meme niveau se
-## regarde en dix secondes ; a seize, en deux et demie. Les glyphes restent des
-## multiplicateurs RELATIFS — c'est ce qu'un joueur lit — et non la cadence.
-const SPEEDS: Array[float] = [4.0, 8.0, 16.0]
+## a trois) mais leur ECHELLE. Les glyphes restent des multiplicateurs RELATIFS
+## — c'est ce qu'un joueur lit — et non la cadence.
+##
+## PREMIER REGLAGE A 4/8/16 : « un peu trop rapide » a l'essai. Ramene a 3/6/12,
+## soit un niveau de quarante ticks en treize secondes a la vitesse la plus
+## lente. On regle une cadence en SECONDES D'ATTENTE REELLES, jamais en
+## multiplicateurs — c'est ce que le premier chiffre (un tick par seconde)
+## n'avait jamais ete mesure.
+const SPEEDS: Array[float] = [3.0, 6.0, 12.0]
 ## LA VITESSE NE SE DESSINE PLUS AVEC UN TRIANGLE. Elle en portait un, creux,
 ## à côté du triangle plein de la lecture : deux formes identiques au pouce,
 ## qui obligeaient à comparer un remplissage pour savoir sur quoi on appuie.

@@ -1137,12 +1137,22 @@ class _Echoes extends Node2D:
 				ring.a = (1.0 - t) * (1.0 - t) * 0.9
 				draw_arc(centre, _cell * (0.35 + 1.5 * t), 0.0, TAU, 40, ring,
 					maxf(_cell * 0.14 * (1.0 - t), 1.5), true)
-			# Le cœur reste plein le temps du premier tiers : c'est lui qui
-			# désigne la case, l'onde ne fait que la rendre repérable.
-			if age < 0.34:
-				var core := tint
-				core.a = (1.0 - age / 0.34) * 0.95
-				draw_circle(centre, _cell * 0.30, core)
+			# L'AGENT RESTE SUR LA CASE ROUGE, LE TEMPS QU'ON LE VOIE.
+			#
+			# La simulation le retire au tick meme ou il entre sur le danger : il
+			# n'etait donc JAMAIS visible sur la case qui le tue, et l'echo seul ne
+			# disait pas « c'est un agent qui vient de mourir la ». On ne peut pas
+			# ajouter un tick — `step` est une fonction pure et les empreintes d'or
+			# en dependent (invariant n°10) — mais on peut le RETENIR A L'ECRAN.
+			#
+			# Il garde d'abord sa taille et sa teinte d'agent, puis vire vers la
+			# teinte de l'evenement en s'effacant : on lit « il est la », puis « il
+			# est consume ». Purement visuel, aucun etat.
+			if age < 0.45:
+				var t2: float = age / 0.45
+				var core: Color = ViewPalette.AGENT_PLAIN.lerp(tint, t2 * t2)
+				core.a = (1.0 - t2 * t2) * 0.95
+				draw_circle(centre, _cell * 0.35 * (1.0 - 0.25 * t2), core)
 
 ## ZONE INTERDITE (objectif `interdiction`) — des cases où l'on ne doit pas
 ## mettre les pieds, sous peine de perdre À L'INSTANT.
