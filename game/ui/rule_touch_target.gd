@@ -106,6 +106,6 @@ static func make_preview(rule_id: int) -> Control:
 	panel.add_theme_stylebox_override("panel", style)
 	var label := Label.new()
 	label.text = "  %s  %s  " % [RuleCatalog.glyph_of(rule_id), RuleCatalog.name_of(rule_id)]
-	label.add_theme_font_size_override("font_size", 24)
+	label.add_theme_font_size_override("font_size", UiMetrics.font_size(24))
 	panel.add_child(label)
 	return panel

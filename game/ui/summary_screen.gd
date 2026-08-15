@@ -28,7 +28,7 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array, rea
 	var verdict := Label.new()
 	verdict.text = "Objectif atteint" if won else "Objectif manqué"
 	verdict.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	verdict.add_theme_font_size_override("font_size", 52)
+	verdict.add_theme_font_size_override("font_size", UiMetrics.font_size(52))
 	verdict.add_theme_color_override("font_color", ViewPalette.EXIT if won else ViewPalette.DANGER)
 	column.add_child(verdict)
 
@@ -36,7 +36,7 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array, rea
 	why.text = reason if not reason.is_empty() else _reason(won, lost)
 	why.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	why.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	why.add_theme_font_size_override("font_size", 28)
+	why.add_theme_font_size_override("font_size", UiMetrics.font_size(28))
 	why.add_theme_color_override("font_color", Color(0.78, 0.83, 0.93))
 	column.add_child(why)
 
@@ -133,17 +133,34 @@ func _reason(won: bool, lost: int) -> String:
 		return "Trop d'agents perdus : l'objectif est devenu hors d'atteinte."
 	return "Le temps imparti s'est écoulé avant l'objectif."
 
+## UNE LIGNE DE BILAN NE POUSSE JAMAIS L'ECRAN.
+##
+## Un Label non contraint prend pour largeur MINIMALE celle de son texte
+## entier : « Defi : Efficience — 29 ticks, seuil 29 » debordait de trente-sept
+## pixels sur un ecran de 720 des que l'echelle typographique est passee a 1,35.
+## Les deux libelles se raccourcissent donc par ellipse, et le libelle de gauche
+## cede la place au chiffre — c'est lui qui porte l'information.
 func _stat(label: String, value: String) -> Control:
 	var row := HBoxContainer.new()
 	var l := Label.new()
 	l.text = label
 	l.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	l.add_theme_font_size_override("font_size", 26)
+	l.size_flags_stretch_ratio = 0.6
+	l.clip_text = true
+	l.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	l.custom_minimum_size.x = 0
+	l.add_theme_font_size_override("font_size", UiMetrics.font_size(26))
 	l.add_theme_color_override("font_color", Color(0.55, 0.60, 0.72))
 	row.add_child(l)
 	var v := Label.new()
 	v.text = value
-	v.add_theme_font_size_override("font_size", 26)
+	v.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	v.size_flags_stretch_ratio = 1.4
+	v.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	v.clip_text = true
+	v.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	v.custom_minimum_size.x = 0
+	v.add_theme_font_size_override("font_size", UiMetrics.font_size(26))
 	v.add_theme_color_override("font_color", Color(0.86, 0.90, 1.0))
 	row.add_child(v)
 	return row
@@ -151,6 +168,11 @@ func _stat(label: String, value: String) -> Control:
 func _make_button(text: String, action: Callable) -> Button:
 	var b := UiButtons.make(text, UiButtons.Rank.PLAIN, 32)
 	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# Trois boutons cote a cote sur un ecran etroit : ils se partagent la largeur
+	# et raccourcissent leur texte, plutot que d'en pousser un hors de l'ecran.
+	b.clip_text = true
+	b.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	b.custom_minimum_size.x = 0
 	b.pressed.connect(action)
 	return b
 

@@ -23,22 +23,24 @@ extends RefCounted
 ##    1,3 à 3,5 fois le budget accordé, partout. `tests/unit/test_trial_bite.gd`
 ##    refuse que cela cesse d'être vrai.
 ##
-## 2. **LES RÈGLES SONT TIRÉES — et ce second ingrédient est presque vide.**
+## 2. **LES RÈGLES SONT TIRÉES — et ce second ingrédient a failli être vide.**
 ##    Le niveau n'offre plus toute sa bibliothèque mais un sous-ensemble garanti
-##    jouable. Sauf que, mesuré : le tirage laisse la bibliothèque INTACTE dans
-##    24 niveaux sur 29. La raison est structurelle — presque chaque niveau n'a
-##    qu'un seul ensemble suffisant minimal, contenant la règle-moteur du
-##    chapitre ; retirer une règle reviendrait à retirer la solution.
+##    jouable.
 ##
-##    Il est conservé parce qu'il ne coûte rien, qu'il mord sur les quatre
-##    niveaux à solutions alternatives, et qu'il mordra davantage le jour où les
-##    bibliothèques s'élargiront. Il n'est PAS ce qui fait la difficulté, et
-##    l'écrire ici évite qu'on le recrédite plus tard.
+##    IL NE RETIRAIT D'ABORD RIEN, dans 24 niveaux sur 29 : les bibliothèques ne
+##    comptaient que trois ou quatre règles, presque toutes necessaires. On ne
+##    restreint pas le choix des règles quand il n'y a rien à choisir — et un
+##    quota par règle aurait été vide pour exactement la même raison.
 ##
-##    Même verdict pour le quota par règle qui avait été envisagé à côté :
-##    le quota le plus serré qui reste satisfaisable vaut la taille du chapitre
-##    dans quatre chapitres sur six, c'est-à-dire aucune contrainte. **On ne
-##    restreint pas le choix des règles quand il n'y a rien à choisir.**
+##    LE DEFAUT ETAIT DANS LES NIVEAUX, PAS DANS LE MODE. Le 15 août 2026, les
+##    bibliothèques sont passées à cinq ou six règles pour trois rangs (carnet,
+##    décision 181). Mesuré depuis : **le tirage retire 1 à 3 règles dans 20
+##    niveaux sur 29**, et les neuf exceptions sont les chapitres 1 et 2, dont
+##    l'étroitesse est voulue — ils enseignent.
+##
+##    Morale, et elle vaut au-delà d'ici : un mécanisme peut être correct et
+##    sans effet, l'effet dépendant de données qu'il ne contrôle pas. Le
+##    vérifier SÛR ne dit rien de son UTILITÉ (invariant n°12, huitième forme).
 ##
 ## **L'HONNÊTETÉ DU TIRAGE EST UNE CONDITION, PAS UNE PRÉCAUTION.** Un tirage
 ## qui ne contiendrait aucune solution ferait perdre des lancements sur un

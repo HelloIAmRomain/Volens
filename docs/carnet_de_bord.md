@@ -2567,6 +2567,184 @@ la première montrait le compteur de lancements absent, la seconde la main
 réduite à sa seule règle. **Une géométrie invisible est une géométrie injuste**,
 et une main qui ne retire rien se voit à l'œil nu dès qu'on ouvre le tiroir.
 
+### 180. Le compteur de gagnantes mentait, et il mentait toujours dans le sens rassurant
+
+Signalé par le concepteur, et vérifié : **compter toutes les piles gagnantes
+attribue à un niveau autant de « solutions » qu'il y a de façons de rallonger
+la même.** Si `[R09]` gagne, alors `[R09,R01]`, `[R09,R05]`, `[R09,R01,R05]`…
+gagnent aussi. ch6_04 annonçait dix-huit gagnantes ; il en avait **trois**.
+
+Le bon compteur : **une gagnante ne compte que si aucune SOUS-SUITE d'elle ne
+gagne déjà.** Sous-suite et non sous-ensemble — on retire des rangs sans
+réordonner les autres, parce que l'ordre est le jeu. `tools/design/audit.gd`
+l'implémente.
+
+Ce que le compteur honnête a révélé, le 15 août 2026 :
+
+- **24 niveaux sur 29 n'avaient qu'UNE seule pile gagnante minimale.**
+- **21 niveaux sur 29 laissaient la pile contenir TOUTE la bibliothèque** —
+  donc aucun choix à faire, seulement un ordre à trouver parmi six.
+- **ch2_02 et ch3_01 se gagnaient avec UNE règle.**
+- Les espaces faisaient **15 piles**. On les épuise en quelques minutes.
+
+### 181. La maladie du catalogue : un chapitre enseignait N règles, et la réponse à tous ses niveaux était « mets ces N règles »
+
+Le concepteur l'a nommé sur deux chapitres, et la mesure l'a confirmé sur les
+deux : `[R08, R09]` répondait aux quatre niveaux du chapitre 3, `[R01, R11,
+R12]` aux quatre du chapitre 4 — où trois niveaux sur quatre avaient
+**exactement** ces trois règles pour bibliothèque. La réponse était la liste
+elle-même. Une fois le premier niveau résolu, les suivants étaient la même
+réponse sur une autre carte.
+
+**Le correctif : plus de règles que de rangs, partout.** Cinq à six règles pour
+trois rangs, les surnuméraires étant des leurres plausibles déjà rencontrés.
+Le mécanisme central du jeu — une règle haute MASQUE tout ce qui est en
+dessous — ne se sent que si l'on doit renoncer à quelque chose.
+
+Coût de la force brute (rang de la première gagnante), avant → après :
+
+| | avant | après | | | avant | après |
+|---|---|---|---|---|---|---|
+| ch3_02 | 7 | **21** | | ch4_04 | 13 | **133** |
+| ch3_03 | 13 | **31** | | ch5_04 | 13 | **59** |
+| ch3_04 | 13 | **31** | | ch5_06 | 15 | **125** |
+| ch4_01 | 13 | **71** | | ch6_05 | 49 | **357** |
+| ch4_03 | 32 | **124** | | espaces | 15 | **85 à 516** |
+
+**Aucune géométrie n'a bougé** : seules `allowed_rules` et les fiches ont
+changé. `calibrated_on` tient donc, et les 74 recettes d'or concordent sans
+cérémonie — la distinction « le code a régressé » / « l'entrée a changé » a
+fait exactement son travail.
+
+**Un leurre peut être un moteur, et c'est le piège de l'opération.** R05
+« Suivre les voisins » ajoutée au chapitre 3 gagnait SEULE en 17 ticks : les
+agents portent une direction initiale, R05 la propage, et sur ces cartes plates
+la sortie est plein nord. Remplacée par R02 et R04, qui ne peuvent pas
+démarrer un mouvement. **Vérifier chaque leurre à la mesure, jamais au bon
+sens.**
+
+### 182. Ce que la refonte du chapitre 3 a coûté, et ce qu'elle a appris
+
+Trois géométries construites et mesurées avant d'abandonner la voie, et les
+trois échecs valent mieux que le niveau :
+
+1. **Carte à idiome** : la piste devint totalement INERTE. La contention
+   mesurait 0 sur les paires 1-8, 1-9 et 8-9. **Une règle qui propose toujours
+   rend muette toute la pile** — c'est l'invariant n°18 vu de l'autre côté :
+   pour que la couche du dessous parle, celle du dessus doit S'ABSTENIR.
+2. **Piste posée loin de la nuée** : un seul agent la touchait, R01 emmenait
+   tous les autres au nord. Une mémoire ne s'amorce pas toute seule.
+3. **Détour de trente-six cases en file indienne** : structurellement juste,
+   mais vingt-cinq agents n'avaient pas le temps. La longueur d'un couloir
+   d'une case se paie en ticks, pas en difficulté.
+
+**Conclusion, et elle appartient au concepteur :** R01 est le seul moteur
+général du jeu. Tant qu'elle est dans une bibliothèque, elle masque tout ce qui
+la suit sauf aux rares endroits où elle s'abstient. Rendre la piste vraiment
+porteuse demande une décision de RÈGLE — pas une carte de plus.
+
+### 183. Neuvième forme de l'invariant 12 : le jeu s'affichait EN PAYSAGE sur le téléphone
+
+Signalé par le concepteur après un essai sur son appareil. Cause :
+
+```
+window/handheld/orientation="portrait"     ← syntaxe Godot 3
+window/handheld/orientation=1              ← Godot 4 attend un ENTIER
+```
+
+Godot 4 n'a pas compris la chaîne, a retenu **0 — paysage**, et l'a écrit dans
+le manifeste Android. Un catalogue entier dessiné en portrait, une grille
+cadrée en portrait, vingt-trois captures en portrait, un test qui refuse que la
+nuée passe sous les barres sur deux ratios portrait — **et la seule valeur qui
+décidait vraiment était fausse**.
+
+Le réglage n'a AUCUN effet sur le poste de développement : la fenêtre y est
+portrait par sa seule taille. Le mécanisme n'était donc sollicité que sur
+l'appareil, c'est-à-dire nulle part dans la boucle de vérification.
+
+Deux garde-fous posés :
+- `tests/arch/test_project_settings.gd` exige un entier ET la valeur portrait,
+  et vérifie que résolution de base et orientation ne se contredisent pas ;
+- vérification faite **dans l'APK**, pas dans un intermédiaire de build :
+  `aapt2 dump xmltree` rend `screenOrientation=1`, soit
+  `SCREEN_ORIENTATION_PORTRAIT`.
+
+**À retenir : tout réglage dont l'effet est invisible en développement doit
+avoir son test.** Il n'y a pas d'autre endroit où il sera vu.
+
+**Note de mise à jour :** `docs/ARCHITECTURE.md` annonce la chaîne d'export Android comme
+« PAS ENCORE CONFIGURÉE (prévue S9) ». Elle l'est : `export_presets.cfg`,
+modèles 4.7.1, SDK Android 36, Java 21, et un APK de débogage produit. La note
+du fichier est périmée — signalé, non tranché.
+
+### 184. Premier essai sur l'appareil : cinq défauts, tous invisibles au poste de travail
+
+L'appareil est branché en débogage sans fil ; l'aller-retour est devenu direct.
+Cinq retours du concepteur, cinq défauts réels — **et pas un seul n'était
+détectable sur le poste de développement.**
+
+**1. Le jeu s'affichait en PAYSAGE.** Voir décision 183.
+
+**2. Le lancement sautait le menu.** L'application rouvrait le niveau en cours
+sans détour : on ne voyait jamais ni les chapitres, ni les réglages, ni
+l'Épreuve, et le jeu avait l'air de n'avoir pas de menu. Il ouvre désormais
+toujours le menu ; la reprise vit derrière « Continuer », qui remplace
+« Jouer » quand une partie est en cours.
+
+**3. Tout était trop petit, les textes surtout.** Vingt-cinq tailles posées en
+dur, une par une. Elles passent toutes par `UiMetrics.font_size()`, gouvernées
+par un seul `FONT_SCALE` (1,35). **Et l'agrandissement a immédiatement fait
+déborder deux écrans** — le sélecteur de niveaux et le bilan : un `Label` non
+contraint prend pour largeur minimale celle de son texte ENTIER et pousse toute
+la colonne. Un test général parcourt maintenant l'arbre de chaque écran sur
+720 de large et refuse tout contrôle qui dépasse.
+
+**4. Le jeu était trop lent.** `SPEEDS` valait `[1, 2, 3]` **ticks par
+seconde** : un niveau de quarante ticks demandait quarante secondes d'attente.
+Porté à `[4, 8, 16]`. Le problème n'était pas le nombre de vitesses (RG-10 en
+exige trois) mais leur échelle — personne ne l'avait mesurée en secondes
+d'attente réelles.
+
+**5. Toucher le vide ne faisait « rien ».** Le diagnostic s'ouvrait dès qu'on
+touchait à UNE CASE d'un agent : autour d'une nuée de vingt, presque tout
+comptait comme « sur un agent ». Rayon ramené à zéro — le vide rend la main à
+marche/pause, qui est le geste principal de l'écran.
+
+### 185. Dixième « géométrie invisible » : les marques de mort n'étaient jamais créées
+
+« Les échecs sont incompris : on ne comprend pas ce qui fait perdre, l'écran de
+défaite arrive avant le moment fatidique. »
+
+Cause trouvée en lisant : `_death_marks` était **remis à zéro, filtré par âge et
+dessiné** — et **rien n'y ajoutait jamais rien**. La « croix lumineuse sur la
+case fatale », écrite, commentée et rendue, n'a pas été affichée une seule fois
+depuis qu'elle existe. Un agent mourait, le bilan tombait, et le joueur n'avait
+vu ni où ni pourquoi.
+
+C'est la dixième fois qu'un élément du vocabulaire vit dans le moteur et pas à
+l'écran — après le porteur, la piste, les portes, les sens uniques et la
+cargaison. **Une géométrie invisible est une géométrie injuste ; un ÉVÉNEMENT
+invisible l'est davantage, car il ne laisse même pas de trace à examiner.**
+
+Ce qui a été posé :
+- un **écho** — trois anneaux concentriques qui s'ouvrent depuis la case, plus
+  un cœur plein le premier tiers du temps. Rouge pour une mort, vert pour le
+  **dernier** agent sorti (un anneau par sortie ferait vingt anneaux : du bruit,
+  pas de l'information) ;
+- un **halo de bord d'écran**, rouge ou vert, qui s'élargit et s'éteint une
+  fois. Il ne clignote pas : une alarme punit, un écho informe. La périphérie
+  capte un changement de luminosité bien avant qu'un détail central ne soit vu ;
+- le délai avant bilan porté de 1,1 s à **2,2 s** — l'écho dure 1,6 s, et il
+  faut une demi-seconde de plus pour comprendre ce qu'on vient de voir ;
+- sous ENF-21 (animations réduites), l'écho devient un halo fixe : l'information
+  ne dépend jamais du mouvement.
+
+**Deux défauts de plus trouvés à la capture, et pas au raisonnement :** l'écho
+sortait VERT sur une mort, et décalé d'une case. Un agent meurt en ENTRANT sur
+le danger ; marquer sa position d'avant dessinait l'anneau à côté de la case
+rouge, et le contrôle de létalité y répondait « pas de danger ici ». Deux
+erreurs d'un coup, dans quatre lignes, invisibles autrement qu'en regardant.
+
 ## Reste à faire
 
 **S3 : clos** — premier passage de la CI en ligne constaté vert le

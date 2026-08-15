@@ -61,7 +61,10 @@ func _chapter_header(chapter: int, progress: Progress) -> Control:
 
 	var heading := Label.new()
 	heading.text = "Chapitre %d — %s" % [chapter, LevelCatalog.chapter_title(chapter)]
-	heading.add_theme_font_size_override("font_size", 34)
+	# Sans enveloppe, le titre impose sa largeur a toute la colonne.
+	heading.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	heading.custom_minimum_size.x = 0
+	heading.add_theme_font_size_override("font_size", UiMetrics.font_size(34))
 	heading.add_theme_color_override("font_color", ViewPalette.AGENT_PLAIN)
 	box.add_child(heading)
 
@@ -69,7 +72,7 @@ func _chapter_header(chapter: int, progress: Progress) -> Control:
 	var status := Label.new()
 	status.text = ("%d / %d résolus" % [done.x, done.y]) if \
 		LevelCatalog.is_chapter_unlocked(chapter, progress) else "verrouillé"
-	status.add_theme_font_size_override("font_size", 22)
+	status.add_theme_font_size_override("font_size", UiMetrics.font_size(22))
 	status.add_theme_color_override("font_color", Color(0.55, 0.60, 0.72))
 	box.add_child(status)
 	return box
@@ -91,6 +94,15 @@ func _make_tile(entry: Dictionary, index: int, progress: Progress) -> Control:
 	var button := UiButtons.make("", UiButtons.Rank.PLAIN, 30)
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button.disabled = not unlocked
+	# LA TUILE NE POUSSE JAMAIS LA COLONNE. Un bouton non contraint prend pour
+	# largeur minimale celle de son texte ENTIER : sur un ecran de 720, « ✓ 2. Le
+	# detour 29 ticks ◆◇◆ » debordait, et la colonne entiere avec lui — jusqu'au
+	# bouton « Retour », decale hors de l'axe. Le texte se raccourcit plutot que
+	# de deformer l'ecran.
+	button.clip_text = true
+	button.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	button.custom_minimum_size.x = 0
+	button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	if not built:
 		button.text = "  ⋯   %d.  en attente de conception" % [index + 1]

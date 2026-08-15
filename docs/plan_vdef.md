@@ -51,6 +51,38 @@ meilleure pile ne se trouve pas en les essayant toutes, elle se déduit.
 **C'est la question à poser aux testeurs**, et aucune mesure d'outil ne la
 remplacera : ont-ils essayé toutes les piles, ou raisonné ?
 
+## Le rééquilibrage du 15 août 2026 — ce qui rendait le jeu creux
+
+Trois défauts mesurés, tous invisibles au compteur naïf :
+
+1. **Le compteur de gagnantes mentait.** Il comptait les RALLONGES : si `[R09]`
+   gagne, `[R09,R01]` gagne aussi. ch6_04 annonçait dix-huit solutions ; il en
+   avait trois. Le bon compte — *une gagnante ne compte que si aucune sous-suite
+   d'elle ne gagne déjà* — révélait que **24 niveaux sur 29 n'avaient qu'une
+   seule pile gagnante minimale**.
+2. **21 niveaux sur 29 laissaient la pile contenir toute la bibliothèque.** Le
+   joueur n'avait donc rien à choisir, seulement un ordre à trouver parmi six —
+   alors que le mécanisme central du jeu est qu'une règle haute MASQUE ce qui la
+   suit, ce qui ne se sent que si l'on doit renoncer à quelque chose.
+3. **Chaque chapitre enseignait N règles, et la réponse à tous ses niveaux était
+   « mets ces N règles ».** `[R08,R09]` répondait aux quatre niveaux du
+   chapitre 3 ; `[R01,R11,R12]` aux quatre du chapitre 4, dont trois avaient
+   exactement ces trois règles pour bibliothèque.
+
+**Correctif : cinq à six règles pour trois rangs, partout hors chapitres 1 et 2**
+(qui enseignent, et dont l'étroitesse est le moyen). Coût de la force brute,
+avant → après : ch4_01 13→71, ch4_03 32→124, ch4_04 13→133, ch5_06 15→125,
+ch6_05 49→357 ; espaces de 15 piles → 85 à 516.
+
+**Aucune géométrie n'a bougé** : les 74 recettes d'or concordent sans cérémonie.
+Et le tirage de l'Épreuve, qui ne retirait rien dans 24 niveaux sur 29, en
+retire désormais 1 à 3 dans 20 sur 29 — le défaut était dans les niveaux, pas
+dans le mode.
+
+**Aucune pile ne traverse plus deux chapitres** : le pire passe-partout résout
+trois niveaux, tous du même chapitre, ce qui est exactement le rôle d'un
+chapitre.
+
 ## Le mode Épreuve — la réponse, et ce qu'elle ne couvre pas
 
 Le second mode répond au risque ci-dessus en rendant la force brute **coûteuse**

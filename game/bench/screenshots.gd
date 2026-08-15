@@ -158,6 +158,31 @@ func _capture_all() -> void:
 		game._view.step_forward()
 	await _shot("16-ch6-01-joker")
 
+	# BIBLIOTHEQUE LARGE, TIROIR OUVERT. Les niveaux offrent desormais cinq a six
+	# regles pour trois rangs ; sur un ecran etroit un rang unique les mettait
+	# hors de l'ecran, donc injouables ET invisibles. La capture est la preuve
+	# que l'enveloppe tient — un test mesure les positions, l'oeil verifie que
+	# le resultat se lit encore.
+	var wide := _app._open_game("ch4_04", false)
+	wide._hide_objective_panel()
+	wide._on_slot_tapped(0)
+	await _shot("19-bibliotheque-large")
+
+	# ECHO DE MORT. C'est LA capture a regarder pour juger le retour d'echec :
+	# un agent meurt sur une case rouge, et l'ecran doit le dire — sur la case
+	# (anneau rouge) ET a la peripherie (halo de bord). Avant, rien ne le disait,
+	# et le bilan tombait sur une scene ou il ne s'etait visiblement rien passe.
+	var doomed := _app._open_game("ch1_02", false)
+	doomed._hide_objective_panel()
+	var suicide := Session.new()
+	suicide.level_id = "ch1_02"
+	suicide.stack = [RuleRegistry.R01_TOWARD_LIGHT]
+	doomed.restore_session(suicide)
+	for i in range(12):
+		doomed._view.step_forward()
+	doomed._edge_echo.play(false)
+	await _shot("20-echo-de-mort")
+
 	# Selection : vingt-deux niveaux groupes par chapitre, ecran defilant, avec
 	# les defis CONSERVES en pastilles. Sans trace dans la liste, un defi gagne
 	# disparaitrait avec l'ecran de bilan.

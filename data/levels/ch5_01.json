@@ -123,7 +123,9 @@
   ],
   "allowed_rules": [
     1,
+    2,
     3,
+    7,
     13
   ],
   "calibrated_on": "63dd79a498898132",
@@ -132,7 +134,7 @@
     "efficiency_ticks": 25
   },
   "expected_classes": 1,
-  "expected_wins": 4,
+  "expected_wins": 6,
   "geometry_hash": "63dd79a498898132",
   "grid": {
     "cells": [

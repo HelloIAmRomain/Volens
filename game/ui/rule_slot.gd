@@ -58,20 +58,20 @@ func _ready() -> void:
 	_rank = Label.new()
 	_rank.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_rank.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_rank.add_theme_font_size_override("font_size", 18)
+	_rank.add_theme_font_size_override("font_size", UiMetrics.font_size(18))
 	_rank.text = str(slot_index + 1)
 	box.add_child(_rank)
 
 	_glyph = Label.new()
 	_glyph.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_glyph.add_theme_font_size_override("font_size", 38)
+	_glyph.add_theme_font_size_override("font_size", UiMetrics.font_size(38))
 	box.add_child(_glyph)
 
 	_label = Label.new()
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_label.add_theme_font_size_override("font_size", 20)
+	_label.add_theme_font_size_override("font_size", UiMetrics.font_size(20))
 	box.add_child(_label)
 
 	# Retrait : petit à l'œil, ≥ 48 dp au doigt (ENF-01). La forme est

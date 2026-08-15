@@ -33,7 +33,7 @@ func setup(progress: Progress) -> void:
 	var title := Label.new()
 	title.text = "Épreuve"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 48)
+	title.add_theme_font_size_override("font_size", UiMetrics.font_size(48))
 	title.add_theme_color_override("font_color", ViewPalette.AGENT_PLAIN)
 	column.add_child(title)
 
@@ -42,7 +42,7 @@ func setup(progress: Progress) -> void:
 		+ "Les lancements sont comptés et partagés par tous ses niveaux.")
 	rule.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	rule.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	rule.add_theme_font_size_override("font_size", 24)
+	rule.add_theme_font_size_override("font_size", UiMetrics.font_size(24))
 	rule.add_theme_color_override("font_color", Color(0.55, 0.60, 0.72))
 	column.add_child(rule)
 
@@ -66,7 +66,7 @@ func setup(progress: Progress) -> void:
 		var empty := Label.new()
 		empty.text = "Terminez un chapitre pour ouvrir une épreuve."
 		empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		empty.add_theme_font_size_override("font_size", 26)
+		empty.add_theme_font_size_override("font_size", UiMetrics.font_size(26))
 		empty.add_theme_color_override("font_color", Color(0.55, 0.60, 0.72))
 		list.add_child(empty)
 
@@ -102,7 +102,7 @@ func _make_tile(chapter: int) -> Control:
 	var detail := Label.new()
 	detail.text = "%d niveaux · %d lancements" % [levels, budget]
 	detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	detail.add_theme_font_size_override("font_size", 22)
+	detail.add_theme_font_size_override("font_size", UiMetrics.font_size(22))
 	detail.add_theme_color_override("font_color", Color(0.55, 0.60, 0.72))
 	box.add_child(detail)
 	return box

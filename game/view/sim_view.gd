@@ -90,6 +90,9 @@ var _agent_mm: MultiMeshInstance2D
 var _deaths_mm: MultiMeshInstance2D
 var _grid_lines: Node2D
 var _exit_marks: Node2D
+var _cargo_marks: Node2D
+var _carried_marks: Node2D
+var _echoes: Node2D
 
 ## Marques de mort : { cell, age }. Purement visuelles, jamais un état.
 var _death_marks: Array = []
@@ -109,6 +112,26 @@ func _ready() -> void:
 	_exit_marks = _ExitMarks.new()
 	_exit_marks.z_index = Layer.EXIT + 1
 	add_child(_exit_marks)
+
+	# La cargaison se dessine AU-DESSUS du sol et SOUS la nuee : un agent est
+	# POSE SUR l'objet, il ne disparait pas derriere. Place au-dessus de la nuee,
+	# le losange effacait l'agent qui venait le ramasser — soit exactement le
+	# moment que le joueur doit voir.
+	_cargo_marks = _CargoMarks.new()
+	_cargo_marks.z_index = Layer.LIGHT + 1
+	add_child(_cargo_marks)
+
+	# La charge PORTEE se dessine au-dessus de la nuee : c'est ce que l'agent
+	# tient, pas ce sur quoi il marche.
+	_carried_marks = _CarriedMarks.new()
+	_carried_marks.z_index = Layer.AGENT + 1
+	add_child(_carried_marks)
+
+	# LES ECHOS PASSENT AU-DESSUS DE TOUT. Un evenement qu'on rate ne se rejoue
+	# pas : il ne doit etre masque par rien.
+	_echoes = _Echoes.new()
+	_echoes.z_index = Layer.GOAL + 2
+	add_child(_echoes)
 
 	_walls_mm = _make_layer(Layer.DECOR, null)
 	_exit_mm = _make_layer(Layer.EXIT, EXIT_SHADER)
@@ -247,9 +270,66 @@ func _step_one_tick() -> void:
 	_from = _to
 	_to = _session.step_forward()
 	_record_tick(_from, _to)
+	_mark_departures(_from, _to)
 	var gone: int = _to.counters.exited - _from.counters.exited
 	if gone > 0:
 		agents_exited.emit(gone)
+
+signal agent_lost(cell: Vector2i)
+signal last_agent_exited(cell: Vector2i)
+
+## CE QUI DISPARAIT DOIT SE VOIR DISPARAITRE.
+##
+## LE DEFAUT QUE CETTE FONCTION CORRIGE, ET IL EST GRAVE : les marques de mort
+## etaient remises a zero, filtrees par age et dessinees — mais **rien ne les
+## creait jamais**. La croix sur la case fatale n'a pas ete affichee une seule
+## fois depuis qu'elle est ecrite. Un agent mourait, l'ecran de defaite
+## arrivait, et le joueur n'avait vu ni ou ni pourquoi : « les echecs sont
+## incompris » — essai sur l'appareil, 15 aout 2026.
+##
+## C'est la dixieme fois qu'un element du vocabulaire existe dans le moteur et
+## pas a l'ecran (porteur, piste, portes, sens uniques, cargaison…). **Une
+## geometrie invisible est une geometrie injuste**, et un evenement invisible
+## l'est davantage : il n'y a meme pas de trace a examiner apres coup.
+func _mark_departures(before: SimState, after: SimState) -> void:
+	var died: int = after.counters.lost - before.counters.lost
+	var left: int = after.counters.exited - before.counters.exited
+	if died <= 0 and left <= 0:
+		return
+	var remaining := 0
+	for a in after.agents:
+		if a.is_present():
+			remaining += 1
+	for i in range(mini(before.agents.size(), after.agents.size())):
+		if not before.agents[i].is_present() or after.agents[i].is_present():
+			continue
+		# LA CASE A MONTRER EST CELLE OU L'AGENT EST ALLE, PAS CELLE D'OU IL
+		# VENAIT. Un agent meurt en ENTRANT sur le danger : marquer sa position
+		# d'avant dessinait l'echo une case a cote de la case rouge, et le
+		# controle de letalite y repondait « non, pas de danger ici » — l'echo
+		# sortait donc en vert, sur la mauvaise case, pour une mort. Deux erreurs
+		# d'un coup, et toutes deux invisibles autrement qu'a la capture.
+		var landed: Vector2i = after.agents[i].pos
+		var fatal: bool = died > 0 \
+			and _is_fatal(after.grid, before.grid, landed, after.tick)
+		if fatal:
+			_death_marks.append({"cell": landed, "age": 0.0, "fatal": true})
+			agent_lost.emit(landed)
+			continue
+		# LE DERNIER SORTI, ET LUI SEUL. Un anneau par sortie ferait vingt anneaux
+		# sur une victoire : du bruit, pas de l'information. C'est l'instant qui
+		# TRANCHE qu'il faut montrer — celui apres lequel il ne reste personne.
+		if left > 0 and remaining == 0:
+			_death_marks.append({"cell": landed, "age": 0.0, "fatal": false})
+			last_agent_exited.emit(landed)
+
+## La case etait-elle mortelle ? On interroge la grille d'AVANT autant que celle
+## d'apres : un danger cyclique peut s'etre eteint entre les deux, et R13
+## « Boucher » efface le danger dans le meme tick que le sacrifice.
+func _is_fatal(after_grid: GridState, before_grid: GridState, cell: Vector2i, tick: int) -> bool:
+	if before_grid.is_danger_active_at(cell, tick - 1) or before_grid.is_danger_active_at(cell, tick):
+		return true
+	return after_grid.is_danger_active_at(cell, tick)
 
 ## Historique des traînées et comptage des demi-tours : purement descriptif.
 func _record_tick(from_state: SimState, to_state: SimState) -> void:
@@ -435,14 +515,43 @@ func _rebuild_static_layers() -> void:
 		(_exit_marks as _ExitMarks).configure(exit_rects, grid.size, _cell_size, _grid_origin)
 	_fill_items(_light_mm, _regions_of(GridState.CellType.LIGHT_SOURCE, ViewPalette.LIGHT, LIGHT_BLEED))
 
+	# RESSOURCE ET DEPOT NE SONT PLUS DES ZONES TEINTEES.
+	#
+	# Le defaut, vu a la capture : les deux etaient rendus comme des BANDES de
+	# sol colorees, exactement comme la sortie ou la lumiere. Le joueur voyait
+	# deux rectangles de couleurs differentes et n'avait aucun moyen de deviner
+	# que l'un est une CHOSE qu'on ramasse et l'autre un ENDROIT ou la poser —
+	# il n'y a pas de tutoriel, le jeu doit se lire seul.
+	#
+	# Desormais : la ressource est un OBJET pose au sol (losange plein, avec son
+	# ombre), le depot est un RECEPTACLE ouvert (crochet en U, chevron entrant),
+	# et l'agent qui porte arbore le MEME losange. C'est cette identite de forme
+	# qui rend la scene lisible sans un mot : on voit le losange quitter le sol
+	# et monter sur un agent, puis disparaitre dans le crochet.
+	#
+	# Seul le depot garde un halo de sol, tres discret : c'est une destination,
+	# donc un lieu — mais il ne doit plus se confondre avec la sortie.
 	var goals: Array = []
-	goals.append_array(_regions_of(GridState.CellType.RESOURCE, ViewPalette.RESOURCE, GOAL_BLEED))
 	goals.append_array(_regions_of(GridState.CellType.DROPOFF, ViewPalette.DROPOFF, GOAL_BLEED))
 	# PORTE A PRESSION ET SENS UNIQUE, huitieme et septieme elements de RG-14.
 	# Ils etaient reconnus par le moteur et absents de l'ecran : une geometrie
 	# invisible est une geometrie injuste, et le joueur aurait vu sa nuee butter
 	# sur du vide.
 	_fill_items(_goal_mm, goals)
+
+	if _cargo_marks != null:
+		var resources: Array[Vector2i] = []
+		var dropoffs: Array[Vector2i] = []
+		for y in range(grid.size.y):
+			for x in range(grid.size.x):
+				var p := Vector2i(x, y)
+				match grid.cell_type_at(p):
+					GridState.CellType.RESOURCE:
+						resources.append(p)
+					GridState.CellType.DROPOFF:
+						dropoffs.append(p)
+		(_cargo_marks as _CargoMarks).configure(
+			resources, dropoffs, _cell_size, _grid_origin)
 
 	# SENS UNIQUE — dessine depuis `one_way_dir`, PAS depuis le type de case.
 	# Defaut trouve a la capture : une case a sens unique reste de type EMPTY,
@@ -539,15 +648,19 @@ func _draw_dangers() -> void:
 		items.append(_region_item(r, ViewPalette.DANGER_DORMANT, 0.0))
 	_fill_items(_danger_mm, items)
 
-## Une croix lumineuse qui s'ouvre et s'efface sur la case fatale.
+## UN ECHO : un anneau qui s'ouvre depuis la case et s'efface. Rouge pour une
+## mort, vert pour le dernier agent sorti.
+##
+## POURQUOI UN ANNEAU ET NON UN CLIGNOTEMENT. Un clignotement demande a etre
+## regarde au bon moment ; un anneau qui s'ouvre laisse une trace dans le
+## mouvement, se remarque du coin de l'oeil, et dit OU l'evenement a eu lieu.
+## C'est aussi ce que demande ENF-21 (animations reduites) : l'echo se contente
+## alors d'un halo fixe, sans jamais disparaitre.
 func _draw_deaths() -> void:
-	var items: Array = []
-	for mark in _death_marks:
-		var age := float(mark["age"]) / DEATH_MARK_SECONDS
-		var c := ViewPalette.DANGER.lightened(0.45)
-		c.a = (1.0 - age) * 0.95
-		items.append([Vector2(mark["cell"]), c])
-	_fill(_deaths_mm, items, _cell_size * (0.9 + 0.5 * _death_pulse()))
+	if _echoes != null:
+		(_echoes as _Echoes).configure(_death_marks, DEATH_MARK_SECONDS,
+			_cell_size, _grid_origin, reduced_motion)
+	_fill(_deaths_mm, [], _cell_size)
 
 func _death_pulse() -> float:
 	if _death_marks.is_empty():
@@ -580,12 +693,16 @@ func _draw_agents() -> void:
 		# ENF-20 : l'information n'est pas portée par la seule couleur. C'est un
 		# point AJOUTÉ sur l'agent — une forme — qui se voit en niveaux de gris
 		# comme en teinte, et sa couleur est celle de la ressource, déjà apprise.
+		#
+		# C'EST LE MÊME LOSANGE QUE CELUI POSÉ AU SOL, et c'est tout l'intérêt :
+		# un carré sur l'agent face à un losange par terre laissait DEVINER le
+		# lien. La même forme le rend évident — on voit l'objet quitter le sol
+		# et monter sur un agent, sans un mot d'explication.
 		if (to_agent.flags & AgentState.PORTEUR) != 0 and to_agent.is_present():
-			var load_color := ViewPalette.RESOURCE
-			load_color.a = alpha
-			carried.append([cell, load_color])
+			carried.append([cell, alpha])
 	_fill(_agent_mm, items, _cell_size * 0.70)
-	_fill(_carrier_mm, carried, _cell_size * 0.30)
+	if _carried_marks != null:
+		(_carried_marks as _CarriedMarks).configure(carried, _cell_size, _grid_origin)
 
 ## PISTE STIGMERGIQUE (R08/R09). Redessinee a chaque image parce qu'elle change
 ## a chaque tick : elle s'evapore, et voir l'evaporation est la moitie de ce
@@ -832,3 +949,169 @@ class _ExitMarks extends Node2D:
 				var tip := centre + dir * arm
 				draw_line(tip, centre - dir * arm * 0.4 + side * arm, color, thickness)
 				draw_line(tip, centre - dir * arm * 0.4 - side * arm, color, thickness)
+
+## CARGAISON — la ressource et le dépôt, dessinés en FORMES et non en zones.
+##
+## POURQUOI CETTE CLASSE EXISTE. Les deux étaient rendus comme des bandes de sol
+## colorées, au même titre que la sortie ou la lumière. Un joueur découvrant le
+## chapitre 4 voyait deux rectangles de teintes différentes, sans aucun moyen de
+## deviner que l'un est une CHOSE qu'on ramasse et l'autre un ENDROIT où la
+## poser. Le jeu n'a pas de tutoriel : ce qui ne se lit pas seul ne se lit pas.
+##
+## LE PRINCIPE, ET IL TIENT EN UNE PHRASE : **la forme qu'on ramasse est la
+## forme qu'on porte.** Un losange plein posé au sol, le même losange sur
+## l'agent qui l'emporte, et un réceptacle ouvert qui l'avale. La séquence se
+## raconte sans un mot, et elle se lit aussi en niveaux de gris (ENF-20) parce
+## que ce sont des formes, pas des teintes.
+class _CargoMarks extends Node2D:
+	var _resources: Array[Vector2i] = []
+	var _dropoffs: Array[Vector2i] = []
+	var _cell: float = 32.0
+	var _origin: Vector2 = Vector2.ZERO
+
+	func configure(resources: Array[Vector2i], dropoffs: Array[Vector2i],
+			cell: float, origin: Vector2) -> void:
+		_resources = resources
+		_dropoffs = dropoffs
+		_cell = cell
+		_origin = origin
+		queue_redraw()
+
+	func _centre(p: Vector2i) -> Vector2:
+		return _origin + (Vector2(p) + Vector2(0.5, 0.5)) * _cell
+
+	## Le losange de cargaison. Rendu ici ET sur l'agent porteur : c'est la même
+	## fonction, appelée aux deux endroits, pour que les deux ne puissent pas
+	## diverger — une identité de forme maintenue à la main finit par se rompre.
+	static func draw_cargo(canvas: CanvasItem, centre: Vector2, radius: float,
+			alpha: float) -> void:
+		var body := ViewPalette.RESOURCE
+		body.a = alpha
+		var edge := ViewPalette.RESOURCE.lightened(0.45)
+		edge.a = alpha
+		# L'ombre pose l'objet SUR le sol au lieu de le laisser flotter dedans :
+		# sans elle, le losange se lit comme un motif de carrelage.
+		var shadow := Color(0.0, 0.0, 0.0, 0.35 * alpha)
+		var pts := PackedVector2Array([
+			centre + Vector2(0, -radius), centre + Vector2(radius, 0),
+			centre + Vector2(0, radius), centre + Vector2(-radius, 0)])
+		var under := PackedVector2Array()
+		for p in pts:
+			under.append(p + Vector2(0, radius * 0.28))
+		canvas.draw_colored_polygon(under, shadow)
+		canvas.draw_colored_polygon(pts, body)
+		canvas.draw_polyline(PackedVector2Array([
+			pts[0], pts[1], pts[2], pts[3], pts[0]]), edge,
+			maxf(radius * 0.16, 1.5))
+
+	func _draw() -> void:
+		if _cell <= 0.0:
+			return
+		for p in _resources:
+			draw_cargo(self, _centre(p), _cell * 0.26, 1.0)
+
+		# LE DÉPÔT EST UN RÉCEPTACLE, PAS UN SOL. Trois côtés d'un carré, ouverts
+		# vers le haut, et un chevron qui entre : « ça se met là-dedans ». Une
+		# case pleine aurait dit « marche ici », ce qui est le contraire.
+		var edge := ViewPalette.DROPOFF.lightened(0.35)
+		edge.a = 0.95
+		var thickness: float = maxf(_cell * 0.07, 2.0)
+		for p in _dropoffs:
+			var c := _centre(p)
+			var r: float = _cell * 0.28
+			draw_polyline(PackedVector2Array([
+				c + Vector2(-r, -r * 0.55), c + Vector2(-r, r),
+				c + Vector2(r, r), c + Vector2(r, -r * 0.55)]), edge, thickness)
+			var tip := c + Vector2(0, r * 0.10)
+			draw_line(tip, tip + Vector2(-r * 0.5, -r * 0.55), edge, thickness)
+			draw_line(tip, tip + Vector2(r * 0.5, -r * 0.55), edge, thickness)
+
+## LA CHARGE PORTÉE — le même losange, sur l'agent qui l'emporte.
+##
+## Elle a sa propre classe parce qu'elle bouge à chaque IMAGE (position
+## interpolée), là où la cargaison au sol ne change qu'au TICK. Les mêler aurait
+## fait redessiner tout le décor soixante fois par seconde pour rien.
+class _CarriedMarks extends Node2D:
+	var _cells: Array = []
+	var _cell: float = 32.0
+	var _origin: Vector2 = Vector2.ZERO
+
+	func configure(cells: Array, cell: float, origin: Vector2) -> void:
+		_cells = cells
+		_cell = cell
+		_origin = origin
+		queue_redraw()
+
+	func _draw() -> void:
+		if _cell <= 0.0:
+			return
+		for entry in _cells:
+			var p: Vector2 = entry[0]
+			var alpha: float = entry[1]
+			# Décalée vers le haut : l'objet est TENU, il ne recouvre pas
+			# l'agent. Un losange centré effaçait le point qu'il accompagne.
+			var centre: Vector2 = _origin + (p + Vector2(0.5, 0.22)) * _cell
+			_CargoMarks.draw_cargo(self, centre, _cell * 0.19, alpha)
+
+## ÉCHOS D'ÉVÉNEMENT — un anneau qui s'ouvre depuis la case, puis s'efface.
+##
+## POURQUOI ILS EXISTENT. « Les échecs sont incompris : on ne comprend pas ce
+## qui fait perdre, l'écran de défaite arrive avant le moment fatidique » —
+## essai sur l'appareil, 15 août 2026. Un agent mourait sur une case rouge, et
+## rien à l'écran ne le disait : ni où, ni quand. Le bilan tombait sur une
+## scène où il ne s'était visiblement rien passé.
+##
+## ROUGE pour une mort, VERT pour le dernier agent sorti — la victoire mérite
+## le même traitement que l'échec, et pour la même raison : on doit voir
+## l'instant qui a décidé.
+##
+## UN ANNEAU, PAS UN CLIGNOTEMENT. Un clignotement demande d'être regardé au
+## bon moment ; un anneau qui s'ouvre se remarque du coin de l'œil et dit OÙ.
+## Sous ENF-21 (animations réduites) il devient un halo fixe qui ne bouge plus,
+## sans jamais cesser d'être visible : l'information ne dépend pas du mouvement.
+class _Echoes extends Node2D:
+	var _marks: Array = []
+	var _span: float = 1.6
+	var _cell: float = 32.0
+	var _origin: Vector2 = Vector2.ZERO
+	var _still: bool = false
+
+	func configure(marks: Array, span: float, cell: float, origin: Vector2,
+			reduced: bool) -> void:
+		_marks = marks
+		_span = maxf(span, 0.001)
+		_cell = cell
+		_origin = origin
+		_still = reduced
+		queue_redraw()
+
+	func _draw() -> void:
+		if _cell <= 0.0:
+			return
+		for mark in _marks:
+			var age: float = clampf(float(mark["age"]) / _span, 0.0, 1.0)
+			var fatal: bool = bool(mark.get("fatal", true))
+			var tint: Color = ViewPalette.DANGER.lightened(0.35) if fatal \
+				else ViewPalette.EXIT.lightened(0.35)
+			var centre: Vector2 = _origin + (Vector2(mark["cell"]) + Vector2(0.5, 0.5)) * _cell
+			if _still:
+				tint.a = 0.75
+				draw_arc(centre, _cell * 0.75, 0.0, TAU, 40, tint,
+					maxf(_cell * 0.12, 2.0), true)
+				continue
+			# Trois anneaux décalés dans le temps : un seul se lit comme une
+			# bulle, trois se lisent comme une onde — et une onde a une SOURCE.
+			for k in range(3):
+				var t: float = age - float(k) * 0.16
+				if t <= 0.0 or t >= 1.0:
+					continue
+				var ring := tint
+				ring.a = (1.0 - t) * (1.0 - t) * 0.9
+				draw_arc(centre, _cell * (0.35 + 1.5 * t), 0.0, TAU, 40, ring,
+					maxf(_cell * 0.14 * (1.0 - t), 1.5), true)
+			# Le cœur reste plein le temps du premier tiers : c'est lui qui
+			# désigne la case, l'onde ne fait que la rendre repérable.
+			if age < 0.34:
+				var core := tint
+				core.a = (1.0 - age / 0.34) * 0.95
+				draw_circle(centre, _cell * 0.30, core)

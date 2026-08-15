@@ -46,14 +46,14 @@ func _build() -> void:
 	var title := Label.new()
 	title.text = "VOLENS"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 96)
+	title.add_theme_font_size_override("font_size", UiMetrics.font_size(96))
 	title.add_theme_color_override("font_color", ViewPalette.AGENT_PLAIN)
 	column.add_child(title)
 
 	var subtitle := Label.new()
 	subtitle.text = "%d chapitres" % LevelCatalog.chapters().size()
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	subtitle.add_theme_font_size_override("font_size", 28)
+	subtitle.add_theme_font_size_override("font_size", UiMetrics.font_size(28))
 	subtitle.add_theme_color_override("font_color", Color(0.48, 0.53, 0.64))
 	column.add_child(subtitle)
 
@@ -88,7 +88,7 @@ func _build() -> void:
 	var version := Label.new()
 	version.text = "version %s" % _version_string()
 	version.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	version.add_theme_font_size_override("font_size", 22)
+	version.add_theme_font_size_override("font_size", UiMetrics.font_size(22))
 	version.add_theme_color_override("font_color", Color(0.38, 0.42, 0.52))
 	column.add_child(version)
 

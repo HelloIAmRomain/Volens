@@ -6,8 +6,13 @@ extends Control
 ## Porte aussi la reprise (EF-20/21) : la session est écrite avant toute
 ## chance d'être tuée — à chaque geste significatif et à
 ## `NOTIFICATION_APPLICATION_PAUSED`, qui arrive AVANT que le système ne tue
-## l'application. Au lancement, une session valide rouvre directement le
-## niveau, **en pause**, au tick exact : aucun écran intermédiaire.
+## l'application.
+##
+## AU LANCEMENT, LE JEU OUVRE TOUJOURS LE MENU. Il rouvrait le niveau en cours
+## sans détour ; l'application avait alors l'air de n'avoir pas de menu du tout,
+## et l'on ne voyait jamais ni les chapitres, ni les réglages, ni l'Épreuve. La
+## reprise vit derrière « Continuer », qui remplace « Jouer » quand une partie
+## est en cours — elle rend le niveau **en pause**, au tick exact.
 
 enum Screen { MENU, SELECT, GAME, SUMMARY, SETTINGS }
 
@@ -26,11 +31,15 @@ func _ready() -> void:
 	# Les réglages s'appliquent AVANT le premier écran : le retour haptique
 	# doit être coupé dès le premier geste si le joueur l'a coupé (ENF-24).
 	settings = Settings.load_from_disk()
-	# Reprise : si une session valide existe, on y retourne sans détour.
-	if session.is_valid() and not LevelCatalog.path_of(session.level_id).is_empty():
-		_open_game(session.level_id, true)
-	else:
-		_open_menu()
+	# LE JEU S'OUVRE TOUJOURS SUR LE MENU. Il rouvrait le niveau en cours sans
+	# detour, ce qui donnait a l'application l'air de n'avoir pas de menu du tout :
+	# on relancait, on retombait au milieu d'une partie, sans jamais voir ni les
+	# chapitres ni les reglages ni l'Epreuve.
+	#
+	# La reprise n'est pas perdue pour autant : elle est derriere « Continuer »,
+	# qui remplace « Jouer » quand une partie est en cours. Un geste de plus, mais
+	# un geste CHOISI — et l'ecran d'accueil redevient un point de depart.
+	_open_menu()
 
 func _notification(what: int) -> void:
 	# Dernier instant garanti avant que le système ne puisse tuer le
@@ -138,6 +147,13 @@ func _open_game(level_id: String, resume: bool) -> GameScreen:
 
 func _on_play_requested() -> void:
 	trial = null
+	# « Continuer » et « Jouer » sont le MEME bouton : c'est l'existence d'une
+	# partie en cours qui decide, et le menu affiche le mot correspondant. Deux
+	# boutons distincts poseraient au joueur une question dont il connait deja la
+	# reponse.
+	if session.is_valid() and not LevelCatalog.path_of(session.level_id).is_empty():
+		_open_game(session.level_id, true)
+		return
 	_open_game(LevelCatalog.next_playable(progress), false)
 
 # --- MODE ÉPREUVE ------------------------------------------------------------

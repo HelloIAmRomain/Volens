@@ -70,6 +70,11 @@ func _init() -> void:
 		"POSSIBLE" if bool(summary.get("challenge_economy_possible", false)) else "impossible",
 		", ".join(abst_names) if abst_names.size() > 0 else "aucune regle",
 		int(summary.get("min_ticks", -1))])
+	# LE COMPTE MINIMAL D'ABORD : c'est celui qui dit combien d'IDEES le niveau
+	# offre. Le compte brut ne dit que combien de facons il y a de rallonger la
+	# meme idee, et il flatte toujours.
+	print("gagnantes        : %d minimale(s) sur %d brutes — le brut compte les rallonges" % [
+		int(summary.get("n_win_minimal", 0)), int(summary.get("n_win", 0))])
 	print("verdict QN-01    : %s" % summary["qn01_verdict"])
 	print("rapports         : %s/%s.{csv,summary.json}" % [out_dir, level_name])
 	quit(0)

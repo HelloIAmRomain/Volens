@@ -24,17 +24,17 @@ const RULES := {
 	3: {"key": "rule.r03", "name": "Rester groupé", "glyph": "◍", "line": "L'agent isolé rejoint le centre de ses voisins. Groupé, il laisse la main."},
 	4: {"key": "rule.r04", "name": "S'écarter", "glyph": "⤢", "line": "Au contact de trop de voisins, l'agent prend le pas qui l'en éloigne le plus."},
 	5: {"key": "rule.r05", "name": "Suivre les voisins", "glyph": "⇉", "line": "L'agent adopte la direction majoritaire des voisins qui ont bougé."},
-	6: {"key": "rule.r06", "name": "Longer le mur", "glyph": "⌐", "line": "Contre un obstacle, l'agent tourne à droite, puis tout droit, puis à gauche, puis fait demi-tour."},
+	6: {"key": "rule.r06", "name": "Longer le mur", "glyph": "⌐", "line": "Contre un obstacle : à droite, sinon tout droit, sinon à gauche, sinon demi-tour."},
 	7: {"key": "rule.r07", "name": "Attendre", "glyph": "⏸", "line": "L'agent reste immobile. Aucune règle placée en dessous ne parlera jamais."},
-	8: {"key": "rule.r08", "name": "Marquer la piste", "glyph": "✦", "line": "EFFET — en avançant, l'agent laisse un marqueur sur la case quittée, puis rend la main. Le marqueur s'estompe."},
+	8: {"key": "rule.r08", "name": "Marquer la piste", "glyph": "✦", "line": "EFFET — en avançant, l'agent marque la case quittée, puis rend la main. La marque s'estompe."},
 	9: {"key": "rule.r09", "name": "Suivre la piste", "glyph": "⋯", "line": "L'agent va vers le marqueur voisin plus intense que le sien."},
 	10: {"key": "rule.r10", "name": "Rebrousser si seul", "glyph": "↩", "line": "Sans aucun congénère à portée, l'agent fait demi-tour."},
-	11: {"key": "rule.r11", "name": "Porter", "glyph": "◆", "line": "EFFET — l'agent ramasse la ressource de sa case s'il n'en porte pas, puis rend la main. Un porteur ne sort pas du niveau."},
-	12: {"key": "rule.r12", "name": "Déposer au but", "glyph": "▽", "line": "EFFET — le porteur dépose sa ressource sur une case de dépôt adjacente, puis rend la main."},
+	11: {"key": "rule.r11", "name": "Porter", "glyph": "◆", "line": "EFFET — l'agent ramasse l'objet de sa case, puis rend la main. Un porteur ne sort pas du niveau."},
+	12: {"key": "rule.r12", "name": "Déposer au but", "glyph": "▽", "line": "EFFET — le porteur pose son objet dans un dépôt voisin, puis rend la main."},
 	13: {"key": "rule.r13", "name": "Boucher", "glyph": "✚", "line": "L'agent entre dans un danger adjacent et s'y consume, le neutralisant définitivement."},
 	14: {"key": "rule.r14", "name": "Disperser si dense", "glyph": "⁘", "line": "Dans une zone trop peuplée, l'agent va vers la case la moins entourée."},
 	15: {"key": "rule.r15", "name": "Suivre le plus lent", "glyph": "⧗", "line": "Trop en avance sur le dernier qu'il perçoit, l'agent s'arrête et l'attend."},
-	16: {"key": "rule.r16", "name": "Ignorer", "glyph": "⊘", "line": "L'agent cesse de subir un type de case, choisi au placement. Sa position dans la pile est sans effet — mais elle coûte un rang."},
+	16: {"key": "rule.r16", "name": "Ignorer", "glyph": "⊘", "line": "L'agent cesse de subir un type de case, choisi au placement. Son rang ne change rien, mais il coûte une place."},
 }
 
 ## Nom du type de case neutralisé par un joker. Le vocabulaire est celui de

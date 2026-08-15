@@ -41,7 +41,7 @@
 id: ch5_04
 name: Trop et pas assez
 tutorial: true
-allowed_rules: [R01, R04, R14]
+allowed_rules: [R01, R03, R04, R13, R14]
 slots: 3
 max_ticks: 150
 objective: extraction 100

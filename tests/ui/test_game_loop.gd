@@ -95,11 +95,24 @@ func test_a_stored_session_reopens_the_level_paused_at_the_same_tick() -> void:
 	var app := App.new()
 	add_child_autofree(app)
 
+	# LE LANCEMENT OUVRE LE MENU, PAS LE NIVEAU. Il rouvrait le niveau en cours
+	# sans détour, et l'application avait l'air de n'avoir pas de menu du tout :
+	# on ne voyait jamais ni les chapitres, ni les réglages, ni l'Épreuve. La
+	# reprise vit désormais derrière « Continuer », qui remplace « Jouer ».
+	var first: Node = null
+	for child in app.get_children():
+		if child is Control:
+			first = child
+	assert_true(first is MenuScreen,
+		"le jeu s'ouvre TOUJOURS sur le menu, même avec une partie en cours")
+
+	# Et « Continuer » rend le niveau au tick exact, en pause.
+	app._on_play_requested()
 	var game: GameScreen = null
 	for child in app.get_children():
 		if child is GameScreen:
 			game = child
-	assert_not_null(game, "une session valide rouvre le niveau sans écran intermédiaire")
+	assert_not_null(game, "« Continuer » doit rouvrir le niveau en cours")
 	assert_eq(game._view.current_state().tick, 7, "au tick exact, par re-simulation déterministe")
 	assert_false(game._playing, "et TOUJOURS en pause : on ne reprend jamais une simulation en marche")
 

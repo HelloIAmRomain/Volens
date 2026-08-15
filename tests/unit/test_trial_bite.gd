@@ -7,13 +7,17 @@ extends GutTest
 ## bibliothèque, et la force brute repasse sous le budget. Le mode continuerait
 ## alors de s'afficher, de compter ses lancements, et de ne rien exiger.
 ##
-## C'EST LA SIXIÈME FORME DU PIÈGE DE L'INVARIANT 12, sous un autre déguisement.
-## Le tirage de règles avait été vérifié sur la seule question confortable —
-## « toute main est-elle jouable ? » — à laquelle la réponse était oui. La
-## question qui comptait, « la main retire-t-elle jamais quelque chose ? », n'a
-## été posée qu'après coup, et la réponse mesurée le 15 août 2026 est **non
-## dans 24 niveaux sur 29**. Un mécanisme observé là où il n'a rien à faire
-## paraît toujours correct.
+## C'EST LA HUITIÈME FORME DU PIÈGE DE L'INVARIANT 12. Le tirage de règles avait
+## été vérifié sur la seule question confortable — « toute main est-elle
+## jouable ? » — à laquelle la réponse était oui. La question qui comptait,
+## « la main retire-t-elle jamais quelque chose ? », n'a été posée qu'après
+## coup, et la réponse était **non dans 24 niveaux sur 29**. Un mécanisme
+## observé là où il n'a rien à faire paraît toujours correct.
+##
+## Le défaut était dans les NIVEAUX, pas dans le mode : leurs bibliothèques
+## comptaient trois règles pour trois rangs, donc rien à retirer. Élargies à
+## cinq ou six le 15 août 2026, le tirage retire désormais 1 à 3 règles dans
+## vingt niveaux sur vingt-neuf. Les tests ci-dessous refusent le retour.
 ##
 ## Ces tests posent la question inconfortable, et une bonne fois pour toutes.
 
@@ -104,43 +108,60 @@ func test_cleared_chapters_tolerates_a_null_progress() -> void:
 
 # --- ce que le mode N'EXIGE PAS, et pourquoi c'est écrit ici ---------------
 
-func test_the_drawn_hand_is_documented_as_nearly_vacuous() -> void:
-	# CE TEST NE CORRIGE RIEN — il empêche un mensonge de se réinstaller.
+func test_the_drawn_hand_actually_removes_something() -> void:
+	# LA QUESTION QUI COMPTE, et elle n'avait pas été posée : le tirage retire-t-il
+	# jamais quelque chose ? Il ne retirait rien dans 24 niveaux sur 29 tant que
+	# les bibliothèques faisaient trois règles. Elles en font cinq ou six depuis
+	# le 15 août 2026, et ce test refuse qu'on y revienne.
 	#
-	# Mesuré le 15 août 2026 : le tirage laisse la bibliothèque INTACTE dans 24
-	# niveaux sur 29. La raison est structurelle et non accidentelle : presque
-	# chaque niveau n'a **qu'un seul ensemble suffisant minimal**, et cet
-	# ensemble contient la règle-moteur du chapitre. Retirer une règle de la
-	# main reviendrait à retirer la solution.
+	# Les chapitres 1 et 2 sont EXEMPTÉS : ils enseignent, et leur étroitesse est
+	# le moyen. Ailleurs, une main qui vaut la bibliothèque entière est un
+	# mécanisme décoratif.
+	var inert := PackedStringArray()
+	var examined := 0
+	for i in range(LevelCatalog.count()):
+		var entry: Dictionary = LevelCatalog.entry(i)
+		if not bool(entry["ready"]):
+			continue
+		var level_id := String(entry["id"])
+		if LevelCatalog.chapter_of(level_id) <= 2:
+			continue
+		var allowed: Array = LevelCatalog.load_level_data(level_id).get("allowed_rules", [])
+		var sets := ArcadeData.sufficient_sets(level_id)
+		var widest := 0
+		for s in range(40):
+			widest = maxi(widest, ArcadeDraw.draw(level_id, sets, allowed, s).size())
+		examined += 1
+		if widest >= allowed.size():
+			inert.append("%s (main %d = bibliothèque %d)" % [level_id, widest, allowed.size()])
+	assert_gt(examined, 0, "aucun niveau examiné : le balayage est cassé")
+	assert_eq(inert, PackedStringArray(),
+		("Le tirage ne retire rien sur ces niveaux : il y est décoratif. "
+		+ "Élargir leur bibliothèque, ou cesser de compter le tirage comme un "
+		+ "ingrédient du mode. %s") % ", ".join(inert))
+
+func test_several_levels_offer_genuinely_different_ideas() -> void:
+	# CE QUE LE TIRAGE ET UN EVENTUEL QUOTA EXIGENT POUR AVOIR PRISE : que les
+	# niveaux aient plus d'une IDEE gagnante. Le 15 août 2026 au matin, quatre
+	# niveaux sur vingt-neuf en avaient plusieurs, et c'est pourquoi toute
+	# mecanique de restriction etait condamnee d'avance — on ne restreint pas un
+	# choix qui n'existe pas.
 	#
-	# La conséquence dépasse le mode : un quota par règle — « R01 dans trois
-	# niveaux au plus » — serait vide pour exactement la même raison. Le quota
-	# le plus serré qui reste satisfaisable vaut la taille du chapitre dans
-	# quatre chapitres sur six, c'est-à-dire aucune contrainte. **On ne peut pas
-	# restreindre le choix des règles quand il n'y a rien à choisir.**
-	#
-	# Le jour où les niveaux offriront de vraies solutions alternatives, ce test
-	# échouera. Ce sera une bonne nouvelle, et il faudra le réécrire.
-	var params := RuleParams.from_dict(_rules_dict())
-	var single_solution := 0
+	# L'elargissement des bibliotheques (carnet, decision 181) a porte ce nombre
+	# a neuf. Le seuil ci-dessous est bas EXPRES : il ne celebre pas un resultat,
+	# il interdit un retour en arriere.
+	var multi := PackedStringArray()
 	var total := 0
 	for i in range(LevelCatalog.count()):
 		var entry: Dictionary = LevelCatalog.entry(i)
 		if not bool(entry["ready"]):
 			continue
 		total += 1
-		if ArcadeData.sufficient_sets(String(entry["id"])).size() <= 1:
-			single_solution += 1
+		var level_id := String(entry["id"])
+		if ArcadeData.sufficient_sets(level_id).size() > 1:
+			multi.append(level_id)
 	assert_gt(total, 0, "aucun niveau prêt : le balayage est cassé")
-	assert_gt(single_solution, total / 2,
-		("Bonne nouvelle si ce test échoue : plus de la moitié des niveaux "
-		+ "offrent désormais plusieurs ensembles suffisants, donc le tirage et "
-		+ "un éventuel quota par règle ont enfin prise. Relire le commentaire "
-		+ "ci-dessus et rouvrir la question. (%d niveaux à solution unique sur %d)")
-		% [single_solution, total])
-	assert_not_null(params, "les paramètres de règles doivent se charger")
-
-func _rules_dict() -> Dictionary:
-	var parsed: Variant = JSON.parse_string(
-		FileAccess.get_file_as_string("res://data/rules.json"))
-	return parsed if parsed is Dictionary else {}
+	assert_gte(multi.size(), 8,
+		("Trop peu de niveaux offrent plusieurs manières de gagner (%d sur %d) : "
+		+ "le jeu redevient une suite de serrures à une clé. Niveaux concernés : %s")
+		% [multi.size(), total, ", ".join(multi)])

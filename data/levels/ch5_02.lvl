@@ -34,13 +34,13 @@
 id: ch5_02
 name: Les deux vigies
 tutorial: false
-allowed_rules: [R01, R04, R14]
+allowed_rules: [R01, R03, R04, R07, R14]
 slots: 3
 max_ticks: 180
 objective: extraction 75
 door: required=2 plates=1,4;9,4 panels=5,2
 lesson: "Reussir veut parfois dire abandonner quelqu'un — et plus de monde qu'on ne l'aurait voulu."
-expected_wins: 2
+expected_wins: 6
 expected_classes: 1
 calibrated_on: d7d4a43f60ed519b
 challenge: efficiency=31 abstinence=R04

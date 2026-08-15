@@ -42,13 +42,13 @@
 id: ch4_02
 name: Le sas
 tutorial: false
-allowed_rules: [R01, R11, R12]
+allowed_rules: [R01, R03, R05, R11, R12]
 slots: 3
 max_ticks: 180
 objective: collect 2
 lesson: "Un effet ne s'applique que si la cascade l'atteint : les effets se mettent en tete, sans exception."
-expected_wins: 2
-expected_classes: 1
+expected_wins: 5
+expected_classes: 3
 calibrated_on: a37acc8160738b91
 challenge: efficiency=6
 ---

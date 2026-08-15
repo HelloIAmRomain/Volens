@@ -44,6 +44,23 @@ const THUMB_ZONE_RATIO := 0.42
 const DRAG_THRESHOLD := 24.0
 const LONG_PRESS_SECONDS := 0.45
 
+## ÉCHELLE TYPOGRAPHIQUE — un seul bouton pour toute l'interface.
+##
+## POURQUOI ELLE EXISTE. Essai sur l'appareil : « tout est trop petit sur le
+## mobile, notamment les textes ». Les tailles étaient posées en dur, une par
+## une, sur vingt-cinq appels — les grossir demandait vingt-cinq décisions
+## séparées, donc vingt-cinq occasions de diverger, et aucune façon de revenir
+## en arrière d'un geste.
+##
+## Elles passent toutes par `font_size()`. Changer ce nombre change l'interface
+## entière, et un test de disposition vérifie qu'à cette échelle rien ne sort de
+## l'écran le plus étroit du parc.
+const FONT_SCALE := 1.35
+
+## Taille de police effective, à partir d'une taille de référence.
+static func font_size(base: int) -> int:
+	return int(round(float(base) * FONT_SCALE))
+
 const MARGIN := 36.0
 const GAP := 24.0
 ## RG-05. Dérivé, jamais redéclaré : `LevelSpec` fixe le plafond, et une

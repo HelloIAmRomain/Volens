@@ -52,7 +52,7 @@ func _build() -> void:
 	var title := Label.new()
 	title.text = "Réglages"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 44)
+	title.add_theme_font_size_override("font_size", UiMetrics.font_size(44))
 	title.add_theme_color_override("font_color", ViewPalette.AGENT_PLAIN)
 	column.add_child(title)
 

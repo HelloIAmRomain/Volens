@@ -123,13 +123,15 @@
   ],
   "allowed_rules": [
     1,
+    5,
+    9,
     11,
     12,
     2064
   ],
   "calibrated_on": "a37acc8160738b91",
-  "expected_classes": 1,
-  "expected_wins": 8,
+  "expected_classes": 3,
+  "expected_wins": 20,
   "geometry_hash": "a37acc8160738b91",
   "grid": {
     "cells": [

@@ -41,12 +41,12 @@
 id: ch6_01
 name: Le droit d'ignorer
 tutorial: true
-allowed_rules: [R01, R13, R16(X)]
+allowed_rules: [R01, R03, R05, R13, R16(X)]
 slots: 3
 max_ticks: 150
 objective: extraction 100
 lesson: "Le joker rend gratuit ce qui coutait quelqu'un. Le chapitre 6 ne rajoute rien : il rouvre."
-expected_wins: 8
+expected_wins: 20
 expected_classes: 1
 calibrated_on: 63dd79a498898132
 challenge: efficiency=25 abstinence=R13
