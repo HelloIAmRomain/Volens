@@ -1,0 +1,50 @@
+# N28 « Le tri » — deux depots, deux moities, une seule pile.
+#
+# LE PREMIER NIVEAU OU LA NUEE DOIT SE PARTAGER SANS QU'AUCUNE REGLE NE SACHE
+# COMPTER. Deux depots, aux deux coins du mur nord ; deux amas de ressources,
+# chacun sous son depot. Il faut livrer des deux cotes.
+#
+# AUCUNE REGLE NE DIT « VA A GAUCHE » NI « TOI, A DROITE ». Le partage ne se
+# commande pas : il se produit, ou il ne se produit pas. Deux lumieres, une par
+# coin, et R01 vise la PLUS PROCHE — c'est tout ce dont le joueur dispose pour
+# couper la nuee en deux, et cela suffit exactement.
+#
+# LES EFFETS SE METTENT EN TETE, sans exception. R11 et R12 ne s'appliquent que
+# si la cascade les ATTEINT, et R01 decide partout sur ce terrain degage : une
+# seule regle de deplacement au-dessus d'elles, et plus personne ne ramasse
+# jamais. Le joueur voit alors ses agents marcher SUR une ressource sans la
+# prendre — et c'est exactement ce que la regle d'or prescrit.
+#
+# LE DEPOT EST ADJACENT, JAMAIS SOUS LES PIEDS. Un porteur depose sur une case
+# de depot VOISINE : il frole le but sans s'y arreter. C'est ce qui permet aux
+# deux files de traverser leur zone de livraison sans s'y agglutiner.
+#
+# QUATRE RESSOURCES, QUATRE DEMANDEES. Aucune marge : chaque cote doit livrer
+# les siennes, et le partage est ce qui le permet. Les colonnes de gauche
+# visent la lumiere de gauche et croisent les ressources de gauche ; celles de
+# droite font l'inverse. Le joueur n'a rien ordonne — il a seulement pose deux
+# lumieres dans un monde ou R01 vise la plus proche.
+id: ch4_04
+name: Le tri
+tutorial: false
+allowed_rules: [R01, R03, R05, R07, R11, R12]
+slots: 3
+max_ticks: 180
+objective: collect 4
+lesson: "Le partage ne se commande pas : il se produit, ou il ne se produit pas."
+expected_wins: 2
+expected_classes: 1
+calibrated_on: 292144e627c1ae7a
+---
+L . . . . . . . . . L
+. D . . . . . . . D .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . r r . r r . . .
+. . . . . . . . . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . . . . . . . . .

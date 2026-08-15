@@ -28,7 +28,7 @@ func evaluate(agent: AgentState, state: SimState, _params: RuleParams) -> Vector
 	# la distance l'emporte ; toutes bloquées -> abstention (voir Rule).
 	for dir in Directions.ORDER:
 		var candidate: Vector2i = agent.pos + Directions.offset(dir)
-		if state.grid.is_walkable(candidate) and _manhattan(candidate, target) < current_dist:
+		if state.grid.can_traverse(agent.pos, candidate) and _manhattan(candidate, target) < current_dist:
 			return Directions.offset(dir)
 	return ABSTAIN  # aucune direction franchissable ne rapproche
 
@@ -39,6 +39,13 @@ static func _manhattan(a: Vector2i, b: Vector2i) -> int:
 ## `_NOT_FOUND` s'il n'y en a aucune sur la grille. En cas d'égalité, la
 ## première rencontrée par un parcours ligne par ligne (y croissant, puis x
 ## croissant) l'emporte — déterministe, mais sans signification pour le joueur.
+## Publique depuis le 14 août 2026 : R15 « suivre le plus lent » en a besoin
+## pour savoir qui est « en retard ». Dupliquer la recherche de lumière dans
+## une seconde règle aurait créé deux définitions de la même cible — donc deux
+## comportements possibles le jour où l'une des deux changerait.
+static func nearest_light(from: Vector2i, state: SimState) -> Vector2i:
+	return _nearest_light(from, state.grid)
+
 static func _nearest_light(from: Vector2i, grid: GridState) -> Vector2i:
 	var best: Vector2i = _NOT_FOUND
 	var best_dist := -1

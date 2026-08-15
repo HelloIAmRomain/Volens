@@ -41,7 +41,11 @@ static func make(text: String, rank: int = Rank.PLAIN,
 	# ENF-01, posé ici et nulle part ailleurs.
 	b.custom_minimum_size = Vector2(
 		UiMetrics.MIN_TOUCH_TARGET * scale, UiMetrics.MIN_TOUCH_TARGET * scale)
-	b.add_theme_font_size_override("font_size", int(font_size * scale))
+	# L'echelle typographique s'applique ICI, une fois pour tous les boutons du
+	# jeu : leurs appelants passent une taille de REFERENCE, pas une taille en
+	# pixels. Un seul reglage (UiMetrics.FONT_SCALE) les gouverne tous.
+	b.add_theme_font_size_override("font_size",
+		UiMetrics.font_size(int(font_size * scale)))
 	if rank != Rank.PLAIN:
 		_apply_rank(b, rank)
 	return b

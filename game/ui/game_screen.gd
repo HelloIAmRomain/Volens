@@ -25,7 +25,21 @@ signal quit_requested
 signal state_changed
 
 ## ×1 → ×2 → ×3 → ×1 (RG-10 : « au moins trois vitesses »).
-const SPEEDS: Array[float] = [1.0, 2.0, 3.0]
+## LA VITESSE EST EN TICKS PAR SECONDE, et elle valait UN. Un niveau de
+## quarante ticks demandait donc quarante secondes d'attente au joueur, qui
+## regardait une nuee avancer d'une case par seconde : « le jeu est trop lent,
+## les attentes sont frustrantes » — essai sur l'appareil, 15 aout 2026.
+##
+## Le probleme n'etait pas le nombre de vitesses (RG-10 en exige trois, il y en
+## a trois) mais leur ECHELLE. Les glyphes restent des multiplicateurs RELATIFS
+## — c'est ce qu'un joueur lit — et non la cadence.
+##
+## PREMIER REGLAGE A 4/8/16 : « un peu trop rapide » a l'essai. Ramene a 3/6/12,
+## soit un niveau de quarante ticks en treize secondes a la vitesse la plus
+## lente. On regle une cadence en SECONDES D'ATTENTE REELLES, jamais en
+## multiplicateurs — c'est ce que le premier chiffre (un tick par seconde)
+## n'avait jamais ete mesure.
+const SPEEDS: Array[float] = [3.0, 6.0, 12.0]
 ## LA VITESSE NE SE DESSINE PLUS AVEC UN TRIANGLE. Elle en portait un, creux,
 ## à côté du triangle plein de la lecture : deux formes identiques au pouce,
 ## qui obligeaient à comparer un remplissage pour savoir sur quoi on appuie.
@@ -33,7 +47,7 @@ const SPEEDS: Array[float] = [1.0, 2.0, 3.0]
 ## bobine : ce sont tous des triangles. Le multiplicateur écrit est la seule
 ## forme qui ne ressemble à rien d'autre à l'écran, se lit sans apprentissage
 ## et ne dépend d'aucun caractère exotique.
-const SPEED_GLYPHS: Array[String] = ["×1", "×2", "×3"]
+const SPEED_GLYPHS: Array[String] = ["×1", "×2", "×4"]
 
 var _view: SimView
 var _view_host: SubViewportContainer
@@ -51,6 +65,22 @@ var _level_data: Dictionary = {}
 var _level_id: String = ""
 var _params: RuleParams
 var _allowed: Array[int] = []
+
+## MODE ÉPREUVE — main tirée pour ce niveau, vide en mode normal. Posée AVANT
+## `load_level`, qui l'adopte à la place de la bibliothèque du niveau.
+var drawn_rules: Array[int] = []
+
+## MODE ÉPREUVE — appelé avant chaque lancement de la simulation. Renvoie
+## `false` quand il ne reste aucun lancement : la partie s'arrête là.
+##
+## C'EST UN RAPPEL, PAS UN COMPTEUR LOCAL, et c'est délibéré : le budget
+## appartient à l'épreuve, qui court sur tout un chapitre. Un compteur tenu ici
+## serait remis à zéro à chaque niveau, et le mode perdrait exactement ce qui
+## le fonde — que la force brute se paie sur la suite.
+var on_launch: Callable = Callable()
+
+## MODE ÉPREUVE — lancements restants, pour l'affichage seul.
+var launches_left: int = -1
 ## Nombre de rangs OUVERTS sur ce niveau (`slots`). La pile en compte quatre
 ## (RG-05), mais un niveau en déclare moins — et le validateur n'énumère les
 ## piles que jusqu'à ce nombre. Laisser le joueur en remplir quatre lui
@@ -70,9 +100,16 @@ var _finished: bool = false
 ## souvent avant que rien de visible ne se soit produit. Sans ce délai, le
 ## bilan surgit sur un écran où il ne s'est apparemment rien passé, et
 ## l'échec devient inexplicable (pilier P4).
-const OUTCOME_DELAY := 1.1
+## PORTE A 2,2 s. La marque de mort avait besoin de son temps d'ecran — sauf
+## qu'elle n'etait jamais dessinee (voir SimView._mark_departures), et que la
+## simulation tourne desormais quatre fois plus vite. Le joueur voyait un ecran
+## de defaite arriver sur une scene ou il ne s'etait visiblement rien passe :
+## « les echecs sont incompris ». L'echo dure 1,6 s ; le bilan attend qu'il
+## finisse, plus une demi-seconde pour comprendre ce qu'on vient de voir.
+const OUTCOME_DELAY := 2.2
 var _outcome_countdown: float = -1.0
 var _objective_panel: Panel
+var _edge_echo: Control
 var _banner_flash: float = 0.0
 var _objective_panel_label: Label
 
@@ -89,6 +126,12 @@ func load_level(level_data: Dictionary, params: RuleParams, level_id: String = "
 	_allowed = []
 	for v in level_data.get("allowed_rules", [1]):
 		_allowed.append(int(v))
+	# MODE ÉPREUVE : la main tirée REMPLACE la bibliothèque du niveau. Elle est
+	# garantie contenir au moins une solution (voir `ArcadeDraw`) ; on ne la
+	# filtre pas ici, on l'adopte telle quelle — filtrer après coup rouvrirait
+	# la porte à une main injouable.
+	if not drawn_rules.is_empty():
+		_allowed = drawn_rules.duplicate()
 	# LECTURE UNIQUE, partagée avec le validateur (`LevelSpec`). Toute autre
 	# lecture de la clé `slots` est un défaut : voir invariant n°11.
 	_open_slots = LevelSpec.open_slots(level_data)
@@ -178,7 +221,7 @@ func _build() -> void:
 	right_row.add_child(_speed_button)
 
 	_objective_label = Label.new()
-	_objective_label.add_theme_font_size_override("font_size", 28)
+	_objective_label.add_theme_font_size_override("font_size", UiMetrics.font_size(28))
 	_objective_label.add_theme_color_override("font_color", Color(0.86, 0.90, 1.0))
 	# L'interface est PAR-DESSUS le jeu : elle doit rester lisible sur
 	# n'importe quel fond, y compris le halo d'une source de lumière. Un
@@ -196,6 +239,15 @@ func _build() -> void:
 	_build_panel()
 	_build_explain_panel()
 	_build_objective_panel()
+
+	# HALO DE BORD — l'issue se lit AUSSI a la peripherie. Un joueur qui suit un
+	# agent des yeux au centre de l'ecran ne verra pas un changement discret ;
+	# une bordure qui s'allume est perceptible sans etre regardee.
+	_edge_echo = _EdgeEcho.new()
+	_edge_echo.name = "EdgeEcho"
+	_edge_echo.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_edge_echo)
+	_edge_echo.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_layout()
 
 func _build_stack_bar() -> void:
@@ -230,14 +282,30 @@ func _build_panel() -> void:
 	_panel.visible = false
 	add_child(_panel)
 
-	var row := HBoxContainer.new()
+	# LE TIROIR ENVELOPPE, IL NE DÉBORDE PAS. Un `HBoxContainer` posait les
+	# règles sur une ligne unique, quelle qu'en soit la largeur : à quatre
+	# règles sur un écran de 720 la dernière sortait de l'écran, donc devenait
+	# injouable — et le joueur n'avait aucun moyen de savoir qu'elle existait.
+	#
+	# Ce n'est pas un détail d'affichage : tout ce qui suit (élargir les
+	# bibliothèques pour rendre au joueur un vrai choix) fait passer les niveaux
+	# de trois à cinq ou six règles. Corriger la disposition d'abord, sinon la
+	# correction de fond casse l'écran.
+	# GRILLE A COLONNES CALCULEES, et non conteneur a enveloppe automatique.
+	# `HFlowContainer` enveloppait bien, mais sa taille MINIMALE est celle d'une
+	# colonne unique : le `PanelContainer` qui l'heberge s'y ajustait, et le
+	# tiroir occupait tout l'ecran — bouton de lancement compris — pour six
+	# regles disposees sur trois rangs. Une grille annonce sa taille exacte.
+	var row := GridContainer.new()
 	row.name = "ChipRow"
-	row.add_theme_constant_override("separation", int(UiMetrics.GAP))
-	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.columns = 2
+	row.add_theme_constant_override("h_separation", int(UiMetrics.GAP))
+	row.add_theme_constant_override("v_separation", int(UiMetrics.GAP))
 	_panel.add_child(row)
 
 func _build_chips() -> void:
-	var row := _panel.get_node("ChipRow") as HBoxContainer
+	var row := _panel.get_node("ChipRow") as GridContainer
+	row.columns = _chips_per_row(_panel_width())
 	for child in row.get_children():
 		child.queue_free()
 	_chips = []
@@ -264,7 +332,9 @@ func _build_explain_panel() -> void:
 	add_child(_explain_panel)
 
 	_explain_label = Label.new()
-	_explain_label.add_theme_font_size_override("font_size", 24)
+	# Sans enveloppe, une phrase de règle sortait de l'écran par la droite.
+	_explain_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_explain_label.add_theme_font_size_override("font_size", UiMetrics.font_size(24))
 	_explain_label.add_theme_color_override("font_color", Color(0.88, 0.92, 1.0))
 	_explain_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_explain_panel.add_child(_explain_label)
@@ -302,7 +372,7 @@ func _build_objective_panel() -> void:
 	title.name = "Title"
 	title.text = "Objectif"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 30)
+	title.add_theme_font_size_override("font_size", UiMetrics.font_size(30))
 	title.add_theme_color_override("font_color", Color(0.55, 0.80, 1.0))
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(title)
@@ -310,7 +380,7 @@ func _build_objective_panel() -> void:
 	_objective_panel_label = Label.new()
 	_objective_panel_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_objective_panel_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_objective_panel_label.add_theme_font_size_override("font_size", 26)
+	_objective_panel_label.add_theme_font_size_override("font_size", UiMetrics.font_size(26))
 	_objective_panel_label.add_theme_color_override("font_color", Color(0.90, 0.93, 1.0))
 	_objective_panel_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(_objective_panel_label)
@@ -319,7 +389,7 @@ func _build_objective_panel() -> void:
 	hint.name = "Hint"
 	hint.text = ""
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	hint.add_theme_font_size_override("font_size", 20)
+	hint.add_theme_font_size_override("font_size", UiMetrics.font_size(20))
 	hint.add_theme_color_override("font_color", Color(0.45, 0.50, 0.60))
 	hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(hint)
@@ -329,14 +399,22 @@ func _build_objective_panel() -> void:
 ## `OBJECTIVE_MIN_SECONDS` : le panneau ne peut PAS être renvoyé avant ce
 ## délai. Sans plancher, le geste qui ouvre le niveau chasse l'énoncé avant
 ## qu'il soit lu — et le joueur découvre qu'il a raté quelque chose sans
-## savoir quoi. Deux secondes : le temps d'une phrase courte.
+## savoir quoi.
+##
+## RAMENÉ DE 2,0 À 1,2 s. Le plancher existe pour absorber le geste QUI VIENT
+## D'OUVRIR le niveau — celui-là arrive en quelques centaines de millisecondes,
+## pas au bout de deux secondes. Le reste n'était pas de la protection mais de
+## l'attente imposée, et elle s'ajoutait aux autres : « le jeu est trop lent,
+## les attentes sont frustrantes » (essai sur l'appareil). Le joueur qui veut
+## lire garde la main — le panneau ne s'efface seul qu'au bout de dix secondes,
+## et le bandeau le rouvre à volonté.
 ##
 ## `OBJECTIVE_MAX_SECONDS` : au-delà, il s'efface seul. Dix secondes, c'est
 ## trois fois le temps de lecture de l'énoncé le plus long du chapitre —
 ## assez pour une lecture posée, trop court pour rester en travers du plateau
 ## si le joueur a regardé ailleurs. Le bandeau, lui, rouvre l'énoncé à
 ## volonté : rien n'est perdu.
-const OBJECTIVE_MIN_SECONDS := 2.0
+const OBJECTIVE_MIN_SECONDS := 1.2
 const OBJECTIVE_MAX_SECONDS := 10.0
 var _objective_elapsed: float = -1.0
 
@@ -486,7 +564,7 @@ func _index_of_rule(rule_id: int) -> int:
 func _open_panel() -> void:
 	if _panel.visible:
 		return
-	_panel.size = Vector2(_panel.size.x, _panel_height())
+	_panel.size = Vector2(_panel_width(), _panel.get_combined_minimum_size().y)
 	_panel.position.y = _panel_resting_y() + _panel.size.y
 	_panel.visible = true
 	var tween := create_tween()
@@ -522,6 +600,37 @@ func _show_note(text: String) -> void:
 	_explain_label.text = text
 	_explain_panel.visible = true
 	_position_explain_panel()
+
+## MODE ÉPREUVE — le budget restant tient dans le bandeau d'objectif, à côté de
+## l'avancement. Il n'a pas d'écran à lui : une ressource qu'on ne voit qu'en
+## la dépensant ne se gère pas, et une qui a son propre panneau se regarde au
+## lieu de se compter.
+##
+## IL EST UN SUFFIXE, PAS UN AJOUT. Le bandeau est réécrit à chaque tick ;
+## coller le compteur après coup le faisait disparaître à la première image de
+## simulation — le joueur voyait sa seule ressource clignoter puis s'effacer.
+func _launch_suffix() -> String:
+	if launches_left < 0:
+		return ""
+	return "   ·   %d lancement%s" % [launches_left, "s" if launches_left > 1 else ""]
+
+func _refresh_launch_banner() -> void:
+	if launches_left < 0 or _objective_label == null or _level_data.is_empty():
+		return
+	_objective_label.text = RuleCatalog.objective_line(
+		_level_data.get("objectives", []), _view.state()) + _launch_suffix()
+
+## Le budget est épuisé : la partie se termine sur-le-champ, et le bilan le dit
+## avec ses mots. Laisser le joueur continuer serait lui faire dépenser une
+## ressource qu'il n'a plus.
+func _finish_trial_exhausted() -> void:
+	if _finished:
+		return
+	_finished = true
+	_playing = false
+	_refresh_transport()
+	finished.emit(_level_id, false, _view.tick(), 0, _stack.duplicate(),
+		"Plus aucun lancement : l'épreuve s'arrête ici.")
 
 # --- EF-05 : le diagnostic, et la bascule marche/pause --------------------
 
@@ -565,7 +674,12 @@ func _show_explain_at(local_pos: Vector2) -> bool:
 	var cell := _view.cell_at_pixel(local_pos)
 	if cell.x < 0:
 		return false
-	var index := _view.agent_near(cell, 1)
+	# RAYON ZERO : seule la case TOUCHEE ouvre le diagnostic. A un rayon d'une
+	# case, tout le pourtour d'une nuee de vingt agents comptait comme « sur un
+	# agent », si bien qu'un appui a cote n'avait pas l'effet attendu — le joueur
+	# concluait que toucher le vide ne faisait rien. Le vide doit rendre la main
+	# a marche/pause, qui est le geste principal de l'ecran.
+	var index := _view.agent_near(cell, 0)
 	if index < 0:
 		return false
 	# La décision du dernier mouvement s'est prise sur l'état PRÉCÉDENT
@@ -587,7 +701,21 @@ func _position_explain_panel() -> void:
 	var m := UiMetrics.safe_area_margins(vp)
 	var pad := 18.0
 	var width: float = vp.x - m.x - m.z
+	# LE TEXTE ENVELOPPE, ET LA HAUTEUR SUIT L'ENVELOPPE.
+	#
+	# Le libellé ne renvoyait pas à la ligne : une phrase de règle de 127
+	# caractères se dessinait sur une seule ligne, donc sortait de l'écran par la
+	# droite. Compter les « \n » ne suffisait pas non plus — il n'y en avait
+	# aucun. On demande donc à la police combien de lignes le texte occupe RÉELLEMENT
+	# à cette largeur, ce qui reste juste quel que soit l'écran.
+	var inner: float = width - pad * 2.0
+	var font: Font = _explain_label.get_theme_font("font")
+	var font_size: int = _explain_label.get_theme_font_size("font_size")
 	var lines: int = maxi(_explain_label.text.split("\n").size(), 1)
+	if font != null and inner > 0.0:
+		var measured: float = font.get_string_size(
+			_explain_label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
+		lines = maxi(lines, int(ceil(measured / inner)))
 	var height: float = pad * 2.0 + lines * 32.0
 	_explain_panel.position = Vector2(m.x, _field_bottom() - height - UiMetrics.GAP)
 	_explain_panel.size = Vector2(width, height)
@@ -611,13 +739,48 @@ func _field_bottom() -> float:
 	var m := UiMetrics.safe_area_margins(vp)
 	return vp.y - m.w - UiMetrics.MIN_TOUCH_TARGET * 1.25 - UiMetrics.GAP
 
-func _panel_height() -> float:
-	return UiMetrics.MIN_TOUCH_TARGET + UiMetrics.MARGIN * 2.0
+## Hauteur du tiroir : autant de rangs qu'il en faut pour poser toutes les
+## règles sans qu'une seule sorte de l'écran.
+##
+## LE CALCUL EST EXPLICITE, PAS DÉLÉGUÉ AU CONTENEUR. Demander sa taille
+## minimale à `HFlowContainer` avant qu'il ait été disposé rend la hauteur d'un
+## seul rang, et le tiroir se retrouve trop court d'exactement ce qu'on voulait
+## corriger. Ici la formule ne dépend d'aucun ordre de disposition.
+func _chips_per_row(width: float) -> int:
+	# `width` est DEJA la largeur utile (marges de zone sure retranchees). En
+	# retrancher la marge une seconde fois faisait tenir une seule regle par rang
+	# la ou deux tiennent, et le tiroir devenait une colonne qui mangeait l'ecran.
+	# Une marge comptee deux fois ne se voit pas dans un calcul : elle se voit a
+	# la capture.
+	var chip_w: float = UiMetrics.MIN_TOUCH_TARGET * 2.0
+	return maxi(int(floor((width + UiMetrics.GAP) / (chip_w + UiMetrics.GAP))), 1)
+
+func _panel_rows(width: float) -> int:
+	var n: int = maxi(_allowed.size(), 1)
+	return int(ceil(float(n) / float(_chips_per_row(width))))
+
+## Largeur utile du tiroir. UNE SEULE SOURCE, et c'est le correctif : la
+## hauteur etait calculee dans `_open_panel` a partir de `_panel.size.x`, encore
+## NUL a cet instant. La formule concluait « une regle par rang », donc six
+## rangs pour six regles, et le tiroir couvrait l'ecran entier — bouton de
+## lancement compris. Une largeur nulle ne se voit pas dans un calcul ; elle se
+## voit a la capture.
+func _panel_width() -> float:
+	var vp := get_viewport_rect().size
+	var m := UiMetrics.safe_area_margins(vp)
+	return maxf(vp.x - m.x - m.z, 1.0)
+
+func _panel_height(width: float = -1.0) -> float:
+	var w: float = width if width > 0.0 else _panel_width()
+	var rows: int = _panel_rows(w)
+	return UiMetrics.MIN_TOUCH_TARGET * rows \
+		+ UiMetrics.GAP * float(rows - 1) + UiMetrics.MARGIN * 2.0
 
 func _panel_resting_y() -> float:
 	var vp := get_viewport_rect().size
 	var m := UiMetrics.safe_area_margins(vp)
-	return vp.y - m.w - UiMetrics.MIN_TOUCH_TARGET * 1.25 - UiMetrics.GAP - _panel_height()
+	return vp.y - m.w - UiMetrics.MIN_TOUCH_TARGET * 1.25 - UiMetrics.GAP \
+		- _panel_height(vp.x - m.x - m.z)
 
 func _layout() -> void:
 	var vp := get_viewport_rect().size
@@ -663,9 +826,16 @@ func _layout() -> void:
 			left, _field_top(), vp.x - right, vp.y - _field_bottom())
 
 	if _panel != null:
-		_panel.size = Vector2(width, _panel_height())
+		_panel.size = Vector2(width, _panel_height(width))
+		_panel.custom_minimum_size = Vector2(width, _panel_height(width))
 		_panel.position = Vector2(left,
-			_panel_resting_y() if _panel.visible else bottom + _panel_height())
+			_panel_resting_y() if _panel.visible else bottom + _panel_height(width))
+		# Le nombre de colonnes suit la largeur DISPONIBLE : sur un ecran etroit
+		# la grille passe a deux colonnes, et le tiroir grandit d'un rang au lieu
+		# de pousser une regle hors de l'ecran.
+		var chip_row := _panel.get_node_or_null("ChipRow") as GridContainer
+		if chip_row != null:
+			chip_row.columns = _chips_per_row(width)
 
 	if _objective_panel != null:
 		var ow: float = width * 0.9
@@ -738,9 +908,19 @@ func _pause() -> void:
 	_refresh_transport()
 
 func _toggle_play() -> void:
+	# MODE ÉPREUVE : un lancement se paie AU DÉMARRAGE, jamais à la pause. Le
+	# joueur peut arrêter, reprendre, revenir en arrière et repartir sans rien
+	# dépenser — ce qu'on compte, c'est une tentative, pas une manipulation du
+	# transport. Compter les reprises punirait l'observation, qui est
+	# précisément ce que le mode veut encourager.
+	if not _playing and on_launch.is_valid() and not bool(on_launch.call()):
+		_show_note("Plus aucun lancement : l'épreuve s'arrête ici.")
+		_finish_trial_exhausted()
+		return
 	_playing = not _playing
 	if _playing:
 		_hide_explain()
+		_refresh_launch_banner()
 	_refresh_transport()
 	_notify_state()
 
@@ -754,7 +934,7 @@ func _refresh_transport() -> void:
 		_play_button.text = "❚❚" if _playing else "▶"
 	if _speed_button != null:
 		_speed_button.text = SPEED_GLYPHS[_speed_index]
-		_speed_button.tooltip_text = "Vitesse ×%d" % int(SPEEDS[_speed_index])
+		_speed_button.tooltip_text = "Vitesse %s" % SPEED_GLYPHS[_speed_index]
 
 func _notify_state() -> void:
 	state_changed.emit()
@@ -766,7 +946,8 @@ func _process(delta: float) -> void:
 		_view.advance(delta, SPEEDS[_speed_index])
 	var state := _view.current_state()
 	if _objective_label != null:
-		_objective_label.text = RuleCatalog.objective_line(_level_data.get("objectives", []), state)
+		_objective_label.text = RuleCatalog.objective_line(_level_data.get("objectives", []), state) \
+			+ _launch_suffix()
 	if _objective_elapsed >= 0.0:
 		_objective_elapsed += delta
 		# L'invite n'apparaît QUE lorsqu'elle devient vraie. Annoncer
@@ -789,10 +970,13 @@ func _process(delta: float) -> void:
 
 	if not _finished and state.outcome != SimState.Outcome.RUNNING:
 		# La simulation a tranché ; l'interface, elle, laisse d'abord VOIR ce
-		# qui s'est passé — la marque de mort a besoin de son temps d'écran.
+		# qui s'est passé — l'écho a besoin de son temps d'écran.
 		_finished = true
 		_playing = false
 		_outcome_countdown = OUTCOME_DELAY
+		if _edge_echo != null:
+			(_edge_echo as _EdgeEcho).play(
+				state.outcome == SimState.Outcome.WON)
 	if _outcome_countdown > 0.0:
 		_outcome_countdown -= delta
 		if _outcome_countdown <= 0.0:
@@ -800,3 +984,59 @@ func _process(delta: float) -> void:
 			finished.emit(_level_id, state.outcome == SimState.Outcome.WON,
 				state.tick, state.counters.lost, _compact_stack(),
 				RuleCatalog.outcome_reason(_level_data.get("objectives", []), state))
+
+## HALO DE BORD D'ÉCRAN — l'issue de la partie, dite à la périphérie.
+##
+## POURQUOI IL EXISTE. « L'écran de défaite arrive avant le moment fatidique » :
+## le joueur suivait la nuée au centre et ne voyait rien changer avant que le
+## bilan ne surgisse. L'écho de la case fatale dit OÙ ; celui-ci dit QUE, et il
+## est perceptible sans être regardé — la vision périphérique capte un
+## changement de luminosité au bord bien avant un détail au centre.
+##
+## IL NE CLIGNOTE PAS. Une bordure qui clignote est une alarme, et une alarme
+## sur un échec de puzzle punit au lieu d'informer. Elle s'allume et s'éteint
+## une fois, en s'élargissant — un écho, comme celui de la case.
+##
+## Rouge sur un échec, vert sur une victoire, et rien du tout le reste du temps.
+class _EdgeEcho extends Control:
+	const SPAN := 1.6
+
+	var _age: float = -1.0
+	var _won: bool = false
+
+	func play(won: bool) -> void:
+		_won = won
+		_age = 0.0
+		set_process(true)
+
+	func _ready() -> void:
+		set_process(false)
+
+	func _process(delta: float) -> void:
+		if _age < 0.0:
+			return
+		_age += delta
+		if _age >= SPAN:
+			_age = -1.0
+			set_process(false)
+		queue_redraw()
+
+	func _draw() -> void:
+		if _age < 0.0:
+			return
+		var t: float = clampf(_age / SPAN, 0.0, 1.0)
+		var tint: Color = ViewPalette.EXIT if _won else ViewPalette.DANGER
+		# Bandes concentriques depuis le bord : la plus extérieure est la plus
+		# opaque, et l'ensemble s'efface. Dessiné en rectangles évidés plutôt
+		# qu'en dégradé — aucune texture, tout est procédural (DT-13).
+		var bands := 7
+		for i in range(bands):
+			var depth: float = float(i) / float(bands)
+			var band := tint
+			band.a = (1.0 - t) * (1.0 - depth) * (1.0 - depth) * 0.55
+			if band.a <= 0.003:
+				continue
+			var inset: float = depth * (18.0 + 26.0 * t) * UiMetrics.FONT_SCALE
+			var thickness: float = maxf(6.0 * UiMetrics.FONT_SCALE, 4.0)
+			draw_rect(Rect2(Vector2(inset, inset),
+				size - Vector2(inset, inset) * 2.0), band, false, thickness)

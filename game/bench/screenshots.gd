@@ -113,12 +113,145 @@ func _capture_all() -> void:
 	game._hide_objective_panel()
 	await _shot("11-ch1-05-terrain")
 
+	# LES ELEMENTS DES CHAPITRES 3 A 6 ONT LEUR CAPTURE, et c'est le seul moyen
+	# de verifier qu'ils sont DESSINES. Le moteur les reconnaissait depuis le
+	# premier lot alors que l'ecran les ignorait : une geometrie invisible est
+	# une geometrie injuste, et aucun test de simulation ne l'aurait dit.
+	game = _app._open_game("ch3_02", false)
+	game._hide_objective_panel()
+	for i in range(6):
+		game._view.step_forward()
+	await _shot("12-ch3-02-piste")
+
+	game = _app._open_game("ch4_02", false)
+	game._hide_objective_panel()
+	# LES PORTEURS DOIVENT SE VOIR. Sans cette capture, on ne saurait pas si la
+	# marque de charge est lisible sur une nuee en mouvement — et tout le
+	# chapitre 4 se joue sur cette information.
+	# La pile est posee par la voie de reprise de session — trois gestes
+	# simules s'arretaient au deuxieme rang, et ce n'est pas l'interface qu'on
+	# veut eprouver ici mais le RENDU des porteurs.
+	var carry := Session.new()
+	carry.level_id = "ch4_02"
+	carry.stack = [RuleRegistry.R11_CARRY, RuleRegistry.R12_DROP_AT_GOAL,
+		RuleRegistry.R01_TOWARD_LIGHT]
+	game.restore_session(carry)
+	for i in range(3):
+		game._view.step_forward()
+	await _shot("13-ch4-02-ressources-sens-unique")
+
+	game = _app._open_game("ch5_02", false)
+	game._hide_objective_panel()
+	await _shot("14-ch5-02-porte-a-pression")
+
+	# LE JOKER A L'ECRAN. Son identifiant porte son argument dans ses bits hauts
+	# et vaut 784, pas 16 : toute la chaine d'interface doit le traverser sans
+	# broncher — catalogue, tuile, pile, explication. C'est le seul endroit du
+	# jeu ou un identifiant de regle n'est pas un petit entier.
+	game = _app._open_game("ch6_01", false)
+	game._hide_objective_panel()
+	game._on_slot_tapped(0)
+	game._on_chip_tapped(RuleRegistry.make_joker(GridState.CellType.STATIC_DANGER))
+	game._on_slot_tapped(1)
+	game._on_chip_tapped(RuleRegistry.R01_TOWARD_LIGHT)
+	for i in range(9):
+		game._view.step_forward()
+	await _shot("16-ch6-01-joker")
+
+	# BIBLIOTHEQUE LARGE, TIROIR OUVERT. Les niveaux offrent desormais cinq a six
+	# regles pour trois rangs ; sur un ecran etroit un rang unique les mettait
+	# hors de l'ecran, donc injouables ET invisibles. La capture est la preuve
+	# que l'enveloppe tient — un test mesure les positions, l'oeil verifie que
+	# le resultat se lit encore.
+	var wide := _app._open_game("ch4_04", false)
+	wide._hide_objective_panel()
+	wide._on_slot_tapped(0)
+	await _shot("19-bibliotheque-large")
+
+	# ECHO DE MORT. C'est LA capture a regarder pour juger le retour d'echec :
+	# un agent meurt sur une case rouge, et l'ecran doit le dire — sur la case
+	# (anneau rouge) ET a la peripherie (halo de bord). Avant, rien ne le disait,
+	# et le bilan tombait sur une scene ou il ne s'etait visiblement rien passe.
+	var doomed := _app._open_game("ch1_02", false)
+	doomed._hide_objective_panel()
+	var suicide := Session.new()
+	suicide.level_id = "ch1_02"
+	suicide.stack = [RuleRegistry.R01_TOWARD_LIGHT]
+	doomed.restore_session(suicide)
+	for i in range(12):
+		doomed._view.step_forward()
+	doomed._edge_echo.play(false)
+	await _shot("20-echo-de-mort")
+
+	# ZONE INTERDITE. Entrer sur une de ses cases fait perdre A L'INSTANT, et
+	# elle n'etait pas dessinee du tout : le joueur perdait sur une zone qui
+	# n'existait nulle part a l'ecran.
+	var banned := _app._open_game("ch6_02", false)
+	banned._hide_objective_panel()
+	await _shot("21-zone-interdite")
+
+	# ECHO DE VICTOIRE. Le pendant du precedent, et il n'avait ete verifie que
+	# par un test : le DERNIER agent sorti porte un anneau vert, et le bord de
+	# l'ecran s'allume. Gagner et perdre ne doivent pas se ressembler.
+	var winner := _app._open_game("ch1_01", false)
+	winner._hide_objective_panel()
+	var solution := Session.new()
+	solution.level_id = "ch1_01"
+	solution.stack = [RuleRegistry.R01_TOWARD_LIGHT]
+	winner.restore_session(solution)
+	# Jusqu'au tick ou le dernier franchit : c'est l'instant qu'on veut voir.
+	for i in range(60):
+		winner._view.step_forward()
+		if winner._view.current_state().outcome != SimState.Outcome.RUNNING:
+			break
+	winner._edge_echo.play(true)
+	await _shot("22-echo-de-victoire")
+
+	# Selection : vingt-deux niveaux groupes par chapitre, ecran defilant, avec
+	# les defis CONSERVES en pastilles. Sans trace dans la liste, un defi gagne
+	# disparaitrait avec l'ecran de bilan.
+	_app.progress.record_win("ch1_01", 15, 0)
+	_app.progress.record_win("ch1_02", 29, 0)
+	_app.progress.record_challenges("ch1_01",
+		PackedStringArray(["Économie — résolu avec 1 règle"]))
+	_app.progress.record_challenges("ch1_02", PackedStringArray([
+		"Économie — résolu avec 2 règles", "Efficience — 29 ticks, seuil 29"]))
+	_app._open_select()
+	await _shot("15-selection-chapitres")
+
+	# MODE EPREUVE : la main tiree et le budget de lancements. C'est la seule
+	# facon de verifier qu'un joueur voit ce qu'il lui reste — une ressource
+	# invisible ne se gere pas.
+	_app.progress.record_win("ch1_03", 30, 0)
+	_app.progress.record_win("ch1_04", 18, 0)
+	_app.progress.record_win("ch1_05", 20, 0)
+	_app._open_trial_select()
+	await _shot("18a-epreuve-choix-chapitre")
+	_app._start_trial(1)
+	# Le panneau d'objectif COUVRE la palette. La capture doit montrer la main
+	# tiree, pas le panneau qui la cache : une main invisible ne se verifie pas.
+	var trial_screen := _app._current as GameScreen
+	trial_screen._hide_objective_panel()
+	# Le tiroir OUVERT, sinon la capture ne montre que des rangs vides : la main
+	# tiree vit dans la bibliotheque, et c'est elle qu'il faut voir retrecie.
+	trial_screen._on_slot_tapped(0)
+	await _shot("18b-epreuve-main-tiree")
+
 	# Les deux bilans, gagné puis perdu.
 	_app._on_level_finished("ch1_01", true, 14, 0, [RuleRegistry.R01_TOWARD_LIGHT], "La nuée a rempli l'objectif.")
 	await _shot("08-bilan-gagne")
 
 	_app._on_level_finished("ch1_02", false, 6, 1, [RuleRegistry.R01_TOWARD_LIGHT], "1 agent perdu — l'objectif de 20 sur 20 est devenu inatteignable.")
 	await _shot("09-bilan-perdu")
+
+	# LES TROIS DEFIS RG-18 OBTENUS D'UN COUP. C'est la seule capture qui montre
+	# la couche de rejouabilite : sans elle, on ne saurait pas si un defi calibre
+	# se voit reellement. [Cohesion, Lumiere] sur N5 gagne en 20 ticks — deux
+	# regles (economie), sans la Fuite (abstinence), pile au seuil (efficience).
+	_app._on_level_finished("ch1_05", true, 20, 0,
+		[RuleRegistry.R03_STAY_GROUPED, RuleRegistry.R01_TOWARD_LIGHT],
+		"La nuée a rempli l'objectif.")
+	await _shot("17-bilan-defis")
 
 func _shot(name: String) -> void:
 	# Attendre que les transitions soient FINIES : saisir un panneau à

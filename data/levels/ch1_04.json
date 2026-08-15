@@ -133,6 +133,10 @@
     3
   ],
   "calibrated_on": "82639d340544478d",
+  "challenges": {
+    "abstinence_rule": 2,
+    "efficiency_ticks": 18
+  },
   "expected_classes": 1,
   "expected_wins": 2,
   "geometry_hash": "82639d340544478d",
@@ -317,10 +321,13 @@
     ],
     "cycle_index": [],
     "cycles": [],
+    "doors": [],
+    "one_way": [],
     "size": [
       11,
       16
-    ]
+    ],
+    "trail": []
   },
   "id": "ch1_04",
   "lesson": "Deux facons d'echouer, une seule de passer : detourner sans ralentir.",

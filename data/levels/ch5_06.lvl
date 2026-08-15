@@ -1,0 +1,54 @@
+# N29 « Le triple verrou » — trois commandes, et personne pour compter.
+#
+# LA PORTE DE N16, A TROIS COMMANDES AU LIEU DE DEUX, et l'ecart n'est pas
+# d'un cran : il change la regle qui la resout. Deux alcoves se remplissent par
+# simple dispersion ; trois, dont une eloignee, demandent que la nuee occupe
+# une LARGEUR qu'aucune poussee locale ne lui donne.
+#
+# UNE SEULE PILE GAGNE, ET LE NIVEAU EST MARQUE `tutorial` POUR LE DIRE. Dans
+# ce depot le drapeau signifie « une lecon, une reponse » : il rend le verdict
+# du validateur exact et empeche le bilan d'annoncer « 1 solution connue », ce
+# qui suggererait qu'on en cherche d'autres. Que ce soit l'un des niveaux les
+# plus durs du jeu n'y change rien.
+#
+# R04 CONTRE R14, UNE FOIS DE PLUS, et c'est ici que l'ecart se voit le mieux.
+# R04 regarde le CONTACT — d² <= 2 — et rend une case : elle desserre les rangs
+# sans jamais eloigner personne de l'axe. R14 regarde la ZONE — d² <= 9 — et
+# rend un quartier : elle vide la region et pousse jusqu'aux parois. Seule la
+# seconde atteint la troisieme alcove.
+#
+# LES VIGIES NE SORTENT PAS, ET ELLES SONT PLUS NOMBREUSES. Trois agents
+# tiennent les commandes, et ceux qui font la queue derriere elles dans les
+# couloirs d'acces restent aussi — R01 leur propose le Nord a chaque tick, la
+# case est occupee, ils ne bougent plus. Aucune regle ne dit « reviens ».
+#
+# L'EXTRACTION EST DEMANDEE A 55 %, et ce chiffre est le sujet du niveau. Il ne
+# recompense pas la nuee qui perd le moins : il recompense celle qui accepte de
+# perdre ASSEZ pour que le reste passe. **Un joueur qui cherche a sauver tout
+# le monde n'ouvre pas la porte.**
+id: ch5_06
+name: Le triple verrou
+tutorial: true
+allowed_rules: [R01, R03, R04, R07, R14, R15]
+slots: 3
+max_ticks: 200
+objective: extraction 55
+door: required=3 plates=1,4;3,4;9,4 panels=5,2
+lesson: "Il ne recompense pas la nuee qui perd le moins, mais celle qui accepte de perdre assez."
+expected_wins: 1
+expected_classes: 1
+calibrated_on: 4e54bd520fd5cc3a
+---
+. . . . . L . . . . .
+# # # # # E # # # # #
+# # # # # P # # # # #
+# # # # # . . . # # #
+# . # . # . . . # . #
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . . . . . . . . .

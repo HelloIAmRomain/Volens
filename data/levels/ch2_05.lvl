@@ -1,0 +1,48 @@
+# N24 « Les deux moities » — une nuee coupee en deux doit s'accorder.
+#
+# MEME CARTE QUE N9, A LA NUEE PRES. La lumiere est a l'Ouest, l'unique
+# ouverture a l'Est ; R01 ne consent jamais a s'eloigner, donc aucune pile
+# menee par la Lumiere n'atteindra la sortie. Ce mecanisme est acquis.
+#
+# CE QUI CHANGE : LA NUEE DEMARRE EN DEUX GROUPES SEPARES, chacun de dix
+# agents, distants de trois colonnes. Ils ne se percoivent qu'a la limite de
+# la portee de copie (d² <= 16), et pas du tout au premier tick, ou personne
+# n'a encore bouge.
+#
+# **UNE DIRECTION DOIT TRAVERSER LE VIDE.** R04 seme dans chaque groupe
+# separement — donc dans des sens qui n'ont aucune raison de coincider. R05
+# propage, mais elle ne copie que ce qu'elle VOIT : tant que les deux moities
+# ne se rapprochent pas, chacune garde la sienne. Ce n'est qu'une fois les deux
+# a portee que la majorite tranche, et que la nuee part d'un bloc.
+#
+# LE JOUEUR NE PEUT PAS CHOISIR QUELLE MOITIE L'EMPORTE, et c'est le sujet :
+# il ne compose pas une trajectoire, il compose les conditions pour qu'une
+# trajectoire commune EMERGE. C'est la formulation la plus nue de ce que le jeu
+# demande depuis le premier niveau.
+id: ch2_05
+name: Les deux moities
+tutorial: false
+allowed_rules: [R01, R04, R05, R06]
+slots: 3
+max_ticks: 200
+objective: extraction 100
+lesson: "On ne compose pas une trajectoire, on compose les conditions pour qu'une trajectoire commune emerge."
+expected_wins: 4
+expected_classes: 3
+challenge: efficiency=33 abstinence=R01
+calibrated_on: a3a2f740dd668f7d
+---
+. L . . . . . . . . .
+# # # # # # # # E E E
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+o o . . . o o . . . .
+o o . . . o o . . . .
+o o . . . o o . . . .
+o o . . . o o . . . .
+o o . . . o o . . . .

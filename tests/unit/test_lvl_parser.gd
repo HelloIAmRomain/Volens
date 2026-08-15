@@ -134,9 +134,17 @@ func test_rejects_unknown_symbol() -> void:
 	var result := _parse({}, {5: ". . z . . . . ."})
 	assert_string_contains(_errors_joined(result), "symbole inconnu")
 
-func test_rejects_one_way_symbols_in_v1() -> void:
+func test_accepts_one_way_symbols_and_records_their_direction() -> void:
+	# Rejetes jusqu'au 14 aout 2026, faute d'orientation dans `core/sim`.
+	# `GridState.one_way_dir` la porte desormais et `can_traverse` la controle.
+	# Le symbole designe la direction AUTORISEE : « > » se lit « on n'y entre
+	# qu'en allant vers l'Est ».
 	var result := _parse({}, {5: ". . > . . . . ."})
-	assert_string_contains(_errors_joined(result), "sens unique")
+	assert_eq(_errors_joined(result), "", "un sens unique ne doit plus etre une erreur")
+	var one_way: Array = (result["level"]["grid"] as Dictionary)["one_way"]
+	assert_eq(one_way.size(), 1, "le sens unique doit etre enregistre")
+	assert_eq(int((one_way[0] as Array)[2]), Directions.EAST,
+		"« > » doit designer l'Est comme direction autorisee")
 
 func test_rejects_grid_too_narrow() -> void:
 	var text := _header() + "objective: extraction 100\n---\n" + "\n".join(PackedStringArray([
@@ -171,7 +179,11 @@ func test_rejects_cycle_declared_without_cyclic_cell() -> void:
 # --- rejets : règles et espace -------------------------------------------------
 
 func test_rejects_unimplemented_rule() -> void:
-	var result := _parse({"allowed_rules": "[R01, R07]"})
+	# R99 n'existe pas et n'existera jamais : la bibliothèque est FERMÉE à seize
+	# règles (CDC §7.2). Ce test visait R07 jusqu'au 14 août 2026, date à
+	# laquelle R07 a été implémentée — un test dont l'exemple devient valide
+	# cesse de tester ce qu'il annonce, sans jamais le dire.
+	var result := _parse({"allowed_rules": "[R01, R99]"})
 	assert_string_contains(_errors_joined(result), "non implémentée")
 
 func test_rejects_duplicate_rule() -> void:

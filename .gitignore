@@ -15,3 +15,10 @@ export_presets.cfg
 # OS
 .DS_Store
 Thumbs.db
+
+# Outils de plateforme Android (adb, fastboot) telecharges hors du depot.
+# Ce sont des BINAIRES EXTERNES : les versionner ferait entrer dans le depot
+# une dependance que le projet declare ne pas avoir, et une centaine de Mo
+# avec elle. Ils vivent ici par commodite locale, jamais dans l'historique.
+/platform-tools/
+/platform-tools-*.zip

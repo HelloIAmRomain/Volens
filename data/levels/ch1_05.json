@@ -139,6 +139,10 @@
     3
   ],
   "calibrated_on": "259c1034803b57c1",
+  "challenges": {
+    "abstinence_rule": 2,
+    "efficiency_ticks": 20
+  },
   "expected_classes": 2,
   "expected_wins": 6,
   "geometry_hash": "259c1034803b57c1",
@@ -323,10 +327,13 @@
     ],
     "cycle_index": [],
     "cycles": [],
+    "doors": [],
+    "one_way": [],
     "size": [
       11,
       16
-    ]
+    ],
+    "trail": []
   },
   "id": "ch1_05",
   "lesson": "Deux ordres differents reussissent : il n'y a pas UNE bonne reponse.",

@@ -136,6 +136,9 @@ func _all_gd_files(dir_path: String) -> Array[String]:
 ## Invariant n°15 : tout niveau du catalogue déclare la géométrie sur laquelle
 ## ses paramètres ont été mesurés, et cette déclaration est encore vraie.
 func test_every_level_is_calibrated_on_its_current_geometry() -> void:
+	# `_playable_levels()` filtre le catalogue : elle peut renvoyer une liste
+	# vide sans qu'une ligne de ce fichier change.
+	assert_gt(_playable_levels().size(), 0, "aucun niveau jouable : le filtre a tout écarté")
 	for level in _playable_levels():
 		var data: Dictionary = level["data"]
 		var declared := LevelSpec.calibrated_on(data)

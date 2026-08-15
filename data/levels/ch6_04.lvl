@@ -1,0 +1,61 @@
+# N26 « Attendre ou traverser » — deux facons de payer le meme mur.
+#
+# DERNIER NIVEAU DU JEU, et il ne demande rien de neuf : il demande de CHOISIR
+# entre deux reponses que le joueur possede deja, et qui ne coutent pas la meme
+# chose.
+#
+# LE DISPOSITIF. Une bande de feu cyclique barre le niveau — quatre ticks
+# active, six eteinte — et la nuee demarre coupee en deux : une avant-garde,
+# une arriere-garde cinq rangees plus bas. L'avant-garde atteint la bande
+# pendant une fenetre ; l'arriere-garde arrive au tick suivant, quand le feu a
+# repris.
+#
+# PREMIERE REPONSE : ATTENDRE. R15 « Suivre le plus lent » fige ceux qui ont
+# trop d'avance ; la nuee se presente compacte et passe entiere dans une seule
+# fenetre. Elle ne perd personne, elle perd du temps.
+#
+# SECONDE REPONSE : NE PAS SUBIR LE FEU. Le joker « ignorer le feu cyclique »
+# rend la bande inoffensive ; la nuee la traverse sans se regrouper ni
+# attendre. Elle ne perd pas de temps, elle perd un RANG — et sur trois rangs,
+# c'est un tiers de la pile.
+#
+# **AUCUNE DES DEUX N'EST MEILLEURE**, et c'est tout ce que ce niveau enseigne.
+# Le defi d'efficience distingue la plus rapide sans fermer la porte a l'autre
+# — exactement le role que RG-19 assigne aux defis : nourrir la maitrise,
+# jamais conditionner.
+#
+# IL EST PERMISSIF, ET C'EST LE CARACTERE DU CHAPITRE. Dix-huit piles sur
+# quarante et une gagnent. Un dernier niveau qui serait le plus dur du jeu
+# dirait que la maitrise se mesure a la difficulte ; celui-ci dit qu'elle se
+# mesure au choix. Le chapitre 6 rouvre, il ne durcit pas.
+#
+# LE CHAMP EST OUVERT, et c'est une condition de R15 etablie en N17 : dans un
+# goulot, elle fige la nuee definitivement — la tete attend une queue qui ne
+# peut pas la rejoindre.
+id: ch6_04
+name: Attendre ou traverser
+tutorial: false
+allowed_rules: [R01, R03, R07, R09, R15, R16(C)]
+slots: 3
+max_ticks: 200
+objective: extraction 80
+objective: preservation 1
+cycle: period=10 active=4
+lesson: "Attendre coute du temps, ignorer coute un rang. Aucune des deux n'est meilleure."
+expected_wins: 31
+expected_classes: 3
+calibrated_on: c242630893772354
+---
+. . . . . L . . . . .
+E E E E E E E E E E E
+. . . . . . . . . . .
+C C C C C C C C C C C
+. . . . . . . . . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . . . . . . . . .

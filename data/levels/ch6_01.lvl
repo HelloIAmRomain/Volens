@@ -1,0 +1,65 @@
+# N18 « Le droit d'ignorer » — la derniere regle annule le monde.
+#
+# CHAPITRE 6, ET LE CDC L'APPELLE « L'EXCEPTION ». Il ne presente aucun
+# mecanisme nouveau : il donne au joueur le droit d'ANNULER l'un de ceux qu'il
+# a appris, et lui demande lequel. C'est la seule fin possible pour un jeu dont
+# le sujet est l'ordre des regles.
+#
+# R16 « Ignorer » EST LA SEULE REGLE QUI PREND UN ARGUMENT — le type de case
+# qu'elle neutralise, choisi au placement. L'interface propose donc plusieurs
+# tuiles R16, une par type ignorable ; dans le fichier de niveau et dans la
+# pile, elles sont un seul identifiant portant son argument dans ses bits
+# hauts. Le moteur n'en sait rien : une pile reste un tableau d'entiers.
+#
+# ELLE NE DECIDE RIEN ET N'AGIT SUR RIEN. Elle modifie la LECTURE du monde pour
+# l'agent qui la porte. C'est le genre « filtre » du dossier des genres, sous
+# sa forme la plus etroite : elle ne filtre pas des propositions, elle eteint
+# un type de case.
+#
+# SA POSITION DANS LA PILE EST INDIFFERENTE, et c'est la seule regle du jeu
+# dans ce cas. Elle occupe un rang — donc elle en coute un, et c'est son vrai
+# prix — mais elle agit sur tout le tick, pas a son tour.
+#
+# LE DISPOSITIF. La carte de N15 « Le passage », a l'identique : un feu
+# statique bouche l'unique ouverture. On la resolvait par le sacrifice, en
+# perdant un agent. Ici, R16 « ignorer le feu » la resout sans perdre personne
+# — et c'est exactement le sens du chapitre : **revenir sur ce qu'on croyait
+# etre le prix des choses.**
+#
+# LE MUR N'EST JAMAIS IGNORABLE, et c'est la seule limite du joker. Une regle
+# qui annulerait la geometrie ouvrirait tous les niveaux d'un coup, et un jeu
+# dont la derniere regle supprime les murs n'a plus de niveaux.
+#
+# LE SACRIFICE NE SUFFIT PLUS, ET C'EST LA VRAIE LECON. N15 demandait 95 % :
+# perdre un agent y etait acceptable. Ici l'extraction est a 100 %. R13 ouvre
+# toujours le passage, mais elle coute l'agent qui l'ouvre, et cet agent
+# manque. **Le joker rend gratuit ce qui coutait quelqu'un.**
+#
+# Le joueur qui rejoue N15 avec le joker en poche decouvre qu'il n'avait pas
+# trouve LA solution, mais la moins chere dont il disposait alors. C'est ce que
+# le chapitre 6 fait a tout le jeu : il ne rajoute rien, il rouvre.
+id: ch6_01
+name: Le droit d'ignorer
+tutorial: true
+allowed_rules: [R01, R03, R05, R13, R16(X)]
+slots: 3
+max_ticks: 150
+objective: extraction 100
+lesson: "Le joker rend gratuit ce qui coutait quelqu'un. Le chapitre 6 ne rajoute rien : il rouvre."
+expected_wins: 20
+expected_classes: 1
+calibrated_on: 63dd79a498898132
+challenge: efficiency=25 abstinence=R13
+---
+. . . . . L . . . . .
+# # # # # E # # # # #
+# # # # # X # # # # #
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . . . . . . . . .

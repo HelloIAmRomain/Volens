@@ -34,13 +34,19 @@ func _sheet_record(level_id: String) -> Dictionary:
 	return parsed if parsed is Dictionary else {}
 
 func test_every_ready_level_has_a_design_sheet() -> void:
+	var examined := 0
 	for i in range(LevelCatalog.count()):
 		var entry: Dictionary = LevelCatalog.entry(i)
 		if not bool(entry["ready"]):
 			continue
+		examined += 1
 		var level_id := String(entry["id"])
 		assert_false(_sheet_record(level_id).is_empty(),
 			"%s : fiche absente ou sans bloc de relevé" % level_id)
+	# Le filtre `ready` peut vider cette boucle sans qu'une ligne de ce fichier
+	# change : il suffit qu'un niveau cesse d'être prêt. Sans ce garde, le test
+	# passerait au vert en n'examinant rien.
+	assert_gt(examined, 0, "aucun niveau prêt examiné : le filtre a tout écarté")
 
 func test_the_sheets_match_the_levels_they_describe() -> void:
 	for i in range(LevelCatalog.count()):
@@ -102,6 +108,7 @@ func test_no_sheet_describes_a_level_that_does_not_exist() -> void:
 ## jeu annonce au joueur une pluralité qu'il n'a pas mesurée, et P5 (« il n'y
 ## a pas UNE bonne réponse ») devient une affirmation gratuite.
 func test_open_levels_announce_a_measured_number_of_solutions() -> void:
+	var examined := 0
 	for i in range(LevelCatalog.count()):
 		var entry: Dictionary = LevelCatalog.entry(i)
 		if not bool(entry["ready"]):
@@ -110,16 +117,21 @@ func test_open_levels_announce_a_measured_number_of_solutions() -> void:
 		var data := LevelCatalog.load_level_data(level_id)
 		if LevelSpec.is_tutorial(data):
 			continue
+		examined += 1
 		var announced: int = SummaryScreen._known_solutions(level_id)
 		assert_eq(announced, LevelSpec.expected_wins(data),
 			"%s : le bilan annonce %d solutions, le niveau en déclare %d" % [
 				level_id, announced, LevelSpec.expected_wins(data)])
 		assert_gt(announced, 1,
 			"%s est un niveau ouvert : annoncer une seule solution contredirait P5" % level_id)
+	# Deux filtres en série (`ready`, puis `tutorial`) : la collection examinée
+	# peut devenir vide sans que ce fichier bouge.
+	assert_gt(examined, 0, "aucun niveau ouvert examiné : les filtres ont tout écarté")
 
 func test_tutorial_levels_announce_nothing() -> void:
 	# Annoncer « 1 solution connue » sur un tutoriel suggérerait qu'on en
 	# cherche d'autres, alors que le niveau n'en a qu'une par construction.
+	var examined := 0
 	for i in range(LevelCatalog.count()):
 		var entry: Dictionary = LevelCatalog.entry(i)
 		if not bool(entry["ready"]):
@@ -127,5 +139,7 @@ func test_tutorial_levels_announce_nothing() -> void:
 		var level_id := String(entry["id"])
 		if not LevelSpec.is_tutorial(LevelCatalog.load_level_data(level_id)):
 			continue
+		examined += 1
 		assert_eq(SummaryScreen._known_solutions(level_id), 0,
 			"%s est un tutoriel : le bilan ne doit annoncer aucun compte" % level_id)
+	assert_gt(examined, 0, "aucun tutoriel examiné : les filtres ont tout écarté")

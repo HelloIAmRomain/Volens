@@ -34,14 +34,14 @@ func _ready() -> void:
 
 	var glyph := Label.new()
 	glyph.text = "⌫" if rule_id == RuleRegistry.EMPTY else RuleCatalog.glyph_of(rule_id)
-	glyph.add_theme_font_size_override("font_size", 34)
+	glyph.add_theme_font_size_override("font_size", UiMetrics.font_size(34))
 	glyph.add_theme_color_override("font_color", Color(0.88, 0.92, 1.0))
 	glyph.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(glyph)
 
 	var label := Label.new()
 	label.text = "Retirer" if rule_id == RuleRegistry.EMPTY else RuleCatalog.name_of(rule_id)
-	label.add_theme_font_size_override("font_size", 22)
+	label.add_theme_font_size_override("font_size", UiMetrics.font_size(22))
 	label.add_theme_color_override("font_color", Color(0.82, 0.86, 0.95))
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(label)

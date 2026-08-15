@@ -1,0 +1,60 @@
+# N8 « La mauvaise porte » — une direction que personne ne veut prendre.
+#
+# IL INTRODUIT R05 « Suivre les voisins », et il est bati sur une propriete de
+# R01 que le joueur connait sans l'avoir formulee : **elle ne consent jamais a
+# s'eloigner.** Elle ne propose un pas que s'il REDUIT strictement la distance
+# de Manhattan a la lumiere.
+#
+# LE DISPOSITIF. La lumiere est a l'OUEST (1,0) ; l'unique ouverture du mur est
+# a l'EST (9,1). Pour sortir, il faut donc marcher a l'oppose de la lumiere
+# pendant huit cases. Aucune pile menee par R01 ne le fera jamais : la nuee
+# s'entasse sous la lumiere, contre un mur plein, et n'en bouge plus. Ce n'est
+# pas une impasse de geometrie — c'est une impasse de REGLE.
+#
+# CE QUI DEBLOQUE : UNE DIRECTION QUI SE PROPAGE. R05 ne connait ni la lumiere
+# ni la sortie. Elle copie le mouvement des voisins. Il suffit donc que
+# QUELQUES agents partent vers l'Est pour que la nuee entiere suive — et R04
+# fournit exactement cela : comprimee contre le mur, elle pousse les agents
+# vers l'exterieur, dont certains vers l'Est.
+#
+# R04 SEME, R05 PROPAGE, et c'est la premiere fois que le joueur doit faire
+# COOPERER deux regles plutot que d'en choisir une. Aucune des deux ne resout
+# le niveau : R04 seule disperse sans direction, R05 seule n'a rien a copier au
+# premier tick — elle se tait tant que personne n'a bouge.
+#
+# R01 EN TETE ETOUFFE TOUT : elle decide partout ou elle le peut, et les deux
+# autres ne parlent jamais. Toute pile menee par la Lumiere perd ici.
+#
+# UNE SEULE PILE GAGNE : [Ecarter, Copier, Lumiere], en 26 ticks. L'ordre
+# inverse — copier avant d'ecarter — laisse deux agents contre le mur ouest.
+# La raison vaut d'etre trouvee par le joueur : **on ne peut pas copier ce qui
+# n'existe pas encore.** Au premier tick, personne n'a bouge et R05 se tait ;
+# si elle est en tete, la nuee attend un mouvement que rien ne produit, et
+# c'est R01 qui finit par decider — vers la lumiere, donc vers le mur plein.
+# Il faut semer AVANT de propager.
+id: ch2_03
+name: La mauvaise porte
+tutorial: true
+allowed_rules: [R01, R04, R05]
+slots: 3
+max_ticks: 200
+objective: extraction 100
+lesson: "R01 ne consent jamais a s'eloigner. Quand la sortie est du mauvais cote, il faut une direction qui se propage."
+expected_wins: 1
+expected_classes: 1
+calibrated_on: 8a7a97c7790663b8
+---
+L . . . . . . . . . .
+# # # # # # # E E E E
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . . . . . . . . .

@@ -299,10 +299,13 @@
     ],
     "cycle_index": [],
     "cycles": [],
+    "doors": [],
+    "one_way": [],
     "size": [
       11,
       15
-    ]
+    ],
+    "trail": []
   },
   "id": "ch1_02",
   "lesson": "L'ordre change tout : Lumiere en tete fauche, Fuir en tete sauve.",

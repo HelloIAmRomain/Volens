@@ -12,6 +12,7 @@ extends Control
 signal play_requested
 signal select_requested
 signal settings_requested
+signal trial_requested
 
 var _progress: Progress
 var _session: Session
@@ -20,6 +21,17 @@ func setup(progress: Progress, session: Session) -> void:
 	_progress = progress
 	_session = session
 	_build()
+
+## Un chapitre au moins est-il entièrement résolu ? Condition d'apparition du
+## mode Épreuve. Un mode qui punit la recherche n'a de sens que pour quelqu'un
+## qui a de quoi raisonner à la place.
+##
+## LA CONDITION N'EST PAS RÉÉCRITE ICI. Le menu, l'écran de choix et `App`
+## posent tous la même question ; trois copies d'une même règle finissent par
+## diverger, et c'est exactement ce que dit l'invariant n°16 des champs de
+## niveau. La source unique est `TrialSelectScreen.cleared_chapters`.
+func _any_chapter_cleared() -> bool:
+	return not TrialSelectScreen.cleared_chapters(_progress).is_empty()
 
 func _build() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -34,14 +46,14 @@ func _build() -> void:
 	var title := Label.new()
 	title.text = "VOLENS"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 96)
+	title.add_theme_font_size_override("font_size", UiMetrics.font_size(96))
 	title.add_theme_color_override("font_color", ViewPalette.AGENT_PLAIN)
 	column.add_child(title)
 
 	var subtitle := Label.new()
-	subtitle.text = "Chapitre 1"
+	subtitle.text = "%d chapitres" % LevelCatalog.chapters().size()
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	subtitle.add_theme_font_size_override("font_size", 28)
+	subtitle.add_theme_font_size_override("font_size", UiMetrics.font_size(28))
 	subtitle.add_theme_color_override("font_color", Color(0.48, 0.53, 0.64))
 	column.add_child(subtitle)
 
@@ -58,6 +70,15 @@ func _build() -> void:
 	levels.pressed.connect(func() -> void: select_requested.emit())
 	column.add_child(levels)
 
+	# ÉPREUVE — le second mode. Il n'apparaît qu'une fois le premier chapitre
+	# terminé : proposer d'emblée un mode où chaque lancement compte, à
+	# quelqu'un qui ne sait pas encore ce qu'est une pile, ce serait offrir la
+	# difficulté avant la règle du jeu.
+	if _any_chapter_cleared():
+		var trial := _make_button("Épreuve", 32)
+		trial.pressed.connect(func() -> void: trial_requested.emit())
+		column.add_child(trial)
+
 	var settings := _make_button("Réglages", 32)
 	settings.pressed.connect(func() -> void: settings_requested.emit())
 	column.add_child(settings)
@@ -67,7 +88,7 @@ func _build() -> void:
 	var version := Label.new()
 	version.text = "version %s" % _version_string()
 	version.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	version.add_theme_font_size_override("font_size", 22)
+	version.add_theme_font_size_override("font_size", UiMetrics.font_size(22))
 	version.add_theme_color_override("font_color", Color(0.38, 0.42, 0.52))
 	column.add_child(version)
 

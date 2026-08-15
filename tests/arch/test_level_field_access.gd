@@ -36,7 +36,8 @@ extends GutTest
 ## `max_ticks`, `objectives`, `allowed_rules` et `agents` n'y figurent pas :
 ## ce sont des ENTRÉES de la simulation, lues par `SimCore` là où c'est son
 ## travail. Les protéger de la même façon interdirait au moteur de fonctionner.
-const GUARDED_FIELDS := ["expected_wins", "expected_classes", "tutorial", "calibrated_on", "slots"]
+const GUARDED_FIELDS := ["expected_wins", "expected_classes", "tutorial", "calibrated_on",
+	"slots", "challenges"]
 
 const ALLOWED := [
 	"res://core/sim/level_spec.gd",      # la source de vérité
@@ -92,19 +93,29 @@ func test_level_spec_exposes_every_guarded_field() -> void:
 func test_the_accessors_agree_with_the_level_files() -> void:
 	# Le contrôle lexical garantit qu'on passe par l'accesseur ; celui-ci
 	# garantit que l'accesseur dit la vérité.
+	var examined := 0
 	for i in range(LevelCatalog.count()):
 		var entry: Dictionary = LevelCatalog.entry(i)
 		if not bool(entry["ready"]):
 			continue
+		examined += 1
 		var level_id := String(entry["id"])
 		var data := LevelCatalog.load_level_data(level_id)
 		var raw: Variant = JSON.parse_string(
 			FileAccess.get_file_as_string(LevelCatalog.path_of(level_id)))
 		assert_true(raw is Dictionary, "%s illisible" % level_id)
 		var d: Dictionary = raw
-		assert_eq(LevelSpec.expected_wins(data), int(d["expected_wins"]),
+		# L'ABSENCE D'UN CHAMP EST AUSSI UNE VALEUR, et l'accesseur doit la rendre
+		# fidelement : un niveau qui ne declare pas `expected_wins` vaut -1, pas
+		# zero. Indexer sans garde faisait planter le test des qu'un niveau se
+		# taisait — ce qui est licite, et ce que le validateur traite deja.
+		assert_eq(LevelSpec.expected_wins(data),
+			(int(d["expected_wins"]) if d.has("expected_wins") else -1),
 			"%s : expected_wins" % level_id)
 		assert_eq(LevelSpec.open_slots(data), int(d["slots"]),
 			"%s : slots" % level_id)
-		assert_eq(LevelSpec.calibrated_on(data), String(d["calibrated_on"]),
+		assert_eq(LevelSpec.calibrated_on(data),
+			(String(d["calibrated_on"]) if d.has("calibrated_on") else ""),
 			"%s : calibrated_on" % level_id)
+	# Le filtre `ready` peut vider cette boucle sans qu'une ligne change ici.
+	assert_gt(examined, 0, "aucun niveau prêt examiné : le filtre a tout écarté")

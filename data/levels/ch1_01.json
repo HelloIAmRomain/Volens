@@ -287,10 +287,13 @@
     ],
     "cycle_index": [],
     "cycles": [],
+    "doors": [],
+    "one_way": [],
     "size": [
       11,
       14
-    ]
+    ],
+    "trail": []
   },
   "id": "ch1_01",
   "lesson": "Une regle gouverne tout le monde a la fois.",

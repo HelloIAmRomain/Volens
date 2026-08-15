@@ -7,10 +7,17 @@ extends GutTest
 ##   B — R02 en tête : la prudence. Contourne, même ce qui ne menace pas.
 ##   C — R03 en tête : la cohésion. Ramène les traînards, sans regarder où.
 ##
-## **Chaque famille gagne exactement deux niveaux sur trois, et aucune pile ne
-## les résout tous les trois.** C'est ce qui interdit au joueur de trouver une
-## pile universelle et de traverser le chapitre sans jamais rien réordonner —
-## la règle d'or resterait alors une mécanique sans conséquence.
+## **Aucune famille ne gagne plus d'un niveau, aucune pile ne résout les trois,
+## et N3 n'est gagné par AUCUN représentant de famille.** C'est ce qui interdit
+## au joueur de trouver une pile universelle et de traverser le chapitre sans
+## jamais rien réordonner — la règle d'or resterait alors une mécanique sans
+## conséquence.
+##
+## N3 tient une place à part depuis sa refonte du 9 août 2026 : il porte deux
+## pièges opposés — une impasse que seule R03 ouvre, un feu où seule R03 pousse
+## — de sorte qu'aucune pile de deux règles n'en sort. Il faut R02 ET R03, dans
+## cet ordre. C'est le premier niveau du chapitre où l'ordre de deux règles
+## AUTRES que la Lumière se voit, et le seul dont la solution est unique.
 ##
 ## Ce test ne relit aucune prédiction écrite : il **simule** les trois niveaux,
 ## collecte les piles gagnantes, et vérifie la propriété sur les ensembles
@@ -62,26 +69,45 @@ func _wins(level_id: String, stack: Array) -> bool:
 
 # --- l'arc, famille par famille -------------------------------------------
 
-func test_the_direct_family_wins_only_the_third_level() -> void:
-	# La vitesse paie tant que rien ne se met en travers. Elle bute sur
-	# l'impasse de N4 — R01 s'y tait, et seule une règle placée AVANT elle en
-	# sort — et elle saigne en N5, où un traînard suit sa route dans le feu.
-	assert_true(_wins("ch1_03", FAMILY_A), "A doit gagner N3")
+func test_the_direct_family_wins_nothing_beyond_the_level_that_teaches_it() -> void:
+	# La vitesse ne paie plus nulle part une fois passé le niveau qui
+	# l'introduit. Elle bute sur les impasses de N3 et N4 — R01 s'y tait, et
+	# seule une règle placée AVANT elle en sort — et elle saigne en N5, où un
+	# traînard suit sa route dans le feu. C'est la règle S4 vue par l'arc.
+	assert_false(_wins("ch1_03", FAMILY_A), "A doit PERDRE N3 (impasse)")
 	assert_false(_wins("ch1_04", FAMILY_A), "A doit PERDRE N4 (impasse)")
 	assert_false(_wins("ch1_05", FAMILY_A), "A doit PERDRE N5")
 
 func test_the_prudent_family_pays_in_time() -> void:
-	# La prudence ne perd jamais d'agent — elle perd des ticks, et N4 les compte.
-	assert_true(_wins("ch1_03", FAMILY_B), "B doit gagner N3")
+	# La prudence ne perd jamais d'agent — elle perd des ticks, et N4 les
+	# compte. En N3 elle sauve bien le traînard de l'ouest du feu, mais elle
+	# n'a aucune prise sur celui de l'impasse : hors de portée du danger.
+	assert_false(_wins("ch1_03", FAMILY_B), "B doit PERDRE N3 (impasse)")
 	assert_false(_wins("ch1_04", FAMILY_B), "B doit PERDRE N4 (échéance)")
 	assert_true(_wins("ch1_05", FAMILY_B), "B doit gagner N5")
 
 func test_the_cohesive_family_is_blind_before_it_is_useful() -> void:
-	# Même règle, même portée : en N3 elle tire le traînard DANS le danger,
-	# en N5 elle l'en écarte. Seule la géométrie a changé.
-	assert_false(_wins("ch1_03", FAMILY_C), "C doit PERDRE N3")
+	# Même règle, même portée : en N3 elle tire un traînard DANS le danger — au
+	# tick 1, avant même que l'autre traînard n'atteigne l'impasse qu'elle
+	# seule sait ouvrir — en N5 elle l'en écarte. Seule la géométrie a changé.
+	assert_false(_wins("ch1_03", FAMILY_C), "C doit PERDRE N3 (le feu)")
 	assert_true(_wins("ch1_04", FAMILY_C), "C doit gagner N4")
 	assert_true(_wins("ch1_05", FAMILY_C), "C doit gagner N5")
+
+func test_the_third_level_needs_two_rules_in_the_right_order() -> void:
+	# La propriété qui distingue N3 de tout le reste du chapitre : sa solution
+	# est UNIQUE, et elle oppose deux règles dont ni l'une ni l'autre n'est la
+	# Lumière. C'est là, et nulle part ailleurs jusqu'ici, que la règle d'or
+	# porte sur une paire que le joueur doit départager lui-même.
+	var flee_then_group := [RuleRegistry.R02_FLEE_DANGER,
+		RuleRegistry.R03_STAY_GROUPED, RuleRegistry.R01_TOWARD_LIGHT]
+	var group_then_flee := [RuleRegistry.R03_STAY_GROUPED,
+		RuleRegistry.R02_FLEE_DANGER, RuleRegistry.R01_TOWARD_LIGHT]
+	assert_true(_wins("ch1_03", flee_then_group), "N3 : [Fuite, Cohésion, Lumière] doit gagner")
+	assert_false(_wins("ch1_03", group_then_flee),
+		"N3 : [Cohésion, Fuite, Lumière] doit PERDRE — sinon l'ordre R02/R03 ne se voit nulle part")
+	assert_eq((_winners["ch1_03"] as Dictionary).size(), 1,
+		"N3 doit avoir exactement une solution : c'est ce qui rend l'ordre lisible")
 
 # --- QN-02 : la propriété de chapitre --------------------------------------
 

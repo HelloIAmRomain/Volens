@@ -1,0 +1,55 @@
+# N22 « Personne ne reste » — rouvrir ce qu'on avait paye.
+#
+# LA CARTE DE N16 « Les deux vigies », A L'IDENTIQUE. On y avait laisse cinq
+# agents sur vingt : deux sur les commandes, trois dans les couloirs d'acces.
+# L'extraction n'y etait demandee qu'a 75 %, et c'etait le prix.
+#
+# ICI ELLE EST DEMANDEE A 100 %, et le joker « ignorer les portes » la rend
+# atteignable. La nuee traverse le panneau ferme comme s'il n'existait pas ;
+# personne n'a plus besoin de tenir quoi que ce soit, donc personne ne reste.
+#
+# C'EST LE SUJET DU CHAPITRE 6, ET SA DERNIERE FORME. Le joueur ne decouvre pas
+# un mecanisme : il revient sur un prix qu'il avait accepte. **Ce qu'il croyait
+# etre le cout des choses n'etait que le cout des regles dont il disposait.**
+#
+# CE NIVEAU EST FACILE, ET C'EST VOULU. Huit piles sur quarante et une gagnent,
+# et la plus courte est [Lumiere, Ignorer les portes]. Il n'y a rien a resoudre
+# — c'est un niveau qu'on a DEJA resolu, une fois, en payant cinq agents.
+#
+# Le mesurer a l'aune de sa difficulte serait passer a cote : ce qu'il donne
+# n'est pas un probleme, c'est un regard en arriere. Un jeu dont le sujet est
+# l'ordre des regles doit finir par montrer que le prix qu'on a paye dependait
+# des regles qu'on avait — sinon il enseigne que les choses coutent ce qu'elles
+# coutent, ce qui est exactement le contraire.
+#
+# SA POSITION DANS LA PILE EST INDIFFERENTE. R16 est la seule regle du jeu dans
+# ce cas : elle ne decide rien, elle change la lecture du monde pour tout le
+# tick. Le joueur peut la poser n'importe ou — et decouvrira que le rang perdu,
+# lui, compte partout.
+id: ch6_03
+name: Personne ne reste
+tutorial: false
+allowed_rules: [R01, R03, R04, R07, R14, R16(P)]
+slots: 3
+max_ticks: 180
+objective: extraction 100
+door: required=2 plates=1,4;9,4 panels=5,2
+lesson: "Ce qu'on croyait etre le cout des choses n'etait que le cout des regles dont on disposait."
+expected_wins: 17
+expected_classes: 1
+calibrated_on: d7d4a43f60ed519b
+challenge: efficiency=26 abstinence=R04
+---
+. . . . . L . . . . .
+# # # # # E # # # # #
+# # # # # P # # # # #
+# # # . . . . . # # #
+# . # . . . . . # . #
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . . . . . . . . .

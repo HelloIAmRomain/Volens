@@ -2099,6 +2099,678 @@ cascade de décision) attend `SimCore.explain` (T-065, S8) ; retour haptique
     basse) et d'ENF-01. À trancher : produire la maquette, ou retirer la
     référence.
 
+## Fait — N3 refondu : S4 fermée, et ce que l'impasse a appris (9 août 2026)
+
+### 155. Une impasse ne peut être ouverte que par R03
+
+Établi en construisant N3, après trois géométries mesurées, dont une où
+`[2,3,1]` **et** `[3,2,1]` laissaient un agent immobile avec R01, R02 **et**
+R03 abstenues — 20 sortis sur 21, niveau insoluble.
+
+> R02 ne peut pas ouvrir une impasse. Son seuil se déclenche **avant**
+> l'impasse — l'agent oscille de part et d'autre de la portée (P3) — ou, s'il
+> ne se déclenche qu'à l'intérieur, la direction de fuite est justement celle
+> qui est murée : **la seule case libre d'une impasse pointe vers le danger,
+> sinon R01 l'aurait déjà prise.**
+>
+> R03 y échappe parce que sa condition n'est pas un seuil sur un point fixe :
+> elle dépend des congénères, qui sont **derrière**. Barycentre au Sud, sortie
+> d'impasse au Sud — ils tirent dans le même sens.
+
+C'est la démonstration constructive du chantier « S4 » du dossier des genres de
+règles, qui n'était jusqu'ici qu'un argument.
+
+### 156. Le premier correctif de N3 fermait S4 en cassant QN-02
+
+Battre `[1]` par une impasse fait de tout niveau anti-`[1]` un niveau de
+cohésion — et N4 l'était déjà. `[3,1]` gagnait alors N3, N4 et N5 : le joueur
+traversait le chapitre sans jamais réordonner. **QN-02 est une exigence du CDC,
+S4 une règle de conception interne : c'est S4 qui devait céder le pas, pas
+l'inverse.** Consigné parce que le premier réflexe fut le contraire.
+
+Résolu sans toucher à N4 : N3 porte désormais **deux pièges opposés** — une
+impasse à l'est que seule R03 ouvre, un feu à l'ouest où seule R03 pousse. Ni
+`[2,1]` ni `[3,1]` n'en sortent. Solution unique : `[2,3,1]`, 22/22 en 30 ticks.
+
+Conséquences mesurées : S4 **fermée** (`S4_KNOWN_BREACHES` vide), S3 **atteinte**
+(plafond abaissé de 3 à 2, cliquet refermé des deux côtés), QN-02 rétabli, et
+la paire R02/R03 enfin **observable** (RG-13) — aucun niveau antérieur ne la
+montrait.
+
+### 157. La famille par tête de pile est un indicateur trop grossier pour S2
+
+S2 déclarait « ch1_02 et ch1_03 posent la même question » parce que leurs
+gagnantes commencent toutes deux par la Fuite. C'est faux : ch1_02 offre
+`[R01, R02]` sur 2 rangs — il ne peut pas **énoncer** la question de l'ordre
+R02/R03, R03 n'y étant pas proposée.
+
+**Deux niveaux ne posent la même question que s'ils offrent le même espace de
+réponses** (mêmes règles disponibles, même nombre de rangs). S2 ne compare plus
+que des niveaux comparables. Sixième forme du piège de l'invariant 12 : *un
+indicateur qui agrège plus que la propriété qu'il mesure signale des défauts
+qui n'existent pas* — et un faux positif use la confiance dans le test aussi
+sûrement qu'un faux négatif la trompe.
+
+### Cérémonie d'or ch1_03 — PRÉDICTION ÉCRITE, en attente d'accord
+
+Vérification sans écriture faite le 9 août 2026 : **12 divergences, toutes sur
+ch1_03**.
+
+**Compte exact du corpus — et correction d'une erreur de dénombrement.** Le
+corpus tient **30 recettes × 3 relevés = 90 empreintes**. Sur ce total :
+**26 recettes concordent, 4 divergent** (les quatre de ch1_03), soit 12
+empreintes sur 90.
+
+J'avais d'abord annoncé « 13 concordantes sur 17 », deux chiffres faux tous les
+deux. Le « 17 » venait d'une ligne périmée du tableau des mesures, datée du
+5 août ; le « 13 » d'un `grep` dont le motif ne couvrait ni `golden_corridor`,
+ni `golden_field`, ni les six fixtures `sensi_*` — il a compté 13 lignes
+concordantes sur 26. **Une prédiction ne vaut que si l'on sait sur quel ensemble
+elle porte** : un dénombrement fait avec un motif qui ne couvre pas l'ensemble
+mesuré est la même faute que l'échantillonnage de contention, sous une autre
+forme. Le tableau des mesures est corrigé en bas de ce carnet.
+
+| recette | prédiction | pourquoi |
+|---|---|---|
+| `ch1_03 [1]` | **change** aux 3 relevés | effectif 21 → 22, grille 15 → 16 rangs, danger déplacé |
+| `ch1_03 [2,1]` | **change** aux 3 relevés | idem |
+| `ch1_03 [2,3,1]` | **change** aux 3 relevés | idem |
+| `ch1_03 [3,1]` | **change** aux 3 relevés | idem, et l'agent meurt désormais au tick 1 |
+| les 13 autres | **inchangées** | aucune ne touche ch1_03 |
+
+Le confinement est donc **exactement** celui que prédit un changement de
+géométrie limité à un seul niveau. Rien d'autre n'a bougé, ce qui distingue
+« l'entrée a changé » de « le code a régressé ».
+
+`--write` n'a **pas** été exécuté et ne le sera pas sans accord explicite.
+
+## Fait — Cérémonies d'or, et le moteur du chapitre 2 (10 août 2026)
+
+### 158. Cérémonie 1 — ch1_03, cause unique, prédiction tenue
+
+Autorisée explicitement. Confrontation faite sur le fichier avant/après :
+**4 recettes déplacées, toutes ch1_03 ; 26 inchangées** — exactement la
+prédiction écrite la veille. Aucune modification de `core/sim/` ne
+l'accompagne : l'entrée a changé, le code n'a pas bougé.
+
+### 159. `AgentState.dir` existait déjà — et je ne l'avais pas cherché
+
+L'analyse du chapitre 2 concluait qu'il fallait **ajouter** un champ à l'état,
+et en tirait une cérémonie sur les 30 recettes. Faux sur la prémisse : `dir`
+est au DCT §4.1 depuis le premier jour, peuplé par `SimCore._apply_movements`
+(ligne 207), initialisé au Nord au chargement (ligne 68), et déjà parcouru par
+`StateHash` (ligne 46).
+
+> **Vérifier qu'un champ manque se fait en le cherchant, pas en raisonnant sur
+> ce qu'il faudrait.** Septième forme du piège de l'invariant 12 : après
+> « paraître correct », « paraître cassé », « un zéro se vérifie comme un
+> chiffre inattendu », « une note ne protège de rien », « un test dont l'objet
+> n'est pas versionné » et « une liste vide n'asserte rien », voici **« paraître
+> absent clôt l'examen »**.
+
+Coût : une journée d'analyse sur un champ à lire. Gain : aucune cérémonie
+d'état, aucun DCT à amender.
+
+### 160. Cérémonie 2 — réduite à un tampon de provenance
+
+R04, R05 et R06 écrites, `data/rules.json` enrichi de deux blocs de
+paramètres. Mesure : **0 empreinte d'état déplacée sur 30**, 30 tampons
+`rules_hash` rafraîchis, aucune clé de premier niveau ajoutée ni retirée.
+
+La neutralité est donc **démontrée par la fonction d'empreinte elle-même** —
+meilleur témoin que la comparaison de positions finales envisagée d'abord, qui
+peuvent coïncider alors que les trajectoires diffèrent. Le dispositif proposé
+— conserver temporairement l'ancienne fonction d'empreinte — reste la bonne
+réponse le jour où un champ sera réellement ajouté ; le chapitre 3 en aura
+besoin pour la stigmergie.
+
+### 161 bis. La sixième forme est la PIRE de la série, et voici pourquoi
+
+Les cinq premières formes du piège de l'invariant 12 se déclenchent sur un
+**incident** : une mesure surprenante, un test rouge, un zéro inattendu. On
+regarde, parce qu'il s'est passé quelque chose.
+
+La sixième se déclenche sur un **succès**.
+
+> **Un test dont l'objet se vide cesse d'asserter au moment exact où
+> l'objectif est atteint.** Le déclencheur est une bonne nouvelle — la liste
+> des manquements s'est vidée, le défaut a été réparé — donc personne ne
+> cherche un défaut à ce moment-là. La garantie disparaît le jour où l'on
+> relit le moins attentivement, et sans qu'une seule ligne ait changé.
+
+La règle, telle qu'elle est désormais tenue :
+
+> **Un test qui itère une liste doit échouer si la liste est vide, ou déclarer
+> explicitement que le vide est le succès attendu.**
+
+Mécanique, pas documentaire : `tests/arch/test_suite_hygiene.gd` refuse toute
+fonction `test_` dont **toutes** les assertions sont imbriquées dans une
+boucle, sauf marqueur `# VIDE-ATTENDU:` explicite.
+
+**Résultat de l'audit — et c'est le plus utile de la journée : 28 fonctions,
+dans onze fichiers sans rapport.** Ce n'était pas un test à corriger, c'était
+une habitude d'écriture. Deux classes, et la distinction gouverne l'ordre des
+réparations :
+
+- **collection filtrée** dans la boucle (`continue` sur `ready`, sur
+  `tutorial`…) : elle peut se vider sans qu'une ligne change — il suffit qu'un
+  niveau cesse d'être prêt. **Six cas, tous réparés** par un compteur
+  d'éléments examinés asserté hors boucle ;
+- **constante littérale** parcourue : elle ne se videra que si quelqu'un vide
+  la constante, geste visible en relecture. **Vingt-deux cas, gelés au
+  cliquet**, qui refuse toute aggravation et exige que la liste décroisse.
+
+### 161. Un test « risky » est un test qui ne prouve rien
+
+`test_the_known_breaches_are_still_real` bouclait sur la liste des manquements
+S4 connus. La liste s'étant **vidée** — S4 fermée — la boucle n'a plus rien
+parcouru, et GUT a signalé le test « risky ». Sixième forme du même piège, et
+la plus sournoise : **elle n'apparaît qu'au moment où l'objectif est ATTEINT**,
+exactement quand on relit le moins attentivement.
+
+La liste vide doit désormais s'affirmer plutôt que se taire. Le garde-fou
+mécanique existait déjà et a tenu : la CI exige le verdict plein
+« All tests passed! », que GUT remplace par « N pending/risky tests » — la
+ligne est maintenant commentée pour qu'on ne l'assouplisse jamais en tolérant
+« risky ».
+
+### 162. Deux de mes propres tests du chapitre 2 étaient faux, pas le code
+
+- **« R04 est le miroir exact de R03 »** : faux. Minimiser la distance au
+  barycentre a ici un optimum unique, la maximiser en a deux à égalité, et
+  N>E>S>O tranche. Un « exact opposé » n'existe que si les deux optimisations
+  sont uniques, ce que rien ne garantit sur une grille. Remplacé par la
+  propriété réellement vraie : **elles ne proposent jamais le même pas**.
+- **« ce voisin n'a pas pu bouger »** : le cas construit était incohérent — un
+  agent en (1,1) de cap Ouest vient de (2,1), case libre. C'est le cap **Est**
+  qui est impossible là.
+
+Et c'est en corrigeant le second qu'un vrai défaut est apparu : **au tick 0,
+personne n'a bougé mais tous portent `dir = Nord`**. R05 aurait imposé le Nord
+à toute la nuée sur la foi d'une valeur par défaut. Elle se tait désormais au
+premier tick. Le défaut n'a pas été trouvé en relisant la règle.
+
+### 163. Les deux exigences du porteur, vérifiées sur le catalogue entier
+
+- **Aucune pile ne gagne plus de 2 niveaux sur 5.** Les quatre paires
+  concernées contiennent toutes ch1_05, dont la leçon *est* qu'il n'y a pas une
+  seule bonne réponse.
+- **`[Lumière]` seule ne gagne que ch1_01**, le niveau qui l'introduit.
+
+### 164. Aucun niveau du chapitre 2 ne sera dessiné avant les testeurs
+
+Douze niveaux bâtis avant qu'un joueur ait découvert le chapitre 1, ce serait
+l'invariant 12 appliqué au jeu entier : concevoir sur un terrain qui ne
+sollicite pas ce qu'on prétend mesurer. Le moteur est prêt ; les cartes
+attendent. Les paramètres ⚙️ de R04 et R05 sont des **valeurs de départ, pas
+des valeurs mesurées**, et le fichier le dit à l'endroit où elles sont écrites.
+
+## Fait — Le jeu complet : seize règles, six chapitres (14 août 2026)
+
+### 165. Le genre EFFET, et pourquoi un seul
+
+R08 « marquer la piste » ne propose aucun déplacement. Sous le seul genre
+proposeur, elle n'avait que deux formes, mauvaises toutes les deux : s'abstenir
+toujours, ou proposer l'immobilité et masquer toute la suite de la pile. C'est
+P1, et le chapitre 3 entier en dépendait.
+
+**Un seul genre a été ajouté, pas quatre.** Le filtre général, la condition de
+maintien et l'hystérésis restent hors du moteur : R04 a montré qu'une condition
+de maintien s'écrit très bien en proposeur, R16 est un filtre assez étroit pour
+tenir dans une lecture de la pile, et l'hystérésis attend toujours des joueurs.
+
+La règle d'or a été reformulée une fois, et une seule : *la première règle de
+DÉPLACEMENT applicable l'emporte ; les effets s'appliquent au passage.* Elle ne
+relâche rien — **un effet ne s'applique que si la cascade l'ATTEINT**, donc sa
+position reste décisive. C'est même la mécanique la plus tranchante du jeu :
+sur N14, deux piles gagnent sur soixante-cinq, et les deux ont les effets aux
+rangs 1 et 2.
+
+Neutralité prouvée, pas argumentée : les 30 recettes d'or concordent après
+l'extension.
+
+### 166. Trois découvertes imposées par la stigmergie
+
+1. **Une piste est une PENTE, pas un tapis.** R09 va vers plus intense que sa
+   propre case ; une trace uniforme n'oriente personne — 25 agents immobiles
+   mesurés sur une colonne marquée à plat.
+2. **Une piste est une trace de PASSAGE, pas d'occupation.** Sans cette
+   condition, un agent immobile renforce sa case à chaque tick pendant que la
+   trace devant lui s'évapore : il creuse un puits sous ses pieds dont R09 ne
+   peut plus le sortir. La nuée se fige exactement là où elle doit avancer.
+3. **Le dépôt doit être plus faible que le pas de la pente.** À 12 contre 6, la
+   case qu'on vient de quitter devient plus intense que celle devant : la nuée
+   se marche dessus.
+
+### 167. R06 n'a qu'une maison propre : une carte sans lumière
+
+Trois dispositifs essayés, trois oscillations. R06 et R01 se contredisent de
+part et d'autre de tout seuil (P3) : placée après R01 elle oscille, placée
+avant elle détourne tout ce qui frôle une paroi. **La seule sortie n'est pas de
+ruser avec la géométrie, c'est de retirer la contradiction** — sans lumière,
+R01 s'abstient partout.
+
+Trois conditions supplémentaires, toutes structurelles : tout agent doit
+toucher un mur au départ ; les couloirs font une case (à deux, le suivi de main
+droite décrit un carré de 2×2) ; le parcours n'a qu'un sens (deux agents face à
+face gèlent toute la file). D'où l'escalier monotone de N7.
+
+### 168. R04 prenait le premier écart, elle prend le plus grand
+
+Pour une nuée qui monte, le Nord augmente presque toujours la distance au
+barycentre : l'ordre N>E>S>O faisait donc de R04 une R01 affaiblie, qui
+poussait vers l'avant au lieu d'écarter — et jetait la nuée dans le piège dont
+elle devait la détourner. En retenant le maximum, le pas latéral l'emporte dès
+que la nuée est devant ou derrière, seule situation où « s'écarter » veut dire
+quelque chose.
+
+### 169. Le jeu est asymétrique gauche-droite
+
+Le miroir de N9 a été construit et mesuré : **il ne se résout pas.** À égalité,
+toute règle préfère le Nord puis l'Est ; une nuée qui doit s'écarter s'écarte
+plus volontiers vers l'Est, et un détour vers l'Ouest est structurellement plus
+dur. La symétrie visuelle n'est pas une symétrie de jeu — à retenir avant de
+dessiner, pas après.
+
+### 170. Trois éléments du vocabulaire étaient invisibles à l'écran
+
+Piste stigmergique jamais dessinée ; porte à pression sombre et ses **cases de
+commande pas dessinées du tout** ; sens unique cherché par `cell_type_at`, qui
+ne le trouve jamais puisqu'une case à sens unique reste de type EMPTY.
+
+**Aucun test de simulation ne pouvait le dire** : les trois mécanismes
+fonctionnaient parfaitement dans le moteur. Ils ont été trouvés en REGARDANT
+les captures — septième fois que l'invariant 12 se vérifie, et la première où
+le cas d'épreuve était l'œil plutôt qu'une mesure.
+
+### 171. Corpus d'or étendu de 30 à 56 recettes
+
+Les quatorze nouveaux niveaux n'avaient aucune protection de non-régression.
+Deux recettes chacun — une pile gagnante, une perdante — couvrent désormais les
+seize règles, les deux genres, la piste, le transport, la porte et le joker.
+Prédiction écrite tenue exactement : 30 anciennes inchangées, 0 déplacée, 26
+nouvelles renseignées.
+
+## Fait — Jouabilité et intérêt : ce que la mesure du parcours a révélé (15 août 2026)
+
+### 172. Le parcours de joueur ne se lit pas dans le rapport de validation
+
+Ce que le validateur dit d'un niveau isolé ne dit rien de l'EXPÉRIENCE. On
+mesure désormais, dans l'ordre du catalogue : la taille de l'espace de piles,
+le nombre de gagnantes, et surtout le **rang de la première gagnante dans
+l'ordre où un joueur méthodique les essaierait** — l'énumérateur va par
+longueur croissante, ce qui est exactement l'ordre d'exploration naturel.
+
+Trois défauts en sont sortis, invisibles autrement :
+
+- **deux niveaux à 68 % de piles gagnantes** (ch2_02, ch3_01). Presque tout
+  marchait, donc rien ne s'apprenait. Le troisième rang y était une règle
+  INERTE — un rang gaspillé, sans conséquence. Remplacé par un piège RÉEL :
+  68 % → 43 %, à espace constant ;
+- **ch4_02 : première gagnante au rang 59 sur 65.** Cinquante-huit échecs avant
+  de réussir — ce n'est plus de la compréhension, c'est de l'épuisement.
+  Ramené à 16 piles, première au rang 14 ;
+- **la courbe n'était pas monotone** : le deuxième niveau du chapitre 2 était
+  un cadeau entre deux murs.
+
+### 173. Deux objectifs se taisaient à l'échec
+
+`collect` et `interdiction` n'avaient aucune phrase. Le joueur lisait « le
+temps imparti s'est écoulé » alors que, sur une interdiction, la partie
+s'arrête au troisième tick.
+
+> **Un message faux vaut moins que pas de message.**
+
+Et le contrôle générique qui l'accompagne a d'abord été FAUX lui-même : sa
+sonde ne violait aucun objectif, si bien qu'elle accusait `extraction` et
+`preservation` d'être muets alors qu'ils parlent très bien quand on les
+enfreint. Une sonde qui ne sollicite pas le mécanisme — invariant n°12, encore.
+
+### 174. Le diagnostic EF-05 mentait sur les règles d'effet
+
+Il les faisait passer par `evaluate`, qui leur renvoie ABSTAIN par
+construction : le panneau annonçait que « Marquer la piste » ne s'appliquait
+pas, au tick même où elle marquait. **Un diagnostic qui ment est pire qu'un
+diagnostic absent** — c'est le pilier P4 retourné contre le joueur, qui forme
+une hypothèse fausse et la vérifie.
+
+### 175. Les défis RG-18 étaient une promesse vide
+
+Deux niveaux sur vingt-deux en déclaraient, et rien ne les conservait : un
+défi gagné disparaissait avec l'écran de bilan. Ils sont désormais mesurés
+(dix-sept niveaux peuvent en offrir un honnête), enregistrés, et affichés en
+trois pastilles dans la liste.
+
+La mesure a pris en défaut un défi posé à la main : abstinence sur R01 dans
+ch4_02, alors qu'aucune des deux gagnantes ne s'en passe. **Une case qu'on ne
+peut jamais cocher** — exactement ce que RG-19 interdit.
+
+La persistance a demandé le schéma 2. C'est le seul changement du dépôt qui
+puisse détruire quelque chose d'irremplaçable, et le repli propre l'aurait
+fait : la migration 1 → 2 est donc ÉCRITE, purement additive, et tenue par
+trois tests.
+
+### 176. EQ-04 mesuré : R10 est morte, et c'est une propriété de la règle
+
+« Une règle que l'espace des solutions ignore est une règle morte, à
+retravailler ou retirer. » Le critère n'avait jamais été mesuré. Résultat sur
+vingt-deux niveaux : dix règles à la cible, cinq sous-employées, **R10 offerte
+par aucun niveau**.
+
+R10 ne fait qu'UN demi-tour, et se déplacer met à jour le cap : si ce demi-tour
+ne suffit pas à retrouver un congénère, l'agent repart en sens inverse au tick
+suivant et fait la navette. Elle ne retient que celui qui s'écarte d'un pas.
+La rendre vivante demanderait qu'elle se SOUVIENNE qu'elle rebrousse —
+l'hystérésis, gelée. Le CDC autorise retravailler ou retirer ; les deux
+demandent une décision du concepteur, pas un niveau de plus.
+
+Trois niveaux ont porté les cinq autres à la cible. **Aucun n'a été écrit pour
+le compteur** : la contrainte a servi de cahier des charges, pas de quota.
+
+### 177. Le vrai risque d'intérêt : l'espace de piles est épuisable
+
+Seize des vingt-cinq niveaux offrent seize piles. Un joueur qui renonce à
+comprendre les essaie toutes en quelques minutes. **La difficulté du jeu n'est
+pas dans la recherche — elle est dans la compréhension**, et rien n'oblige à
+comprendre.
+
+Ce n'est pas réparable en agrandissant l'espace : à quatre règles et quatre
+rangs on atteint 65 piles, et un niveau qu'on résout par épuisement en 65
+essais est pire qu'un niveau qu'on résout en 16. La réponse est ailleurs, et
+elle est déjà posée : les défis RG-18 sont le jeu de celui qui a compris, et
+ils ne se brutalisent pas — la meilleure pile ne se trouve pas en les essayant
+toutes, elle se déduit.
+
+**À vérifier auprès des testeurs, et c'est la question à leur poser :** ont-ils
+essayé toutes les piles, ou raisonné ? Aucune mesure d'outil ne le dira.
+
+### 178. Le mode Épreuve : un ingrédient sur trois tient, et c'est mesuré
+
+La décision 177 nommait le risque — l'espace des piles est épuisable — sans y
+répondre. Le mode **Épreuve** est la réponse : un chapitre entier joué d'un
+bloc, avec un budget de lancements partagé. Il ne débloque rien, n'enregistre
+aucun record et ne coche aucun défi : c'est une partie à côté, sans quoi il
+deviendrait le chemin court vers la progression.
+
+Trois leviers avaient été envisagés pour rendre la force brute coûteuse. **Un
+seul mord, et je ne l'ai su qu'en le mesurant.**
+
+**Le budget de lancements — il mord partout.** Somme des rangs de la première
+pile gagnante dans l'ordre d'exploration naturel, contre le budget accordé à
+5 lancements par niveau :
+
+| Chapitre | Force brute | Budget | Rapport |
+|---|---|---|---|
+| 1 | 32 | 25 | 1,3× |
+| 2 | 75 | 25 | 3,0× |
+| 3 | 36 | 20 | 1,8× |
+| 4 | 71 | 20 | 3,6× |
+| 5 | 63 | 30 | 2,1× |
+| 6 | 73 | 25 | 2,9× |
+
+Un joueur qui raisonne consomme 2 à 3 lancements par niveau : le budget lui
+laisse de la marge partout. C'est exactement la frontière qu'on voulait tracer,
+et elle est désormais opposable — `tests/unit/test_trial_bite.gd` échoue si un
+chapitre repasse sous son budget, **et** si le budget cesse d'accorder sa marge
+au joueur qui raisonne. Les deux bords, pas un seul.
+
+**Le tirage de règles — presque vide.** Il laisse la bibliothèque **intacte
+dans 24 niveaux sur 29**. Conservé parce qu'il ne coûte rien et mord sur les
+quatre niveaux à solutions alternatives, mais il n'est pas ce qui fait la
+difficulté, et le code le dit maintenant en toutes lettres.
+
+**Le quota par règle — vide pour la même raison, écarté avant d'être écrit.**
+Le quota le plus serré qui reste satisfaisable vaut la taille du chapitre dans
+quatre chapitres sur six : aucune contrainte. Ne pas l'implémenter est le
+résultat le plus utile de la journée.
+
+**La cause commune, et elle dépasse le mode.** Presque chaque niveau n'a
+**qu'un seul ensemble suffisant minimal**, et cet ensemble contient la
+règle-moteur du chapitre. Le jeu porte donc entièrement sur l'**ordre**, jamais
+sur la **sélection**. On ne restreint pas le choix des règles quand il n'y a
+rien à choisir — toute mécanique de restriction est condamnée d'avance sur ce
+catalogue, quel que soit son habillage.
+
+Ce n'est pas un défaut à corriger dans l'urgence : un jeu dont la leçon est
+« la première règle applicable l'emporte » a de bonnes raisons de porter sur
+l'ordre. Mais c'est une **borne connue** du potentiel d'intérêt, et elle
+appartient aux questions des testeurs.
+
+**Corollaire de conception, trouvé en branchant l'écran.** La première version
+partait d'office du **dernier** chapitre entièrement résolu. Conséquence non vue
+à l'écriture : un joueur ayant fini les six chapitres ne pouvait plus jamais
+tenter les autres — et c'est le **chapitre 2** qui exige le plus (3,0× le
+budget), pas le sixième (2,9×). Le mode se refermait sur son chapitre le moins
+exigeant à mesure qu'on progressait. Le chapitre se choisit désormais, et le
+coût de la force brute est affiché : une ressource dont on ignore l'ordre de
+grandeur ne se choisit pas.
+
+### 179. Huitième forme du piège de l'invariant 12 : vérifier qu'un mécanisme est SÛR n'est pas vérifier qu'il SERT
+
+Le tirage de règles avait été soigné, testé sur cent graines par niveau, et sa
+garantie était solide : *toute main contient une solution*. Neuf tests, tous
+verts. Ce que personne n'avait demandé, c'est **l'autre question** : *la main
+retire-t-elle jamais quelque chose ?* Réponse mesurée : non, dans 24 cas sur 29.
+
+La question posée était celle du risque — « ce mécanisme peut-il nuire ? » —
+et elle a une réponse rassurante. La question qui comptait était celle de
+l'effet — « ce mécanisme fait-il quoi que ce soit ? » — et personne ne la pose
+spontanément, parce qu'un mécanisme qu'on vient d'écrire a l'air de servir.
+
+C'est le même piège que les sept précédentes formes, dans un domaine de plus :
+le mécanisme avait été observé là où il était confortable. **Écrire ainsi :
+tout mécanisme livré doit être mesuré sur ce qu'il RETIRE, pas seulement sur ce
+qu'il préserve.** Un test de sûreté vert n'a jamais rien dit de l'utilité.
+
+Deux captures ont d'ailleurs fait le même travail que les mesures, et plus vite :
+la première montrait le compteur de lancements absent, la seconde la main
+réduite à sa seule règle. **Une géométrie invisible est une géométrie injuste**,
+et une main qui ne retire rien se voit à l'œil nu dès qu'on ouvre le tiroir.
+
+### 180. Le compteur de gagnantes mentait, et il mentait toujours dans le sens rassurant
+
+Signalé par le concepteur, et vérifié : **compter toutes les piles gagnantes
+attribue à un niveau autant de « solutions » qu'il y a de façons de rallonger
+la même.** Si `[R09]` gagne, alors `[R09,R01]`, `[R09,R05]`, `[R09,R01,R05]`…
+gagnent aussi. ch6_04 annonçait dix-huit gagnantes ; il en avait **trois**.
+
+Le bon compteur : **une gagnante ne compte que si aucune SOUS-SUITE d'elle ne
+gagne déjà.** Sous-suite et non sous-ensemble — on retire des rangs sans
+réordonner les autres, parce que l'ordre est le jeu. `tools/design/audit.gd`
+l'implémente.
+
+Ce que le compteur honnête a révélé, le 15 août 2026 :
+
+- **24 niveaux sur 29 n'avaient qu'UNE seule pile gagnante minimale.**
+- **21 niveaux sur 29 laissaient la pile contenir TOUTE la bibliothèque** —
+  donc aucun choix à faire, seulement un ordre à trouver parmi six.
+- **ch2_02 et ch3_01 se gagnaient avec UNE règle.**
+- Les espaces faisaient **15 piles**. On les épuise en quelques minutes.
+
+### 181. La maladie du catalogue : un chapitre enseignait N règles, et la réponse à tous ses niveaux était « mets ces N règles »
+
+Le concepteur l'a nommé sur deux chapitres, et la mesure l'a confirmé sur les
+deux : `[R08, R09]` répondait aux quatre niveaux du chapitre 3, `[R01, R11,
+R12]` aux quatre du chapitre 4 — où trois niveaux sur quatre avaient
+**exactement** ces trois règles pour bibliothèque. La réponse était la liste
+elle-même. Une fois le premier niveau résolu, les suivants étaient la même
+réponse sur une autre carte.
+
+**Le correctif : plus de règles que de rangs, partout.** Cinq à six règles pour
+trois rangs, les surnuméraires étant des leurres plausibles déjà rencontrés.
+Le mécanisme central du jeu — une règle haute MASQUE tout ce qui est en
+dessous — ne se sent que si l'on doit renoncer à quelque chose.
+
+Coût de la force brute (rang de la première gagnante), avant → après :
+
+| | avant | après | | | avant | après |
+|---|---|---|---|---|---|---|
+| ch3_02 | 7 | **21** | | ch4_04 | 13 | **133** |
+| ch3_03 | 13 | **31** | | ch5_04 | 13 | **59** |
+| ch3_04 | 13 | **31** | | ch5_06 | 15 | **125** |
+| ch4_01 | 13 | **71** | | ch6_05 | 49 | **357** |
+| ch4_03 | 32 | **124** | | espaces | 15 | **85 à 516** |
+
+**Aucune géométrie n'a bougé** : seules `allowed_rules` et les fiches ont
+changé. `calibrated_on` tient donc, et les 74 recettes d'or concordent sans
+cérémonie — la distinction « le code a régressé » / « l'entrée a changé » a
+fait exactement son travail.
+
+**Un leurre peut être un moteur, et c'est le piège de l'opération.** R05
+« Suivre les voisins » ajoutée au chapitre 3 gagnait SEULE en 17 ticks : les
+agents portent une direction initiale, R05 la propage, et sur ces cartes plates
+la sortie est plein nord. Remplacée par R02 et R04, qui ne peuvent pas
+démarrer un mouvement. **Vérifier chaque leurre à la mesure, jamais au bon
+sens.**
+
+### 182. Ce que la refonte du chapitre 3 a coûté, et ce qu'elle a appris
+
+Trois géométries construites et mesurées avant d'abandonner la voie, et les
+trois échecs valent mieux que le niveau :
+
+1. **Carte à idiome** : la piste devint totalement INERTE. La contention
+   mesurait 0 sur les paires 1-8, 1-9 et 8-9. **Une règle qui propose toujours
+   rend muette toute la pile** — c'est l'invariant n°18 vu de l'autre côté :
+   pour que la couche du dessous parle, celle du dessus doit S'ABSTENIR.
+2. **Piste posée loin de la nuée** : un seul agent la touchait, R01 emmenait
+   tous les autres au nord. Une mémoire ne s'amorce pas toute seule.
+3. **Détour de trente-six cases en file indienne** : structurellement juste,
+   mais vingt-cinq agents n'avaient pas le temps. La longueur d'un couloir
+   d'une case se paie en ticks, pas en difficulté.
+
+**Conclusion, et elle appartient au concepteur :** R01 est le seul moteur
+général du jeu. Tant qu'elle est dans une bibliothèque, elle masque tout ce qui
+la suit sauf aux rares endroits où elle s'abstient. Rendre la piste vraiment
+porteuse demande une décision de RÈGLE — pas une carte de plus.
+
+### 183. Neuvième forme de l'invariant 12 : le jeu s'affichait EN PAYSAGE sur le téléphone
+
+Signalé par le concepteur après un essai sur son appareil. Cause :
+
+```
+window/handheld/orientation="portrait"     ← syntaxe Godot 3
+window/handheld/orientation=1              ← Godot 4 attend un ENTIER
+```
+
+Godot 4 n'a pas compris la chaîne, a retenu **0 — paysage**, et l'a écrit dans
+le manifeste Android. Un catalogue entier dessiné en portrait, une grille
+cadrée en portrait, vingt-trois captures en portrait, un test qui refuse que la
+nuée passe sous les barres sur deux ratios portrait — **et la seule valeur qui
+décidait vraiment était fausse**.
+
+Le réglage n'a AUCUN effet sur le poste de développement : la fenêtre y est
+portrait par sa seule taille. Le mécanisme n'était donc sollicité que sur
+l'appareil, c'est-à-dire nulle part dans la boucle de vérification.
+
+Deux garde-fous posés :
+- `tests/arch/test_project_settings.gd` exige un entier ET la valeur portrait,
+  et vérifie que résolution de base et orientation ne se contredisent pas ;
+- vérification faite **dans l'APK**, pas dans un intermédiaire de build :
+  `aapt2 dump xmltree` rend `screenOrientation=1`, soit
+  `SCREEN_ORIENTATION_PORTRAIT`.
+
+**À retenir : tout réglage dont l'effet est invisible en développement doit
+avoir son test.** Il n'y a pas d'autre endroit où il sera vu.
+
+**Note de mise à jour :** `docs/ARCHITECTURE.md` annonce la chaîne d'export Android comme
+« PAS ENCORE CONFIGURÉE (prévue S9) ». Elle l'est : `export_presets.cfg`,
+modèles 4.7.1, SDK Android 36, Java 21, et un APK de débogage produit. La note
+du fichier est périmée — signalé, non tranché.
+
+### 184. Premier essai sur l'appareil : cinq défauts, tous invisibles au poste de travail
+
+L'appareil est branché en débogage sans fil ; l'aller-retour est devenu direct.
+Cinq retours du concepteur, cinq défauts réels — **et pas un seul n'était
+détectable sur le poste de développement.**
+
+**1. Le jeu s'affichait en PAYSAGE.** Voir décision 183.
+
+**2. Le lancement sautait le menu.** L'application rouvrait le niveau en cours
+sans détour : on ne voyait jamais ni les chapitres, ni les réglages, ni
+l'Épreuve, et le jeu avait l'air de n'avoir pas de menu. Il ouvre désormais
+toujours le menu ; la reprise vit derrière « Continuer », qui remplace
+« Jouer » quand une partie est en cours.
+
+**3. Tout était trop petit, les textes surtout.** Vingt-cinq tailles posées en
+dur, une par une. Elles passent toutes par `UiMetrics.font_size()`, gouvernées
+par un seul `FONT_SCALE` (1,35). **Et l'agrandissement a immédiatement fait
+déborder deux écrans** — le sélecteur de niveaux et le bilan : un `Label` non
+contraint prend pour largeur minimale celle de son texte ENTIER et pousse toute
+la colonne. Un test général parcourt maintenant l'arbre de chaque écran sur
+720 de large et refuse tout contrôle qui dépasse.
+
+**4. Le jeu était trop lent.** `SPEEDS` valait `[1, 2, 3]` **ticks par
+seconde** : un niveau de quarante ticks demandait quarante secondes d'attente.
+Porté à `[4, 8, 16]`. Le problème n'était pas le nombre de vitesses (RG-10 en
+exige trois) mais leur échelle — personne ne l'avait mesurée en secondes
+d'attente réelles.
+
+**5. Toucher le vide ne faisait « rien ».** Le diagnostic s'ouvrait dès qu'on
+touchait à UNE CASE d'un agent : autour d'une nuée de vingt, presque tout
+comptait comme « sur un agent ». Rayon ramené à zéro — le vide rend la main à
+marche/pause, qui est le geste principal de l'écran.
+
+### 185. Dixième « géométrie invisible » : les marques de mort n'étaient jamais créées
+
+« Les échecs sont incompris : on ne comprend pas ce qui fait perdre, l'écran de
+défaite arrive avant le moment fatidique. »
+
+Cause trouvée en lisant : `_death_marks` était **remis à zéro, filtré par âge et
+dessiné** — et **rien n'y ajoutait jamais rien**. La « croix lumineuse sur la
+case fatale », écrite, commentée et rendue, n'a pas été affichée une seule fois
+depuis qu'elle existe. Un agent mourait, le bilan tombait, et le joueur n'avait
+vu ni où ni pourquoi.
+
+C'est la dixième fois qu'un élément du vocabulaire vit dans le moteur et pas à
+l'écran — après le porteur, la piste, les portes, les sens uniques et la
+cargaison. **Une géométrie invisible est une géométrie injuste ; un ÉVÉNEMENT
+invisible l'est davantage, car il ne laisse même pas de trace à examiner.**
+
+Ce qui a été posé :
+- un **écho** — trois anneaux concentriques qui s'ouvrent depuis la case, plus
+  un cœur plein le premier tiers du temps. Rouge pour une mort, vert pour le
+  **dernier** agent sorti (un anneau par sortie ferait vingt anneaux : du bruit,
+  pas de l'information) ;
+- un **halo de bord d'écran**, rouge ou vert, qui s'élargit et s'éteint une
+  fois. Il ne clignote pas : une alarme punit, un écho informe. La périphérie
+  capte un changement de luminosité bien avant qu'un détail central ne soit vu ;
+- le délai avant bilan porté de 1,1 s à **2,2 s** — l'écho dure 1,6 s, et il
+  faut une demi-seconde de plus pour comprendre ce qu'on vient de voir ;
+- sous ENF-21 (animations réduites), l'écho devient un halo fixe : l'information
+  ne dépend jamais du mouvement.
+
+**Deux défauts de plus trouvés à la capture, et pas au raisonnement :** l'écho
+sortait VERT sur une mort, et décalé d'une case. Un agent meurt en ENTRANT sur
+le danger ; marquer sa position d'avant dessinait l'anneau à côté de la case
+rouge, et le contrôle de létalité y répondait « pas de danger ici ». Deux
+erreurs d'un coup, dans quatre lignes, invisibles autrement qu'en regardant.
+
+### 186. Onzième « géométrie invisible », et la plus injuste : la zone interdite
+
+Cherchée exprès après la dixième, en balayant ce que le moteur reconnaît et que
+le rendu ignore. Trouvée du premier coup.
+
+L'objectif `interdiction` déclare une liste de cases ; y entrer fait perdre le
+niveau **à l'instant même**. Ces cases n'étaient **pas dessinées du tout**. Le
+joueur perdait donc sur une zone qui n'existait nulle part à l'écran — les dix
+précédentes rendaient le jeu incompréhensible, celle-ci le rendait
+**arbitraire**.
+
+**La cause est structurelle et vaut avertissement :** une case interdite reste
+une case **VIDE** pour le moteur. L'interdiction vit dans l'OBJECTIF, pas dans
+la grille. Le rendu, qui parcourt les types de case, ne pouvait pas la trouver.
+
+> **Tout ce qui décrit le terrain sans être un type de case est candidat au même
+> oubli.** C'était déjà vrai du sens unique (une couche à part) et de la porte à
+> pression. Le balayage « quels types de case sont dessinés ? » ne suffit pas :
+> il faut demander « quelles DONNÉES changent ce qui arrive à un agent ? ».
+
+Rendue en hachures **ambre**, jamais en rouge : le rouge appartient au danger,
+qui TUE l'agent qui y entre ; l'interdiction ne tue personne, elle disqualifie
+la tentative. Deux conséquences différentes ne portent pas la même teinte
+(RG-14). Contour tracé par frontière — une zone se lit par son bord, pas par son
+remplissage.
+
 ## Reste à faire
 
 **S3 : clos** — premier passage de la CI en ligne constaté vert le
@@ -2132,7 +2804,10 @@ décision humaine consignée ici).
 |---|---|---|
 | Empreinte de fumée (test_smoke, 200 ticks, pile 1,2,3,0) | `c8a7cc2c73394949` — **inchangée à travers la revue S3** | 5 août 2026 |
 | Tests (unitaires + architecture + or) | 125/125 (360 assertions), ~0,9 s | 5 août 2026 |
-| Recettes d'or | 17/17 concordantes (10 régénérées sous protocole + 7 fixtures de sensibilité) | 5 août 2026 |
+| Recettes d'or | **30 recettes × 3 relevés = 90 empreintes**, 30/30 concordantes après la cérémonie ch1_03 | 10 août 2026 |
+| Mode Épreuve — force brute / budget, par chapitre | 32/25 · 75/25 · 36/20 · 71/20 · 63/30 · 73/25 — **mord partout**, de 1,3× à 3,6× | 15 août 2026 |
+| Mode Épreuve — ce que le tirage retire | **rien dans 24 niveaux sur 29** (bibliothèques de 3 à 4 règles) | 15 août 2026 |
+| Niveaux à ensemble suffisant minimal UNIQUE | 25 sur 29 — le jeu porte sur l'ordre, pas sur la sélection | 15 août 2026 |
 | Coupe de boucle du validateur | simulation statique tranchée en ~7 ticks au lieu de 300 | 4 août 2026 |
 | Godot | 4.7.1-stable, standard (pas .NET), Linux x86_64 | 4 août 2026 |
 | GUT | 9.6.1 | 4 août 2026 |

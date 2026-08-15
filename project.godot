@@ -34,7 +34,12 @@ window/size/window_width_override=540
 window/size/window_height_override=1200
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
-window/handheld/orientation="portrait"
+; ORIENTATION : UN ENTIER, PAS UNE CHAINE. Elle valait "portrait" — syntaxe
+; Godot 3 — que Godot 4 ne comprend pas : la valeur retombait a 0, soit
+; PAYSAGE, et le jeu s'affichait couche sur le telephone. Rien ne le disait
+; sur le poste de developpement, ou la fenetre est portrait par sa taille.
+; 1 = DisplayServer.SCREEN_PORTRAIT. Verifie par tests/arch/test_project_settings.gd.
+window/handheld/orientation=1
 
 [rendering]
 

@@ -29,6 +29,15 @@ var rule_params: RuleParams
 ## s'observent dans counters et outcome.
 var objectives: Array[ObjectiveDef] = []
 
+## R16 « Ignorer » — type de case neutralisé pour tous les agents, ou -1.
+##
+## HORS EMPREINTE, ET CE N'EST PAS UN OUBLI : cette valeur est une lecture de
+## la PILE, pas un état du monde. La pile est constante pendant toute une
+## simulation, donc cette valeur l'est aussi ; l'inclure dans l'empreinte
+## reviendrait à hacher deux fois la même information et ferait bouger les
+## trente recettes d'or sans qu'aucun comportement ait changé.
+var ignored_cell: int = -1
+
 ## Copie profonde explicite pour le double tampon (T-010) : `state` (t) reste
 ## en lecture seule pendant tout le tick pendant que `step()` construit t+1
 ## à partir de cette copie (DT-08).

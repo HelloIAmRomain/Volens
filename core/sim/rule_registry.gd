@@ -3,13 +3,62 @@ extends RefCounted
 ## Registre des règles disponibles, indexées par l'identifiant entier stable
 ## utilisé dans la pile (Array[int], DT-10). 0 = emplacement vide.
 ##
-## Seules R01-R03 (chapitre 1) sont enregistrées dans ce lot ; R04-R16
-## viendront chapitre par chapitre sans changer cette interface.
+## Les seize règles du CDC §7.2 sont enregistrées. L'interface n'a pas changé
+## d'un caractère depuis le chapitre 1 : `Rule.evaluate` pour un déplacement,
+## `Rule.apply_effect` pour un effet, et la cascade lit `Rule.kind()`.
 
 const EMPTY: int = 0
+
+# Chapitre 1 — le mouvement élémentaire
 const R01_TOWARD_LIGHT: int = 1
 const R02_FLEE_DANGER: int = 2
 const R03_STAY_GROUPED: int = 3
+# Chapitre 2 — la coordination
+const R04_SPREAD_OUT: int = 4
+const R05_FOLLOW_NEIGHBOURS: int = 5
+const R06_HUG_WALL: int = 6
+# Chapitre 3 — la mémoire du monde
+const R07_WAIT: int = 7
+const R08_MARK_TRAIL: int = 8
+const R09_FOLLOW_TRAIL: int = 9
+# Chapitre 4 — le transport
+const R10_TURN_BACK_IF_ALONE: int = 10
+const R11_CARRY: int = 11
+const R12_DROP_AT_GOAL: int = 12
+# Chapitre 5 — le sacrifice et la régulation
+const R13_PLUG: int = 13
+const R14_SCATTER_IF_DENSE: int = 14
+const R15_FOLLOW_THE_SLOWEST: int = 15
+# Chapitre 6 — l'exception
+const R16_IGNORE: int = 16
+
+## LE JOKER R16 PORTE UN ARGUMENT — le type de case qu'il neutralise, « choisi
+## au placement de la règle » (CDC §7.2). Une pile reste pourtant un
+## `Array[int]` : c'est le type que lisent l'énumérateur, la sauvegarde,
+## l'empreinte des recettes d'or et l'interface. Le changer pour un tableau de
+## structures aurait touché ces cinq endroits, pour un seul cas particulier.
+##
+## L'argument est donc encodé dans les bits hauts de l'identifiant :
+##
+##     identifiant = R16_IGNORE | (type_de_case << 8)
+##
+## `base_rule_id` retire l'argument, `ignored_cell_of` le lit. Tout le reste du
+## moteur continue de manipuler des entiers sans rien savoir de ce codage —
+## c'est la propriété qui le rend acceptable.
+const JOKER_SHIFT: int = 8
+const RULE_MASK: int = 0xFF
+
+static func base_rule_id(rule_id: int) -> int:
+	return rule_id & RULE_MASK
+
+## Type de case neutralisé par cet identifiant, ou -1 si ce n'est pas un joker.
+static func ignored_cell_of(rule_id: int) -> int:
+	if base_rule_id(rule_id) != R16_IGNORE:
+		return -1
+	return rule_id >> JOKER_SHIFT
+
+static func make_joker(cell_type: int) -> int:
+	return R16_IGNORE | (cell_type << JOKER_SHIFT)
 
 ## Instances mises en cache par id (les règles sont sans état) — évite de
 ## réallouer un objet Rule à chaque agent, à chaque tick. Accès par clé
@@ -17,16 +66,53 @@ const R03_STAY_GROUPED: int = 3
 static var _instances: Dictionary = {}
 
 static func get_rule(rule_id: int) -> Rule:
-	if _instances.has(rule_id):
-		return _instances[rule_id]
+	var base := base_rule_id(rule_id)
+	if _instances.has(base):
+		return _instances[base]
 	var rule: Rule = null
-	match rule_id:
+	match base:
 		R01_TOWARD_LIGHT:
 			rule = RuleTowardLight.new()
 		R02_FLEE_DANGER:
 			rule = RuleFleeDanger.new()
 		R03_STAY_GROUPED:
 			rule = RuleStayGrouped.new()
+		R04_SPREAD_OUT:
+			rule = RuleSpreadOut.new()
+		R05_FOLLOW_NEIGHBOURS:
+			rule = RuleFollowNeighbours.new()
+		R06_HUG_WALL:
+			rule = RuleHugWall.new()
+		R07_WAIT:
+			rule = RuleWait.new()
+		R08_MARK_TRAIL:
+			rule = RuleMarkTrail.new()
+		R09_FOLLOW_TRAIL:
+			rule = RuleFollowTrail.new()
+		R10_TURN_BACK_IF_ALONE:
+			rule = RuleTurnBackIfAlone.new()
+		R11_CARRY:
+			rule = RuleCarry.new()
+		R12_DROP_AT_GOAL:
+			rule = RuleDropAtGoal.new()
+		R13_PLUG:
+			rule = RulePlug.new()
+		R14_SCATTER_IF_DENSE:
+			rule = RuleScatterIfDense.new()
+		R15_FOLLOW_THE_SLOWEST:
+			rule = RuleFollowTheSlowest.new()
+		R16_IGNORE:
+			rule = RuleIgnore.new()
 	if rule != null:
-		_instances[rule_id] = rule
+		_instances[base] = rule
 	return rule
+
+## Nombre de règles réellement enregistrées — sert aux tests et au catalogue.
+const ALL: Array[int] = [
+	R01_TOWARD_LIGHT, R02_FLEE_DANGER, R03_STAY_GROUPED,
+	R04_SPREAD_OUT, R05_FOLLOW_NEIGHBOURS, R06_HUG_WALL,
+	R07_WAIT, R08_MARK_TRAIL, R09_FOLLOW_TRAIL,
+	R10_TURN_BACK_IF_ALONE, R11_CARRY, R12_DROP_AT_GOAL,
+	R13_PLUG, R14_SCATTER_IF_DENSE, R15_FOLLOW_THE_SLOWEST,
+	R16_IGNORE,
+]

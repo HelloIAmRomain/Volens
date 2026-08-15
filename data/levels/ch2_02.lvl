@@ -1,0 +1,88 @@
+# N7 « Sans lumiere » — quand la nuee n'a plus que les murs.
+#
+# LE SEUL NIVEAU DU JEU SANS SOURCE DE LUMIERE, et il fallait qu'il existe.
+#
+# POURQUOI. R06 « Longer le mur » et R01 « Vers la lumiere » se contredisent
+# structurellement : R06 pousse lateralement pour contourner, R01 rappelle vers
+# la lumiere, et l'agent fait l'aller-retour entre les deux. C'est la
+# pathologie P3 du dossier des genres — deux regles qui se contredisent de part
+# et d'autre d'un seuil produisent un cycle — et AUCUNE geometrie ne l'evite.
+# Mesure faite pendant la conception de ce niveau : trois dispositifs essayes,
+# trois oscillations, dont une a quatre cases parfaitement circulaire.
+#
+# La sortie n'est pas de ruser avec la geometrie, c'est de retirer la
+# contradiction. **R01 s'abstient quand il n'y a pas de lumiere.** Sans elle,
+# R06 conduit seule, et le contournement n'a plus rien qui le rappelle en
+# arriere.
+#
+# CE QUE LE NIVEAU ENSEIGNE, ET C'EST NOUVEAU. Depuis le premier niveau, la
+# nuee allait vers quelque chose. Ici il n'y a rien a viser : la sortie
+# n'attire pas, elle est juste au bout. La nuee ne peut avancer qu'en SUIVANT
+# UNE FORME. C'est la premiere fois que le joueur doit raisonner sur la
+# topologie plutot que sur une direction, et c'est le vrai sujet du chapitre 2.
+#
+# DEUX REGLES SONT OFFERTES EN PLUS DE R06, ET ELLES NE SE VALENT PAS.
+#
+# R01 « Vers la lumiere » est un piege HONNETE : le joueur qui l'a utilisee cinq
+# niveaux durant la posera par reflexe. Elle ne fera rien — ni degat ni aide,
+# elle s'abstient partout faute de lumiere. Un rang gaspille, et la decouverte
+# qu'une regle peut etre simplement HORS SUJET.
+#
+# R07 « Attendre » est un piege REEL. Elle ne s'abstient jamais : posee au-dessus
+# de R06, elle fige la nuee au premier tick et rend muet tout ce qui suit. La
+# difference entre les deux est exactement ce que le niveau demande de voir —
+# une regle inerte coute un rang, une regle terminale coute la partie.
+#
+# DEUX CONTRAINTES DE R06, TOUTES DEUX DECOUVERTES A LA MESURE, et toutes deux
+# structurelles — elles vaudront pour tout niveau de longeage :
+#
+# 1. TOUT AGENT DOIT TOUCHER UN MUR DES LE DEPART. Au centre d'un bloc, R06
+#    s'abstient faute d'objet et R01 faute de lumiere : l'agent ne bouge plus
+#    jamais. Premiere version mesuree : 15 immobiles sur 20 au tick 2.
+#
+# 2. LES COULOIRS FONT UNE CASE DE LARGE. Dans un couloir de deux cases, le
+#    suivi de main droite tourne en rond : droite libre, on tourne a droite,
+#    quatre fois de suite, et l'agent decrit un carre de 2x2 sans jamais
+#    longer quoi que ce soit. Mesure : cycle parfait, zero sortie.
+#
+# 3. LE PARCOURS N'A QU'UN SENS. Dans un couloir d'une case, deux agents qui
+#    se font face BLOQUENT toute la file, definitivement : chacun defend sa
+#    case contre l'autre (RG-06) et le refus remonte de proche en proche.
+#    Un serpentin en fait naitre un a chaque demi-tour — mesure : vingt agents
+#    figes des le tick 1. D'ou l'ESCALIER : le chemin ne va jamais qu'a l'Est
+#    ou au Nord, donc tous les agents avancent dans le meme sens, toujours.
+#
+# LA MAIN DROITE EST UNE CONVENTION FIGEE, au meme titre que l'ordre N>E>S>O.
+# Le serpentin est dessine pour qu'elle mene a la sortie ; en main gauche, il
+# faudrait le miroir. Ce n'est pas un reglage de niveau, c'est une propriete du
+# jeu, et le joueur l'apprend ici une fois pour toutes.
+id: ch2_02
+name: Sans lumiere
+tutorial: true
+allowed_rules: [R01, R03, R04, R06, R07]
+slots: 3
+max_ticks: 200
+objective: extraction 100
+lesson: "Sans rien a viser, la nuee ne peut avancer qu'en suivant une forme."
+expected_wins: 33
+expected_classes: 1
+calibrated_on: 142da3ea7c47ebc8
+challenge: efficiency=23 abstinence=R01
+---
+# # # # # # # # # # # #
+# # # # # # # # # # E #
+# # # # # # # # # # . #
+# # # # # # # # # # . #
+# # # # # # # # # # . #
+# # # # # # # # # # o #
+# # # # # # # # # # o #
+# # # # # # # # # # o #
+# # # # # # # # # # o #
+# # # # # # # o o o o #
+# # # # # # # o # # # #
+# # # # # # # o # # # #
+# # # # o o o o # # # #
+# # # # o # # # # # # #
+# # # # o # # # # # # #
+# o o o o # # # # # # #
+# # # # # # # # # # # #

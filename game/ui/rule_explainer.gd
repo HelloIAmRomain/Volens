@@ -29,8 +29,17 @@ static func explain(agent: AgentState, state: SimState, stack: Array[int]) -> Di
 		var rule := RuleRegistry.get_rule(rule_id)
 		if rule == null:
 			continue
-		var result: Vector2i = rule.evaluate(agent, state, params)
 		var label := "%d. %s" % [i + 1, RuleCatalog.name_of(rule_id)]
+		# LES EFFETS NE S'ABSTIENNENT PAS, ILS AGISSENT PUIS RENDENT LA MAIN.
+		# Les faire passer par `evaluate` — qui leur renvoie ABSTAIN par
+		# construction — faisait dire à ce panneau que « Marquer la piste » ne
+		# s'appliquait pas, au tick même où elle marquait. Un diagnostic qui ment
+		# est pire qu'un diagnostic absent : c'est le pilier P4 retourné contre
+		# le joueur, qui forme alors une hypothèse fausse et la vérifie.
+		if rule.kind() == Rule.Kind.EFFECT:
+			lines.append("%s — %s" % [label, _effect_note(rule_id, agent, state)])
+			continue
+		var result: Vector2i = rule.evaluate(agent, state, params)
 		if result != Rule.ABSTAIN:
 			lines.append("%s → %s" % [label, _direction_name(result)])
 			return {"slot": i, "rule_id": rule_id, "proposed": result, "lines": lines}
@@ -41,7 +50,7 @@ static func explain(agent: AgentState, state: SimState, stack: Array[int]) -> Di
 ## Motif d'abstention, formulé pour le joueur. Déduit de requêtes sur l'état,
 ## dans le même ordre que la règle elle-même les évalue.
 static func _abstention_reason(rule_id: int, agent: AgentState, state: SimState, params: RuleParams) -> String:
-	match rule_id:
+	match RuleRegistry.base_rule_id(rule_id):
 		RuleRegistry.R01_TOWARD_LIGHT:
 			var light := _nearest_cell(state.grid, GridState.CellType.LIGHT_SOURCE, agent.pos)
 			if light.x < 0:
@@ -62,7 +71,54 @@ static func _abstention_reason(rule_id: int, agent: AgentState, state: SimState,
 			if _perceived_neighbours(state, agent, params) == 0:
 				return "aucun voisin perçu"
 			return "déjà groupé"
+		RuleRegistry.R04_SPREAD_OUT:
+			return "pas assez serré, ou nulle part où se desserrer"
+		RuleRegistry.R05_FOLLOW_NEIGHBOURS:
+			if state.tick == 0:
+				return "premier tick : personne n'a encore bougé"
+			return "aucun voisin en mouvement à copier"
+		RuleRegistry.R06_HUG_WALL:
+			return "aucun obstacle à longer"
+		RuleRegistry.R09_FOLLOW_TRAIL:
+			if state.grid.pheromone[state.grid.index_of(agent.pos)] > 0:
+				return "aucune trace voisine plus intense que la sienne"
+			return "aucune trace à suivre"
+		RuleRegistry.R10_TURN_BACK_IF_ALONE:
+			return "pas seul, ou demi-tour muré"
+		RuleRegistry.R13_PLUG:
+			return "aucun danger adjacent à boucher"
+		RuleRegistry.R14_SCATTER_IF_DENSE:
+			return "zone pas assez dense, ou nulle part où respirer"
+		RuleRegistry.R15_FOLLOW_THE_SLOWEST:
+			return "le groupe est resserré : rien à attendre"
+		RuleRegistry.R16_IGNORE:
+			return "ne propose jamais de pas — elle agit sur tout le tick"
 	return "ne s'applique pas"
+
+## Ce qu'une règle d'EFFET fait ou ne fait pas pour cet agent, à ce tick. On
+## décrit la CONDITION observable, jamais le résultat : l'effet s'applique
+## après la décision, et l'annoncer accompli avant qu'il ne le soit serait le
+## même mensonge, dans l'autre sens.
+static func _effect_note(rule_id: int, agent: AgentState, state: SimState) -> String:
+	match RuleRegistry.base_rule_id(rule_id):
+		RuleRegistry.R08_MARK_TRAIL:
+			return "marque sa case s'il avance, puis rend la main"
+		RuleRegistry.R11_CARRY:
+			if (agent.flags & AgentState.PORTEUR) != 0:
+				return "porte déjà : ne ramasse pas"
+			if state.grid.cell_type_at(agent.pos) == GridState.CellType.RESOURCE:
+				return "ramasse la ressource de sa case, puis rend la main"
+			return "rien à ramasser ici"
+		RuleRegistry.R12_DROP_AT_GOAL:
+			if (agent.flags & AgentState.PORTEUR) == 0:
+				return "ne porte rien"
+			for d in Directions.ORDER:
+				var c: Vector2i = agent.pos + Directions.offset(d)
+				if state.grid.is_in_bounds(c) \
+						and state.grid.cell_type_at(c) == GridState.CellType.DROPOFF:
+					return "dépose sur le dépôt voisin, puis rend la main"
+			return "aucun dépôt à portée de bras"
+	return "agit, puis rend la main"
 
 static func _nearest_cell(grid: GridState, cell_type: int, from: Vector2i) -> Vector2i:
 	var best := Vector2i(-1, -1)

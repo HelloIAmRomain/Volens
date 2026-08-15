@@ -321,6 +321,39 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 			min_ticks = int(w["ticks"])
 			best_stack = w["stack"]
 
+	# --- DÉFIS RG-18 : le validateur MESURE, le concepteur inscrit ---
+	#
+	# Les trois défis se calibrent, ils ne se devinent pas. On donne donc au
+	# concepteur ce qu'il ne peut pas calculer de tête :
+	#
+	#   · `challenge_economy_possible` — existe-t-il une pile gagnante d'au plus
+	#     trois règles ? Sinon le défi d'économie est INATTEIGNABLE, et l'annoncer
+	#     serait une fausse piste ;
+	#   · `challenge_abstinence_options` — pour chaque règle du niveau, existe-t-il
+	#     une pile gagnante qui s'en passe ? Une règle qui figure dans TOUTES les
+	#     piles gagnantes ne peut pas fonder un défi d'abstinence ;
+	#   · `min_ticks` sert de plancher au défi d'efficience : l'inscrire
+	#     au-dessous rendrait le défi impossible, l'inscrire trop au-dessus le
+	#     rendrait gratuit.
+	var economy_possible := false
+	var abstinence_options := PackedInt32Array()
+	for rule_id in allowed:
+		var exists := false
+		for w in wins:
+			if not Array(w["stack"]).has(rule_id):
+				exists = true
+				break
+		if exists:
+			abstinence_options.append(int(rule_id))
+	for w in wins:
+		var used := 0
+		for r in w["stack"]:
+			if int(r) != 0:
+				used += 1
+		if used <= Challenges.ECONOMY_MAX_SLOTS:
+			economy_possible = true
+			break
+
 	# Collecte hors chapitre (revue S3, 3.6) : distinguer « inatteignable
 	# faute de règles de transport autorisées » de « niveau cassé » — sans
 	# cela, l'authoring du chapitre 4 serait pénible.
@@ -401,10 +434,13 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 			"expected_stacks": StackEnumerator.expected_count(allowed.size(), slots),
 			"slots": slots,
 			"n_win": wins.size(),
+			"n_win_minimal": _minimal_wins(wins),
 			"n_win_classes": n_classes,
 			"win_ratio_percent": win_ratio_percent,
 			"min_ticks": min_ticks,
 			"best_stack": best_stack,
+			"challenge_economy_possible": economy_possible,
+			"challenge_abstinence_options": abstinence_options,
 			"tutorial": tutorial,
 			"expected_wins": expected_wins,
 			"expected_classes": expected_classes,
@@ -521,3 +557,35 @@ static func _tick_without_deadline(level_data: Dictionary, params: RuleParams, s
 	while state.outcome == SimState.Outcome.RUNNING and state.tick < cap:
 		state = SimCore.step(state, stack)
 	return state.tick if state.outcome == SimState.Outcome.WON else -1
+
+## GAGNANTES MINIMALES — le seul compte qui dise quelque chose du niveau.
+##
+## LE COMPTEUR NAÏF MENT, ET TOUJOURS DANS LE SENS RASSURANT. Compter toutes
+## les piles gagnantes attribue au niveau autant de « solutions » qu'il y a de
+## facons de rallonger la meme : si `[R09]` gagne, alors `[R09,R01]`,
+## `[R09,R05]`, `[R09,R01,R05]`… gagnent aussi. Mesure du 15 aout 2026 :
+## ch6_04 annoncait dix-huit gagnantes, il en avait TROIS.
+##
+## Une gagnante ne compte donc que si aucune SOUS-SUITE d'elle ne gagne deja.
+## Sous-suite et non sous-ensemble : on retire des rangs sans reordonner les
+## autres, parce que l'ordre EST le jeu.
+static func _minimal_wins(wins: Array) -> int:
+	var n := 0
+	for w in wins:
+		var stack: Array = w["stack"]
+		var redundant := false
+		for other in wins:
+			var small: Array = other["stack"]
+			if small.size() < stack.size() and _is_subsequence(small, stack):
+				redundant = true
+				break
+		if not redundant:
+			n += 1
+	return n
+
+static func _is_subsequence(small: Array, big: Array) -> bool:
+	var j := 0
+	for v in big:
+		if j < small.size() and small[j] == v:
+			j += 1
+	return j == small.size()

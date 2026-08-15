@@ -61,6 +61,20 @@ func _init() -> void:
 	if int(summary.get("wins_with_oscillation", 0)) > 0:
 		print("sur-place        : %d pile(s) gagnante(s), jusqu'à %d agent(s) — à corriger au dessin" % [
 			summary["wins_with_oscillation"], summary["max_oscillating_agents"]])
+	# RG-18 : ce que le concepteur doit savoir pour inscrire des défis JUSTES.
+	var abstinence: PackedInt32Array = summary.get("challenge_abstinence_options", PackedInt32Array())
+	var abst_names := PackedStringArray()
+	for r in abstinence:
+		abst_names.append("R%02d" % int(r))
+	print("defis RG-18      : economie %s   abstinence possible sur %s   efficience >= %d ticks" % [
+		"POSSIBLE" if bool(summary.get("challenge_economy_possible", false)) else "impossible",
+		", ".join(abst_names) if abst_names.size() > 0 else "aucune regle",
+		int(summary.get("min_ticks", -1))])
+	# LE COMPTE MINIMAL D'ABORD : c'est celui qui dit combien d'IDEES le niveau
+	# offre. Le compte brut ne dit que combien de facons il y a de rallonger la
+	# meme idee, et il flatte toujours.
+	print("gagnantes        : %d minimale(s) sur %d brutes — le brut compte les rallonges" % [
+		int(summary.get("n_win_minimal", 0)), int(summary.get("n_win", 0))])
 	print("verdict QN-01    : %s" % summary["qn01_verdict"])
 	print("rapports         : %s/%s.{csv,summary.json}" % [out_dir, level_name])
 	quit(0)

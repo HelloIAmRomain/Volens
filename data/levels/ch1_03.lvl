@@ -1,54 +1,74 @@
-# N3 « Les trainards » — la cohesion est AVEUGLE.
+# N3 « Les deux trainards » — DEUX pieges, DEUX regles, et un ordre.
 #
-# Ce que N3 corrige par rapport a sa premiere version : la pile [Lumiere]
-# seule y gagnait. C'etait le defaut de fond du chapitre — plusieurs niveaux
-# se resolvaient avec une seule regle, et la profondeur annoncee par la regle
-# d'or restait theorique. Ici, et dans tout ce qui suit, AUCUNE pile d'une
-# seule regle ne gagne. Le CDC §7.3 le demandait deja : la « nuee pressee »
-# fonce et se fait faucher, c'est l'erreur instructive.
+# CE QUE CE NIVEAU CORRIGE. Sa version precedente se gagnait avec [Lumiere]
+# seule : R01 conduisait toute la nuee a l'ouverture sans qu'aucune autre
+# regle ait a parler. Ici [Lumiere] seule PERD, et c'est structurel.
 #
-# UN SEUL DANGER, ET C'EST L'INVARIANT N.13 QUI L'IMPOSE.
+# DEUX TRAINARDS, DEUX PIEGES OPPOSES. C'est le premier niveau du chapitre
+# ou une pile de DEUX regles ne suffit pas.
 #
-# Le premier jet en posait deux : un a l'ouest pour faucher la famille
-# directe, un a l'est pour faucher la cohesion. Mesure : niveau INSOLUBLE,
-# 15 agents bloques, la famille prudente prise entre les deux repulseurs.
-# La raison est celle deja etablie : R02 percoit a d² <= 25, R03 a d² <= 16.
-# Un danger place pour punir la cohesion doit border un trainard lui-meme
-# percu par le bloc — il est donc NECESSAIREMENT percu par le bloc, et deux
-# tels dangers en vis-a-vis enferment la nuee.
+# --- PIEGE EST : l'impasse. R01 s'y abstient. ---
 #
-# On ne peut donc pas punir deux familles par des dangers dans un meme
-# niveau. N3 punit la cohesion ; c'est N2 et N5 qui punissent la vitesse.
+# R01 ne propose un pas que s'il REDUIT strictement la distance de Manhattan
+# a la lumiere. En (9,7) — mur au Nord (9,6), murs a l'Est (10,7) et a
+# l'Ouest (8,7) — la seule case libre est le Sud, qui l'EN ELOIGNE. R01 se
+# tait ; l'agent reste immobile jusqu'a la fin des ticks. Une impasse est le
+# seul dispositif qui rende une deuxieme regle NECESSAIRE, et non seulement
+# utile.
 #
-# LE DANGER EST A L'OUEST, ET C'EST LA TROISIEME CONTRAINTE. Pose a l'est du
-# bloc, il repoussait la nuee prudente LOIN de l'ouverture : 12 agents
-# bloques, niveau insoluble une fois de plus. Fuite et entonnoir doivent
-# tirer dans le meme sens (contrainte etablie en N2).
+# SEULE R03 PEUT L'OUVRIR — etabli ici apres trois geometries mesurees, et
+# generalise depuis :
 #
-# Le danger (1,10) ne tue personne sous R01 ni sous R02 — il est hors de
-# toute trajectoire. Il ne fauche QUE si la cohesion parle en premier : le
-# trainard de (0,10) est isole (d² = 9 > 2) mais percoit le bloc
-# (d² = 9 <= 16), et le barycentre est a l'EST. L'ordre N>E>S>O teste le
-# Nord, qui eloigne du barycentre, puis l'Est, qui l'en rapproche : droit
-# dans le feu.
+#   Une impasse ne peut pas etre ouverte par R02. Le seuil de fuite se
+#   declenche AVANT l'impasse — l'agent oscille de part et d'autre de la
+#   portee (pathologie P3) — ou, s'il ne se declenche qu'a l'interieur, la
+#   direction de fuite est justement celle qui est muree : la seule case
+#   libre d'une impasse pointe vers le danger, sinon R01 l'aurait prise.
 #
-# Sous R01 en tete, ce meme trainard monte dans sa colonne et vit. Sous R02
-# en tete, il fuit vers le Nord — qui ELOIGNE du danger — et vit aussi.
-# C'est la cohesion, et elle seule, qui le tue.
+#   R03 y echappe parce que sa condition n'est PAS un seuil sur un point
+#   fixe : elle depend des congeneres, qui sont derriere. Le barycentre est
+#   au Sud, la sortie de l'impasse est au Sud : ils tirent dans le meme sens.
 #
-# Resultat attendu : seule la famille prudente passe. C'est le niveau ou l'on
-# apprend que ramener un trainard n'est pas gratuit.
+# Le trainard de (9,11) est isole du bloc (d² = 4 > 2) mais le percoit
+# (d² = 4 <= 16). Il est hors de portee du danger (d² > 25) : R02 n'a aucune
+# prise sur lui. La cohesion, et elle seule, le sauve.
+#
+# --- PIEGE OUEST : le feu, et c'est la COHESION qui y pousse. ---
+#
+# Le trainard de (0,10) est isole (d² = 10 > 2) et percoit le bloc
+# (d² = 10 <= 16) ; le barycentre est au Sud-Est. L'ordre N>E>S>O teste le
+# Nord, qui eloigne du barycentre, puis l'EST — qui l'en rapproche et qui
+# est le danger (1,10). R03 l'y pousse au premier tick : mort au tick 1,
+# extraction 100 impossible.
+#
+# R02 le sauve : a d² = 1 le danger est bien en portee, et le Nord (d² = 2)
+# en eloigne. L'agent monte, sort de portee de fuite, puis sort aussi de
+# perception du bloc — R03 se tait, R01 le mene a l'ouverture. Pas de
+# va-et-vient : les deux seuils se quittent dans le meme sens.
+#
+# --- CE QUI GAGNE : UNE SEULE PILE, ET C'EST L'ORDRE QUI DECIDE. ---
+#
+#   [Lumiere]                 impasse      1 bloque
+#   [Fuite, Lumiere]          impasse      1 bloque
+#   [Cohesion, Lumiere]       le feu       1 mort, au tick 1
+#   [Cohesion, Fuite, Lumiere] le feu      1 mort, au tick 1
+#   [Fuite, Cohesion, Lumiere] GAGNE       22/22 en 30 ticks
+#
+# Fuir d'abord, regrouper ensuite. La cohesion est aveugle : elle ramene un
+# trainard sans regarder ou. C'est le premier niveau ou l'ordre de DEUX
+# regles autres que la lumiere se voit — la paire R02/R03 y est enfin
+# observable (RG-13), ce qu'aucun niveau anterieur ne montrait.
 id: ch1_03
-name: Les trainards
+name: Les deux trainards
 tutorial: true
 allowed_rules: [R01, R02, R03]
 slots: 3
 max_ticks: 120
 objective: extraction 100
-lesson: "Ramener un trainard sans regarder ou : la cohesion est aveugle."
-expected_wins: 8
-expected_classes: 3
-calibrated_on: 418a5244cecd08f6
+lesson: "Fuir d'abord, regrouper ensuite : la cohesion ramene un trainard sans regarder ou."
+expected_wins: 1
+expected_classes: 1
+calibrated_on: a83a833700fe848d
 ---
 . . . . . L . . . . .
 # # # # E E E # # # #
@@ -56,11 +76,12 @@ calibrated_on: 418a5244cecd08f6
 . . . . . . . . . . .
 . . . . . . . . . . .
 . . . . . . . . . . .
+. . . . . . . . . # .
+. . . . . . . . # . #
 . . . . . . . . . . .
 . . . . . . . . . . .
-. . . . . . . . . . .
-. . . . . . . . . . .
-o X . o o o o o . . .
+o X . . . . . . . . .
+. . . o o o o o . o .
 . . . o o o o o . . .
 . . . o o o o o . . .
 . . . o o o o o . . .
