@@ -46,7 +46,12 @@ const BASE := 1024
 const AGENT := Color(0.82, 0.93, 1.00)
 const LIGHT := Color(1.00, 0.92, 0.68)
 const EXIT := Color(0.20, 0.78, 0.56)
-const WALL := Color(0.16, 0.17, 0.23)
+## LE MUR EST PLUS CLAIR QUE CELUI DU JEU, pour la meme raison que le fond.
+## A (0.16, 0.17, 0.23) sur un fond a 0.078, l'ecart etait de sept pour cent :
+## vu sur la grille d'un lanceur, la barre existait sans se lire, et il ne
+## restait qu'une lumiere au-dessus d'un flux de points. Un mur qu'on ne voit
+## pas ne dit pas pourquoi la nuee se resserre.
+const WALL := Color(0.255, 0.275, 0.345)
 
 ## LE FOND EST PLUS CLAIR QUE CELUI DU JEU, et c'est délibéré. `ViewPalette`
 ## descend à (0.027, 0.031, 0.047) — juste ce qu'il faut pour que la nuée
