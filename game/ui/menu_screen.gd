@@ -22,17 +22,16 @@ func setup(progress: Progress, session: Session) -> void:
 	_session = session
 	_build()
 
-## Le premier chapitre est-il entièrement résolu ? Condition d'apparition du
+## Un chapitre au moins est-il entièrement résolu ? Condition d'apparition du
 ## mode Épreuve. Un mode qui punit la recherche n'a de sens que pour quelqu'un
 ## qui a de quoi raisonner à la place.
-func _first_chapter_cleared() -> bool:
-	if _progress == null:
-		return false
-	var chapters := LevelCatalog.chapters()
-	if chapters.is_empty():
-		return false
-	var done := LevelCatalog.chapter_progress(chapters[0], _progress)
-	return done.y > 0 and done.x >= done.y
+##
+## LA CONDITION N'EST PAS RÉÉCRITE ICI. Le menu, l'écran de choix et `App`
+## posent tous la même question ; trois copies d'une même règle finissent par
+## diverger, et c'est exactement ce que dit l'invariant n°16 des champs de
+## niveau. La source unique est `TrialSelectScreen.cleared_chapters`.
+func _any_chapter_cleared() -> bool:
+	return not TrialSelectScreen.cleared_chapters(_progress).is_empty()
 
 func _build() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -75,7 +74,7 @@ func _build() -> void:
 	# terminé : proposer d'emblée un mode où chaque lancement compte, à
 	# quelqu'un qui ne sait pas encore ce qu'est une pile, ce serait offrir la
 	# difficulté avant la règle du jeu.
-	if _first_chapter_cleared():
+	if _any_chapter_cleared():
 		var trial := _make_button("Épreuve", 32)
 		trial.pressed.connect(func() -> void: trial_requested.emit())
 		column.add_child(trial)

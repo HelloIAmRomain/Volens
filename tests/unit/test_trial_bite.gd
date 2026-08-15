@@ -81,6 +81,27 @@ func test_a_reasoner_still_has_slack() -> void:
 		+ "lancements par niveau) : le mode punirait la compréhension. %s")
 		% ", ".join(cramped))
 
+func test_only_cleared_chapters_are_offered() -> void:
+	# Le mode punit la recherche, jamais l'ignorance : une épreuve sur un
+	# chapitre qu'on n'a pas fini échouerait sur des niveaux qu'on n'a pas
+	# encore compris.
+	var progress := Progress.new()
+	assert_eq(TrialSelectScreen.cleared_chapters(progress), ([] as Array[int]),
+		"une progression vierge n'ouvre aucune épreuve")
+	var chapters := LevelCatalog.chapters()
+	assert_gt(chapters.size(), 0, "le catalogue doit avoir des chapitres")
+	for i in range(LevelCatalog.count()):
+		var entry: Dictionary = LevelCatalog.entry(i)
+		if bool(entry["ready"]) and LevelCatalog.chapter_of(String(entry["id"])) == chapters[0]:
+			progress.record_win(String(entry["id"]), 20, 0)
+	assert_eq(TrialSelectScreen.cleared_chapters(progress), ([chapters[0]] as Array[int]),
+		"le premier chapitre résolu, et lui seul, doit être offert")
+
+func test_cleared_chapters_tolerates_a_null_progress() -> void:
+	# L'écran est construit avant que la progression ne soit sûrement chargée
+	# dans le harnais de captures ; un plantage y serait invisible en test.
+	assert_eq(TrialSelectScreen.cleared_chapters(null), ([] as Array[int]))
+
 # --- ce que le mode N'EXIGE PAS, et pourquoi c'est écrit ici ---------------
 
 func test_the_drawn_hand_is_documented_as_nearly_vacuous() -> void:

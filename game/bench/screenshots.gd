@@ -176,7 +176,9 @@ func _capture_all() -> void:
 	_app.progress.record_win("ch1_03", 30, 0)
 	_app.progress.record_win("ch1_04", 18, 0)
 	_app.progress.record_win("ch1_05", 20, 0)
-	_app._start_trial()
+	_app._open_trial_select()
+	await _shot("18a-epreuve-choix-chapitre")
+	_app._start_trial(1)
 	# Le panneau d'objectif COUVRE la palette. La capture doit montrer la main
 	# tiree, pas le panneau qui la cache : une main invisible ne se verifie pas.
 	var trial_screen := _app._current as GameScreen
@@ -184,7 +186,7 @@ func _capture_all() -> void:
 	# Le tiroir OUVERT, sinon la capture ne montre que des rangs vides : la main
 	# tiree vit dans la bibliotheque, et c'est elle qu'il faut voir retrecie.
 	trial_screen._on_slot_tapped(0)
-	await _shot("18-epreuve-main-tiree")
+	await _shot("18b-epreuve-main-tiree")
 
 	# Les deux bilans, gagné puis perdu.
 	_app._on_level_finished("ch1_01", true, 14, 0, [RuleRegistry.R01_TOWARD_LIGHT], "La nuée a rempli l'objectif.")

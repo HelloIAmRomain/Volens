@@ -57,7 +57,10 @@ Le second mode répond au risque ci-dessus en rendant la force brute **coûteuse
 plutôt qu'impossible : un chapitre entier joué d'un bloc, avec un budget de
 lancements partagé (5 par niveau). Il ne débloque rien et ne coche aucun défi —
 c'est une partie à côté, sans quoi il deviendrait le chemin court vers la
-progression.
+progression. **Le chapitre se choisit** parmi ceux entièrement résolus, et le
+coût de la force brute est affiché en face : une ressource dont on ignore
+l'ordre de grandeur ne se choisit pas. L'épreuve ne se met pas en pause — la
+quitter l'abandonne, faute de quoi son budget n'en serait plus un.
 
 **Mesuré, chapitre par chapitre :** la force brute coûte 32, 75, 36, 71, 63 et
 73 lancements, contre des budgets de 25, 25, 20, 20, 30 et 25. Elle échoue

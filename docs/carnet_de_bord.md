@@ -2536,6 +2536,15 @@ Ce n'est pas un défaut à corriger dans l'urgence : un jeu dont la leçon est
 l'ordre. Mais c'est une **borne connue** du potentiel d'intérêt, et elle
 appartient aux questions des testeurs.
 
+**Corollaire de conception, trouvé en branchant l'écran.** La première version
+partait d'office du **dernier** chapitre entièrement résolu. Conséquence non vue
+à l'écriture : un joueur ayant fini les six chapitres ne pouvait plus jamais
+tenter les autres — et c'est le **chapitre 2** qui exige le plus (3,0× le
+budget), pas le sixième (2,9×). Le mode se refermait sur son chapitre le moins
+exigeant à mesure qu'on progressait. Le chapitre se choisit désormais, et le
+coût de la force brute est affiché : une ressource dont on ignore l'ordre de
+grandeur ne se choisit pas.
+
 ### 179. Huitième forme du piège de l'invariant 12 : vérifier qu'un mécanisme est SÛR n'est pas vérifier qu'il SERT
 
 Le tirage de règles avait été soigné, testé sur cent graines par niveau, et sa
