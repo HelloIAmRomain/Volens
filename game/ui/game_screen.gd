@@ -394,14 +394,22 @@ func _build_objective_panel() -> void:
 ## `OBJECTIVE_MIN_SECONDS` : le panneau ne peut PAS être renvoyé avant ce
 ## délai. Sans plancher, le geste qui ouvre le niveau chasse l'énoncé avant
 ## qu'il soit lu — et le joueur découvre qu'il a raté quelque chose sans
-## savoir quoi. Deux secondes : le temps d'une phrase courte.
+## savoir quoi.
+##
+## RAMENÉ DE 2,0 À 1,2 s. Le plancher existe pour absorber le geste QUI VIENT
+## D'OUVRIR le niveau — celui-là arrive en quelques centaines de millisecondes,
+## pas au bout de deux secondes. Le reste n'était pas de la protection mais de
+## l'attente imposée, et elle s'ajoutait aux autres : « le jeu est trop lent,
+## les attentes sont frustrantes » (essai sur l'appareil). Le joueur qui veut
+## lire garde la main — le panneau ne s'efface seul qu'au bout de dix secondes,
+## et le bandeau le rouvre à volonté.
 ##
 ## `OBJECTIVE_MAX_SECONDS` : au-delà, il s'efface seul. Dix secondes, c'est
 ## trois fois le temps de lecture de l'énoncé le plus long du chapitre —
 ## assez pour une lecture posée, trop court pour rester en travers du plateau
 ## si le joueur a regardé ailleurs. Le bandeau, lui, rouvre l'énoncé à
 ## volonté : rien n'est perdu.
-const OBJECTIVE_MIN_SECONDS := 2.0
+const OBJECTIVE_MIN_SECONDS := 1.2
 const OBJECTIVE_MAX_SECONDS := 10.0
 var _objective_elapsed: float = -1.0
 
