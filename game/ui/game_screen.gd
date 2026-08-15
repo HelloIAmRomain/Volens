@@ -51,6 +51,22 @@ var _level_data: Dictionary = {}
 var _level_id: String = ""
 var _params: RuleParams
 var _allowed: Array[int] = []
+
+## MODE ÉPREUVE — main tirée pour ce niveau, vide en mode normal. Posée AVANT
+## `load_level`, qui l'adopte à la place de la bibliothèque du niveau.
+var drawn_rules: Array[int] = []
+
+## MODE ÉPREUVE — appelé avant chaque lancement de la simulation. Renvoie
+## `false` quand il ne reste aucun lancement : la partie s'arrête là.
+##
+## C'EST UN RAPPEL, PAS UN COMPTEUR LOCAL, et c'est délibéré : le budget
+## appartient à l'épreuve, qui court sur tout un chapitre. Un compteur tenu ici
+## serait remis à zéro à chaque niveau, et le mode perdrait exactement ce qui
+## le fonde — que la force brute se paie sur la suite.
+var on_launch: Callable = Callable()
+
+## MODE ÉPREUVE — lancements restants, pour l'affichage seul.
+var launches_left: int = -1
 ## Nombre de rangs OUVERTS sur ce niveau (`slots`). La pile en compte quatre
 ## (RG-05), mais un niveau en déclare moins — et le validateur n'énumère les
 ## piles que jusqu'à ce nombre. Laisser le joueur en remplir quatre lui
@@ -89,6 +105,12 @@ func load_level(level_data: Dictionary, params: RuleParams, level_id: String = "
 	_allowed = []
 	for v in level_data.get("allowed_rules", [1]):
 		_allowed.append(int(v))
+	# MODE ÉPREUVE : la main tirée REMPLACE la bibliothèque du niveau. Elle est
+	# garantie contenir au moins une solution (voir `ArcadeDraw`) ; on ne la
+	# filtre pas ici, on l'adopte telle quelle — filtrer après coup rouvrirait
+	# la porte à une main injouable.
+	if not drawn_rules.is_empty():
+		_allowed = drawn_rules.duplicate()
 	# LECTURE UNIQUE, partagée avec le validateur (`LevelSpec`). Toute autre
 	# lecture de la clé `slots` est un défaut : voir invariant n°11.
 	_open_slots = LevelSpec.open_slots(level_data)
@@ -523,6 +545,37 @@ func _show_note(text: String) -> void:
 	_explain_panel.visible = true
 	_position_explain_panel()
 
+## MODE ÉPREUVE — le budget restant tient dans le bandeau d'objectif, à côté de
+## l'avancement. Il n'a pas d'écran à lui : une ressource qu'on ne voit qu'en
+## la dépensant ne se gère pas, et une qui a son propre panneau se regarde au
+## lieu de se compter.
+##
+## IL EST UN SUFFIXE, PAS UN AJOUT. Le bandeau est réécrit à chaque tick ;
+## coller le compteur après coup le faisait disparaître à la première image de
+## simulation — le joueur voyait sa seule ressource clignoter puis s'effacer.
+func _launch_suffix() -> String:
+	if launches_left < 0:
+		return ""
+	return "   ·   %d lancement%s" % [launches_left, "s" if launches_left > 1 else ""]
+
+func _refresh_launch_banner() -> void:
+	if launches_left < 0 or _objective_label == null or _level_data.is_empty():
+		return
+	_objective_label.text = RuleCatalog.objective_line(
+		_level_data.get("objectives", []), _view.state()) + _launch_suffix()
+
+## Le budget est épuisé : la partie se termine sur-le-champ, et le bilan le dit
+## avec ses mots. Laisser le joueur continuer serait lui faire dépenser une
+## ressource qu'il n'a plus.
+func _finish_trial_exhausted() -> void:
+	if _finished:
+		return
+	_finished = true
+	_playing = false
+	_refresh_transport()
+	finished.emit(_level_id, false, _view.tick(), 0, _stack.duplicate(),
+		"Plus aucun lancement : l'épreuve s'arrête ici.")
+
 # --- EF-05 : le diagnostic, et la bascule marche/pause --------------------
 
 ## Un appui sur la grille :
@@ -738,9 +791,19 @@ func _pause() -> void:
 	_refresh_transport()
 
 func _toggle_play() -> void:
+	# MODE ÉPREUVE : un lancement se paie AU DÉMARRAGE, jamais à la pause. Le
+	# joueur peut arrêter, reprendre, revenir en arrière et repartir sans rien
+	# dépenser — ce qu'on compte, c'est une tentative, pas une manipulation du
+	# transport. Compter les reprises punirait l'observation, qui est
+	# précisément ce que le mode veut encourager.
+	if not _playing and on_launch.is_valid() and not bool(on_launch.call()):
+		_show_note("Plus aucun lancement : l'épreuve s'arrête ici.")
+		_finish_trial_exhausted()
+		return
 	_playing = not _playing
 	if _playing:
 		_hide_explain()
+		_refresh_launch_banner()
 	_refresh_transport()
 	_notify_state()
 
@@ -766,7 +829,8 @@ func _process(delta: float) -> void:
 		_view.advance(delta, SPEEDS[_speed_index])
 	var state := _view.current_state()
 	if _objective_label != null:
-		_objective_label.text = RuleCatalog.objective_line(_level_data.get("objectives", []), state)
+		_objective_label.text = RuleCatalog.objective_line(_level_data.get("objectives", []), state) \
+			+ _launch_suffix()
 	if _objective_elapsed >= 0.0:
 		_objective_elapsed += delta
 		# L'invite n'apparaît QUE lorsqu'elle devient vraie. Annoncer

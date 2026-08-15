@@ -51,6 +51,35 @@ meilleure pile ne se trouve pas en les essayant toutes, elle se déduit.
 **C'est la question à poser aux testeurs**, et aucune mesure d'outil ne la
 remplacera : ont-ils essayé toutes les piles, ou raisonné ?
 
+## Le mode Épreuve — la réponse, et ce qu'elle ne couvre pas
+
+Le second mode répond au risque ci-dessus en rendant la force brute **coûteuse**
+plutôt qu'impossible : un chapitre entier joué d'un bloc, avec un budget de
+lancements partagé (5 par niveau). Il ne débloque rien et ne coche aucun défi —
+c'est une partie à côté, sans quoi il deviendrait le chemin court vers la
+progression.
+
+**Mesuré, chapitre par chapitre :** la force brute coûte 32, 75, 36, 71, 63 et
+73 lancements, contre des budgets de 25, 25, 20, 20, 30 et 25. Elle échoue
+partout, de 1,3× à 3,6× ; un joueur qui raisonne (2 à 3 lancements par niveau)
+garde de la marge partout. `tests/unit/test_trial_bite.gd` tient les deux bords.
+
+**Ce que le mode ne fait PAS, et il faut le lire avant d'y croire.** Deux autres
+leviers avaient été prévus, et la mesure les a vidés :
+
+- le **tirage de règles** laisse la bibliothèque intacte dans 24 niveaux sur 29 ;
+- le **quota par règle** aurait été plus vide encore — le quota le plus serré
+  qui reste satisfaisable vaut la taille du chapitre dans quatre chapitres sur
+  six. Il n'a pas été écrit.
+
+**Cause commune, et c'est une borne du jeu, pas du mode :** 25 niveaux sur 29
+n'ont **qu'un seul ensemble suffisant minimal**, contenant la règle-moteur de
+leur chapitre. Le jeu porte sur l'**ordre**, jamais sur la **sélection** — ce
+qui est cohérent avec sa leçon (« la première règle applicable l'emporte »),
+mais interdit d'avance toute mécanique de restriction des règles. C'est une
+seconde question pour les testeurs : cet unique axe suffit-il à tenir sur la
+durée ?
+
 ## Ce qui reste, et qui ne dépend pas de moi
 
 - **Le volume de contenu.** Le CDC vise 70 niveaux pour la v1.0 ; il y en a 29.

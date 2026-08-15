@@ -47,6 +47,31 @@ static func levels_won_with(rule_id: int) -> int:
 				break
 	return n
 
+## Rang de la PREMIÈRE pile gagnante dans l'ordre d'exploration naturel, les
+## piles vides exclues. C'est le coût de la force brute, en lancements : le
+## joueur qui n'essaie pas de comprendre paie ce nombre-là.
+##
+## Ne simule RIEN — il réutilise les gagnantes déjà en cache et ne refait que
+## l'énumération, qui est bon marché. Recalculer aurait doublé le poste le plus
+## cher de la suite pour une information déjà présente.
+static func first_winner_rank(level_id: String) -> int:
+	var won: Array = winners().get(level_id, [])
+	var data := LevelCatalog.load_level_data(level_id)
+	var allowed: Array[int] = []
+	for v in data.get("allowed_rules", []):
+		allowed.append(int(v))
+	var rank := 0
+	for stack_variant in StackEnumerator.enumerate(allowed, LevelSpec.open_slots(data)):
+		var stack: Array[int] = []
+		for v in stack_variant:
+			stack.append(int(v))
+		if stack.is_empty():
+			continue
+		rank += 1
+		if won.has(str(stack)):
+			return rank
+	return -1
+
 static func _compute() -> void:
 	_computed = true
 	var rules: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/rules.json"))

@@ -2484,6 +2484,80 @@ toutes, elle se déduit.
 **À vérifier auprès des testeurs, et c'est la question à leur poser :** ont-ils
 essayé toutes les piles, ou raisonné ? Aucune mesure d'outil ne le dira.
 
+### 178. Le mode Épreuve : un ingrédient sur trois tient, et c'est mesuré
+
+La décision 177 nommait le risque — l'espace des piles est épuisable — sans y
+répondre. Le mode **Épreuve** est la réponse : un chapitre entier joué d'un
+bloc, avec un budget de lancements partagé. Il ne débloque rien, n'enregistre
+aucun record et ne coche aucun défi : c'est une partie à côté, sans quoi il
+deviendrait le chemin court vers la progression.
+
+Trois leviers avaient été envisagés pour rendre la force brute coûteuse. **Un
+seul mord, et je ne l'ai su qu'en le mesurant.**
+
+**Le budget de lancements — il mord partout.** Somme des rangs de la première
+pile gagnante dans l'ordre d'exploration naturel, contre le budget accordé à
+5 lancements par niveau :
+
+| Chapitre | Force brute | Budget | Rapport |
+|---|---|---|---|
+| 1 | 32 | 25 | 1,3× |
+| 2 | 75 | 25 | 3,0× |
+| 3 | 36 | 20 | 1,8× |
+| 4 | 71 | 20 | 3,6× |
+| 5 | 63 | 30 | 2,1× |
+| 6 | 73 | 25 | 2,9× |
+
+Un joueur qui raisonne consomme 2 à 3 lancements par niveau : le budget lui
+laisse de la marge partout. C'est exactement la frontière qu'on voulait tracer,
+et elle est désormais opposable — `tests/unit/test_trial_bite.gd` échoue si un
+chapitre repasse sous son budget, **et** si le budget cesse d'accorder sa marge
+au joueur qui raisonne. Les deux bords, pas un seul.
+
+**Le tirage de règles — presque vide.** Il laisse la bibliothèque **intacte
+dans 24 niveaux sur 29**. Conservé parce qu'il ne coûte rien et mord sur les
+quatre niveaux à solutions alternatives, mais il n'est pas ce qui fait la
+difficulté, et le code le dit maintenant en toutes lettres.
+
+**Le quota par règle — vide pour la même raison, écarté avant d'être écrit.**
+Le quota le plus serré qui reste satisfaisable vaut la taille du chapitre dans
+quatre chapitres sur six : aucune contrainte. Ne pas l'implémenter est le
+résultat le plus utile de la journée.
+
+**La cause commune, et elle dépasse le mode.** Presque chaque niveau n'a
+**qu'un seul ensemble suffisant minimal**, et cet ensemble contient la
+règle-moteur du chapitre. Le jeu porte donc entièrement sur l'**ordre**, jamais
+sur la **sélection**. On ne restreint pas le choix des règles quand il n'y a
+rien à choisir — toute mécanique de restriction est condamnée d'avance sur ce
+catalogue, quel que soit son habillage.
+
+Ce n'est pas un défaut à corriger dans l'urgence : un jeu dont la leçon est
+« la première règle applicable l'emporte » a de bonnes raisons de porter sur
+l'ordre. Mais c'est une **borne connue** du potentiel d'intérêt, et elle
+appartient aux questions des testeurs.
+
+### 179. Huitième forme du piège de l'invariant 12 : vérifier qu'un mécanisme est SÛR n'est pas vérifier qu'il SERT
+
+Le tirage de règles avait été soigné, testé sur cent graines par niveau, et sa
+garantie était solide : *toute main contient une solution*. Neuf tests, tous
+verts. Ce que personne n'avait demandé, c'est **l'autre question** : *la main
+retire-t-elle jamais quelque chose ?* Réponse mesurée : non, dans 24 cas sur 29.
+
+La question posée était celle du risque — « ce mécanisme peut-il nuire ? » —
+et elle a une réponse rassurante. La question qui comptait était celle de
+l'effet — « ce mécanisme fait-il quoi que ce soit ? » — et personne ne la pose
+spontanément, parce qu'un mécanisme qu'on vient d'écrire a l'air de servir.
+
+C'est le même piège que les sept précédentes formes, dans un domaine de plus :
+le mécanisme avait été observé là où il était confortable. **Écrire ainsi :
+tout mécanisme livré doit être mesuré sur ce qu'il RETIRE, pas seulement sur ce
+qu'il préserve.** Un test de sûreté vert n'a jamais rien dit de l'utilité.
+
+Deux captures ont d'ailleurs fait le même travail que les mesures, et plus vite :
+la première montrait le compteur de lancements absent, la seconde la main
+réduite à sa seule règle. **Une géométrie invisible est une géométrie injuste**,
+et une main qui ne retire rien se voit à l'œil nu dès qu'on ouvre le tiroir.
+
 ## Reste à faire
 
 **S3 : clos** — premier passage de la CI en ligne constaté vert le
@@ -2518,6 +2592,9 @@ décision humaine consignée ici).
 | Empreinte de fumée (test_smoke, 200 ticks, pile 1,2,3,0) | `c8a7cc2c73394949` — **inchangée à travers la revue S3** | 5 août 2026 |
 | Tests (unitaires + architecture + or) | 125/125 (360 assertions), ~0,9 s | 5 août 2026 |
 | Recettes d'or | **30 recettes × 3 relevés = 90 empreintes**, 30/30 concordantes après la cérémonie ch1_03 | 10 août 2026 |
+| Mode Épreuve — force brute / budget, par chapitre | 32/25 · 75/25 · 36/20 · 71/20 · 63/30 · 73/25 — **mord partout**, de 1,3× à 3,6× | 15 août 2026 |
+| Mode Épreuve — ce que le tirage retire | **rien dans 24 niveaux sur 29** (bibliothèques de 3 à 4 règles) | 15 août 2026 |
+| Niveaux à ensemble suffisant minimal UNIQUE | 25 sur 29 — le jeu porte sur l'ordre, pas sur la sélection | 15 août 2026 |
 | Coupe de boucle du validateur | simulation statique tranchée en ~7 ticks au lieu de 300 | 4 août 2026 |
 | Godot | 4.7.1-stable, standard (pas .NET), Linux x86_64 | 4 août 2026 |
 | GUT | 9.6.1 | 4 août 2026 |

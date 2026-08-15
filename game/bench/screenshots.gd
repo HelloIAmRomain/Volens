@@ -170,6 +170,22 @@ func _capture_all() -> void:
 	_app._open_select()
 	await _shot("15-selection-chapitres")
 
+	# MODE EPREUVE : la main tiree et le budget de lancements. C'est la seule
+	# facon de verifier qu'un joueur voit ce qu'il lui reste — une ressource
+	# invisible ne se gere pas.
+	_app.progress.record_win("ch1_03", 30, 0)
+	_app.progress.record_win("ch1_04", 18, 0)
+	_app.progress.record_win("ch1_05", 20, 0)
+	_app._start_trial()
+	# Le panneau d'objectif COUVRE la palette. La capture doit montrer la main
+	# tiree, pas le panneau qui la cache : une main invisible ne se verifie pas.
+	var trial_screen := _app._current as GameScreen
+	trial_screen._hide_objective_panel()
+	# Le tiroir OUVERT, sinon la capture ne montre que des rangs vides : la main
+	# tiree vit dans la bibliotheque, et c'est elle qu'il faut voir retrecie.
+	trial_screen._on_slot_tapped(0)
+	await _shot("18-epreuve-main-tiree")
+
 	# Les deux bilans, gagné puis perdu.
 	_app._on_level_finished("ch1_01", true, 14, 0, [RuleRegistry.R01_TOWARD_LIGHT], "La nuée a rempli l'objectif.")
 	await _shot("08-bilan-gagne")

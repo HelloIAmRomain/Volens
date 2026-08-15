@@ -12,6 +12,7 @@ extends Control
 signal play_requested
 signal select_requested
 signal settings_requested
+signal trial_requested
 
 var _progress: Progress
 var _session: Session
@@ -20,6 +21,18 @@ func setup(progress: Progress, session: Session) -> void:
 	_progress = progress
 	_session = session
 	_build()
+
+## Le premier chapitre est-il entièrement résolu ? Condition d'apparition du
+## mode Épreuve. Un mode qui punit la recherche n'a de sens que pour quelqu'un
+## qui a de quoi raisonner à la place.
+func _first_chapter_cleared() -> bool:
+	if _progress == null:
+		return false
+	var chapters := LevelCatalog.chapters()
+	if chapters.is_empty():
+		return false
+	var done := LevelCatalog.chapter_progress(chapters[0], _progress)
+	return done.y > 0 and done.x >= done.y
 
 func _build() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -39,7 +52,7 @@ func _build() -> void:
 	column.add_child(title)
 
 	var subtitle := Label.new()
-	subtitle.text = "Chapitre 1"
+	subtitle.text = "%d chapitres" % LevelCatalog.chapters().size()
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	subtitle.add_theme_font_size_override("font_size", 28)
 	subtitle.add_theme_color_override("font_color", Color(0.48, 0.53, 0.64))
@@ -57,6 +70,15 @@ func _build() -> void:
 	var levels := _make_button("Niveaux", 32)
 	levels.pressed.connect(func() -> void: select_requested.emit())
 	column.add_child(levels)
+
+	# ÉPREUVE — le second mode. Il n'apparaît qu'une fois le premier chapitre
+	# terminé : proposer d'emblée un mode où chaque lancement compte, à
+	# quelqu'un qui ne sait pas encore ce qu'est une pile, ce serait offrir la
+	# difficulté avant la règle du jeu.
+	if _first_chapter_cleared():
+		var trial := _make_button("Épreuve", 32)
+		trial.pressed.connect(func() -> void: trial_requested.emit())
+		column.add_child(trial)
 
 	var settings := _make_button("Réglages", 32)
 	settings.pressed.connect(func() -> void: settings_requested.emit())
