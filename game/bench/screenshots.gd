@@ -190,6 +190,23 @@ func _capture_all() -> void:
 	banned._hide_objective_panel()
 	await _shot("21-zone-interdite")
 
+	# ECHO DE VICTOIRE. Le pendant du precedent, et il n'avait ete verifie que
+	# par un test : le DERNIER agent sorti porte un anneau vert, et le bord de
+	# l'ecran s'allume. Gagner et perdre ne doivent pas se ressembler.
+	var winner := _app._open_game("ch1_01", false)
+	winner._hide_objective_panel()
+	var solution := Session.new()
+	solution.level_id = "ch1_01"
+	solution.stack = [RuleRegistry.R01_TOWARD_LIGHT]
+	winner.restore_session(solution)
+	# Jusqu'au tick ou le dernier franchit : c'est l'instant qu'on veut voir.
+	for i in range(60):
+		winner._view.step_forward()
+		if winner._view.current_state().outcome != SimState.Outcome.RUNNING:
+			break
+	winner._edge_echo.play(true)
+	await _shot("22-echo-de-victoire")
+
 	# Selection : vingt-deux niveaux groupes par chapitre, ecran defilant, avec
 	# les defis CONSERVES en pastilles. Sans trace dans la liste, un defi gagne
 	# disparaitrait avec l'ecran de bilan.
