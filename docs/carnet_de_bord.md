@@ -2814,6 +2814,54 @@ ligne dans le manifeste.
 3. Garder le code inerte, avec un réglage grisé disant pourquoi — le pire des
    trois : il promet ce qu'il ne peut pas tenir.
 
+### 187 bis. RÉSOLUE — l'haptique fonctionne, et l'interdiction ne servait pas son objet
+
+Arbitrage du concepteur : « le projet s'interdit VIBRATE, mais cherche si c'est
+justifié ». Vérifié **sur l'appareil**, pas de mémoire :
+
+| question | réponse mesurée |
+|---|---|
+| est-elle dangereuse ? | **non** — absente de `pm list permissions -d` |
+| demande-t-elle un consentement ? | **non** — `granted=true` dès l'installation, aucune boîte de dialogue |
+| donne-t-elle accès à des données ? | **non** — ni capteur, ni stockage, ni réseau |
+| le vibreur répond-il, une fois déclarée ? | **oui** — `VibratorManagerService: Vibration 37448 on vibrator 0 complete` |
+
+**L'interdiction protégeait la vie privée en n'empêchant aucune collecte, et
+coûtait une exigence du CDC.** Elle est levée pour cette permission-là, et pour
+elle seule.
+
+CE QUI LA REMPLACE EST PLUS STRICT. Une **liste close et versionnée** —
+`data/android_permissions.json` — tenue par `tests/arch/test_permissions.gd`.
+Toute permission réseau y est explicitement interdite, et une permission ne
+s'ajoute qu'avec sa justification écrite. L'interdiction générale, elle, ne
+tenait que par la discipline de qui relisait un fichier **hors dépôt**.
+
+**DEUX FOIS LE GARDE-FOU DE LA SUITE A EU RAISON CONTRE MOI.** Mon premier test
+lisait `export_presets.cfg` : « un test dont l'objet n'est pas versionné n'est
+pas un test — vert ici, absent ailleurs ». J'ai déplacé la liste dans un fichier
+versionné, puis gardé un contre-contrôle sur le preset ; il l'a refusé encore,
+et il avait raison encore. La conformité d'un fichier de build se vérifie **dans
+le paquet produit**, comme l'orientation — la commande est au docs/ARCHITECTURE.md.
+
+> **Un code qui ne peut pas s'exécuter coûte plus cher qu'un code absent :** il
+> occupe la place et donne l'illusion que la fonctionnalité existe. Neuf appels,
+> un module réglé au millième de seconde, et pas une vibration en des mois.
+
+### 190. Quatorze règles, et c'est une décision de conception
+
+« Pour les seize règles c'est pas grave, il vaut mieux des règles utiles,
+claires, intéressantes en termes de gameplay plutôt que mettre des règles pour
+en avoir plein. »
+
+La divergence au CDC §7 signalée en décision 189 est donc **tranchée** : le jeu
+compte quatorze règles, et le nombre n'est pas un objectif. Ce qui est un
+objectif est mesuré et tenu par `tests/unit/test_every_rule_earns_its_place.gd`
+— **chaque règle doit PORTER une pile gagnante quelque part**, c'est-à-dire
+qu'en la retirant, cette pile cesse de gagner.
+
+À retenir pour toute règle future : une règle ne s'ajoute pas parce qu'elle
+sonne bien, mais parce qu'il existe un niveau où aucune solution ne s'en passe.
+
 ### 188. Une mécanique neuve : la bascule
 
 Demandée : « appuyer sur un bouton pour faire des effets — ouvre une porte,

@@ -1,0 +1,31 @@
+{
+  "_comment": [
+    "LISTE CLOSE DES PERMISSIONS ANDROID — source de vérité VERSIONNÉE.",
+    "",
+    "Pourquoi ce fichier existe. Les permissions sont déclarées dans",
+    "export_presets.cfg, qui n'est PAS versionné : la seule chose qui décide de",
+    "ce à quoi l'application accède échappait donc au dépôt, à la relecture et à",
+    "la CI. Un test lisant le preset aurait été vert ici et absent ailleurs.",
+    "",
+    "La liste vit donc ici, sous contrôle de version, et le preset doit s'y",
+    "conformer — tests/arch/test_permissions.gd vérifie les deux sens quand le",
+    "preset est présent, et la liste seule quand il ne l'est pas.",
+    "",
+    "RÈGLE : une permission ne s'ajoute qu'avec sa justification, et seulement",
+    "si elle ne donne accès à AUCUNE donnée. Le jeu est hors ligne et sans",
+    "collecte — c'est une exigence, pas une préférence."
+  ],
+  "allowed": {
+    "android.permission.VIBRATE": {
+      "pourquoi": "retour haptique (ENF-24)",
+      "niveau": "normal",
+      "verifie_sur_appareil": "17 août 2026, Galaxy S22 Ultra : absente de `pm list permissions -d` (dangereuses), `granted=true` dès l'installation sans aucune boîte de dialogue, aucun accès à des données ni au réseau",
+      "sans_elle": "game/platform/haptics.gd est entièrement inerte et silencieux"
+    }
+  },
+  "forbidden_always": [
+    "android.permission.INTERNET",
+    "android.permission.ACCESS_NETWORK_STATE",
+    "android.permission.ACCESS_WIFI_STATE"
+  ]
+}
