@@ -2880,12 +2880,90 @@ une mécanique en deux temps. Ce qui est corrigeable, c'est que chaque moitié
 n'existe **que** là : R09 peut être un moteur sans R08, et R12 peut servir sans
 R11 — encore faut-il des cartes qui le permettent.
 
-> **LE LEVIER DORMAIT DANS LE DÉPÔT.** La piste initiale (`*` et les chiffres 1-9)
-> est implémentée, documentée sur trente lignes dans `lvl_parser.gd`… et **aucun
-> niveau ne s'en sert**. Or une piste qui s'arrête à MI-CHEMIN fait de R09 un
-> moteur sans R01 et laisse la fin du trajet à une autre règle : elle fabrique
-> des familles distinctes par construction. C'est la réponse la plus directe au
-> constat ci-dessus, et elle ne coûte pas une ligne de `core/`.
+> **LE LEVIER : UNE PISTE QUI S'ARRÊTE À MI-CHEMIN.** Tout le chapitre 3 pose
+> déjà une piste initiale — par l'en-tête `trail:` — mais toujours **complète**,
+> de la nuée jusqu'à la sortie. R09 y est donc le moteur du premier tick au
+> dernier, et il ne reste rien à composer après elle : d'où `[8,9]` en réponse
+> unique aux trois niveaux.
+>
+> Une piste **tronquée** change la nature de l'exercice : R09 amène la nuée au
+> goulot puis se tait, et la fin du trajet revient à une autre règle — laquelle,
+> c'est le choix du joueur. Elle fabrique des familles distinctes par
+> construction, et ne coûte pas une ligne de `core/`.
+>
+> *(Note d'exactitude : les symboles de grille `*` et 1-9 du parseur, eux, ne
+> sont utilisés par aucun niveau — seul l'en-tête `trail:` l'est. Le mécanisme
+> n'était donc pas « dormant », c'est son emploi qui était uniforme.)*
+
+### 192 ter. ch3_02 et ch3_04 sont le MÊME niveau — mesuré, pas soupçonné
+
+« Il faut éviter d'avoir plusieurs fois le même niveau. » Le doublon signalé au
+chapitre 2 avait été fusionné ; celui du chapitre 3 est resté, et personne ne
+l'avait vu parce que les deux fiches racontent des leçons différentes.
+
+Comparaison des JSON produits, champ par champ :
+
+| | ch3_02 | ch3_04 |
+|---|---|---|
+| `allowed_rules` | `[1,2,4,8,9]` | **identique** |
+| `objectives` · `slots` | extraction 100 · 3 | **identiques** |
+| **cases non vides** | `(4,0)(5,0)(6,0)` — la sortie | **identiques** |
+| `expected_wins` · `expected_classes` | 7 · 1 | **identiques** |
+| Différences réelles | 11×17, 21 agents, 150 ticks | 11×18, 24 agents, 200 ticks |
+
+Deux terrains **entièrement vides** hors la sortie, une rangée d'écart, trois
+agents et cinquante ticks. Les deux se gagnent par `[8,9]`, comme ch3_03. Les
+leçons annoncées — « la tête entretient la piste pour la queue » et « ce qui
+n'a pas été marqué au passage ne le sera jamais » — sont **une seule leçon
+énoncée deux fois**.
+
+> **LA LEÇON DE MÉTHODE.** Deux fiches distinctes ont suffi à masquer un doublon
+> pendant tout le développement du chapitre. Ce qui l'a révélé n'est pas une
+> relecture : c'est d'avoir comparé les **sorties** (cases non vides, gagnantes
+> minimales) plutôt que les intentions. Une fiche décrit ce qu'on a voulu ; le
+> JSON décrit ce qu'on a fait.
+
+> **CONTRADICTION À TRANCHER — LA CORRECTION EST BLOQUÉE PAR LES TESTS D'OR.**
+> Les deux doublons ne peuvent pas être corrigés sans toucher à
+> `tests/golden/golden.json` : il y garde **deux recettes pour ch2_05 et deux
+> pour ch3_04**. Déplacer un seul mur change les empreintes archivées — et une
+> empreinte d'or qui change signale une régression du déterminisme, jamais une
+> valeur à mettre à jour. Le protocole exige une décision humaine explicite.
+>
+> **La géométrie de ces deux niveaux est donc GELÉE**, et le test porte une
+> liste d'attente nommée (`KNOWN_TWINS`) plutôt qu'un silence. Un second test
+> vérifie que cette liste ne survit pas à son motif : dès qu'une paire cesse
+> d'être jumelle, son entrée doit disparaître, sinon elle couvrirait un futur
+> doublon portant les mêmes noms.
+>
+> **TROIS REFONTES DE ch2_05 ONT ÉTÉ MESURÉES AVANT CE CONSTAT**, et elles
+> valent d'être gardées :
+>
+> 1. *Refend vertical, sortie centrale, idiome respecté à la lettre* →
+>    **`[R01]` seule gagne**. Onzième confirmation que l'idiome nu ne compose
+>    rien ; c'est ch2_04 qui a raison de placer sa lumière **à l'opposé** de sa
+>    sortie, où elle devient un leurre.
+> 2. *Deux lumières-leurres, une par moitié* → **aucune gagnante**. Le piège
+>    fonctionne trop bien : plus rien ne ramène personne.
+> 3. *Bande médiane à deux ouvertures, extraction abaissée à 90* → deux familles,
+>    mais le validateur refuse : « **1 pile gagnante laisse jusqu'à 2 agents
+>    faire du sur-place perpétuel — le joueur y verra un bug** ». Un doublon
+>    assumé vaut mieux qu'un niveau qui a l'air cassé.
+>
+> **NUANCE HONNÊTE SUR ch2_04 ≡ ch2_05.** Les deux acceptent les mêmes familles,
+> mais pas pour la même raison : ch2_05 sépare la nuée en deux groupes hors de
+> portée de perception, et sa question réelle — « comment deux moitiés qui ne se
+> voient pas s'accordent-elles ? » — n'a aucun équivalent en ch2_04. Le doublon
+> est **réel du point de vue des solutions, discutable du point de vue du
+> sujet**. ch3_02 ≡ ch3_04 n'a pas cette excuse.
+
+**ET L'ÉLARGISSEMENT NE SAUVE PAS CES NIVEAUX** : `widen_search.gd` sur ch3_03
+répond « aucune règle n'enrichit ce niveau sans le banaliser » — les quatorze
+règles y passent, aucune ne crée de famille nouvelle sans faire tomber la
+solution en dessous de deux règles. C'est la confirmation directe de l'échec de
+ch5_04 : **sur un terrain à solution unique, une bibliothèque plus large ne
+donne pas plus de jeu, elle donne plus de fausses pistes.** Il faut une
+géométrie nouvelle, pas un catalogue plus gros — c'est-à-dire la forge.
 
 ### 192 bis. La forge — on ne dessine plus une carte, on en mesure mille
 

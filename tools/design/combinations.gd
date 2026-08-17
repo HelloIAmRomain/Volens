@@ -33,8 +33,16 @@ extends SceneTree
 const GUARD := 400
 
 var _params: RuleParams
+## Restreint la mesure à un seul niveau. Le balayage complet dure des minutes ;
+## quand on retouche UNE carte on veut la réponse en quelques secondes, sinon on
+## cesse de mesurer entre deux essais — et c'est exactement là que les doublons
+## se glissent.
+var _only := ""
 
 func _init() -> void:
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--level="):
+			_only = arg.substr("--level=".length())
 	var rules: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/rules.json"))
 	_params = RuleParams.from_dict(rules if rules is Dictionary else {})
 
@@ -51,6 +59,8 @@ func _init() -> void:
 		if not bool(entry["ready"]):
 			continue
 		var level_id := String(entry["id"])
+		if not _only.is_empty() and level_id != _only:
+			continue
 		var minimal := _minimal_winners(level_id)
 		if minimal.is_empty():
 			print("%-9s AUCUNE GAGNANTE" % level_id)

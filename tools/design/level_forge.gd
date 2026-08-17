@@ -89,6 +89,18 @@ var _avoid: Array[String] = []
 var _bands: Array[String] = []
 var _trails: Array[String] = []
 var _plugs: Array[bool] = []
+## Position de l'atelier à boucliers, RELATIVE au goulot : « none » (aucun),
+## « left » / « right » (à l'écart, de trois cases), « under » (dans l'entonnoir
+## — conservé pour pouvoir MONTRER que c'est un laissez-passer, pas pour
+## l'utiliser).
+var _stations: Array[String] = []
+
+func _station_x(w: int, gx: int, where: String) -> int:
+	match where:
+		"under": return gx - 1
+		"left": return maxi(1, gx - 4)
+		"right": return mini(w - 4, gx + 2)
+		_: return -1
 
 func _init() -> void:
 	_read_brief()
@@ -249,15 +261,16 @@ func _shapes() -> Array:
 								if plug and band == "none":
 									continue   # rien à boucher sans goulot
 								for trail in (_trails if not _trails.is_empty() else ["none", "half", "full"]):
-									for swarm in [[4, 5], [5, 4], [5, 5]]:
-										for bx in [1, (w - int(swarm[0])) / 2, w - int(swarm[0]) - 1]:
-											out.append({
-												"w": w, "h": h, "ox": ox, "lx": lx,
-												"band": band, "gx": gx, "plug": plug,
-												"trail": trail,
-												"sw": int(swarm[0]), "sh": int(swarm[1]),
-												"bx": bx,
-											})
+									for station in (_stations if not _stations.is_empty() else ["none"]):
+										for swarm in [[4, 5], [5, 4], [5, 5]]:
+											for bx in [1, (w - int(swarm[0])) / 2, w - int(swarm[0]) - 1]:
+												out.append({
+													"w": w, "h": h, "ox": ox, "lx": lx,
+													"band": band, "gx": gx, "plug": plug,
+													"trail": trail, "station": _station_x(w, gx, station),
+													"sw": int(swarm[0]), "sh": int(swarm[1]),
+													"bx": bx,
+												})
 	return out
 
 ## Rend une géométrie en texte `.lvl`. Le mur de tête porte la sortie ; la
@@ -292,6 +305,19 @@ func _render(s: Dictionary) -> String:
 				rows[my][other] = "."
 		if bool(s["plug"]):
 			rows[my][int(s["gx"])] = "X"
+
+	# L'ATELIER À BOUCLIERS, ET SA POSITION EST TOUT LE PROBLÈME. Décision 191 :
+	# **sur un chemin forcé, un bouclier est un laissez-passer** — posé dans
+	# l'entonnoir, il couvre tout le monde et `[R01]` seule regagne. Il est donc
+	# posé À L'ÉCART de la ligne droite : seuls les agents qu'une règle a
+	# détournés le traversent, et « qui protéger » redevient une question de
+	# pile. C'est le gabarit que la décision 191 décrivait sans le nommer.
+	var station := int(s.get("station", -1))
+	if station >= 0 and band != "none":
+		for dx in range(3):
+			var x: int = station + dx
+			if x >= 0 and x < w and rows[my + 1][x] == ".":
+				rows[my + 1][x] = "B"
 
 	# La nuée, sous la bande. Un bloc compact : l'invariant n°12 rappelle qu'un
 	# bloc compact est le cas CONFORTABLE — la bande au-dessus est justement ce
@@ -457,3 +483,6 @@ func _read_brief() -> void:
 			"--plug":
 				for token in value.split(",", false):
 					_plugs.append(token.strip_edges() == "true")
+			"--station":
+				for token in value.split(",", false):
+					_stations.append(token.strip_edges())
