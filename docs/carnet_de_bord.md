@@ -2771,6 +2771,84 @@ la tentative. Deux conséquences différentes ne portent pas la même teinte
 (RG-14). Contour tracé par frontière — une zone se lit par son bord, pas par son
 remplissage.
 
+### 187. CONTRADICTION À TRANCHER — l'haptique ne peut pas fonctionner sans une permission
+
+**Signalée, non tranchée** (docs/ARCHITECTURE.md : « Trancher une contradiction entre les
+documents et ce fichier » figure parmi les choses à ne jamais faire seul).
+
+Le concepteur demande le retour haptique, « discret, pas une source de
+perturbation ». Il est **déjà entièrement implémenté** : `game/platform/haptics.gd`,
+quatre événements (sélection 12 ms, dépôt 22 ms, refus 2×14 ms, sortie 9 ms),
+jamais porteur d'information exclusive (ENF-22), désactivable et persistant.
+Il est branché en neuf endroits.
+
+**Et il est totalement inerte sur l'appareil.** Vérifié dans l'APK :
+`aapt2 dump permissions` ne rend aucune permission. Or Android exige
+`android.permission.VIBRATE` pour accéder au vibreur — sans elle,
+`Input.vibrate_handheld()` ne fait rien et ne signale rien.
+
+Le commentaire du module l'avait même anticipé : « Godot n'ajoute VIBRATE au
+manifeste que si l'export l'active, ce que nous ne faisons pas (le jeu reste
+sans permission, ENF-31) ». La conséquence — que le retour haptique n'existe
+alors pas — n'en avait pas été tirée.
+
+**Les deux exigences en présence :**
+
+| | |
+|---|---|
+| ENF-24 | le jeu offre un retour haptique |
+| ENF-31 / docs/ARCHITECTURE.md | « le jeu est hors ligne, **sans permission** et sans collecte de données — c'est une exigence, pas une préférence » |
+
+**Fait technique utile à la décision :** `VIBRATE` est une permission de type
+*normal* au sens d'Android. Elle ne déclenche aucune demande à l'exécution,
+n'apparaît dans aucune boîte de dialogue, ne donne accès à aucune donnée, et
+n'est pas listée comme sensible sur la fiche Play. Elle reste néanmoins une
+ligne dans le manifeste.
+
+**Trois issues, toutes légitimes, aucune prise :**
+
+1. Ajouter `VIBRATE` et considérer qu'une permission normale ne contredit pas
+   l'esprit d'ENF-31 — qui vise la vie privée et la collecte.
+2. Retirer l'haptique et la mention d'ENF-24, en assumant qu'un jeu sans
+   aucune permission n'en a pas.
+3. Garder le code inerte, avec un réglage grisé disant pourquoi — le pire des
+   trois : il promet ce qu'il ne peut pas tenir.
+
+### 188. Une mécanique neuve : la bascule
+
+Demandée : « appuyer sur un bouton pour faire des effets — ouvre une porte,
+active ou désactive... ça peut être permanent ou activé uniquement à la
+pression ». La plaque à pression existait déjà et couvre le second cas. La
+bascule couvre le premier, et les deux se définissent l'une par l'autre :
+
+| | plaque | bascule |
+|---|---|---|
+| durée | tant qu'on reste dessus | **définitive** |
+| coût | des agents, en permanence | un détour, une fois |
+| puzzle | qui sacrifie-t-on au rôle de portier ? | qui va la chercher ? |
+
+**L'état tient dans le TYPE DE CASE** (`SWITCH` → `SWITCH_USED`), et c'est ce
+qui rend l'ajout sûr : l'empreinte d'état couvre déjà `cells`, donc une bascule
+franchie change l'empreinte sans qu'on touche `StateHash` — et les 74 recettes
+d'or des niveaux qui n'en portent pas ne bougent pas d'un bit. **Une mécanique
+additive ne casse pas le corpus d'or.**
+
+Elle ne se rearme pas, délibérément : une bascule réarmable ferait un puzzle de
+MINUTAGE (compter les ticks entre deux passages), une bascule à sens unique fait
+un puzzle de PLANIFICATION (décider qui va la chercher). Le second est le jeu
+que Volens propose — on compose une politique, on ne pilote pas des agents.
+
+**Deux défauts trouvés en construisant le niveau, et le second est un piège
+général.** La bascule posée à l'OUEST n'était jamais atteinte : à égalité toute
+règle préfère le Nord puis l'Est (invariant 19), et la nuée dérivait du mauvais
+côté. Posée à l'est, elle est franchie — mais six agents restaient piégés en
+(9,4), une case d'où **aucun voisin ne rapproche de la lumière** : R01 s'y
+abstient, et rien d'autre ne les en sortait.
+
+> **Toute case dont tous les voisins accessibles éloignent de la lumière est un
+> cul-de-sac pour R01.** Elle ne se voit pas sur le dessin — elle se voit en
+> traçant la nuée. C'est le pendant, côté géométrie, de l'invariant n°14.
+
 ## Reste à faire
 
 **S3 : clos** — premier passage de la CI en ligne constaté vert le

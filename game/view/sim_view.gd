@@ -94,6 +94,7 @@ var _cargo_marks: Node2D
 var _carried_marks: Node2D
 var _echoes: Node2D
 var _forbidden: Node2D
+var _switches: Node2D
 
 ## Marques de mort : { cell, age }. Purement visuelles, jamais un état.
 var _death_marks: Array = []
@@ -139,6 +140,11 @@ func _ready() -> void:
 	_forbidden = _ForbiddenZone.new()
 	_forbidden.z_index = Layer.LIGHT + 2
 	add_child(_forbidden)
+
+	# La bascule est une commande de TERRAIN : au-dessus du sol, sous la nuée.
+	_switches = _SwitchMarks.new()
+	_switches.z_index = Layer.LIGHT + 3
+	add_child(_switches)
 
 	_walls_mm = _make_layer(Layer.DECOR, null)
 	_exit_mm = _make_layer(Layer.EXIT, EXIT_SHADER)
@@ -532,6 +538,22 @@ func _rebuild_static_layers() -> void:
 	# ZONE INTERDITE — lue depuis les OBJECTIFS, pas depuis le type de case : une
 	# case interdite reste une case vide pour le moteur. C'est exactement ce qui
 	# l'a rendue invisible pendant tout le developpement du chapitre 6.
+	# BASCULES — armées et dépensées, dessinées séparément : leur état EST le
+	# mécanisme, et un joueur qui ne peut pas voir qu'une bascule a servi ne
+	# comprend pas pourquoi la porte reste ouverte.
+	if _switches != null:
+		var armed: Array[Vector2i] = []
+		var spent: Array[Vector2i] = []
+		for y in range(grid.size.y):
+			for x in range(grid.size.x):
+				var sp := Vector2i(x, y)
+				match grid.cell_type_at(sp):
+					GridState.CellType.SWITCH:
+						armed.append(sp)
+					GridState.CellType.SWITCH_USED:
+						spent.append(sp)
+		(_switches as _SwitchMarks).configure(armed, spent, _cell_size, _grid_origin)
+
 	if _forbidden != null:
 		var banned: Array[Vector2i] = []
 		for entry in _level_data.get("objectives", []):
@@ -1223,3 +1245,53 @@ class _ForbiddenZone extends Node2D:
 				draw_line(tl, tl + Vector2(0, _cell), border, thickness * 2.0)
 			if not lookup.has(p + Vector2i(1, 0)):
 				draw_line(tl + Vector2(_cell, 0), tl + Vector2(_cell, _cell), border, thickness * 2.0)
+
+## BASCULES — armées et dépensées.
+##
+## POURQUOI DEUX ÉTATS DESSINÉS. L'état de la bascule EST le mécanisme : une
+## fois franchie, elle ouvre les portes pour de bon. Un joueur qui ne voit pas
+## qu'elle a servi ne comprend pas pourquoi la porte reste ouverte — il croit à
+## un défaut, ou pire, il croit que la porte s'ouvre toute seule.
+##
+## ARMÉE : un anneau plein, lumineux, avec un cœur — quelque chose qui appelle.
+## DÉPENSÉE : le même anneau, creux et éteint, qui reste en place. Il ne
+## disparaît pas : la trace de ce qui a été fait est la moitié de l'explication.
+##
+## Forme distincte de la plaque à pression (un carré) et de la porte (une
+## barre) : trois commandes ne peuvent pas se ressembler (RG-14, ENF-20).
+class _SwitchMarks extends Node2D:
+	var _armed: Array[Vector2i] = []
+	var _spent: Array[Vector2i] = []
+	var _cell: float = 32.0
+	var _origin: Vector2 = Vector2.ZERO
+
+	func configure(armed: Array[Vector2i], spent: Array[Vector2i],
+			cell: float, origin: Vector2) -> void:
+		_armed = armed
+		_spent = spent
+		_cell = cell
+		_origin = origin
+		queue_redraw()
+
+	func _centre(p: Vector2i) -> Vector2:
+		return _origin + (Vector2(p) + Vector2(0.5, 0.5)) * _cell
+
+	func _draw() -> void:
+		if _cell <= 0.0:
+			return
+		var thickness: float = maxf(_cell * 0.09, 2.0)
+		for p in _armed:
+			var c := _centre(p)
+			var bright := ViewPalette.SWITCH
+			bright.a = 0.28
+			draw_circle(c, _cell * 0.42, bright)
+			var edge := ViewPalette.SWITCH.lightened(0.25)
+			edge.a = 0.95
+			draw_arc(c, _cell * 0.34, 0.0, TAU, 32, edge, thickness, true)
+			draw_circle(c, _cell * 0.15, edge)
+		for p in _spent:
+			# Éteinte mais PRÉSENTE : c'est la preuve que quelqu'un est passé.
+			var c2 := _centre(p)
+			var dim := ViewPalette.SWITCH
+			dim.a = 0.40
+			draw_arc(c2, _cell * 0.34, 0.0, TAU, 32, dim, thickness * 0.7, true)

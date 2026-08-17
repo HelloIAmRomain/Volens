@@ -17,6 +17,24 @@ enum CellType {
 	PRESSURE_DOOR = 7,
 	ONE_WAY = 8,
 	LIGHT_SOURCE = 9,
+	## BASCULE — le complément permanent de la porte à pression.
+	##
+	## La plaque (`PRESSURE_DOOR`) est MOMENTANÉE : la porte se referme dès que
+	## les agents quittent la commande, ce qui oblige à immobiliser une partie de
+	## la nuée pendant que l'autre passe. La bascule est son inverse exact : le
+	## premier agent qui la foule ouvre les portes **définitivement**.
+	##
+	## Les deux ensemble donnent le choix que le concepteur demandait : « ça peut
+	## être permanent ou activé uniquement à la pression, donc plein de
+	## possibilités ». L'un coûte des agents en permanence, l'autre coûte un
+	## détour une seule fois.
+	##
+	## L'ÉTAT TIENT DANS LE TYPE DE CASE, et c'est ce qui rend le mécanisme sûr :
+	## l'empreinte d'état couvre déjà `cells`, donc une bascule franchie change
+	## l'empreinte sans qu'on ait à toucher `StateHash` — et les recettes d'or des
+	## niveaux qui n'en portent pas ne bougent pas d'un bit.
+	SWITCH = 10,
+	SWITCH_USED = 11,
 }
 
 var size: Vector2i = Vector2i.ZERO
@@ -39,6 +57,20 @@ func is_walkable(pos: Vector2i) -> bool:
 	if not is_in_bounds(pos):
 		return false
 	return cell_type_at(pos) != CellType.WALL
+
+## Un agent vient d'entrer sur une bascule armée : elle se dépense.
+##
+## IRRÉVERSIBLE, ET C'EST LE MÉCANISME. Une bascule qui se rearmerait ferait un
+## puzzle de minutage, où l'on compte les ticks entre deux passages ; une
+## bascule à sens unique fait un puzzle de PLANIFICATION, où l'on décide qui va
+## la chercher. Le second est le jeu que Volens propose — on compose une
+## politique, on ne pilote pas des agents.
+func spend_switch(pos: Vector2i) -> bool:
+	var idx: int = index_of(pos)
+	if cells[idx] != CellType.SWITCH:
+		return false
+	cells[idx] = CellType.SWITCH_USED
+	return true
 
 ## Vrai si la case est un danger actif à `tick` (statique = toujours actif ;
 ## cyclique = actif selon son CycleDef).
@@ -128,6 +160,14 @@ func is_door_open_at(pos: Vector2i) -> bool:
 ## Recalcule l'état des portes à partir des positions des agents PRÉSENTS.
 ## Ordre total garanti : les portes sont parcourues par index croissant et les
 ## cases de commande dans l'ordre du fichier de niveau. Aucun `Dictionary`.
+## Une bascule a-t-elle été franchie ? Les portes sont alors ouvertes pour de
+## bon, quelles que soient les plaques.
+func switch_latched() -> bool:
+	for c in cells:
+		if c == CellType.SWITCH_USED:
+			return true
+	return false
+
 func recompute_doors(agents: Array[AgentState]) -> void:
 	if doors.is_empty():
 		return
@@ -145,8 +185,17 @@ func recompute_doors(agents: Array[AgentState]) -> void:
 		# debout dans l'embrasure la maintiendrait ouverte tout seul.
 		if d >= 0 and cells[idx] != CellType.PRESSURE_DOOR:
 			counts[d] += 1
+	# LA BASCULE L'EMPORTE SUR LES PLAQUES, jamais l'inverse : une fois franchie,
+	# elle ouvre tout et rien ne referme. C'est ce qui la distingue de la plaque —
+	# et c'est aussi ce qui la rend planifiable : le joueur peut envoyer un agent
+	# la chercher, puis oublier le problème.
+	# `required <= 0` DÉCLARE UNE PORTE À BASCULE SEULE : aucune plaque ne
+	# l'ouvre, et il faut le dire explicitement — `counts >= 0` serait vrai
+	# d'emblée, et la porte serait ouverte dès le premier tick.
+	var latched := switch_latched()
 	for i in range(doors.size()):
-		doors_open[i] = 1 if counts[i] >= doors[i].required else 0
+		var by_plates: bool = doors[i].required > 0 and counts[i] >= doors[i].required
+		doors_open[i] = 1 if latched or by_plates else 0
 
 ## R13 « Boucher » : le danger cesse définitivement d'exister. Irréversible —
 ## c'est ce qui fait du sacrifice un choix et non une dépense renouvelable.

@@ -56,6 +56,11 @@ const DANGER_DORMANT := Color(0.34, 0.17, 0.20)          # même élément, autr
 const RESOURCE := Color(0.72, 0.48, 0.95)                # 280°
 const DROPOFF := Color(0.38, 0.56, 0.95)                 # 215°
 const PRESSURE_DOOR := Color(0.95, 0.45, 0.78)           # 320°
+## BASCULE — meme famille que la porte a pression, et c'est voulu : les deux
+## commandent les memes portes. Ce qui les distingue n'est pas la teinte mais la
+## FORME (voir `_SwitchMarks`) et l'etat : armee, elle brille ; depensee, elle
+## s'eteint sans disparaitre — le joueur doit pouvoir constater qu'elle a servi.
+const SWITCH := Color(0.98, 0.62, 0.42)                  # 20°
 const ONE_WAY := Color(0.30, 0.82, 0.90)                 # 195°
 ## ZONE INTERDITE (objectif `interdiction`) — 35°, ambre.
 ##
@@ -99,6 +104,8 @@ static func element_color(cell_type: int, danger_active: bool = true) -> Color:
 			return DROPOFF
 		GridState.CellType.PRESSURE_DOOR:
 			return PRESSURE_DOOR
+		GridState.CellType.SWITCH, GridState.CellType.SWITCH_USED:
+			return SWITCH
 		GridState.CellType.ONE_WAY:
 			return ONE_WAY
 		GridState.CellType.LIGHT_SOURCE:

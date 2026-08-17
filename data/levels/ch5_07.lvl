@@ -1,0 +1,54 @@
+# N24 « La bascule » — un detour paye une fois pour toutes.
+#
+# LE COMPLEMENT DE N20, ET SON CONTRAIRE EXACT. La plaque a pression y tenait
+# la porte ouverte tant que deux agents restaient dessus : elle coute des
+# agents EN PERMANENCE, et oblige a sacrifier une partie de la nuee au role de
+# portier. La bascule coute un DETOUR, une seule fois, et n'immobilise
+# personne — le premier qui la foule ouvre les portes pour de bon.
+#
+# LES DEUX ENSEMBLE FONT LE CHOIX. Ce niveau ne porte aucune plaque : il
+# demande seulement que quelqu'un aille chercher la bascule, posee a l'ecart
+# du chemin le plus court. Toute la question est de savoir COMMENT une nuee
+# qu'on ne pilote pas envoie un eclaireur quelque part.
+#
+# LA REPONSE TIENT DANS L'ORDRE, comme toujours. « Vers la lumiere » mene la
+# nuee droit sous la porte close, ou elle s'entasse sans rien obtenir : la
+# lumiere est derriere le mur, et le mur ne s'ouvre pas tout seul. Il faut
+# qu'une regle ECARTE des agents de ce chemin — et la bascule est justement
+# posee la ou une nuee qui s'ecarte finit par passer.
+#
+# IDIOME RESPECTE : la lumiere est derriere le mur, la sortie en est
+# l'ouverture, et la porte close est ce qui rend l'ouverture inutile tant que
+# personne n'a fait le detour.
+#
+# LA BASCULE NE SE REARME PAS, et c'est ce qui distingue ce niveau d'un puzzle
+# de minutage. On ne compte pas les ticks entre deux passages : on decide qui
+# va la chercher. C'est le jeu que Volens propose — on compose une politique,
+# on ne pilote pas des agents.
+id: ch5_07
+name: La bascule
+tutorial: false
+allowed_rules: [R01, R03, R04, R07, R14]
+slots: 3
+max_ticks: 180
+objective: extraction 100
+door: required=0 panels=5,2
+lesson: "Une bascule se paie une fois ; une plaque se paie tout le temps."
+expected_wins: 7
+expected_classes: 1
+challenge: economy=2 efficiency=41
+calibrated_on: 921f17d2912cc530
+---
+. . . . . L . . . . .
+# # # # # E # # # # #
+# # # # # P # # # # #
+# # # . . . . . # # #
+# . # . . . . . # # #
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . S
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . . . . . . . . .

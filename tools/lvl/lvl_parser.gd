@@ -50,6 +50,9 @@ const _SYMBOLS := {
 	"r": GridState.CellType.RESOURCE,
 	"D": GridState.CellType.DROPOFF,
 	"P": GridState.CellType.PRESSURE_DOOR,
+	## BASCULE — le premier agent qui la foule ouvre les portes definitivement.
+	## Complement permanent de la plaque, qui est momentanee.
+	"S": GridState.CellType.SWITCH,
 }
 ## Ordre calqué sur `Directions` : NORTH, EAST, SOUTH, WEST. L'index dans ce
 ## tableau EST l'identifiant de direction — les désynchroniser ferait entrer
@@ -628,7 +631,10 @@ static func _parse_door(value: String, line: int, errors: PackedStringArray) -> 
 		if t.is_empty():
 			continue
 		if t.begins_with("required="):
-			out["required"] = maxi(1, int(t.substr(9)))
+			# ZÉRO EST DÉSORMAIS UNE VALEUR, pas une faute de frappe à corriger : il
+			# déclare une porte que seule une bascule ouvre. Le plancher à 1 la
+			# rendait inexprimable.
+			out["required"] = maxi(0, int(t.substr(9)))
 		elif t.begins_with("plates=") or t.begins_with("panels="):
 			var key := "plates" if t.begins_with("plates=") else "panels"
 			var list: Array = []
@@ -641,11 +647,19 @@ static func _parse_door(value: String, line: int, errors: PackedStringArray) -> 
 			out[key] = list
 		else:
 			errors.append("ligne %d : jeton de porte inconnu « %s »" % [line, t])
-	if (out["plates"] as Array).is_empty() or (out["panels"] as Array).is_empty():
-		errors.append(("ligne %d : une porte a besoin d'au moins une commande ET d'au moins "
-			+ "un panneau — sans quoi elle n'est ni ouvrable ni fermante") % line)
+	# UNE PORTE COMMANDÉE PAR BASCULE N'A PAS DE PLAQUE, et c'est légitime depuis
+	# que la bascule existe : `required=0` la déclare. Sans ce cas, la seule façon
+	# d'écrire une porte à bascule était de mentir sur ses plaques.
+	var switch_only: bool = int(out["required"]) <= 0
+	if (out["panels"] as Array).is_empty():
+		errors.append(("ligne %d : une porte a besoin d'au moins un panneau — sans quoi "
+			+ "elle n'est ni ouvrable ni fermante") % line)
 		return {}
-	if int(out["required"]) > (out["plates"] as Array).size():
+	if not switch_only and (out["plates"] as Array).is_empty():
+		errors.append(("ligne %d : une porte à plaques a besoin d'au moins une commande. "
+			+ "Pour une porte commandée uniquement par bascule, écrire `required=0`") % line)
+		return {}
+	if not switch_only and int(out["required"]) > (out["plates"] as Array).size():
 		errors.append(("ligne %d : %d agents requis pour %d case(s) de commande — la porte "
 			+ "ne pourrait JAMAIS s'ouvrir") % [line, int(out["required"]), (out["plates"] as Array).size()])
 		return {}

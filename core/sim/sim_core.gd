@@ -177,6 +177,13 @@ static func _ignored_cell_of(stack: Array[int]) -> int:
 	return -1
 
 static func _refresh_doors(next_state: SimState) -> void:
+	# LES BASCULES SE DÉPENSENT AVANT LE CALCUL DES PORTES, dans l'ordre des
+	# identifiants d'agent (invariant n°8 : ordre total et fixe). Une bascule
+	# foulée par plusieurs agents au même tick ne se dépense qu'une fois — elle
+	# n'a qu'un état, et le second passage tombe sur une case déjà dépensée.
+	for agent in next_state.agents:
+		if agent.is_present():
+			next_state.grid.spend_switch(agent.pos)
 	next_state.grid.recompute_doors(next_state.agents)
 
 ## Étape 1 — no-op documenté : CycleDef.is_active_at(tick) est une requête

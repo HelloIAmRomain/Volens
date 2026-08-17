@@ -207,6 +207,20 @@ func _capture_all() -> void:
 	winner._edge_echo.play(true)
 	await _shot("22-echo-de-victoire")
 
+	# LA BASCULE, armee puis depensee. Son ETAT est le mecanisme : une fois
+	# franchie elle ouvre les portes pour de bon, et un joueur qui ne peut pas
+	# voir qu'elle a servi ne comprend pas pourquoi la porte reste ouverte.
+	var latch := _app._open_game("ch5_07", false)
+	latch._hide_objective_panel()
+	await _shot("23a-bascule-armee")
+	var plan := Session.new()
+	plan.level_id = "ch5_07"
+	plan.stack = [RuleRegistry.R04_SPREAD_OUT, RuleRegistry.R01_TOWARD_LIGHT]
+	latch.restore_session(plan)
+	for i in range(26):
+		latch._view.step_forward()
+	await _shot("23b-bascule-depensee")
+
 	# Selection : vingt-deux niveaux groupes par chapitre, ecran defilant, avec
 	# les defis CONSERVES en pastilles. Sans trace dans la liste, un defi gagne
 	# disparaitrait avec l'ecran de bilan.
