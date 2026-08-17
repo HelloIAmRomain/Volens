@@ -81,13 +81,30 @@ static func objective_line(objectives: Array, state: SimState) -> String:
 			"collect":
 				parts.append("%d/%d livrés" % [state.counters.delivered, int(entry.get("count", 1))])
 			"preservation":
-				parts.append("%d/%d perdus" % [state.counters.lost, int(entry.get("max_lost", 0))])
+				# « 1/1 perdus » SE LIT COMME UN BUT À ATTEINDRE, exactement comme
+				# « 14/20 sortis » juste à côté — alors que le second nombre est un
+				# PLAFOND à ne pas franchir, soit le sens inverse sous la même forme.
+				# Signalé à l'essai : « on pourrait croire qu'il faut un perdu ».
+				# On change donc la forme, pas seulement le mot : une limite ne
+				# s'écrit jamais comme une fraction.
+				var cap: int = int(entry.get("max_lost", 0))
+				var lost: int = state.counters.lost
+				if cap <= 0:
+					parts.append("%d perdu%s · aucune perte tolérée" % [
+						lost, "s" if lost > 1 else ""])
+				else:
+					parts.append("%d perdu%s · %d max" % [
+						lost, "s" if lost > 1 else "", cap])
 			"celerity":
 				parts.append("%d/%d ticks" % [state.tick, int(entry.get("max_ticks", 0))])
 			"interdiction":
 				parts.append("zone interdite")
+	# Un simple RELEVÉ, sur un niveau qui ne compte pas les pertes : « agent »
+	# est écrit en toutes lettres pour qu'on ne le lise pas comme un objectif
+	# chiffré accolé au précédent.
 	if state.counters.lost > 0 and not _has_type(objectives, "preservation"):
-		parts.append("%d perdu%s" % [state.counters.lost, "s" if state.counters.lost > 1 else ""])
+		parts.append("%d agent%s perdu%s" % [state.counters.lost,
+			"s" if state.counters.lost > 1 else "", "s" if state.counters.lost > 1 else ""])
 	return "   ·   ".join(parts)
 
 ## Énoncé EXPLICITE pour le panneau d'ouverture : ce que le joueur doit

@@ -101,7 +101,6 @@ const CAPTURE_MARKERS := {
 	"GameScreen": ["05-nuee"],
 	"SummaryScreen": ["08-bilan", "09-bilan"],
 	"SettingsScreen": ["10-reglages"],
-	"TrialSelectScreen": ["18a-epreuve-choix-chapitre"],
 }
 
 func _declared_screens() -> Array[String]:

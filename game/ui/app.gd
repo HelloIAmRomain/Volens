@@ -10,7 +10,7 @@ extends Control
 ##
 ## AU LANCEMENT, LE JEU OUVRE TOUJOURS LE MENU. Il rouvrait le niveau en cours
 ## sans détour ; l'application avait alors l'air de n'avoir pas de menu du tout,
-## et l'on ne voyait jamais ni les chapitres, ni les réglages, ni l'Épreuve. La
+## et l'on ne voyait jamais ni les chapitres, ni les réglages. La
 ## reprise vit derrière « Continuer », qui remplace « Jouer » quand une partie
 ## est en cours — elle rend le niveau **en pause**, au tick exact.
 
@@ -34,7 +34,7 @@ func _ready() -> void:
 	# LE JEU S'OUVRE TOUJOURS SUR LE MENU. Il rouvrait le niveau en cours sans
 	# detour, ce qui donnait a l'application l'air de n'avoir pas de menu du tout :
 	# on relancait, on retombait au milieu d'une partie, sans jamais voir ni les
-	# chapitres ni les reglages ni l'Epreuve.
+	# chapitres ni les reglages.
 	#
 	# La reprise n'est pas perdue pour autant : elle est derriere « Continuer »,
 	# qui remplace « Jouer » quand une partie est en cours. Un geste de plus, mais
@@ -62,12 +62,10 @@ func _swap(next_screen: Control, screen_id: int) -> void:
 	add_child(next_screen)
 
 func _open_menu() -> void:
-	_abandon_trial()
 	var menu := MenuScreen.new()
 	menu.play_requested.connect(_on_play_requested)
 	menu.select_requested.connect(_open_select)
 	menu.settings_requested.connect(_open_settings)
-	menu.trial_requested.connect(_open_trial_select)
 	# L'écran entre dans l'arbre AVANT d'être configuré : des ancres posées
 	# hors de l'arbre sont perdues, et le contenu retombe sur sa taille
 	# minimale — d'où une colonne collée en haut à gauche.
@@ -93,7 +91,6 @@ func _open_self_check() -> void:
 	_swap(screen, Screen.SETTINGS)
 
 func _open_select() -> void:
-	_abandon_trial()
 	var select := LevelSelectScreen.new()
 	select.level_chosen.connect(func(level_id: String) -> void: _open_game(level_id, false))
 	select.back_requested.connect(_open_menu)
@@ -114,15 +111,6 @@ func _open_game(level_id: String, resume: bool) -> GameScreen:
 	screen.finished.connect(_on_level_finished)
 	screen.quit_requested.connect(_on_quit_to_select)
 	_swap(screen, Screen.GAME)
-	# MODE ÉPREUVE : la main et le budget sont posés AVANT le chargement, qui
-	# construit les tuiles à partir d'eux. Les poser après laisserait un écran
-	# offrant la bibliothèque entière le temps d'une image — et un joueur qui
-	# aurait vu la vraie liste ne jouerait plus la même partie.
-	if trial != null and trial.current_level() == level_id:
-		screen.drawn_rules = trial.draw_for(level_id,
-			ArcadeData.sufficient_sets(level_id), level_data.get("allowed_rules", []))
-		screen.on_launch = _on_trial_launch
-		screen.launches_left = trial.launches_left
 	screen.load_level(level_data, RuleParams.from_dict(rules if rules is Dictionary else {}), level_id)
 	if resume and session.level_id == level_id:
 		screen.restore_session(session)
@@ -146,7 +134,6 @@ func _open_game(level_id: String, resume: bool) -> GameScreen:
 	return screen
 
 func _on_play_requested() -> void:
-	trial = null
 	# « Continuer » et « Jouer » sont le MEME bouton : c'est l'existence d'une
 	# partie en cours qui decide, et le menu affiche le mot correspondant. Deux
 	# boutons distincts poseraient au joueur une question dont il connait deja la
@@ -156,94 +143,6 @@ func _on_play_requested() -> void:
 		return
 	_open_game(LevelCatalog.next_playable(progress), false)
 
-# --- MODE ÉPREUVE ------------------------------------------------------------
-#
-# Une épreuve court sur un CHAPITRE entier, avec un budget de lancements partagé
-# et des règles tirées à chaque niveau. Elle ne touche ni la progression normale
-# ni la session : c'est une partie à côté, qu'on gagne ou qu'on perd d'un bloc.
-#
-# LE CHAPITRE SE CHOISIT PARMI CEUX ENTIÈREMENT RÉSOLUS (`TrialSelectScreen`).
-# Proposer une épreuve sur un chapitre qu'on n'a pas fini, ce serait la faire
-# échouer sur des niveaux qu'on n'a pas encore compris — et le mode punit la
-# recherche, pas l'ignorance.
-var trial: TrialRun = null
-
-## QUITTER UN NIVEAU D'ÉPREUVE ABANDONNE L'ÉPREUVE, et il fallait l'écrire.
-##
-## Le défaut trouvé en relisant la navigation : `_on_quit_to_select` laissait
-## `trial` vivant. Le joueur revenait au sélecteur, choisissait un niveau
-## ordinaire, le gagnait — et `_on_level_finished` voyait `trial != null`, donc
-## routait la victoire vers l'épreuve : **aucune progression enregistrée, aucun
-## défi coché, et le bilan parlait d'un niveau qu'on n'avait pas joué.** Une
-## partie perdue en silence, ce qui est la pire des façons.
-##
-## Le mode ne se met pas en pause : il se joue d'un bloc ou pas du tout. C'est
-## cohérent avec sa ressource — un budget qu'on pourrait quitter et reprendre à
-## volonté n'en serait plus une.
-func _abandon_trial() -> void:
-	trial = null
-
-## LE CHAPITRE SE CHOISIT. La première version prenait d'office le dernier
-## chapitre résolu, ce qui refermait le mode sur un seul chapitre à mesure qu'on
-## progressait — et pas le plus exigeant : le chapitre 2 demande 3,0 fois son
-## budget en force brute, le sixième 2,9. Un mode qu'on rejoue doit se viser.
-func _open_trial_select() -> void:
-	var screen := TrialSelectScreen.new()
-	screen.chapter_chosen.connect(_start_trial)
-	screen.back_requested.connect(_open_menu)
-	_swap(screen, Screen.SELECT)
-	screen.setup(progress)
-
-func _start_trial(chapter_number: int) -> void:
-	if not TrialSelectScreen.cleared_chapters(progress).has(chapter_number):
-		_open_menu()
-		return
-	# La graine vient de l'horloge — hors de `core/`, donc sans effet sur le
-	# déterminisme de la simulation (invariant n°7). Elle est conservée : une
-	# épreuve se rejoue à l'identique, ce qui rend un échec analysable.
-	trial = TrialRun.start(chapter_number, int(Time.get_unix_time_from_system()) & 0x7FFFFFFF)
-	_open_game(trial.current_level(), false)
-
-func _on_trial_launch() -> bool:
-	if trial == null:
-		return true
-	return trial.spend_launch()
-
-## Suite d'une épreuve après un niveau. Perdu ou budget épuisé : l'épreuve
-## s'arrête. Gagné : on passe au suivant, ou l'on a fini le chapitre.
-##
-## UN ÉCHEC N'EST PAS UNE FIN DE PARTIE ORDINAIRE. Le bilan doit dire ce qui
-## s'est passé au niveau de l'ÉPREUVE — combien de niveaux franchis, combien de
-## lancements restaient — parce que c'est la seule échelle à laquelle ce mode se
-## joue. Rejouer le niveau seul n'aurait aucun sens.
-func _advance_trial(won: bool, reason: String) -> void:
-	# Le chapitre est retenu AVANT que `trial` ne soit remis à zéro : « Réessayer »
-	# doit relancer LA MÊME épreuve, pas rouvrir le choix. Le lire après aurait
-	# planté sur une référence nulle.
-	var chapter_played := trial.chapter
-	if not won:
-		var lost_at := trial.index
-		var summary := SummaryScreen.new()
-		summary.select_requested.connect(_open_menu)
-		summary.retry_requested.connect(func() -> void: _start_trial(chapter_played))
-		_swap(summary, Screen.SUMMARY)
-		summary.setup(trial.current_level(), false, 0, 0, [],
-			"Épreuve interrompue au niveau %d sur %d. %s" % [
-				lost_at + 1, trial.level_ids.size(), reason])
-		trial = null
-		return
-	trial.advance()
-	if trial.is_won():
-		var done := SummaryScreen.new()
-		done.select_requested.connect(_open_menu)
-		done.retry_requested.connect(func() -> void: _start_trial(chapter_played))
-		_swap(done, Screen.SUMMARY)
-		done.setup("", true, 0, 0, [],
-			"Épreuve réussie : %d niveaux, %d lancement(s) restant(s)." % [
-				trial.level_ids.size(), trial.launches_left])
-		trial = null
-		return
-	_open_game(trial.current_level(), false)
 
 func _on_quit_to_select() -> void:
 	_persist_session()
@@ -255,14 +154,6 @@ func _on_reset_requested() -> void:
 	_open_menu()
 
 func _on_level_finished(level_id: String, won: bool, ticks: int, lost: int, stack: Array, reason: String) -> void:
-	# MODE ÉPREUVE : la progression normale N'EST PAS TOUCHÉE. Une épreuve est
-	# une partie à côté — elle ne débloque rien, n'enregistre aucun record et
-	# ne coche aucun défi. Sans quoi elle deviendrait le chemin court vers la
-	# progression, et un mode qui punit la recherche récompenserait de l'avoir
-	# contournée.
-	if trial != null:
-		_advance_trial(won, reason)
-		return
 	if won:
 		progress.record_win(level_id, ticks, lost)
 		# Les défis obtenus s'accumulent et ne se reprennent jamais (RG-19).

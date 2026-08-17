@@ -97,7 +97,7 @@ func test_a_stored_session_reopens_the_level_paused_at_the_same_tick() -> void:
 
 	# LE LANCEMENT OUVRE LE MENU, PAS LE NIVEAU. Il rouvrait le niveau en cours
 	# sans détour, et l'application avait l'air de n'avoir pas de menu du tout :
-	# on ne voyait jamais ni les chapitres, ni les réglages, ni l'Épreuve. La
+	# on ne voyait jamais ni les chapitres, ni les réglages. La
 	# reprise vit désormais derrière « Continuer », qui remplace « Jouer ».
 	var first: Node = null
 	for child in app.get_children():

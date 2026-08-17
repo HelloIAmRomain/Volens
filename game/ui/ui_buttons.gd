@@ -48,7 +48,28 @@ static func make(text: String, rank: int = Rank.PLAIN,
 		UiMetrics.font_size(int(font_size * scale)))
 	if rank != Rank.PLAIN:
 		_apply_rank(b, rank)
+	_drop_hover_on_touch(b)
 	return b
+
+## SUR UN ÉCRAN TACTILE, LE SURVOL N'EXISTE PAS — et le prétendre laisse une
+## trace fausse à l'écran.
+##
+## Défaut signalé à l'essai : « si je scrolle puis relâche, le bouton de niveau
+## devrait reprendre sa couleur de base ; ce n'est pas le cas (il reprend si je
+## mets mon doigt ailleurs) ». Cause : le moteur maintient un pointeur ÉMULÉ à
+## la dernière position touchée. Le doigt est parti, le pointeur reste, et la
+## tuile demeure « survolée » jusqu'au geste suivant.
+##
+## Il n'y a pas de pointeur qui survole sur un téléphone : un doigt est posé, ou
+## il n'est pas là. On aligne donc le survol sur l'état normal, et l'APPUI garde
+## son retour visuel — c'est lui que le joueur attend, et lui seul correspond à
+## quelque chose de réel.
+static func _drop_hover_on_touch(b: Button) -> void:
+	if not DisplayServer.is_touchscreen_available():
+		return
+	var normal: StyleBox = b.get_theme_stylebox("normal", "Button")
+	if normal != null:
+		b.add_theme_stylebox_override("hover", normal)
 
 static func _apply_rank(b: Button, rank: int) -> void:
 	var normal := StyleBoxFlat.new()

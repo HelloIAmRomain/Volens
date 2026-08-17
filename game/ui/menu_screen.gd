@@ -12,7 +12,6 @@ extends Control
 signal play_requested
 signal select_requested
 signal settings_requested
-signal trial_requested
 
 var _progress: Progress
 var _session: Session
@@ -21,17 +20,6 @@ func setup(progress: Progress, session: Session) -> void:
 	_progress = progress
 	_session = session
 	_build()
-
-## Un chapitre au moins est-il entièrement résolu ? Condition d'apparition du
-## mode Épreuve. Un mode qui punit la recherche n'a de sens que pour quelqu'un
-## qui a de quoi raisonner à la place.
-##
-## LA CONDITION N'EST PAS RÉÉCRITE ICI. Le menu, l'écran de choix et `App`
-## posent tous la même question ; trois copies d'une même règle finissent par
-## diverger, et c'est exactement ce que dit l'invariant n°16 des champs de
-## niveau. La source unique est `TrialSelectScreen.cleared_chapters`.
-func _any_chapter_cleared() -> bool:
-	return not TrialSelectScreen.cleared_chapters(_progress).is_empty()
 
 func _build() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -69,15 +57,6 @@ func _build() -> void:
 	var levels := _make_button("Niveaux", 32)
 	levels.pressed.connect(func() -> void: select_requested.emit())
 	column.add_child(levels)
-
-	# ÉPREUVE — le second mode. Il n'apparaît qu'une fois le premier chapitre
-	# terminé : proposer d'emblée un mode où chaque lancement compte, à
-	# quelqu'un qui ne sait pas encore ce qu'est une pile, ce serait offrir la
-	# difficulté avant la règle du jeu.
-	if _any_chapter_cleared():
-		var trial := _make_button("Épreuve", 32)
-		trial.pressed.connect(func() -> void: trial_requested.emit())
-		column.add_child(trial)
 
 	var settings := _make_button("Réglages", 32)
 	settings.pressed.connect(func() -> void: settings_requested.emit())

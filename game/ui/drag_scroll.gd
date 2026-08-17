@@ -42,12 +42,37 @@ const DRAG_THRESHOLD := UiMetrics.MIN_TOUCH_TARGET * 0.125
 ## suivre un défilement d'aussi près.
 const GUARD_SECONDS := 0.25
 
+## INERTIE — la liste continue sur sa lancée, puis s'arrête.
+##
+## « Manque d'inertie lorsque je lève le doigt, ça s'arrête net. » Un défilement
+## qui s'interrompt à l'instant où le doigt part ne se lit pas comme un objet
+## qu'on pousse : il se lit comme une glissière qu'on tire. Le poids d'une liste
+## vient entièrement de ce qu'elle fait APRÈS le geste.
+##
+## `FRICTION` est la fraction de vitesse conservée à chaque soixantième de
+## seconde ; 0,93 donne environ une demi-seconde de course, assez pour sentir
+## l'élan sans donner l'impression d'une liste qui échappe. `MIN_SPEED` coupe la
+## queue asymptotique : sans elle, la liste dériverait d'un pixel toutes les
+## secondes pendant une minute.
+const FRICTION := 0.93
+const MIN_SPEED := 24.0
+## Au-delà, un geste vif deviendrait un saut incontrôlable.
+const MAX_SPEED := 6000.0
+
 var _scroll: ScrollContainer
 var _touching := false
 var _dragged := false
 var _from := Vector2.ZERO
 var _scroll_at_start := 0
 var _guard_until := 0.0
+## Vitesse du doigt à l'instant du relâchement, en pixels par seconde.
+var _velocity := 0.0
+var _last_pos := 0.0
+var _last_time := 0.0
+## Reste de défilement non appliqué : `scroll_vertical` est un ENTIER, et
+## tronquer à chaque image perdrait toute la course lente d'une inertie qui
+## s'éteint.
+var _residue := 0.0
 
 ## Branche le défilement au doigt sur un conteneur. Le composant vit comme
 ## enfant du conteneur : il disparaît avec lui, et rien à défaire.
@@ -78,30 +103,17 @@ func _input(event: InputEvent) -> void:
 			and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
 		var click := event as InputEventMouseButton
 		if click.pressed:
-			_touching = _scroll.get_global_rect().has_point(click.position)
-			_dragged = false
-			_from = click.position
-			_scroll_at_start = _scroll.scroll_vertical
+			_begin(click.position)
 		else:
-			if _dragged:
-				_guard_until = _now() + GUARD_SECONDS
-			_touching = false
+			_end()
 		return
 
 	if event is InputEventScreenTouch:
 		var touch := event as InputEventScreenTouch
 		if touch.pressed:
-			# LE GESTE DOIT COMMENCER DANS LA LISTE. Sans ce contrôle, un
-			# glissement n'importe où sur l'écran — y compris sur le bouton
-			# « Retour » — ferait défiler une liste que le doigt ne touche pas.
-			_touching = _scroll.get_global_rect().has_point(touch.position)
-			_dragged = false
-			_from = touch.position
-			_scroll_at_start = _scroll.scroll_vertical
+			_begin(touch.position)
 		else:
-			if _dragged:
-				_guard_until = _now() + GUARD_SECONDS
-			_touching = false
+			_end()
 		return
 
 	if not _touching:
@@ -126,3 +138,59 @@ func _input(event: InputEvent) -> void:
 	_dragged = true
 	_scroll.scroll_vertical = _scroll_at_start - int(moved)
 
+	# Vitesse instantanée, relevée entre deux événements : c'est elle qui sera
+	# rendue à la liste au relâchement.
+	var t := _now()
+	var dt: float = t - _last_time
+	if dt > 0.0005:
+		_velocity = clampf((pos.y - _last_pos) / dt, -MAX_SPEED, MAX_SPEED)
+	_last_pos = pos.y
+	_last_time = t
+
+
+## LE GESTE DOIT COMMENCER DANS LA LISTE. Sans ce contrôle, un glissement
+## n'importe où sur l'écran — y compris sur le bouton « Retour » — ferait
+## défiler une liste que le doigt ne touche pas.
+##
+## POSER LE DOIGT ARRÊTE L'INERTIE, comme sur n'importe quelle liste : c'est le
+## geste qu'on fait quand la course va trop loin, et il doit répondre.
+func _begin(at: Vector2) -> void:
+	_touching = _scroll.get_global_rect().has_point(at)
+	_dragged = false
+	_from = at
+	_scroll_at_start = _scroll.scroll_vertical
+	_velocity = 0.0
+	_residue = 0.0
+	_last_pos = at.y
+	_last_time = _now()
+
+func _end() -> void:
+	if _dragged:
+		_guard_until = _now() + GUARD_SECONDS
+		# L'inertie ne part que si le doigt bougeait ENCORE au moment de partir.
+		# Un doigt posé, traîné, puis immobilisé une demi-seconde avant d'être
+		# levé ne veut pas lancer la liste : il veut la poser là.
+		if _now() - _last_time > 0.10:
+			_velocity = 0.0
+	else:
+		_velocity = 0.0
+	_touching = false
+
+func _process(delta: float) -> void:
+	if _scroll == null or _touching or absf(_velocity) < MIN_SPEED:
+		_velocity = 0.0
+		return
+	# Le défilement suit le doigt : le doigt monte, la liste descend.
+	_residue += -_velocity * delta
+	var whole := int(_residue)
+	if whole != 0:
+		_scroll.scroll_vertical += whole
+		_residue -= float(whole)
+	# Amortissement rapporté au soixantième de seconde, pour que la course dure
+	# le même temps quelle que soit la cadence d'images.
+	_velocity *= pow(FRICTION, delta * 60.0)
+	# Butée atteinte : inutile d'entretenir une vitesse qui ne déplace plus rien.
+	var bar := _scroll.get_v_scroll_bar()
+	if _scroll.scroll_vertical <= 0 \
+			or float(_scroll.scroll_vertical) >= bar.max_value - bar.page:
+		_velocity = 0.0
