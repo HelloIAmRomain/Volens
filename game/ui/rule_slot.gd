@@ -108,24 +108,35 @@ func set_locked(value: bool) -> void:
 		return
 	locked = value
 	mouse_filter = Control.MOUSE_FILTER_IGNORE if locked else Control.MOUSE_FILTER_STOP
-	# Le verrou se voit à la TAILLE autant qu'au ton : un rang fermé est plus
-	# étroit, il ne peut pas se confondre avec un rang ouvert simplement
-	# assombri. Sur un niveau à un seul rang, les trois autres deviennent une
-	# indication de ce qui vient, pas trois quarts de barre en décor.
-	size_flags_stretch_ratio = 0.42 if locked else 1.0
+	# UN RANG VERROUILLÉ NE SE MONTRE PAS, ET GARDE SA PLACE.
+	#
+	# Il se montrait, plus étroit que les autres, pour « indiquer ce qui vient ».
+	# Verdict de l'essai : « inutile, moche — pas la même taille — et ça perturbe
+	# le joueur ». C'est juste sur les trois points, et le troisième est le pire :
+	# un rang visible mais inerte se lit comme un rang cassé, pas comme un rang
+	# à venir. Le joueur essaie d'y poser une règle et rien ne répond.
+	#
+	# IL GARDE POURTANT SON QUART DE LARGEUR. Sans cela, les rangs ouverts
+	# s'étireraient pour occuper la barre : un niveau à un rang montrerait une
+	# tuile pleine largeur, un niveau à trois des tuiles étroites, et la même
+	# règle changerait de taille d'un niveau à l'autre. Une cible tactile qui
+	# bouge se rate.
+	# TRANSPARENT, PAS CACHÉ : un enfant invisible est ignoré par le conteneur,
+	# et les rangs restants s'étireraient pour occuper la barre — exactement la
+	# largeur variable qu'on veut supprimer. On le rend donc INVISIBLE À L'ŒIL
+	# tout en le laissant occuper sa part.
+	modulate = Color(1.0, 1.0, 1.0, 0.0 if locked else 1.0)
+	size_flags_stretch_ratio = 1.0
 	_refresh()
 
 func _refresh() -> void:
 	if _label == null:
 		return
 	if locked:
+		# Invisible : rien à peindre. On vide tout de même le contenu, pour
+		# qu'un rang rendu visible plus tard ne réapparaisse pas garni.
 		_glyph.text = ""
-		_rank.add_theme_color_override("font_color", Color(ViewPalette.SLOT_LOCKED, 0.85))
 		_label.text = ""
-		_style.bg_color = Color(0.05, 0.055, 0.07, 0.5)
-		_style.set_border_width_all(2)
-		_style.border_color = Color(ViewPalette.SLOT_LOCKED, 0.55)
-		_style.shadow_size = 0
 		if _remove != null:
 			_remove.visible = false
 		return

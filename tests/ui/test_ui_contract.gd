@@ -228,12 +228,29 @@ func test_a_locked_rank_refuses_every_path() -> void:
 	_screen._on_rule_dropped(3, RuleRegistry.R01_TOWARD_LIGHT, -1)
 	assert_eq(_screen._compact_stack(), [] as Array[int], "ni par glissement")
 
-func test_a_locked_rank_is_not_a_greyed_copy_of_an_open_one() -> void:
-	# ENF-20 : l'indisponibilité ne peut pas tenir au seul ton. Le rang fermé
-	# est aussi plus étroit, donc distinguable sans percevoir la couleur.
-	assert_lt(_screen._slots[2].size_flags_stretch_ratio,
+func test_a_locked_rank_is_invisible_but_keeps_its_share() -> void:
+	# UN RANG VERROUILLÉ NE SE MONTRE PLUS DU TOUT.
+	#
+	# Il était dessiné, plus étroit, pour « indiquer ce qui vient ». Verdict de
+	# l'essai sur l'appareil : « inutile, moche — pas la même taille — et ça
+	# perturbe le joueur ». Le troisième point est le pire : un rang visible mais
+	# inerte se lit comme un rang CASSÉ, pas comme un rang à venir ; on essaie
+	# d'y poser une règle et rien ne répond. ENF-20 ne s'y applique plus, il n'y
+	# a plus rien à distinguer.
+	assert_eq(_screen._slots[2].modulate.a, 0.0,
+		"un rang fermé ne se dessine pas")
+	assert_eq(_screen._slots[0].modulate.a, 1.0,
+		"un rang ouvert se dessine")
+
+	# MAIS IL GARDE SA PART DE LARGEUR. Le cacher vraiment (`visible = false`)
+	# le ferait ignorer par le conteneur, et les rangs ouverts s'étireraient : la
+	# même règle changerait de taille d'un niveau à l'autre, et une cible tactile
+	# qui bouge se rate.
+	assert_eq(_screen._slots[2].size_flags_stretch_ratio,
 		_screen._slots[0].size_flags_stretch_ratio,
-		"un rang fermé se distingue par sa taille, pas seulement par son ton")
+		"tous les rangs gardent la même part de la barre")
+	assert_true(_screen._slots[2].visible,
+		"un rang fermé reste dans la disposition, sinon les autres s'étirent")
 	assert_eq(_screen._slots[2].mouse_filter, Control.MOUSE_FILTER_IGNORE)
 
 func test_a_locked_rank_is_never_offered_as_the_next_free_one() -> void:
