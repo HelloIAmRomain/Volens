@@ -772,6 +772,21 @@ func _draw_agents() -> void:
 			alpha = 1.0 - _alpha
 		var cell: Vector2 = Vector2(from_agent.pos).lerp(Vector2(to_agent.pos), _alpha)
 		var color := ViewPalette.AGENT_PLAIN
+		# UN AGENT PROTÉGÉ SE DISTINGUE AU PREMIER COUP D'ŒIL. L'arc posé au-dessus
+		# de lui disait déjà « celui-ci est équipé », mais il fallait le chercher :
+		# à l'échelle d'une nuée de vingt points en mouvement, une marque de la
+		# taille d'un cheveu ne se voit pas. L'agent LUI-MÊME vire vers le bleu du
+		# bouclier.
+		#
+		# ENF-20 TIENT : l'information ne repose PAS sur la seule teinte — l'arc
+		# reste, et c'est lui qui parle en niveaux de gris. La couleur ne fait que
+		# rendre la lecture immédiate, ce qu'une forme de trois pixels ne peut pas.
+		#
+		# La surcouche de diagnostic l'emporte, elle : quand on colore par règle
+		# décisionnaire, c'est cette question-là qu'on pose, et deux codes de
+		# couleur simultanés n'en font aucun.
+		if (to_agent.flags & AgentState.PROTEGE) != 0 and to_agent.is_present():
+			color = ViewPalette.AGENT_PLAIN.lerp(ViewPalette.SHIELD, 0.72)
 		if show_decision_colors and to_agent.is_present():
 			color = ViewPalette.slot_color(_deciding_slot(to_agent, _to))
 		color.a = alpha

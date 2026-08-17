@@ -89,3 +89,43 @@ func test_the_danger_survives_the_shield() -> void:
 		"le danger est intact — un bouclier ne nettoie pas la carte")
 	assert_gt(state.counters.lost, 0,
 		"et il tue encore : le second agent, sans bouclier, y reste")
+
+## --- Cinquième propriété : ON DOIT POUVOIR LE VOIR ---------------------------
+##
+## « On doit pouvoir différencier un agent avec ou sans bouclier. » Sans cela les
+## quatre propriétés ci-dessus sont exactes et INCOMPRÉHENSIBLES : le joueur voit
+## un agent traverser le rouge et survivre, un autre y mourir, et conclut que le
+## danger est capricieux. Une mécanique qu'on ne peut pas lire n'enseigne rien.
+##
+## LA DIFFÉRENCE PASSE PAR DEUX CANAUX, et c'est délibéré. La teinte donne la
+## lecture immédiate ; l'arc de `_ShieldMarks` la donne en niveaux de gris, pour
+## ENF-20 — **l'information ne doit jamais reposer sur la seule couleur**. Ce
+## test tient le premier canal ; le second est tenu par la présence de la marque.
+
+const MIN_TINT_SHIFT := 0.10
+
+func _shielded_color() -> Color:
+	return ViewPalette.AGENT_PLAIN.lerp(ViewPalette.SHIELD, 0.72)
+
+func test_a_shielded_agent_is_visibly_not_a_plain_one() -> void:
+	# L'ÉCART SE MESURE, il ne se constate pas à l'œil sur une capture : deux
+	# teintes voisines se rapprochent d'une retouche de palette à l'autre, et le
+	# jour où l'agent nu vire au bleu la distinction disparaît sans un mot.
+	var plain := ViewPalette.AGENT_PLAIN
+	var shielded := _shielded_color()
+	var shift: float = (absf(plain.r - shielded.r) + absf(plain.g - shielded.g)
+		+ absf(plain.b - shielded.b)) / 3.0
+	assert_gt(shift, MIN_TINT_SHIFT,
+		("un agent protégé doit se distinguer d'un agent nu (écart mesuré %.3f, "
+		+ "minimum %.2f) — sinon le bouclier est invisible en jeu") % [shift, MIN_TINT_SHIFT])
+
+func test_the_shield_tint_stays_the_shield_colour() -> void:
+	# ET IL SE DISTINGUE DANS LE BON SENS : la teinte de l'agent protégé doit
+	# tirer vers celle de la STATION qui l'a équipé. Un agent protégé viré au
+	# rouge se distinguerait très bien — et raconterait le danger, pas l'abri.
+	var shielded := _shielded_color()
+	var gap: float = absf(shielded.h - ViewPalette.SHIELD.h) * 360.0
+	gap = minf(gap, 360.0 - gap)
+	assert_lt(gap, 20.0,
+		("l'agent protégé porte la teinte de la station (%.0f° d'écart) : "
+		+ "c'est ce qui relie l'abri à ce qui l'a donné") % gap)

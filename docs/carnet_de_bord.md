@@ -2847,6 +2847,97 @@ le paquet produit**, comme l'orientation — la commande est au docs/ARCHITECTUR
 > occupe la place et donne l'illusion que la fonctionnalité existe. Neuf appels,
 > un module réglé au millième de seconde, et pas une vibration en des mois.
 
+### 192. Toutes les combinaisons de tous les niveaux — le jeu ne se compose pas, il se récite
+
+« Teste toutes les combinaisons pour chaque niveau, puis analyse le résultat. Je
+ne veux ni les mêmes règles gagnantes, ni les mêmes associations ; tout doit au
+plus possible aller avec tout. »
+
+`tools/design/combinations.gd` rejoue l'espace complet des piles des 32 niveaux
+prêts et ne compte que les gagnantes **minimales** — celles dont aucune
+sous-suite ne gagne déjà. Le compte naïf aurait menti dans le sens flatteur :
+rallonger une gagnante d'une règle inerte gonfle tous les voisinages sans rien
+changer au jeu.
+
+**LE DÉFAUT PRINCIPAL N'EST PAS CELUI QU'ON CHERCHAIT.** On cherchait des règles
+omniprésentes ; on a trouvé pire :
+
+| Constat | Mesure |
+|---|---|
+| Niveaux à **UNE seule** gagnante minimale | **22 sur 32** |
+| Jeux de règles gagnant **3 niveaux** chacun | `[1,2]`, `[1,4,5]`, `[1,16]`, `[8,9]`, `[1,11,12]`, `[5,11,12]` |
+| Monopoles (règle dans TOUTES les gagnantes d'un niveau) | 20, dont tout le chapitre 4 (R11+R12) |
+| Règles à **un seul partenaire** dans tout le jeu | R08 (R09), R13 (R01), R15 (R01) |
+
+Sur vingt-deux niveaux, « des résultats différents pour les mêmes entrées » est
+**impossible par construction** : il n'y a qu'une réponse. Le joueur qui résout
+ch3_02 récite la même pile en ch3_03 et ch3_04 — les trois valent `[8,9]`.
+
+**DEUX ATTELAGES SONT STRUCTURELS, ET IL FAUT LE DIRE PLUTÔT QUE DE PRÉTENDRE LES
+DÉFAIRE.** R08 « Marquer » n'a de sens que si quelqu'un suit ; R11 « Porter » n'a
+de sens que si quelqu'un dépose. Ce ne sont pas deux choix déguisés en un, c'est
+une mécanique en deux temps. Ce qui est corrigeable, c'est que chaque moitié
+n'existe **que** là : R09 peut être un moteur sans R08, et R12 peut servir sans
+R11 — encore faut-il des cartes qui le permettent.
+
+> **LE LEVIER DORMAIT DANS LE DÉPÔT.** La piste initiale (`*` et les chiffres 1-9)
+> est implémentée, documentée sur trente lignes dans `lvl_parser.gd`… et **aucun
+> niveau ne s'en sert**. Or une piste qui s'arrête à MI-CHEMIN fait de R09 un
+> moteur sans R01 et laisse la fin du trajet à une autre règle : elle fabrique
+> des familles distinctes par construction. C'est la réponse la plus directe au
+> constat ci-dessus, et elle ne coûte pas une ligne de `core/`.
+
+### 192 bis. La forge — on ne dessine plus une carte, on en mesure mille
+
+Proposition retenue telle quelle : « un générateur de niveaux basé sur nos
+critères, qui propose plusieurs configs et tu décides des meilleures ».
+
+**CE QUI LA REND POSSIBLE MAINTENANT, ET PAS AVANT** : la fonction d'évaluation
+existe depuis ce matin. Un générateur sans critère de tri produit du bruit ;
+`combinations.gd` sait dire si un niveau est varié, `widen_search.gd` si une
+règle y porte. Il ne manquait que la boucle au-dessus.
+
+**ET CE QU'ELLE RÉPARE**, c'est l'ordre du travail. Écrire un niveau à la main
+oblige à figer sa géométrie AVANT de pouvoir voir son espace de solutions — on
+ne le découvre qu'en le jouant. Les cinq géométries de bouclier jetées (décision
+191) et les vingt-deux niveaux à solution unique ont exactement cette cause. La
+forge inverse l'ordre : elle produit la carte, l'interroge, et ne présente que ce
+qui a répondu.
+
+Trois garde-fous, et ils sont la condition de l'exercice :
+
+1. **Aucun tirage aléatoire.** Le balayage est un produit cartésien parcouru dans
+   un ordre fixe : deux exécutions donnent la même liste, donc la liste se
+   discute. Un générateur aléatoire aurait produit des cartes irreproductibles.
+2. **On génère DANS l'idiome** — lumière derrière le mur, sortie = l'ouverture.
+   Une carte forgée doit ressembler aux autres, pas avoir l'air tombée d'ailleurs.
+3. **La sortie est du `.lvl`, jamais du JSON.** Le convertisseur porte les
+   contrôles G1-G3 et calcule `calibrated_on` ; émettre du JSON contournerait
+   précisément les garde-fous écrits pour ce genre de carte. Mieux : la forge
+   **appelle** le parseur pour évaluer, donc toute géométrie qu'il refuserait est
+   éliminée avant d'être simulée — le refus devient un filtre gratuit.
+
+**ELLE NE REMPLACE PAS LE JUGEMENT.** Elle classe des candidats ; la leçon du
+niveau, sa fiche et son nom restent une décision humaine. Une carte qui mesure
+bien et ne raconte rien n'est pas un niveau.
+
+**PREMIERS VERDICTS, ET ILS SE PAYENT DÉJÀ.** Deux enseignements sont tombés
+avant le premier niveau retenu :
+
+- **L'idiome nu se gagne avec `[R01]` seule.** C'est la cause mécanique des
+  vingt-deux niveaux à solution unique : sans obstacle intermédiaire, il n'y a
+  rien à composer. La forge le rejette désormais par `--min-len`.
+- **Un niveau bâti sur R13 ne peut pas exiger `extraction 100`.** Boucher consume
+  un agent ; l'objectif se contredit lui-même. 201 géométries sans aucune
+  gagnante l'ont dit avant qu'on le formule — et ch5_01/ch5_05 demandent bien 95
+  et 80, ce que personne n'avait relié à la mécanique.
+
+> **LE GABARIT QUI MANQUE ENCORE est celui du bouclier**, et la décision 191
+> l'avait déjà décrit sans savoir qu'elle décrivait un gabarit : « une carte où
+> traverser le danger est un CHOIX — un raccourci payant contre un détour lent,
+> donc deux routes et une échéance qui départage ». C'est exactement un paramètre
+> de balayage à ajouter, plus un dessin à trouver.
+
 ### 191. Le bouclier : un ÉQUIPEMENT, pas une règle — et pourquoi son niveau manque encore
 
 « Dans l'imaginaire collectif, un bouclier est un objet de défense, pas
