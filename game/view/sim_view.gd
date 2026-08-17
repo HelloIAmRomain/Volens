@@ -95,6 +95,7 @@ var _carried_marks: Node2D
 var _echoes: Node2D
 var _forbidden: Node2D
 var _switches: Node2D
+var _patrols: Node2D
 
 ## Marques de mort : { cell, age }. Purement visuelles, jamais un état.
 var _death_marks: Array = []
@@ -145,6 +146,12 @@ func _ready() -> void:
 	_switches = _SwitchMarks.new()
 	_switches.z_index = Layer.LIGHT + 3
 	add_child(_switches)
+
+	# La patrouille est un DANGER : même plan que les dangers fixes, au-dessus du
+	# sol et sous la nuée.
+	_patrols = _PatrolMarks.new()
+	_patrols.z_index = Layer.DANGER + 1
+	add_child(_patrols)
 
 	_walls_mm = _make_layer(Layer.DECOR, null)
 	_exit_mm = _make_layer(Layer.EXIT, EXIT_SHADER)
@@ -541,6 +548,26 @@ func _rebuild_static_layers() -> void:
 	# BASCULES — armées et dépensées, dessinées séparément : leur état EST le
 	# mécanisme, et un joueur qui ne peut pas voir qu'une bascule a servi ne
 	# comprend pas pourquoi la porte reste ouverte.
+	# PATROUILLES — leur TRAJET et leur position courante. Les deux, et pas
+	# seulement la position : un danger mobile dont on ne voit pas le chemin ne se
+	# prévoit pas, et un danger imprévisible punit sans rien enseigner. Le jeu
+	# n'a aucun aléatoire (invariant n°6) ; il serait absurde d'en simuler un.
+	if _patrols != null:
+		var routes: Array = []
+		var heads: Array[Vector2i] = []
+		var nexts: Array[Vector2i] = []
+		for pi in range(grid.patrols.size()):
+			var route: Array[Vector2i] = []
+			for cell in grid.patrols[pi]:
+				@warning_ignore("integer_division")
+				route.append(Vector2i(cell % grid.size.x, cell / grid.size.x))
+			routes.append(route)
+			# `_to.tick` explicitement : `tick` désigne une méthode dans cette
+			# portée, et la confusion passait le typage sans broncher.
+			heads.append(grid.patrol_at(pi, _to.tick))
+			nexts.append(grid.patrol_at(pi, _to.tick + 1))
+		(_patrols as _PatrolMarks).configure(routes, heads, nexts, _cell_size, _grid_origin)
+
 	if _switches != null:
 		var armed: Array[Vector2i] = []
 		var spent: Array[Vector2i] = []
@@ -1295,3 +1322,56 @@ class _SwitchMarks extends Node2D:
 			var dim := ViewPalette.SWITCH
 			dim.a = 0.40
 			draw_arc(c2, _cell * 0.34, 0.0, TAU, 32, dim, thickness * 0.7, true)
+
+## PATROUILLES — un danger qui se déplace, et le trajet qu'il suit.
+##
+## ON DESSINE LE CHEMIN AUTANT QUE LE DANGER, et c'est la moitié du mécanisme.
+## Un ennemi mobile dont on ne voit pas la route ne se prévoit pas : il punit
+## sans rien enseigner, et le joueur conclut que le jeu triche. Volens n'a aucun
+## aléatoire (invariant n°6) ; ce serait absurde d'en simuler un.
+##
+## TROIS NIVEAUX DE LECTURE, du plus faible au plus fort :
+##   · le TRAJET, en pointillés éteints — « il passera par là » ;
+##   · la case SUIVANTE, en contour — « il y sera au prochain tick », ce qui
+##     permet de décider maintenant ;
+##   · la case COURANTE, pleine et hachurée comme tout danger — « il y est ».
+class _PatrolMarks extends Node2D:
+	var _routes: Array = []
+	var _heads: Array[Vector2i] = []
+	var _nexts: Array[Vector2i] = []
+	var _cell: float = 32.0
+	var _origin: Vector2 = Vector2.ZERO
+
+	func configure(routes: Array, heads: Array[Vector2i], nexts: Array[Vector2i],
+			cell: float, origin: Vector2) -> void:
+		_routes = routes
+		_heads = heads
+		_nexts = nexts
+		_cell = cell
+		_origin = origin
+		queue_redraw()
+
+	func _rect(p: Vector2i) -> Rect2:
+		return Rect2(_origin + Vector2(p) * _cell, Vector2(_cell, _cell))
+
+	func _draw() -> void:
+		if _cell <= 0.0 or _routes.is_empty():
+			return
+		var faint := ViewPalette.DANGER_DORMANT
+		faint.a = 0.55
+		for route in _routes:
+			for p in (route as Array[Vector2i]):
+				# Un liseré, pas un aplat : le trajet est une INFORMATION, pas
+				# un terrain. Le remplir le ferait lire comme une zone mortelle
+				# entière, et le niveau paraîtrait injouable.
+				draw_rect(_rect(p).grow(-_cell * 0.34), faint, false,
+					maxf(_cell * 0.06, 1.5))
+		var soon := ViewPalette.DANGER
+		soon.a = 0.55
+		for p in _nexts:
+			draw_rect(_rect(p).grow(-_cell * 0.10), soon, false,
+				maxf(_cell * 0.08, 2.0))
+		var here := ViewPalette.DANGER
+		here.a = 0.90
+		for p in _heads:
+			draw_rect(_rect(p).grow(-_cell * 0.06), here)

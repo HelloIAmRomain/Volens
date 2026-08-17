@@ -221,6 +221,16 @@ func _capture_all() -> void:
 		latch._view.step_forward()
 	await _shot("23b-bascule-depensee")
 
+	# LA RONDE. Le trajet doit se voir autant que le danger : un ennemi mobile
+	# dont on ne voit pas la route punit sans rien enseigner. Trois niveaux de
+	# lecture — trajet en pointilles, case suivante en contour, case courante
+	# pleine.
+	var patrol := _app._open_game("ch5_08", false)
+	patrol._hide_objective_panel()
+	for i in range(3):
+		patrol._view.step_forward()
+	await _shot("24-la-ronde")
+
 	# Selection : vingt-deux niveaux groupes par chapitre, ecran defilant, avec
 	# les defis CONSERVES en pastilles. Sans trace dans la liste, un defi gagne
 	# disparaitrait avec l'ecran de bilan.

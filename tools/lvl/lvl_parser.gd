@@ -109,6 +109,7 @@ static func parse(text: String, min_cycle_period: int, flee_range_sq: int = 25) 
 	var objectives: Array = []
 	var cycle: Dictionary = {}
 	var doors: Array = []
+	var patrols: Array = []
 	var header_trail: Array = []
 	for i in range(separator):
 		var line := lines[i].strip_edges()
@@ -144,6 +145,21 @@ static func parse(text: String, min_cycle_period: int, flee_range_sq: int = 25) 
 						errors.append("ligne %d : « %s » n'est pas x,y=intensite" % [i + 1, tok])
 						continue
 					header_trail.append([int(xy[0]), int(xy[1]), int(halves[1])])
+			"patrol":
+				# `patrol: 3,5;4,5;5,5;4,5` — un trajet FERMÉ, parcouru en boucle,
+				# une case par tick. Répétable : plusieurs patrouilles cohabitent.
+				#
+				# LE TRAJET SE DÉCRIT EN ENTIER, aller ET retour, plutôt qu'en
+				# « va-et-vient » implicite. C'est plus long à écrire et cela évite
+				# une ambiguïté qui coûterait cher : sur un aller-retour déduit, la
+				# case de demi-tour est-elle occupée une fois ou deux ? La réponse
+				# change la période, donc tous les temps de passage du niveau.
+				# Les couples x,y sont conservés TELS QUELS, comme ceux des portes :
+				# la largeur de la grille n'est pas encore connue à la lecture de
+				# l'en-tête, et c'est `SimCore.load_level` qui indexe.
+				var path := _parse_patrol(value, i + 1, errors)
+				if not path.is_empty():
+					patrols.append(path)
 			"door":
 				# `door: required=2 plates=1,4;2,4 panels=5,6;6,6`
 				# Répétable : un niveau peut porter plusieurs portes indépendantes.
@@ -346,6 +362,7 @@ static func parse(text: String, min_cycle_period: int, flee_range_sq: int = 25) 
 			"cycles": [cycle] if not cycle.is_empty() else [],
 			"one_way": one_way,
 			"doors": doors,
+			"patrols": patrols,
 			"trail": trail + header_trail,
 		},
 		"agents": agents,
@@ -684,3 +701,28 @@ static func _parse_cycle(value: String, line: int, errors: PackedStringArray) ->
 
 static func _unquote(s: String) -> String:
 	return s.trim_prefix("\"").trim_suffix("\"")
+
+## `patrol: 3,5;4,5;5,5;4,5` — un trajet fermé, une case par tick.
+##
+## LE TRAJET SE DÉCRIT EN ENTIER, aller ET retour. Un « va-et-vient » déduit
+## serait plus court à écrire et laisserait une ambiguïté qui coûte cher : la
+## case de demi-tour est-elle occupée une fois ou deux ? La réponse change la
+## période, donc tous les temps de passage du niveau — et un paramètre calibré
+## sur une période fausse est faux (invariant n°15).
+static func _parse_patrol(value: String, line: int,
+		errors: PackedStringArray) -> Array:
+	var path: Array = []
+	for pair in value.split(";"):
+		var text := String(pair).strip_edges()
+		if text.is_empty():
+			continue
+		var xy := text.split(",")
+		if xy.size() != 2:
+			errors.append("ligne %d : « %s » n'est pas un couple x,y" % [line, text])
+			return []
+		path.append([int(xy[0]), int(xy[1])])
+	if path.size() < 2:
+		errors.append(("ligne %d : une patrouille a besoin d'au moins deux cases — "
+			+ "à une seule elle ne se déplace pas, et c'est un danger statique") % line)
+		return []
+	return path

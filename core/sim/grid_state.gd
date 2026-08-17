@@ -41,6 +41,22 @@ var size: Vector2i = Vector2i.ZERO
 var cells: PackedInt32Array = PackedInt32Array()       # CellType par case
 var pheromone: PackedInt32Array = PackedInt32Array()   # intensité de piste par case (R08/R09)
 var cycles: Array[CycleDef] = []
+## PATROUILLES — des dangers qui SE DÉPLACENT, chacun décrit par le trajet
+## fermé qu'il parcourt, en indices de case et dans l'ordre.
+##
+## POURQUOI SANS AUCUN ÉTAT. La position d'une patrouille au tick t vaut
+## `trajet[t % longueur]` : elle se DÉDUIT du tick, elle ne se mémorise pas.
+## Trois conséquences, et les trois comptent :
+##
+##   · **le déterminisme est acquis par construction** — il n'y a rien à faire
+##     avancer, donc rien qui puisse dériver ;
+##   · **le joueur peut PRÉVOIR** — le trajet est visible et la position se lit
+##     au tick affiché. Un ennemi imprévisible punirait sans rien enseigner, et
+##     le jeu n'a aucun aléatoire (invariant n°6) ;
+##   · **le corpus d'or ne bouge pas** — le trajet est une donnée de NIVEAU, au
+##     même titre que les portes, donc absent de l'empreinte d'état. Les
+##     soixante-quatorze recettes des niveaux sans patrouille sont intactes.
+var patrols: Array[PackedInt32Array] = []
 ## Index dans `cycles` pour les cases CYCLIC_DANGER ; -1 = pas de cycle.
 var cycle_index: PackedInt32Array = PackedInt32Array()
 
@@ -83,7 +99,26 @@ func is_danger_active_at(pos: Vector2i, tick: int) -> bool:
 		if idx < 0:
 			return false
 		return cycles[idx].is_active_at(tick)
+	# UNE PATROUILLE EST UN DANGER COMME UN AUTRE, et c'est ce qui la rend
+	# gratuite : « Fuir le danger » interroge cette fonction case par case, elle
+	# la trouvera donc sans qu'on touche à la règle. Le mécanisme entre dans le
+	# jeu par la porte qui existait déjà.
+	if not patrols.is_empty():
+		var here: int = index_of(pos)
+		for path in patrols:
+			if path.is_empty():
+				continue
+			if path[posmod(tick, path.size())] == here:
+				return true
 	return false
+
+## Position d'une patrouille au tick donné, en cases. Sert au rendu — la
+## simulation, elle, n'a besoin que de `is_danger_active_at`.
+func patrol_at(index: int, tick: int) -> Vector2i:
+	var path: PackedInt32Array = patrols[index]
+	var cell: int = path[posmod(tick, path.size())]
+	@warning_ignore("integer_division")
+	return Vector2i(cell % size.x, cell / size.x)
 
 ## SENS UNIQUE (RG-14) — direction AUTORISÉE de la case, indexée comme
 ## `Directions` ; -1 sur toute case qui n'est pas un sens unique.
@@ -217,6 +252,7 @@ func clone() -> GridState:
 	copy.doors_open = doors_open.duplicate()
 	copy.ignored_cell = ignored_cell
 	copy.doors = doors        # immuable après chargement : partagé, jamais muté
+	copy.patrols = patrols    # trajet fixe : donnée de niveau, jamais mutée
 	copy.cycles = []
 	for c in cycles:
 		copy.cycles.append(c.clone())

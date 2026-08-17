@@ -71,6 +71,17 @@ static func _load_grid(grid_data: Dictionary) -> GridState:
 		cd.active_ticks = int(c.get("active_ticks", 0))
 		grid.cycles.append(cd)
 
+	# PATROUILLES : des trajets fermés, en indices de case. Rien à initialiser —
+	# la position se déduit du tick, il n'y a aucun état à faire avancer.
+	grid.patrols = []
+	for raw_path in grid_data.get("patrols", []):
+		var path := PackedInt32Array()
+		for pair in (raw_path as Array):
+			var xy: Array = pair
+			path.append(int(xy[1]) * grid.size.x + int(xy[0]))
+		if not path.is_empty():
+			grid.patrols.append(path)
+
 	# Couches du chapitre 2 et suivants. Absentes des niveaux du chapitre 1 :
 	# `_ensure_layers` les remplit de -1, et `can_traverse` se comporte alors
 	# exactement comme `is_walkable` — aucune empreinte ne bouge.

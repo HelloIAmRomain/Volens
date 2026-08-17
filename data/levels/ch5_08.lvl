@@ -1,0 +1,78 @@
+# N25 « La ronde » — un danger qui passe, et repasse.
+#
+# LE PREMIER DANGER MOBILE DU JEU. Les dangers etaient jusqu'ici des cases :
+# fixes, ou clignotantes sur place. Une patrouille se DEPLACE, une case par
+# tick, sur un trajet ferme — et cela change la nature de la question posee.
+#
+# CE QUE CA CHANGE. Un danger fixe se contourne : on trouve un chemin qui ne
+# le touche pas, et l'affaire est reglee pour toute la partie. Une patrouille
+# ne se contourne pas, elle se LAISSE PASSER : le couloir est sur, puis ne
+# l'est plus, puis l'est de nouveau. La question n'est plus « par ou ? » mais
+# « la nuee arrivera-t-elle groupee ou etalee ? » — et cela, ce sont les
+# regles qui en decident.
+#
+# LE TRAJET EST VISIBLE, ET C'EST UNE CONDITION. Un ennemi dont on ne voit pas
+# la route punit sans rien enseigner. L'ecran montre le trajet en pointilles,
+# la case suivante en contour, la case courante pleine : le joueur peut donc
+# DECIDER, ce qui est tout ce que le jeu demande.
+#
+# LA RONDE NE TIENT QUE LE MILIEU, et c'est ce qui fait le puzzle. Elle balaie
+# les colonnes 3 a 6 — exactement celles ou la lumiere attire — en laissant les
+# bords libres en permanence. « Vers la lumiere » mene donc la nuee droit sous
+# la ronde, ou elle attend indefiniment que la voie se degage.
+#
+# PREMIER ESSAI : LA RONDE BALAYAIT TOUTE LA LARGEUR. Le niveau devenait
+# insoluble — non pas parce que les agents mouraient, mais parce que « Fuir le
+# danger » les tenait a l'ecart POUR TOUJOURS : treize sortis sur vingt, zero
+# perte, et une nuee qui oscille jusqu'a la fin des temps. Un danger mobile qui
+# ne laisse aucune fenetre ne fait pas un puzzle difficile, il fait un mur qui
+# bouge.
+#
+# LE DISPOSITIF RETENU, apres quatre mesures. La lumiere est au CENTRE, au-dessus
+# du mur plein ; les deux sorties sont aux EXTREMITES. « Vers la lumiere » mene
+# donc la nuee au milieu — c'est-a-dire exactement sous la ronde, et devant un
+# mur sans ouverture. Il faut fuir la ronde pour trouver les bords, et les bords
+# sont les seules sorties.
+#
+# L'UNIQUE IDEE GAGNANTE EST [Fuir le danger, Vers la lumiere] : la fuite ecarte
+# la nuee du centre, la lumiere la ramene vers le haut, et les deux ensemble la
+# deposent aux extremites. Sept piles gagnent, toutes des rallonges de celle-la.
+#
+# LES ESSAIS ECARTES, chacun pour une raison utile :
+#   · ronde balayant TOUTE la largeur : insoluble, non pas parce que les agents
+#     mouraient mais parce que « Fuir le danger » les tenait a l'ecart POUR
+#     TOUJOURS — treize sortis, zero perte, une nuee qui oscille sans fin ;
+#   · sortie unique au centre : la nuee s'y entassait sous la ronde ;
+#   · preservation a zero : la ronde tue au tick 2, la partie s'arretait avant
+#     que quoi que ce soit ait pu se jouer.
+#
+# IDIOME RESPECTE : la lumiere est derriere le mur, les sorties en sont les
+# ouvertures, et la ronde tient le chemin le plus court.
+id: ch5_08
+name: La ronde
+tutorial: false
+allowed_rules: [R01, R02, R03, R04, R07]
+slots: 3
+max_ticks: 200
+objective: extraction 100
+objective: preservation 2
+patrol: 3,6;4,6;5,6;6,6;5,6;4,6
+lesson: "Un danger fixe se contourne ; une ronde se laisse passer."
+expected_wins: 7
+expected_classes: 1
+challenge: economy=2 efficiency=36
+calibrated_on: d35f187c0fc3cd7f
+---
+. . . . . L . . . . .
+# # E # # # # # E # #
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . o o o o o . . .
+. . . . . . . . . . .
