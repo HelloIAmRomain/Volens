@@ -274,6 +274,7 @@
     "cycles": [],
     "doors": [],
     "one_way": [],
+    "patrols": [],
     "size": [
       11,
       12

@@ -30,13 +30,13 @@
 id: ch5_01
 name: Le passage
 tutorial: true
-allowed_rules: [R01, R02, R03, R07, R13]
+allowed_rules: [R01, R02, R03, R13]
 slots: 3
 max_ticks: 150
 objective: extraction 95
 objective: preservation 1
 lesson: "Un agent contre vingt. Mais un sacrifice mal ordonne n'est plus un sacrifice, c'est du gachis."
-expected_wins: 6
+expected_wins: 5
 expected_classes: 1
 calibrated_on: 63dd79a498898132
 challenge: economy=2

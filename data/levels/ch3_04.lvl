@@ -33,12 +33,12 @@
 id: ch3_04
 name: Le long relais
 tutorial: false
-allowed_rules: [R01, R02, R04, R07, R08, R09]
+allowed_rules: [R01, R02, R04, R08, R09]
 slots: 3
 max_ticks: 200
 objective: extraction 100
 lesson: "Une memoire ne se rattrape pas : ce qui n'a pas ete marque au passage ne le sera jamais."
-expected_wins: 8
+expected_wins: 7
 expected_classes: 1
 challenge: economy=2
 calibrated_on: 425368874dd32966

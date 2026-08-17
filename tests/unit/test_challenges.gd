@@ -1,4 +1,13 @@
 extends GutTest
+
+## LE CDC ANNONCE SEIZE RÈGLES ; LE JEU EN COMPTE QUATORZE.
+##
+## R07 « Attendre » et R10 « Rebrousser si seul » ont été retirées le 15 août
+## 2026 sur décision du concepteur, après mesure : une règle est utile si elle
+## PORTE — si la retirer d'une pile gagnante fait perdre cette pile. R07 était
+## offerte dans quatorze niveaux et ne portait dans aucun ; R10 n'était offerte
+## nulle part. **Divergence au CDC §7, à arbitrer** (carnet, décision 189).
+const RULE_COUNT_NOTE := "quatorze règles depuis le retrait de R07 et R10"
 ## DÉFIS RG-18/RG-19, et la présentation des seize règles.
 ##
 ## CE QUI EST VÉRIFIÉ ICI, ET POURQUOI. Les défis sont la seule partie du jeu
@@ -107,7 +116,7 @@ func test_efficiency_tolerates_the_exact_threshold() -> void:
 
 func test_every_registered_rule_has_a_name_a_glyph_and_a_sentence() -> void:
 	# Une règle sans libellé s'afficherait « règle 14 » dans la pile du joueur.
-	assert_eq(RuleRegistry.ALL.size(), 16, "la bibliothèque du CDC compte seize règles")
+	assert_eq(RuleRegistry.ALL.size(), 14, RULE_COUNT_NOTE)
 	for id in RuleRegistry.ALL:
 		assert_ne(RuleCatalog.name_of(id), "règle %d" % id, "R%02d sans nom" % id)
 		assert_ne(RuleCatalog.glyph_of(id), "?", "R%02d sans glyphe" % id)
@@ -121,7 +130,7 @@ func test_two_rules_never_share_a_glyph() -> void:
 		var g := RuleCatalog.glyph_of(id)
 		assert_false(seen.has(g), "glyphe « %s » partagé par deux règles" % g)
 		seen.append(g)
-	assert_eq(seen.size(), 16, "seize glyphes attendus")
+	assert_eq(seen.size(), 14, "un glyphe par règle vivante")
 
 func test_a_joker_announces_what_it_neutralises() -> void:
 	# « Ignorer » tout court ne dit pas quoi, et deux jokers de cibles

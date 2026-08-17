@@ -28,13 +28,13 @@
 id: ch5_07
 name: La bascule
 tutorial: false
-allowed_rules: [R01, R03, R04, R07, R14]
+allowed_rules: [R01, R03, R04, R14]
 slots: 3
 max_ticks: 180
 objective: extraction 100
 door: required=0 panels=5,2
 lesson: "Une bascule se paie une fois ; une plaque se paie tout le temps."
-expected_wins: 7
+expected_wins: 6
 expected_classes: 1
 challenge: economy=2 efficiency=41
 calibrated_on: 921f17d2912cc530

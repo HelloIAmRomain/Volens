@@ -170,7 +170,7 @@ func _bare_state(cells: Array, positions: Array) -> SimState:
 
 func test_an_effect_rule_is_never_reported_as_abstaining() -> void:
 	var s := _bare_state([".r.", "...", "..."], [Vector2i(1, 0)])
-	var stack: Array[int] = [RuleRegistry.R11_CARRY, RuleRegistry.R07_WAIT]
+	var stack: Array[int] = [RuleRegistry.R11_CARRY, RuleRegistry.R03_STAY_GROUPED]
 	var lines: Array = RuleExplainer.explain(s.agents[0], s, stack)["lines"]
 	assert_true(String(lines[0]).contains("ramasse"),
 		"R11 sur une ressource doit dire qu'elle ramasse : « %s »" % String(lines[0]))

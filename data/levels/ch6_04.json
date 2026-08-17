@@ -124,7 +124,6 @@
   "allowed_rules": [
     1,
     3,
-    7,
     9,
     15,
     1040
@@ -135,7 +134,7 @@
     "economy_max": 2
   },
   "expected_classes": 3,
-  "expected_wins": 31,
+  "expected_wins": 27,
   "geometry_hash": "c242630893772354",
   "grid": {
     "cells": [
@@ -436,6 +435,7 @@
     ],
     "doors": [],
     "one_way": [],
+    "patrols": [],
     "size": [
       11,
       13

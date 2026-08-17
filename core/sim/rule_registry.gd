@@ -18,11 +18,26 @@ const R04_SPREAD_OUT: int = 4
 const R05_FOLLOW_NEIGHBOURS: int = 5
 const R06_HUG_WALL: int = 6
 # Chapitre 3 — la mémoire du monde
-const R07_WAIT: int = 7
+## R07 « Attendre » et R10 « Rebrousser si seul » ONT ÉTÉ RETIRÉES du jeu le
+## 15 août 2026. Leurs identifiants restent réservés — ils figurent dans des
+## fiches de conception et dans le carnet, et les réattribuer rendrait ces
+## traces mensongères.
+##
+## MESURE QUI A TRANCHÉ (`tools/design/rule_usefulness.gd`) : une règle est
+## utile si elle PORTE, c'est-à-dire si la retirer d'une pile gagnante fait
+## perdre cette pile. Figurer dans une gagnante ne prouve rien — on peut
+## toujours rallonger une solution avec n'importe quelle règle inerte.
+##
+##   · R07 était offerte dans QUATORZE niveaux et ne portait dans AUCUN ;
+##   · R10 n'était offerte nulle part, et son remède demandait l'hystérésis,
+##     gelée faute de joueurs.
+##
+## Les quatorze autres portent toutes quelque part.
+const _R07_WAIT_RETIRED: int = 7
 const R08_MARK_TRAIL: int = 8
 const R09_FOLLOW_TRAIL: int = 9
 # Chapitre 4 — le transport
-const R10_TURN_BACK_IF_ALONE: int = 10
+const _R10_TURN_BACK_IF_ALONE_RETIRED: int = 10
 const R11_CARRY: int = 11
 const R12_DROP_AT_GOAL: int = 12
 # Chapitre 5 — le sacrifice et la régulation
@@ -83,14 +98,10 @@ static func get_rule(rule_id: int) -> Rule:
 			rule = RuleFollowNeighbours.new()
 		R06_HUG_WALL:
 			rule = RuleHugWall.new()
-		R07_WAIT:
-			rule = RuleWait.new()
 		R08_MARK_TRAIL:
 			rule = RuleMarkTrail.new()
 		R09_FOLLOW_TRAIL:
 			rule = RuleFollowTrail.new()
-		R10_TURN_BACK_IF_ALONE:
-			rule = RuleTurnBackIfAlone.new()
 		R11_CARRY:
 			rule = RuleCarry.new()
 		R12_DROP_AT_GOAL:
@@ -111,8 +122,8 @@ static func get_rule(rule_id: int) -> Rule:
 const ALL: Array[int] = [
 	R01_TOWARD_LIGHT, R02_FLEE_DANGER, R03_STAY_GROUPED,
 	R04_SPREAD_OUT, R05_FOLLOW_NEIGHBOURS, R06_HUG_WALL,
-	R07_WAIT, R08_MARK_TRAIL, R09_FOLLOW_TRAIL,
-	R10_TURN_BACK_IF_ALONE, R11_CARRY, R12_DROP_AT_GOAL,
+	R08_MARK_TRAIL, R09_FOLLOW_TRAIL,
+	R11_CARRY, R12_DROP_AT_GOAL,
 	R13_PLUG, R14_SCATTER_IF_DENSE, R15_FOLLOW_THE_SLOWEST,
 	R16_IGNORE,
 ]

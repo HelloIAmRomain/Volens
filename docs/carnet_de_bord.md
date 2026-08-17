@@ -2849,6 +2849,60 @@ abstient, et rien d'autre ne les en sortait.
 > cul-de-sac pour R01.** Elle ne se voit pas sur le dessin — elle se voit en
 > traçant la nuée. C'est le pendant, côté géométrie, de l'invariant n°14.
 
+### 189. R07 et R10 retirées — « utile » veut dire UTILISÉE
+
+Instruction du concepteur : « il faut que toutes les règles soient utiles à au
+moins un endroit. Attention je suis clair sur le utile, ça veut dire UTILISÉ.
+Si A,B fonctionne seul alors même si A,B,C fonctionne, le C ne compte pas. »
+
+**Le critère est donc PORTEUSE, pas PRÉSENTE.** Une règle porte dans une pile
+gagnante si, en la retirant, la pile cesse de gagner. Figurer dans une gagnante
+ne prouve rien : on peut rallonger n'importe quelle solution avec n'importe
+quelle règle inerte.
+
+Mesure (`tools/design/rule_usefulness.gd`), sur les vingt-neuf niveaux :
+
+| règle | offerte | **porteuse** |
+|---|---|---|
+| R01 Vers la lumière | 31 | 25 |
+| R02 Fuir le danger | 8 | 4 |
+| R03 Rester groupé | 20 | 3 |
+| R04 S'écarter | 14 | 7 |
+| R05 Suivre les voisins | 10 | 7 |
+| R06 Longer le mur | 3 | 3 |
+| **R07 Attendre** | **14** | **0** |
+| R08 Marquer la piste | 5 | 3 |
+| R09 Suivre la piste | 8 | 6 |
+| **R10 Rebrousser si seul** | **0** | **0** |
+| R11 Porter | 5 | 5 |
+| R12 Déposer au but | 5 | 5 |
+| R13 Boucher | 3 | 2 |
+| R14 Disperser si dense | 7 | 3 |
+| R15 Suivre le plus lent | 4 | 2 |
+| R16 Ignorer | 4 | 4 |
+
+**R07 était offerte dans quatorze niveaux et ne portait dans aucun.** Elle est
+retirée, avec R10 dont le remède demandait l'hystérésis (gelée). Les quatorze
+autres portent toutes quelque part.
+
+Retirées du registre, du catalogue, de l'explication EF-05, des quinze
+bibliothèques qui les offraient, et leurs implémentations supprimées. **Leurs
+identifiants restent réservés** : ils figurent dans des fiches et dans ce
+carnet, et les réattribuer rendrait ces traces mensongères.
+
+**AUCUNE RECETTE D'OR NE LES RÉFÉRENÇAIT** — vérifié avant de commencer. Les
+soixante-quatorze concordent toujours.
+
+> **DIVERGENCE AU CDC, À ARBITRER.** Le CDC §7 annonce seize règles ; le jeu en
+> compte quatorze. C'est une décision du concepteur, prise sur mesure, mais elle
+> n'est pas reportée au CDC — je ne tranche pas les documents.
+
+EQ-04 demandait « apparaître dans une solution gagnante de trois niveaux ». La
+mesure montre que c'était trop faible : **apparaître n'est pas servir.** Le
+critère est désormais figé par `tests/unit/test_every_rule_earns_its_place.gd`,
+qui refuse toute règle qui ne porterait nulle part — la liste des manquements
+connus d'EQ-04 est vide, et c'est le but qu'elle poursuivait.
+
 ## Reste à faire
 
 **S3 : clos** — premier passage de la CI en ligne constaté vert le

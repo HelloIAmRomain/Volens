@@ -51,14 +51,14 @@
 id: ch5_08
 name: La ronde
 tutorial: false
-allowed_rules: [R01, R02, R03, R04, R07]
+allowed_rules: [R01, R02, R03, R04]
 slots: 3
 max_ticks: 200
 objective: extraction 100
 objective: preservation 2
 patrol: 3,6;4,6;5,6;6,6;5,6;4,6
 lesson: "Un danger fixe se contourne ; une ronde se laisse passer."
-expected_wins: 7
+expected_wins: 6
 expected_classes: 1
 challenge: economy=2 efficiency=36
 calibrated_on: d35f187c0fc3cd7f

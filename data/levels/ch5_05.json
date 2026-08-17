@@ -124,7 +124,6 @@
   "allowed_rules": [
     1,
     3,
-    7,
     13,
     14,
     15
@@ -135,7 +134,7 @@
     "efficiency_ticks": 19
   },
   "expected_classes": 2,
-  "expected_wins": 8,
+  "expected_wins": 7,
   "geometry_hash": "e463f518de17c939",
   "grid": {
     "cells": [
@@ -298,6 +297,7 @@
     "cycles": [],
     "doors": [],
     "one_way": [],
+    "patrols": [],
     "size": [
       11,
       14

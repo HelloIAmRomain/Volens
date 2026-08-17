@@ -35,14 +35,14 @@
 id: ch6_04
 name: Attendre ou traverser
 tutorial: false
-allowed_rules: [R01, R03, R07, R09, R15, R16(C)]
+allowed_rules: [R01, R03, R09, R15, R16(C)]
 slots: 3
 max_ticks: 200
 objective: extraction 80
 objective: preservation 1
 cycle: period=10 active=4
 lesson: "Attendre coute du temps, ignorer coute un rang. Aucune des deux n'est meilleure."
-expected_wins: 31
+expected_wins: 27
 expected_classes: 3
 challenge: economy=2 abstinence=R15
 calibrated_on: c242630893772354

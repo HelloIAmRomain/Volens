@@ -149,7 +149,6 @@
     1,
     2,
     4,
-    7,
     8,
     9
   ],
@@ -158,7 +157,7 @@
     "economy_max": 2
   },
   "expected_classes": 1,
-  "expected_wins": 8,
+  "expected_wins": 7,
   "geometry_hash": "425368874dd32966",
   "grid": {
     "cells": [
@@ -365,6 +364,7 @@
     "cycles": [],
     "doors": [],
     "one_way": [],
+    "patrols": [],
     "size": [
       11,
       18

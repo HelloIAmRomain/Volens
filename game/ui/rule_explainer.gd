@@ -83,8 +83,6 @@ static func _abstention_reason(rule_id: int, agent: AgentState, state: SimState,
 			if state.grid.pheromone[state.grid.index_of(agent.pos)] > 0:
 				return "aucune trace voisine plus intense que la sienne"
 			return "aucune trace à suivre"
-		RuleRegistry.R10_TURN_BACK_IF_ALONE:
-			return "pas seul, ou demi-tour muré"
 		RuleRegistry.R13_PLUG:
 			return "aucun danger adjacent à boucher"
 		RuleRegistry.R14_SCATTER_IF_DENSE:

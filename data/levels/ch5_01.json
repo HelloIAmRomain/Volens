@@ -125,7 +125,6 @@
     1,
     2,
     3,
-    7,
     13
   ],
   "calibrated_on": "63dd79a498898132",
@@ -133,7 +132,7 @@
     "economy_max": 2
   },
   "expected_classes": 1,
-  "expected_wins": 6,
+  "expected_wins": 5,
   "geometry_hash": "63dd79a498898132",
   "grid": {
     "cells": [
@@ -274,6 +273,7 @@
     "cycles": [],
     "doors": [],
     "one_way": [],
+    "patrols": [],
     "size": [
       11,
       12

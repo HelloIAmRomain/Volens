@@ -29,13 +29,13 @@
 id: ch6_03
 name: Personne ne reste
 tutorial: false
-allowed_rules: [R01, R03, R04, R07, R14, R16(P)]
+allowed_rules: [R01, R03, R04, R14, R16(P)]
 slots: 3
 max_ticks: 180
 objective: extraction 100
 door: required=2 plates=1,4;9,4 panels=5,2
 lesson: "Ce qu'on croyait etre le cout des choses n'etait que le cout des regles dont on disposait."
-expected_wins: 17
+expected_wins: 14
 expected_classes: 1
 calibrated_on: d7d4a43f60ed519b
 challenge: economy=2

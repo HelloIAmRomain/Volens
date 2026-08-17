@@ -27,13 +27,13 @@
 id: ch5_05
 name: Deux fois le prix
 tutorial: false
-allowed_rules: [R01, R03, R07, R13, R14, R15]
+allowed_rules: [R01, R03, R13, R14, R15]
 slots: 3
 max_ticks: 200
 objective: extraction 80
 objective: preservation 4
 lesson: "Le prix juste est un chiffre, pas « le moins possible ». Quatre morts, ni une de plus."
-expected_wins: 8
+expected_wins: 7
 expected_classes: 2
 challenge: economy=2 efficiency=19
 calibrated_on: e463f518de17c939

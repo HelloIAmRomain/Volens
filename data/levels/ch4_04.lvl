@@ -27,7 +27,7 @@
 id: ch4_04
 name: Le tri
 tutorial: false
-allowed_rules: [R01, R03, R05, R07, R11, R12]
+allowed_rules: [R01, R03, R05, R11, R12]
 slots: 3
 max_ticks: 180
 objective: collect 4

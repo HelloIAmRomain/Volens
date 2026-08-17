@@ -59,12 +59,12 @@
 id: ch2_02
 name: Sans lumiere
 tutorial: true
-allowed_rules: [R01, R03, R04, R06, R07]
+allowed_rules: [R01, R03, R04, R06]
 slots: 3
 max_ticks: 200
 objective: extraction 100
 lesson: "Sans rien a viser, la nuee ne peut avancer qu'en suivant une forme."
-expected_wins: 33
+expected_wins: 23
 expected_classes: 1
 calibrated_on: 142da3ea7c47ebc8
 challenge: economy=1 efficiency=23

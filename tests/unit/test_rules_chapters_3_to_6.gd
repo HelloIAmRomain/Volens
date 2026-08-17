@@ -70,30 +70,6 @@ func _mark(pos: Vector2i, state: SimState, intensity: int) -> void:
 
 # --- R07 : ATTENDRE ---------------------------------------------------------
 
-func test_r07_never_abstains_and_therefore_silences_everything_below() -> void:
-	# La propriété qui la rend dangereuse ET utile : elle ne s'abstient jamais.
-	# Tout rang situé sous elle est mort. C'est le seul terminal absolu du jeu.
-	var s := _state(["LLL", "...", "..."], [Vector2i(1, 2)])
-	assert_eq(_eval(RuleRegistry.R07_WAIT, s, 0), Vector2i.ZERO,
-		"R07 doit toujours choisir l'immobilité")
-	var stack: Array[int] = [RuleRegistry.R07_WAIT, RuleRegistry.R01_TOWARD_LIGHT]
-	var after := SimCore.step(s, stack)
-	assert_eq(after.agents[0].pos, Vector2i(1, 2),
-		"R01 placée SOUS R07 ne doit jamais parler")
-
-func test_r07_as_a_last_rank_changes_nothing_but_says_it() -> void:
-	# Au dernier rang elle est un no-op — un agent sans règle applicable est
-	# déjà immobile. Ce test fige cette équivalence : si elle cessait d'être
-	# vraie, « plancher volontaire » deviendrait un mensonge de l'interface.
-	var s := _state(["...", "...", "..."], [Vector2i(1, 1)])
-	var without: Array[int] = [RuleRegistry.R01_TOWARD_LIGHT]
-	var with_floor: Array[int] = [RuleRegistry.R01_TOWARD_LIGHT, RuleRegistry.R07_WAIT]
-	assert_eq(SimCore.step(s, without).agents[0].pos,
-		SimCore.step(s, with_floor).agents[0].pos,
-		"R07 au dernier rang ne doit rien changer")
-
-# --- R08 / R09 : LA PISTE ---------------------------------------------------
-
 func test_r08_is_an_effect_and_does_not_consume_the_decision() -> void:
 	# LE TEST QUI JUSTIFIE LE GENRE EFFET. R08 en tête de pile ne doit PAS
 	# empêcher R01 de décider : elle marque, puis rend la main. Si elle
@@ -119,7 +95,7 @@ func test_r08_saturates_instead_of_growing_without_bound() -> void:
 	# Sans plafond, un agent immobile creuserait un puits d'intensité que R09
 	# suivrait éternellement — et l'entier dériverait (invariant n°5).
 	var s := _state(["...", "...", "..."], [Vector2i(1, 1)])
-	var stack: Array[int] = [RuleRegistry.R08_MARK_TRAIL, RuleRegistry.R07_WAIT]
+	var stack: Array[int] = [RuleRegistry.R08_MARK_TRAIL, RuleRegistry.R03_STAY_GROUPED]
 	for i in range(50):
 		s = SimCore.step(s, stack)
 	assert_lte(s.grid.pheromone[s.grid.index_of(Vector2i(1, 1))], _params.trail_max,
@@ -165,7 +141,7 @@ func test_the_trail_evaporates_and_therefore_forgets() -> void:
 	# Une piste qui ne s'efface pas n'est plus une mémoire, c'est une carte.
 	var s := _state(["...", "...", "..."], [Vector2i(0, 0)])
 	_mark(Vector2i(2, 2), s, 5)
-	var stack: Array[int] = [RuleRegistry.R07_WAIT]
+	var stack: Array[int] = [RuleRegistry.R03_STAY_GROUPED]
 	for i in range(6):
 		s = SimCore.step(s, stack)
 	assert_eq(s.grid.pheromone[s.grid.index_of(Vector2i(2, 2))], 0,
@@ -173,32 +149,9 @@ func test_the_trail_evaporates_and_therefore_forgets() -> void:
 
 # --- R10 : REBROUSSER SI SEUL ----------------------------------------------
 
-func test_r10_abstains_while_anyone_is_perceived() -> void:
-	var s := _state([".....", ".....", "....."], [Vector2i(1, 1), Vector2i(2, 1)])
-	assert_eq(_eval(RuleRegistry.R10_TURN_BACK_IF_ALONE, s, 0), Rule.ABSTAIN,
-		"un congénère à portée : rien à rebrousser")
-
-func test_r10_turns_back_the_scout_that_lost_the_swarm() -> void:
-	# LE CAS D'ÉPREUVE : l'éclaireur durablement séparé. Sur une nuée compacte,
-	# R10 ne se déclenche jamais et paraîtrait toujours correcte.
-	var rows := ["............", "............", "............"]
-	var s := _state(rows, [Vector2i(11, 1), Vector2i(0, 1)], [Directions.EAST, Directions.EAST])
-	assert_eq(_eval(RuleRegistry.R10_TURN_BACK_IF_ALONE, s, 0),
-		Directions.offset(Directions.WEST), "seul et cap à l'Est : demi-tour vers l'Ouest")
-
-func test_r10_abstains_rather_than_inventing_another_direction() -> void:
-	# Un demi-tour muré reste un demi-tour impossible. En faire « un pas
-	# quelconque vers l'arrière » ferait de R10 une seconde règle de fuite, que
-	# le joueur ne pourrait plus prédire.
-	var s := _state(["####", "#..#", "####"], [Vector2i(1, 1)], [Directions.EAST])
-	assert_eq(_eval(RuleRegistry.R10_TURN_BACK_IF_ALONE, s, 0), Rule.ABSTAIN,
-		"demi-tour muré : R10 doit rendre la main")
-
-# --- R11 / R12 : LE TRANSPORT ----------------------------------------------
-
 func test_r11_picks_up_and_the_resource_leaves_the_grid() -> void:
 	var s := _state([".R.", "...", "..."], [Vector2i(1, 0)])
-	var stack: Array[int] = [RuleRegistry.R11_CARRY, RuleRegistry.R07_WAIT]
+	var stack: Array[int] = [RuleRegistry.R11_CARRY, RuleRegistry.R03_STAY_GROUPED]
 	var after := SimCore.step(s, stack)
 	assert_true((after.agents[0].flags & AgentState.PORTEUR) != 0, "l'agent doit porter")
 	assert_eq(after.grid.cell_type_at(Vector2i(1, 0)), GridState.CellType.EMPTY,
@@ -208,7 +161,7 @@ func test_r11_gives_the_contested_resource_to_the_smallest_id() -> void:
 	# LE CAS D'ÉPREUVE : deux agents sur la même ressource au même tick. C'est
 	# là que le déterminisme du chapitre 4 se joue, pas sur un agent seul.
 	var s := _state([".R.", "...", "..."], [Vector2i(1, 0), Vector2i(1, 0)])
-	var stack: Array[int] = [RuleRegistry.R11_CARRY, RuleRegistry.R07_WAIT]
+	var stack: Array[int] = [RuleRegistry.R11_CARRY, RuleRegistry.R03_STAY_GROUPED]
 	var after := SimCore.step(s, stack)
 	assert_true((after.agents[0].flags & AgentState.PORTEUR) != 0, "l'id 0 doit l'emporter")
 	assert_true((after.agents[1].flags & AgentState.PORTEUR) == 0,
@@ -217,7 +170,7 @@ func test_r11_gives_the_contested_resource_to_the_smallest_id() -> void:
 func test_r11_does_not_take_a_second_resource() -> void:
 	var s := _state([".R.", "...", "..."], [Vector2i(1, 0)])
 	s.agents[0].flags |= AgentState.PORTEUR
-	var stack: Array[int] = [RuleRegistry.R11_CARRY, RuleRegistry.R07_WAIT]
+	var stack: Array[int] = [RuleRegistry.R11_CARRY, RuleRegistry.R03_STAY_GROUPED]
 	var after := SimCore.step(s, stack)
 	assert_eq(after.grid.cell_type_at(Vector2i(1, 0)), GridState.CellType.RESOURCE,
 		"un porteur ne prend pas une seconde ressource")
@@ -227,7 +180,7 @@ func test_r12_drops_on_an_ADJACENT_dropoff() -> void:
 	# dessus, une case de dépôt serait une sortie de plus et R12 inutile.
 	var s := _state([".D.", "...", "..."], [Vector2i(1, 1)])
 	s.agents[0].flags |= AgentState.PORTEUR
-	var stack: Array[int] = [RuleRegistry.R12_DROP_AT_GOAL, RuleRegistry.R07_WAIT]
+	var stack: Array[int] = [RuleRegistry.R12_DROP_AT_GOAL, RuleRegistry.R03_STAY_GROUPED]
 	var after := SimCore.step(s, stack)
 	assert_true((after.agents[0].flags & AgentState.PORTEUR) == 0, "le porteur doit s'être délesté")
 	assert_eq(after.counters.delivered, 1, "une livraison doit être comptée")
@@ -239,7 +192,7 @@ func test_r12_lets_every_carrier_around_one_dropoff_deliver() -> void:
 		[Vector2i(1, 0), Vector2i(0, 1), Vector2i(2, 1), Vector2i(1, 2)])
 	for a in s.agents:
 		a.flags |= AgentState.PORTEUR
-	var stack: Array[int] = [RuleRegistry.R12_DROP_AT_GOAL, RuleRegistry.R07_WAIT]
+	var stack: Array[int] = [RuleRegistry.R12_DROP_AT_GOAL, RuleRegistry.R03_STAY_GROUPED]
 	var after := SimCore.step(s, stack)
 	assert_eq(after.counters.delivered, 4, "les quatre porteurs adjacents doivent livrer")
 
@@ -248,7 +201,7 @@ func test_a_carrier_never_exits_the_level() -> void:
 	# succès — et le joueur ne verrait qu'un compteur qui n'avance pas.
 	var s := _state([".E.", "...", "..."], [Vector2i(1, 0)])
 	s.agents[0].flags |= AgentState.PORTEUR
-	var stack: Array[int] = [RuleRegistry.R07_WAIT]
+	var stack: Array[int] = [RuleRegistry.R03_STAY_GROUPED]
 	var after := SimCore.step(s, stack)
 	assert_true(after.agents[0].is_present(), "un porteur ne sort pas")
 	assert_eq(after.counters.exited, 0, "et n'est pas compté comme sorti")
@@ -420,7 +373,8 @@ func test_r16_costs_a_rank_and_proposes_nothing() -> void:
 # --- propriétés communes des seize règles ----------------------------------
 
 func test_every_declared_rule_is_registered() -> void:
-	assert_eq(RuleRegistry.ALL.size(), 16, "la bibliothèque du CDC compte seize règles")
+	assert_eq(RuleRegistry.ALL.size(), 14,
+		"quatorze règles depuis le retrait de R07 et R10 (carnet, décision 189)")
 	for id in RuleRegistry.ALL:
 		assert_not_null(RuleRegistry.get_rule(id), "R%02d doit être enregistrée" % id)
 

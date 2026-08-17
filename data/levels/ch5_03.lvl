@@ -42,14 +42,14 @@
 id: ch5_03
 name: La fenetre
 tutorial: false
-allowed_rules: [R01, R03, R07, R14, R15]
+allowed_rules: [R01, R03, R14, R15]
 slots: 3
 max_ticks: 180
 objective: extraction 80
 objective: preservation 1
 cycle: period=10 active=4
 lesson: "Ce n'est pas une question de vitesse mais de forme : elle arrivait en file la ou il fallait arriver en bloc."
-expected_wins: 6
+expected_wins: 5
 expected_classes: 1
 calibrated_on: c242630893772354
 challenge: economy=2
