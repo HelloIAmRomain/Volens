@@ -53,6 +53,9 @@ const _SYMBOLS := {
 	## BASCULE — le premier agent qui la foule ouvre les portes definitivement.
 	## Complement permanent de la plaque, qui est momentanee.
 	"S": GridState.CellType.SWITCH,
+	## ATELIER A BOUCLIERS : tout agent qui traverse en repart protege. Le
+	## bouclier encaisse UN contact mortel puis se brise, sans abimer le danger.
+	"B": GridState.CellType.SHIELD,
 }
 ## Ordre calqué sur `Directions` : NORTH, EAST, SOUTH, WEST. L'index dans ce
 ## tableau EST l'identifiant de direction — les désynchroniser ferait entrer

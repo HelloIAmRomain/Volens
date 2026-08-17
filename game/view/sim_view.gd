@@ -96,6 +96,7 @@ var _echoes: Node2D
 var _forbidden: Node2D
 var _switches: Node2D
 var _patrols: Node2D
+var _shield_marks: Node2D
 
 ## Marques de mort : { cell, age }. Purement visuelles, jamais un état.
 var _death_marks: Array = []
@@ -152,6 +153,11 @@ func _ready() -> void:
 	_patrols = _PatrolMarks.new()
 	_patrols.z_index = Layer.DANGER + 1
 	add_child(_patrols)
+
+	# La protection PORTÉE se dessine au-dessus de la nuée, comme la charge.
+	_shield_marks = _ShieldMarks.new()
+	_shield_marks.z_index = Layer.AGENT + 2
+	add_child(_shield_marks)
 
 	_walls_mm = _make_layer(Layer.DECOR, null)
 	_exit_mm = _make_layer(Layer.EXIT, EXIT_SHADER)
@@ -579,7 +585,14 @@ func _rebuild_static_layers() -> void:
 						armed.append(sp)
 					GridState.CellType.SWITCH_USED:
 						spent.append(sp)
-		(_switches as _SwitchMarks).configure(armed, spent, _cell_size, _grid_origin)
+		# ATELIERS À BOUCLIERS : même balayage, même couche — ce sont tous des
+		# dispositifs de terrain qu'on traverse pour obtenir quelque chose.
+		var shields: Array[Vector2i] = []
+		for y in range(grid.size.y):
+			for x in range(grid.size.x):
+				if grid.cell_type_at(Vector2i(x, y)) == GridState.CellType.SHIELD:
+					shields.append(Vector2i(x, y))
+		(_switches as _SwitchMarks).configure(armed, spent, shields, _cell_size, _grid_origin)
 
 	if _forbidden != null:
 		var banned: Array[Vector2i] = []
@@ -747,6 +760,7 @@ func _death_pulse() -> float:
 func _draw_agents() -> void:
 	var items: Array = []
 	var carried: Array = []
+	var shielded: Array = []
 	for i in range(_to.agents.size()):
 		var to_agent := _to.agents[i]
 		var from_agent := _from.agents[i] if i < _from.agents.size() else to_agent
@@ -777,9 +791,16 @@ func _draw_agents() -> void:
 		# et monter sur un agent, sans un mot d'explication.
 		if (to_agent.flags & AgentState.PORTEUR) != 0 and to_agent.is_present():
 			carried.append([cell, alpha])
+		# UN AGENT PROTÉGÉ PORTE SA MARQUE, sans quoi le joueur voit un agent
+		# traverser le rouge et survivre sans comprendre pourquoi — et conclut
+		# que le danger est capricieux.
+		if (to_agent.flags & AgentState.PROTEGE) != 0 and to_agent.is_present():
+			shielded.append([cell, alpha])
 	_fill(_agent_mm, items, _cell_size * 0.70)
 	if _carried_marks != null:
 		(_carried_marks as _CarriedMarks).configure(carried, _cell_size, _grid_origin)
+	if _shield_marks != null:
+		(_shield_marks as _ShieldMarks).configure(shielded, _cell_size, _grid_origin)
 
 ## PISTE STIGMERGIQUE (R08/R09). Redessinee a chaque image parce qu'elle change
 ## a chaque tick : elle s'evapore, et voir l'evaporation est la moitie de ce
@@ -1292,10 +1313,13 @@ class _SwitchMarks extends Node2D:
 	var _cell: float = 32.0
 	var _origin: Vector2 = Vector2.ZERO
 
+	var _shields: Array[Vector2i] = []
+
 	func configure(armed: Array[Vector2i], spent: Array[Vector2i],
-			cell: float, origin: Vector2) -> void:
+			shields: Array[Vector2i], cell: float, origin: Vector2) -> void:
 		_armed = armed
 		_spent = spent
+		_shields = shields
 		_cell = cell
 		_origin = origin
 		queue_redraw()
@@ -1322,6 +1346,20 @@ class _SwitchMarks extends Node2D:
 			var dim := ViewPalette.SWITCH
 			dim.a = 0.40
 			draw_arc(c2, _cell * 0.34, 0.0, TAU, 32, dim, thickness * 0.7, true)
+
+		# ATELIER À BOUCLIERS — un arc protecteur posé sur un socle. Même forme
+		# que la marque portée par l'agent, en plus grand : on doit reconnaître
+		# d'un coup d'œil que c'est là qu'on la prend.
+		for p in _shields:
+			var c3 := _centre(p)
+			var halo := ViewPalette.SHIELD
+			halo.a = 0.18
+			draw_circle(c3, _cell * 0.40, halo)
+			var edge := ViewPalette.SHIELD.lightened(0.20)
+			edge.a = 0.95
+			draw_arc(c3, _cell * 0.30, PI * 1.10, PI * 1.90, 22, edge, thickness, true)
+			draw_line(c3 + Vector2(-_cell * 0.22, _cell * 0.16),
+				c3 + Vector2(_cell * 0.22, _cell * 0.16), edge, thickness * 0.8)
 
 ## PATROUILLES — un danger qui se déplace, et le trajet qu'il suit.
 ##
@@ -1375,3 +1413,36 @@ class _PatrolMarks extends Node2D:
 		here.a = 0.90
 		for p in _heads:
 			draw_rect(_rect(p).grow(-_cell * 0.06), here)
+
+## LA PROTECTION PORTÉE — un arc au-dessus de l'agent équipé.
+##
+## POURQUOI ELLE SE DESSINE. Sans elle, le joueur voit un agent traverser une
+## case rouge et survivre : il en conclut que le danger est capricieux, ce qui
+## est la pire chose qu'un jeu déterministe puisse laisser croire. La marque dit
+## « celui-ci est protégé », et sa disparition dit « il ne l'est plus ».
+##
+## UN ARC, PAS UN DISQUE. Un disque plein aurait la forme de la charge portée
+## (le losange) ou de l'agent lui-même ; l'arc évoque ce qu'il est — quelque
+## chose qui s'interpose, au-dessus, entre l'agent et ce qui vient.
+class _ShieldMarks extends Node2D:
+	var _cells: Array = []
+	var _cell: float = 32.0
+	var _origin: Vector2 = Vector2.ZERO
+
+	func configure(cells: Array, cell: float, origin: Vector2) -> void:
+		_cells = cells
+		_cell = cell
+		_origin = origin
+		queue_redraw()
+
+	func _draw() -> void:
+		if _cell <= 0.0:
+			return
+		for entry in _cells:
+			var p: Vector2 = entry[0]
+			var alpha: float = entry[1]
+			var centre: Vector2 = _origin + (p + Vector2(0.5, 0.5)) * _cell
+			var tint := ViewPalette.SHIELD.lightened(0.15)
+			tint.a = alpha * 0.95
+			draw_arc(centre, _cell * 0.40, PI * 1.15, PI * 1.85, 18, tint,
+				maxf(_cell * 0.11, 2.0), true)

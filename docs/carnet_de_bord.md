@@ -2847,6 +2847,45 @@ le paquet produit**, comme l'orientation — la commande est au docs/ARCHITECTUR
 > occupe la place et donne l'illusion que la fonctionnalité existe. Neuf appels,
 > un module réglé au millième de seconde, et pas une vibration en des mois.
 
+### 191. Le bouclier : un ÉQUIPEMENT, pas une règle — et pourquoi son niveau manque encore
+
+« Dans l'imaginaire collectif, un bouclier est un objet de défense, pas
+d'attaque. Pour le moment l'agent se détruit et détruit avec lui la zone. Il
+faut qu'il se protège une fois et se casse, mais n'abîme pas la zone. »
+
+C'est R13 « Boucher » qui était décrite : un SACRIFICE, où l'agent se consume et
+neutralise le danger. Elle est conservée telle quelle — elle a son sens — et le
+vrai bouclier est ajouté à côté.
+
+**IL N'EST PAS UNE RÈGLE, ET C'EST LE POINT.** Un bouclier ne décide de rien :
+le mettre dans la pile aurait coûté un rang sur trois pour un objet qui ne
+propose aucun déplacement, et le joueur aurait cherché quand le « jouer » alors
+qu'il n'y a rien à jouer. Il vit donc sur la CARTE — une case-atelier que l'on
+traverse — ce qui ouvre la porte à l'emplacement d'équipement demandé (potion,
+vitesse, téléporteur…) sans rien coûter à la pile.
+
+L'ATELIER NE S'ÉPUISE PAS. Un bouclier unique pour vingt agents ferait un puzzle
+de PILOTAGE — « lequel envoyer le chercher ? ». On ne pilote pas les agents de
+Volens, on écrit la politique qui les gouverne tous.
+
+Quatre propriétés, quatre tests (`tests/unit/test_shield.gd`) : la station
+équipe qui la traverse ; le témoin non protégé meurt ; le bouclier encaisse UN
+contact et l'agent survit ; **le danger reste actif et tue le suivant** — c'est
+ce qui le sépare du sacrifice.
+
+> **SON NIVEAU MANQUE ENCORE, ET LA RAISON EST MESURÉE.** Cinq géométries
+> essayées, aucune retenue. Le constat : **sur un chemin FORCÉ, un bouclier est
+> un laissez-passer.** Une seule sortie et un danger dans l'embrasure, et tout
+> agent doit passer : soit l'atelier couvre tout le monde et `[R01]` seule gagne
+> (25 ticks, la plus rapide de toutes — aucune échéance ne peut l'exclure), soit
+> il n'en couvre qu'une partie et la préservation tombe. Deux dangers empilés
+> rendent le niveau insoluble : la bibliothèque n'a rien qui évite un danger
+> sans fuir indéfiniment.
+>
+> **Le bouclier demande une carte où traverser le danger est un CHOIX** — un
+> raccourci payant contre un détour lent — donc deux routes et une échéance qui
+> départage. C'est un dessin à faire, pas un réglage à trouver.
+
 ### 190. Quatorze règles, et c'est une décision de conception
 
 « Pour les seize règles c'est pas grave, il vaut mieux des règles utiles,

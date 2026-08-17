@@ -61,6 +61,11 @@ const PRESSURE_DOOR := Color(0.95, 0.45, 0.78)           # 320°
 ## FORME (voir `_SwitchMarks`) et l'etat : armee, elle brille ; depensee, elle
 ## s'eteint sans disparaitre — le joueur doit pouvoir constater qu'elle a servi.
 const SWITCH := Color(0.98, 0.62, 0.42)                  # 20°
+## BOUCLIER — 200°, un bleu froid. DELIBEREMENT LOIN DU ROUGE DU DANGER : les
+## deux se rencontrent a l'ecran au moment precis ou le bouclier sert, et deux
+## teintes voisines rendraient l'instant illisible. C'est aussi la teinte qu'on
+## attend d'une protection, pas d'une menace.
+const SHIELD := Color(0.42, 0.72, 0.95)                  # 200°
 const ONE_WAY := Color(0.30, 0.82, 0.90)                 # 195°
 ## ZONE INTERDITE (objectif `interdiction`) — 35°, ambre.
 ##
@@ -106,6 +111,8 @@ static func element_color(cell_type: int, danger_active: bool = true) -> Color:
 			return PRESSURE_DOOR
 		GridState.CellType.SWITCH, GridState.CellType.SWITCH_USED:
 			return SWITCH
+		GridState.CellType.SHIELD:
+			return SHIELD
 		GridState.CellType.ONE_WAY:
 			return ONE_WAY
 		GridState.CellType.LIGHT_SOURCE:

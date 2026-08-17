@@ -195,6 +195,10 @@ static func _refresh_doors(next_state: SimState) -> void:
 	for agent in next_state.agents:
 		if agent.is_present():
 			next_state.grid.spend_switch(agent.pos)
+			# ATELIER À BOUCLIERS : tout agent qui s'y trouve en repart protégé. La
+			# station ne s'épuise pas — voir `GridState.CellType.SHIELD`.
+			if next_state.grid.cell_type_at(agent.pos) == GridState.CellType.SHIELD:
+				agent.flags |= AgentState.PROTEGE
 	next_state.grid.recompute_doors(next_state.agents)
 
 ## Étape 1 — no-op documenté : CycleDef.is_active_at(tick) est une requête
@@ -368,6 +372,17 @@ static func _apply_environment_effects(next_state: SimState, decided_by: PackedI
 			next_state.counters.exited += 1
 		elif next_state.grid.is_danger_active_at(agent.pos, next_state.tick) \
 				and not _danger_is_ignored(next_state, agent.pos):
+			# LE BOUCLIER ENCAISSE, ET SE BRISE. Il ne détruit pas le danger : c'est
+			# ce qui le sépare de R13 « Boucher », qui est un sacrifice. Un objet de
+			# défense protège celui qui le porte et disparaît ; il ne nettoie pas la
+			# carte pour les suivants.
+			#
+			# IL EST TESTÉ AVANT LA MORT, pas après : un agent protégé ne meurt pas,
+			# donc ne compte pas dans les pertes, donc ne déclenche aucun objectif
+			# de préservation. C'est tout l'intérêt d'en avoir un.
+			if (agent.flags & AgentState.PROTEGE) != 0:
+				agent.flags &= ~AgentState.PROTEGE
+				continue
 			agent.flags = (agent.flags & ~AgentState.PRESENT) | AgentState.PERDU
 			next_state.counters.lost += 1
 			# R13 « BOUCHER » — le seul sacrifice utile du jeu. L'agent se

@@ -35,6 +35,16 @@ enum CellType {
 	## niveaux qui n'en portent pas ne bougent pas d'un bit.
 	SWITCH = 10,
 	SWITCH_USED = 11,
+	## ÉQUIPEMENT : BOUCLIER. Une case-atelier, pas un objet à ramasser — tout
+	## agent qui la traverse en repart protégé, et elle ne s'épuise pas.
+	##
+	## POURQUOI ELLE NE SE CONSOMME PAS. Un bouclier unique pour vingt agents
+	## ferait un puzzle de PILOTAGE : « lequel envoyer le chercher ? ». Or on ne
+	## pilote pas les agents de Volens, on écrit la politique qui les gouverne
+	## tous. Une station traversable pose la bonne question — « comment faire
+	## passer la nuée par là avant le danger ? » — et elle se répond dans l'ordre
+	## des règles, qui est le jeu.
+	SHIELD = 12,
 }
 
 var size: Vector2i = Vector2i.ZERO
