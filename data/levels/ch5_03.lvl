@@ -52,7 +52,7 @@ lesson: "Ce n'est pas une question de vitesse mais de forme : elle arrivait en f
 expected_wins: 6
 expected_classes: 1
 calibrated_on: c242630893772354
-challenge: efficiency=10 abstinence=R03
+challenge: economy=2
 ---
 . . . . . L . . . . .
 E E E E E E E E E E E

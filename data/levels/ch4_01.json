@@ -130,6 +130,7 @@
   ],
   "calibrated_on": "136ada9f3b8efa7f",
   "challenges": {
+    "abstinence_rule": 5,
     "efficiency_ticks": 10
   },
   "expected_classes": 1,

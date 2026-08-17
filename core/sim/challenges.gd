@@ -26,11 +26,20 @@ extends RefCounted
 ## donc dans le fichier de niveau, sous la protection de `calibrated_on`, et se
 ## lit par `LevelSpec.challenges()` — jamais recopié ailleurs (invariant n°16).
 
-## RG-18 : « résoudre avec trois emplacements au plus ». Le nombre est fixé par
-## le CDC, pas par le niveau — c'est ce qui rend le défi comparable d'un niveau
-## à l'autre, et donc lisible comme une compétence plutôt que comme un réglage.
-const ECONOMY_MAX_SLOTS: int = 3
-
+## L'ÉCONOMIE N'EST PLUS UNE CONSTANTE, ET C'EST LE CORRECTIF LE PLUS ÉTENDU DU
+## LOT.
+##
+## Elle valait « trois emplacements au plus », fixé par le CDC pour être
+## comparable d'un niveau à l'autre. L'intention était juste ; l'effet ne l'a
+## jamais été : **vingt-huit niveaux sur vingt-neuf n'ouvrent que trois rangs**,
+## donc le défi était acquis en même temps que la victoire, sans que le joueur
+## sache qu'il existait. Signalé à l'essai : « niveau 1.3, défi 3 règles inutile
+## car on a 3 règles au max ».
+##
+## Le seuil est désormais MESURÉ par niveau : c'est la taille de la plus courte
+## pile gagnante, et le défi n'existe que si une gagnante plus longue existe
+## aussi. On ne le gagne donc jamais du premier coup — il faut revenir avec une
+## autre solution, ce qui est la définition d'un défi.
 ## Résultat d'un niveau résolu. Les trois clés sont toujours présentes ; une
 ## valeur `false` signifie « pas encore obtenu », jamais « raté ».
 ##
@@ -40,13 +49,28 @@ const ECONOMY_MAX_SLOTS: int = 3
 static func evaluate(stack: Array, final_state: SimState, spec: Dictionary) -> Dictionary:
 	var abstinence_rule: int = int(spec.get("abstinence_rule", 0))
 	var efficiency_ticks: int = int(spec.get("efficiency_ticks", 0))
+	var economy_max: int = int(spec.get("economy_max", 0))
 	return {
-		"economy": _used_rules(stack).size() <= ECONOMY_MAX_SLOTS,
+		"economy": economy_max > 0 and _used_rules(stack).size() <= economy_max,
 		"abstinence": abstinence_rule != 0 and not _used_rules(stack).has(abstinence_rule),
 		"efficiency": efficiency_ticks > 0 and final_state.tick <= efficiency_ticks,
+		"applicable_economy": economy_max > 0,
 		"applicable_abstinence": abstinence_rule != 0,
 		"applicable_efficiency": efficiency_ticks > 0,
 	}
+
+## Nombre de défis que ce niveau PROPOSE. Zéro est une réponse légitime, et
+## c'est celle de neuf niveaux : l'interface doit alors n'afficher aucune
+## pastille plutôt que trois éteintes qu'on ne peut pas allumer.
+static func offered(spec: Dictionary) -> int:
+	var n := 0
+	if int(spec.get("economy_max", 0)) > 0:
+		n += 1
+	if int(spec.get("abstinence_rule", 0)) != 0:
+		n += 1
+	if int(spec.get("efficiency_ticks", 0)) > 0:
+		n += 1
+	return n
 
 ## Les règles réellement posées : les emplacements vides (0) ne comptent pas.
 ## Un joueur qui laisse un rang vide n'a pas « utilisé » une règle de plus, et

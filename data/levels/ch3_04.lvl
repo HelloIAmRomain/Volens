@@ -40,7 +40,7 @@ objective: extraction 100
 lesson: "Une memoire ne se rattrape pas : ce qui n'a pas ete marque au passage ne le sera jamais."
 expected_wins: 8
 expected_classes: 1
-challenge: abstinence=R01
+challenge: economy=2
 calibrated_on: 425368874dd32966
 trail: 4,0=256 5,0=256 6,0=256 4,1=244 5,1=244 6,1=244 4,2=232 5,2=232 6,2=232 4,3=220 5,3=220 6,3=220 4,4=208 5,4=208 6,4=208 4,5=196 5,5=196 6,5=196 4,6=184 5,6=184 6,6=184 4,7=172 5,7=172 6,7=172 4,8=160 5,8=160 6,8=160 4,9=148 5,9=148 6,9=148
 ---

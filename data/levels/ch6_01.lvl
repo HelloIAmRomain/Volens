@@ -49,7 +49,7 @@ lesson: "Le joker rend gratuit ce qui coutait quelqu'un. Le chapitre 6 ne rajout
 expected_wins: 20
 expected_classes: 1
 calibrated_on: 63dd79a498898132
-challenge: efficiency=25 abstinence=R13
+challenge: economy=2
 ---
 . . . . . L . . . . .
 # # # # # E # # # # #

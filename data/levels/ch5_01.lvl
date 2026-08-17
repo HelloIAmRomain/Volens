@@ -39,7 +39,7 @@ lesson: "Un agent contre vingt. Mais un sacrifice mal ordonne n'est plus un sacr
 expected_wins: 6
 expected_classes: 1
 calibrated_on: 63dd79a498898132
-challenge: efficiency=25 abstinence=R03
+challenge: economy=2
 ---
 . . . . . L . . . . .
 # # # # # E # # # # #

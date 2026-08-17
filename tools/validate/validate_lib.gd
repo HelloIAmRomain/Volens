@@ -345,14 +345,21 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 				break
 		if exists:
 			abstinence_options.append(int(rule_id))
+	# L'ÉCONOMIE EST DÉSORMAIS RELATIVE AU NIVEAU : elle vaut « faire plus court
+	# que la plus longue gagnante ». Un seuil global valait trois emplacements,
+	# soit exactement le nombre de rangs de presque tous les niveaux : le défi
+	# était acquis d'office. Ici l'on rapporte s'il est POSSIBLE d'en proposer un,
+	# c'est-à-dire si les gagnantes n'ont pas toutes la même taille.
+	var shortest := 99
+	var longest := 0
 	for w in wins:
 		var used := 0
 		for r in w["stack"]:
 			if int(r) != 0:
 				used += 1
-		if used <= Challenges.ECONOMY_MAX_SLOTS:
-			economy_possible = true
-			break
+		shortest = mini(shortest, used)
+		longest = maxi(longest, used)
+	economy_possible = longest > shortest
 
 	# Collecte hors chapitre (revue S3, 3.6) : distinguer « inatteignable
 	# faute de règles de transport autorisées » de « niveau cassé » — sans

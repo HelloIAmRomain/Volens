@@ -35,7 +35,7 @@ objective: preservation 4
 lesson: "Le prix juste est un chiffre, pas « le moins possible ». Quatre morts, ni une de plus."
 expected_wins: 8
 expected_classes: 2
-challenge: efficiency=19 abstinence=R03
+challenge: economy=2 efficiency=19
 calibrated_on: e463f518de17c939
 ---
 . . . . . L . . . . .

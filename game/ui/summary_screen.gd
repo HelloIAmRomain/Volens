@@ -58,20 +58,38 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array, rea
 	# en cherche d'autres.
 	var known := _known_solutions(level_id)
 	if won and known > 1:
-		column.add_child(_stat("Solutions connues", str(known)))
+		column.add_child(_stat("Solutions", str(known)))
 
-	# DÉFIS RG-18 — et RG-19 gouverne leur affichage autant que leur calcul :
-	# **aucun défi ne conditionne jamais la progression.** On ne montre donc que
-	# ce qui est OBTENU, et rien du reste. Une liste de cases à cocher dont deux
-	# sont vides transforme une victoire en échec partiel, et c'est exactement ce
-	# que RG-19 interdit ; le joueur qui veut savoir ce qui existe le découvre en
-	# rejouant, pas en lisant un reproche.
+	# DÉFIS RG-18 — ON MONTRE MAINTENANT CE QUI RESTE, ET C'EST UN CHANGEMENT
+	# D'INTENTION ASSUMÉ.
 	#
-	# Rien non plus sur un échec : féliciter pour un défi obtenu au cours d'une
-	# partie perdue serait au mieux confus.
+	# On n'affichait que les défis OBTENUS, au motif qu'une liste de cases vides
+	# transforme une victoire en échec partiel (RG-19). Le raisonnement tenait
+	# TANT QUE LES DÉFIS ÉTAIENT OFFERTS D'OFFICE : ils tombaient avec la
+	# victoire, il n'y avait rien à annoncer. Mesuré depuis, un défi n'est retenu
+	# que s'il existe une pile qui l'obtient ET une pile qui ne l'obtient pas —
+	# il demande donc de REVENIR avec une autre solution.
+	#
+	# Dans ce régime, taire ce qui reste n'est plus de la délicatesse : c'est
+	# cacher la moitié du jeu. Le joueur ne pouvait pas savoir « si les défis ont
+	# été réalisés ou non » (essai sur l'appareil).
+	#
+	# RG-19 TIENT QUAND MÊME : rien n'est barré, rien n'est grisé, rien ne
+	# conditionne la progression. Un défi non obtenu s'écrit comme une
+	# PROPOSITION — « il existe une autre façon » — jamais comme un reproche.
+	#
+	# Rien sur un échec : féliciter pour un défi obtenu au cours d'une partie
+	# perdue serait au mieux confus.
 	if won:
-		for line in challenges_earned(level_id, stack, ticks):
-			column.add_child(_stat("Défi", line))
+		for entry in challenge_states(level_id, stack, ticks):
+			# LE NOM DU DÉFI À GAUCHE, SA CONDITION À DROITE. « Défi » d'un côté et
+			# « Abstinence — réussir sans “Rester groupé” » de l'autre faisait un
+			# libellé qui se tronquait par ellipse, précisément sur le mot qui
+			# porte l'information.
+			var done: bool = bool(entry["earned"])
+			column.add_child(_stat(
+				"%s  %s" % ["◆" if done else "◇", String(entry["key"])],
+				String(entry["label"])))
 
 	var grow := Control.new()
 	grow.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -100,24 +118,57 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array, rea
 ## Publique : `App` l'appelle pour ENREGISTRER les défis, l'écran pour les
 ## AFFICHER. Une seconde implémentation du calcul divergerait de la première —
 ## le joueur verrait un défi qui ne se conserve pas, ou l'inverse.
-static func challenges_earned(level_id: String, stack: Array, ticks: int) -> PackedStringArray:
+## ÉTAT DE CHAQUE DÉFI PROPOSÉ : son libellé, et s'il est obtenu.
+##
+## UNE SEULE SOURCE pour l'affichage ET l'enregistrement. Deux calculs séparés
+## divergeraient, et le joueur verrait un défi qui ne se conserve pas — ou
+## l'inverse.
+static func challenge_states(level_id: String, stack: Array, ticks: int) -> Array:
 	var data := LevelCatalog.load_level_data(level_id)
-	var spec := LevelSpec.challenges(data)
-	var out := PackedStringArray()
 	if data.is_empty():
-		return out
+		return []
+	var spec := LevelSpec.challenges(data)
 	var used := 0
 	for r in stack:
 		if int(r) != RuleRegistry.EMPTY:
 			used += 1
-	if used <= Challenges.ECONOMY_MAX_SLOTS:
-		out.append("Économie — résolu avec %d règles" % used)
+	var out: Array = []
+	var economy_max := int(spec.get("economy_max", 0))
+	if economy_max > 0:
+		out.append({
+			"key": "Économie",
+			"label": "%d règle%s au plus" % [
+				economy_max, "s" if economy_max > 1 else ""],
+			"earned": used <= economy_max})
 	var abstinence := int(spec.get("abstinence_rule", 0))
-	if abstinence != 0 and not stack.has(abstinence):
-		out.append("Abstinence — sans « %s »" % RuleCatalog.name_of(abstinence))
+	if abstinence != 0:
+		out.append({
+			"key": "Abstinence",
+			"label": "sans « %s »" % RuleCatalog.name_of(abstinence),
+			"earned": not stack.has(abstinence)})
 	var deadline := int(spec.get("efficiency_ticks", 0))
-	if deadline > 0 and ticks <= deadline:
-		out.append("Efficience — %d ticks, seuil %d" % [ticks, deadline])
+	if deadline > 0:
+		out.append({
+			"key": "Efficience",
+			"label": "%d ticks au plus" % deadline,
+			"earned": ticks <= deadline})
+	return out
+
+static func challenges_earned(level_id: String, stack: Array, ticks: int) -> PackedStringArray:
+	# DÉRIVÉE de `challenge_states`, jamais recalculée : l'affichage et
+	# l'enregistrement doivent dire la même chose, et deux calculs parallèles
+	# divergent toujours — le joueur verrait alors un défi qui ne se conserve
+	# pas, ou l'inverse.
+	# LE LIBELLÉ ENREGISTRÉ COMMENCE PAR LE NOM DU DÉFI, et ce n'est pas une
+	# coquetterie : la progression conserve ces chaînes, et la liste des niveaux
+	# les reconnaît par leur PRÉFIXE. Enregistrer « 2 règles au plus » aurait
+	# effacé en silence tous les défis déjà obtenus — ils ne se seraient plus
+	# reconnus. Les anciens libellés (« Économie — résolu avec 2 règles »)
+	# continuent de correspondre, ce qui rend le changement rétrocompatible.
+	var out := PackedStringArray()
+	for entry in challenge_states(level_id, stack, ticks):
+		if bool(entry["earned"]):
+			out.append("%s — %s" % [String(entry["key"]), String(entry["label"])])
 	return out
 
 static func _known_solutions(level_id: String) -> int:

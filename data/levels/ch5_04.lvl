@@ -50,7 +50,6 @@ objective: celerity 20
 lesson: "Deux regles font la meme chose a deux echelles. Seule leur composition donne la forme juste."
 expected_wins: 1
 expected_classes: 1
-challenge: efficiency=19
 calibrated_on: f2620aa8c5ff14bd
 ---
 . . . . . L . . . . .

@@ -30,13 +30,24 @@ func _init() -> void:
 	var rules: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/rules.json"))
 	_params = RuleParams.from_dict(rules if rules is Dictionary else {})
 
-	print("niveau    économie          abstinence                efficience")
+	# Sortie DIRECTEMENT COLLABLE dans un `.lvl` : l'outil ne se contente pas de
+	# juger, il propose la ligne exacte. Un audit qu'il faut retraduire à la main
+	# se retraduit mal.
+	print("# niveau : ligne `challenge:` recommandée, mesurée sur l'espace réel")
 	for i in range(LevelCatalog.count()):
 		var entry: Dictionary = LevelCatalog.entry(i)
 		if not bool(entry["ready"]):
 			continue
 		_audit(String(entry["id"]))
 	quit()
+
+func _outcome(data: Dictionary, stack: Array[int]) -> int:
+	var state := SimCore.load_level(data, _params)
+	var guard := 0
+	while state.outcome == SimState.Outcome.RUNNING and guard < GUARD:
+		state = SimCore.step(state, stack)
+		guard += 1
+	return state.outcome
 
 func _audit(level_id: String) -> void:
 	var data := LevelCatalog.load_level_data(level_id)
@@ -79,18 +90,44 @@ func _audit(level_id: String) -> void:
 	var economy := "OFFERT (toutes à %d règles)" % min_size if min_size == max_size \
 		else "vivant : %d règles (sinon %d)" % [min_size, max_size]
 
-	# ABSTINENCE — une règle présente dans au moins une gagnante et absente
-	# d'au moins une autre. Sinon elle est soit indispensable, soit inutile.
+	# ABSTINENCE — TROIS conditions, et la troisième est celle qui manquait.
+	#
+	#   1. une gagnante la contient — sinon le défi est déjà acquis d'office ;
+	#   2. une gagnante s'en passe — sinon le défi est impossible ;
+	#   3. **elle PORTE quelque part** : il existe une gagnante qui cesse de
+	#      gagner si on l'en retire.
+	#
+	# Sans la troisième, « Attendre » ressortait comme candidate sur cinq
+	# niveaux : elle figurait dans des gagnantes où elle ne servait à rien, et
+	# s'en passer ne demandait donc aucune compréhension. Un défi qui consiste à
+	# ne pas choisir une règle inutile n'est pas un défi.
+	#
+	# Le critère se mesure sans toucher au moteur : une règle porte si la retirer
+	# de sa pile fait perdre celle-ci. C'est la même logique que les gagnantes
+	# minimales, appliquée règle à règle.
 	var alive: Array[int] = []
 	for r in allowed:
+		# Les jokers portent leur argument dans les bits hauts : leur identifiant
+		# ne s'écrit pas « Rxx » et le schéma des défis ne sait pas les nommer.
+		if r > 16:
+			continue
 		var with_it := false
 		var without := false
+		var load_bearing := false
 		for stack in stacks:
-			if (stack as Array).has(r):
-				with_it = true
-			else:
+			if not (stack as Array).has(r):
 				without = true
-		if with_it and without:
+				continue
+			with_it = true
+			if load_bearing:
+				continue
+			var shorter: Array[int] = []
+			for v in (stack as Array):
+				if int(v) != r:
+					shorter.append(int(v))
+			if shorter.is_empty() or _outcome(data, shorter) != SimState.Outcome.WON:
+				load_bearing = true
+		if with_it and without and load_bearing:
 			alive.append(r)
 	var declared_abs: int = int(spec.get("abstinence_rule", 0))
 	var abstinence := "aucune possible"
@@ -112,5 +149,23 @@ func _audit(level_id: String) -> void:
 	var efficiency := "OFFERT (toutes en %d ticks)" % min_t if min_t == max_t \
 		else "vivant : %d ticks (sinon jusqu'à %d)" % [min_t, max_t]
 
-	print("%-9s %-17s %-25s %s%s" % [
-		level_id, economy, abstinence, efficiency, abs_verdict])
+	# LA LIGNE RECOMMANDÉE. Un défi n'est retenu que s'il existe une gagnante qui
+	# l'obtient ET une gagnante qui ne l'obtient pas — sinon il est offert ou
+	# impossible, et dans les deux cas il n'ajoute rien.
+	var tokens := PackedStringArray()
+	if min_size < max_size:
+		tokens.append("economy=%d" % min_size)
+	if not alive.is_empty():
+		# La règle la plus HAUTE de la bibliothèque parmi les vivantes : les
+		# règles tardives sont celles que le chapitre enseigne, donc celles dont
+		# se passer demande vraiment de comprendre.
+		var best: int = alive[0]
+		for r in alive:
+			best = maxi(best, r)
+		tokens.append("abstinence=R%02d" % best)
+	if min_t < max_t:
+		tokens.append("efficiency=%d" % min_t)
+	var line := "challenge: " + " ".join(tokens) if not tokens.is_empty() \
+		else "(aucun défi possible)"
+	print("%-9s %-46s   [%s | %s | %s]%s" % [
+		level_id, line, economy, abstinence, efficiency, abs_verdict])

@@ -85,6 +85,10 @@ func _chapter_header(chapter: int, progress: Progress) -> Control:
 
 ## Un défi est enregistré sous son libellé complet (« Économie — résolu avec 2
 ## règles ») : on le reconnaît par son préfixe, seule partie stable.
+## Un défi est enregistré sous son libellé complet ; on le reconnaît par son
+## PRÉFIXE, seule partie stable. Les libellés ont déjà changé une fois — quand
+## les seuils sont devenus per-niveau — et un test de correspondance exacte
+## aurait effacé silencieusement tous les défis déjà obtenus.
 static func _has_challenge(earned: PackedStringArray, label: String) -> bool:
 	for line in earned:
 		if line.begins_with(label):
@@ -132,16 +136,27 @@ func _make_tile(entry: Dictionary, index: int, progress: Progress) -> Control:
 		button.text = "  %s   %d.  %s" % [mark, index + 1, String(entry["name"])]
 		if solved:
 			button.text += "      %d ticks" % progress.best_ticks(level_id)
-			# DÉFIS OBTENUS, en trois pastilles. Sans trace dans la liste, un défi
-			# gagné disparaît avec l'écran de bilan : la couche de rejouabilité
-			# n'existerait que le temps d'une phrase. Ce qui est obtenu est marqué,
-			# ce qui ne l'est pas reste vide — jamais barré ni grisé, RG-19
-			# interdit de transformer une victoire en échec partiel.
+			# DÉFIS : UNE PASTILLE PAR DÉFI QUE LE NIVEAU PROPOSE, jamais trois.
+			#
+			# Il y en avait trois partout, dont deux qu'aucune pile ne pouvait
+			# allumer sur la plupart des niveaux : « pour le moment il y a trois
+			# brins partout ; il faut que ce soit le nombre de défis ». Neuf
+			# niveaux n'en proposent aucun et n'affichent donc plus rien — une
+			# pastille éteinte qu'on ne peut pas allumer est une fausse piste, et
+			# la répéter vingt-neuf fois en fait une leçon d'impuissance.
+			#
+			# Ce qui est obtenu est marqué, le reste reste creux — jamais barré ni
+			# grisé : RG-19 interdit de transformer une victoire en échec partiel.
+			var spec := LevelSpec.challenges(LevelCatalog.load_level_data(level_id))
 			var earned := progress.earned_challenges(level_id)
-			if not earned.is_empty():
-				var marks := ""
-				for label in ["Économie", "Abstinence", "Efficience"]:
-					marks += "◆" if _has_challenge(earned, label) else "◇"
+			var marks := ""
+			if int(spec.get("economy_max", 0)) > 0:
+				marks += "◆" if _has_challenge(earned, "Économie") else "◇"
+			if int(spec.get("abstinence_rule", 0)) != 0:
+				marks += "◆" if _has_challenge(earned, "Abstinence") else "◇"
+			if int(spec.get("efficiency_ticks", 0)) > 0:
+				marks += "◆" if _has_challenge(earned, "Efficience") else "◇"
+			if not marks.is_empty():
 				button.text += "   %s" % marks
 			button.add_theme_color_override("font_color", ViewPalette.EXIT)
 		# Un relâchement qui termine un GLISSEMENT n'ouvre pas le niveau sous le

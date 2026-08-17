@@ -29,7 +29,7 @@ objective: extraction 100
 lesson: "On ne compose pas une trajectoire, on compose les conditions pour qu'une trajectoire commune emerge."
 expected_wins: 4
 expected_classes: 3
-challenge: efficiency=33 abstinence=R01
+challenge: abstinence=R06 efficiency=33
 calibrated_on: a3a2f740dd668f7d
 ---
 . L . . . . . . . . .

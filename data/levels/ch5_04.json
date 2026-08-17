@@ -127,9 +127,6 @@
     14
   ],
   "calibrated_on": "f2620aa8c5ff14bd",
-  "challenges": {
-    "efficiency_ticks": 19
-  },
   "expected_classes": 1,
   "expected_wins": 1,
   "geometry_hash": "f2620aa8c5ff14bd",

@@ -45,16 +45,40 @@ func test_a_level_that_offers_no_challenge_says_so() -> void:
 func test_economy_counts_rules_not_slots() -> void:
 	# Un rang vide n'est pas une règle utilisée : le défi récompense la pile
 	# COURTE, pas la pile tassée.
-	assert_true(bool(Challenges.evaluate([1, 0, 2, 0], _finished_at(5), {})["economy"]),
+	var spec := {"economy_max": 3}
+	assert_true(bool(Challenges.evaluate([1, 0, 2, 0], _finished_at(5), spec)["economy"]),
 		"deux règles et deux rangs vides : économie obtenue")
-	assert_false(bool(Challenges.evaluate([1, 2, 3, 4], _finished_at(5), {})["economy"]),
-		"quatre règles : au-delà du seuil du CDC")
+	assert_false(bool(Challenges.evaluate([1, 2, 3, 4], _finished_at(5), spec)["economy"]),
+		"quatre règles : au-delà du seuil du niveau")
+
+func test_economy_is_not_offered_when_the_level_declares_no_threshold() -> void:
+	# LE DÉFAUT LE PLUS RÉPANDU DU JEU, et il tenait à une constante : le seuil
+	# valait « trois emplacements » pour tout le monde alors que vingt-huit
+	# niveaux sur vingt-neuf n'ouvrent que trois rangs. Le défi tombait donc avec
+	# la victoire, sans que le joueur sache qu'il existait.
+	#
+	# Sans seuil déclaré, il n'y a pas de défi — pas un défi acquis d'avance.
+	var out := Challenges.evaluate([1], _finished_at(5), {})
+	assert_false(bool(out["applicable_economy"]),
+		"un niveau sans seuil mesuré ne propose pas l'économie")
+	assert_false(bool(out["economy"]),
+		"et un défi non proposé n'est jamais obtenu")
+
+func test_offered_counts_only_what_the_level_declares() -> void:
+	# L'interface affiche une pastille PAR DÉFI PROPOSÉ. Trois pastilles
+	# partout, dont deux qu'aucune pile ne peut allumer, est une fausse piste
+	# répétée vingt-neuf fois.
+	assert_eq(Challenges.offered({}), 0, "aucun défi déclaré : aucune pastille")
+	assert_eq(Challenges.offered({"economy_max": 2}), 1)
+	assert_eq(Challenges.offered({
+		"economy_max": 2, "abstinence_rule": 6, "efficiency_ticks": 29}), 3)
 
 func test_economy_ignores_a_rule_repeated_in_two_slots() -> void:
 	# L'énumérateur interdit les doublons, mais une pile composée à la main
 	# pourrait en porter. Compter deux fois la même règle ferait échouer un
 	# défi que le joueur a en réalité obtenu.
-	assert_true(bool(Challenges.evaluate([1, 1, 2, 2], _finished_at(5), {})["economy"]),
+	assert_true(bool(Challenges.evaluate([1, 1, 2, 2], _finished_at(5),
+		{"economy_max": 3})["economy"]),
 		"deux règles distinctes, quatre rangs : économie obtenue")
 
 # --- abstinence -------------------------------------------------------------

@@ -44,6 +44,7 @@ cycle: period=10 active=4
 lesson: "Attendre coute du temps, ignorer coute un rang. Aucune des deux n'est meilleure."
 expected_wins: 31
 expected_classes: 3
+challenge: economy=2 abstinence=R15
 calibrated_on: c242630893772354
 ---
 . . . . . L . . . . .

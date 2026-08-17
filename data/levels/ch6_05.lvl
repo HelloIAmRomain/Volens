@@ -30,6 +30,7 @@ objective: collect 2
 lesson: "Un sens unique pose contre vous n'a qu'une reponse — et il a fallu six chapitres pour l'avoir en main."
 expected_wins: 20
 expected_classes: 3
+challenge: abstinence=R05 efficiency=6
 calibrated_on: a37acc8160738b91
 ---
 . . . . . L . . . . .

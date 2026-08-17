@@ -55,7 +55,7 @@ lesson: "Deux facons d'echouer, une seule de passer : detourner sans ralentir."
 expected_wins: 2
 expected_classes: 1
 calibrated_on: 82639d340544478d
-challenge: efficiency=18 abstinence=R02
+challenge: economy=2
 ---
 . . . . . L . . . . .
 # # # # E E E # # # #

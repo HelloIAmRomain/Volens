@@ -130,6 +130,10 @@
     1040
   ],
   "calibrated_on": "c242630893772354",
+  "challenges": {
+    "abstinence_rule": 15,
+    "economy_max": 2
+  },
   "expected_classes": 3,
   "expected_wins": 31,
   "geometry_hash": "c242630893772354",

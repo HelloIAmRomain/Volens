@@ -50,7 +50,7 @@ lesson: "Un effet ne s'applique que si la cascade l'atteint : les effets se mett
 expected_wins: 5
 expected_classes: 3
 calibrated_on: a37acc8160738b91
-challenge: efficiency=6
+challenge: abstinence=R05 efficiency=6
 ---
 . . . . . L . . . . .
 . . . . D D D . . . .

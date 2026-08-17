@@ -134,8 +134,7 @@
   ],
   "calibrated_on": "82639d340544478d",
   "challenges": {
-    "abstinence_rule": 2,
-    "efficiency_ticks": 18
+    "economy_max": 2
   },
   "expected_classes": 1,
   "expected_wins": 2,

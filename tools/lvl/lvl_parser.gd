@@ -361,10 +361,16 @@ static func parse(text: String, min_cycle_period: int, flee_range_sq: int = 25) 
 
 	# --- Défis facultatifs [RG-18] ---
 	#
-	# `challenge: abstinence=R02 efficiency=24`. Ni l'un ni l'autre n'est
+	# `challenge: economy=2 abstinence=R06 efficiency=24`. AUCUN n'est
 	# obligatoire : un niveau sans ligne `challenge:` n'en propose simplement
 	# aucun, et l'interface le dit plutôt que d'afficher trois cases éteintes
 	# que rien ne permet d'allumer.
+	#
+	# `economy=N` A REMPLACÉ UNE CONSTANTE GLOBALE, et c'était le défaut le plus
+	# répandu du jeu : le seuil valait « trois emplacements » pour tout le monde,
+	# alors que vingt-huit niveaux sur vingt-neuf n'en ont que trois. Le défi
+	# était donc OFFERT d'office, en même temps que la victoire. Il est désormais
+	# mesuré par niveau — et absent quand toutes les gagnantes ont la même taille.
 	if header.has("challenge"):
 		var spec: Dictionary = {}
 		for token in String(header["challenge"]).split(" "):
@@ -383,8 +389,17 @@ static func parse(text: String, min_cycle_period: int, flee_range_sq: int = 25) 
 					spec["abstinence_rule"] = rule_id
 			elif t.begins_with("efficiency="):
 				spec["efficiency_ticks"] = int(t.substr(11))
+			elif t.begins_with("economy="):
+				var cap := int(t.substr(8))
+				if cap < 1 or cap > slots:
+					errors.append(("challenge : economy=%d hors des rangs du niveau "
+						+ "(1 à %d) — un seuil au-dessus du nombre de rangs est acquis "
+						+ "d'office") % [cap, slots])
+				else:
+					spec["economy_max"] = cap
 			elif not t.is_empty():
-				errors.append("challenge : jeton « %s » inconnu (attendu abstinence=Rxx ou efficiency=N)" % t)
+				errors.append(("challenge : jeton « %s » inconnu (attendu economy=N, "
+					+ "abstinence=Rxx ou efficiency=N)") % t)
 		if not spec.is_empty():
 			level["challenges"] = spec
 
