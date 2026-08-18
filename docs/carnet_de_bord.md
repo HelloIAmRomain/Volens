@@ -3007,16 +3007,23 @@ Comptage des types de case réellement posés sur les 34 niveaux :
 | Ressource · Dépôt | 5 · 5 | paire indissociable, une seule idée en deux temps |
 | **Plaque à pression** | 4 | *ouvre une porte* |
 | **Bascule** | **1** | *ouvre une porte aussi* |
-| **Sens unique** | **0** | **jamais posé nulle part** |
+| Sens unique | 2 | ch4_02, ch6_05 — voir la correction |
 | **Atelier à boucliers** | **0** | **jamais posé nulle part** |
 
-**DEUX ÉLÉMENTS N'EXISTENT QUE DANS LE CODE.** Le sens unique est analysé,
-dessiné, testé, doté de quatre symboles — et **aucun niveau ne l'a jamais
-porté**. L'atelier à boucliers est dans le même cas, et sa raison est déjà
-écrite (décision 191). C'est la version « case » du défaut qui avait fait
-retirer R07 et R10 : *utile veut dire UTILISÉ*. Deux entrées mortes dans un
-vocabulaire clos à neuf éléments, c'est un cinquième du vocabulaire qui ne dit
-rien.
+> **CORRECTION DU PREMIER COMPTAGE, ET ELLE CHANGE LA CONCLUSION.** Le sens
+> unique était d'abord porté « jamais posé nulle part ». C'était faux : il vit
+> dans `grid.one_way`, une liste séparée, et **pas** comme une valeur de case —
+> ch4_02 et ch6_05 en portent six chacun. Le comptage balayait `grid.cells` et
+> ne pouvait pas le voir.
+>
+> Le défaut de méthode vaut d'être gardé : **un inventaire qui n'interroge
+> qu'une seule représentation déclare morts les éléments rangés ailleurs.** Le
+> même piège avait produit trois divergences sur trois champs de niveau, d'où
+> l'invariant n°16. Ici il aurait fait supprimer un mécanisme vivant.
+
+**UN SEUL ÉLÉMENT N'EXISTE QUE DANS LE CODE** : l'atelier à boucliers, et sa
+raison est écrite (décision 191). C'est la version « case » du défaut qui avait
+fait retirer R07 et R10 — *utile veut dire UTILISÉ*.
 
 **DEUX PAIRES SE RECOUVRENT, et c'est exactement le cas décrit :**
 
@@ -3031,6 +3038,66 @@ rien.
   conception**. Il ne tient pas forcément **à l'écran** : le joueur voit deux
   marques distinctes qui produisent le même effet visible, et rien ne lui dit
   laquelle est momentanée. Une seule est utilisée une seule fois.
+
+#### Résolution 1 — le danger cyclique se distingue enfin QUAND IL TUE
+
+Le défaut n'était pas que le cyclique existe, c'est qu'il était **indiscernable
+au moment où la distinction comptait** :
+
+| Phase | Avant | Lisibilité |
+|---|---|---|
+| Éteint | teinte dormante | se distinguait très bien |
+| **Allumé** | **teinte du danger permanent** | **rien ne le distinguait** |
+
+Le pire découpage possible : la différence n'apparaissait que lorsqu'elle avait
+cessé d'être utile, et disparaissait précisément au moment où elle décidait de
+la vie d'un agent.
+
+**QUATRE CRANS AUX COINS, POSÉS DANS LES DEUX PHASES.** Ce que la marque dit
+n'est pas « en ce moment c'est dangereux » — la teinte le dit déjà, et mieux.
+Elle dit « **cette case-là change** », qui est une propriété permanente et doit
+donc s'afficher en permanence. Une marque qui apparaîtrait avec le danger
+n'ajouterait rien ; une marque qui clignoterait demanderait d'être regardée au
+bon moment, ce qu'ENF-21 refuse. Quatre crans plutôt qu'un anneau parce que
+l'anneau est déjà pris par la bascule et l'atelier — et deux dispositifs qui se
+ressemblent sont exactement le défaut qu'on corrige.
+
+**LA PAIRE PLAQUE / BASCULE, ELLE, N'EST PAS EN DÉFAUT** et il faut le dire
+plutôt que de « corriger » ce qui n'est pas cassé : 320° contre 20° sur la roue
+des teintes, et la bascule porte un anneau avec un état *dépensée* que la plaque
+n'a pas. Elles ne se confondent ni en apparence ni en effet.
+
+#### Résolution 2 — une légende, une fois, à la première rencontre
+
+**CE QUE FAIT UNE CASE N'EST PAS UNE DÉCOUVERTE, C'EST UN FAIT.** Le jeu n'a pas
+de tutoriel et n'en aura pas : on demande au joueur de découvrir ce qu'une PILE
+produit, et le lui dire reviendrait à jouer à sa place. Mais rien à l'écran ne
+distinguait une plaque d'une bascule ; il l'apprenait en perdant.
+
+La ligne de partage est nette, et un test la tient : **on dit ce que la case
+FAIT, jamais ce qu'il faut en faire.** « La porte reste ouverte tant que des
+agents sont dessus » décrit ; « postez-y deux agents » jouerait à sa place — le
+test refuse les tournures d'instruction dans le catalogue.
+
+Trois contraintes de forme, chacune contre un défaut connu : la carte **ne
+bloque rien** (la simulation tourne derrière, un contact n'importe où la
+referme) ; elle **ne se répète jamais** ; **deux au plus à la fois**, parce que
+trois légendes d'affilée se referment sans être lues.
+
+> **DEUX PIÈGES ÉVITÉS DE JUSTESSE, tous deux silencieux.**
+>
+> **L'enregistrement se fait à l'AFFICHAGE, pas à la fermeture.** Une carte
+> fermée par un retour au menu, une mise en veille ou la fin du processus
+> serait sinon revenue au niveau suivant, et la « une seule fois » n'aurait plus
+> rien d'une promesse.
+>
+> **Les migrations de sauvegarde se CHAÎNENT.** Le schéma passe à 3 pour porter
+> `seen`. Un joueur resté en schéma 1 n'aurait trouvé aucune règle « 1 → 3 » et
+> serait tombé dans le repli propre — c'est-à-dire aurait **tout perdu au moment
+> précis où l'on ajoute une commodité d'affichage**. Les étapes s'appliquent
+> désormais l'une après l'autre, et `SaveStore.migrate_for_test` rend la chose
+> interrogeable : c'est le seul code du dépôt dont la panne se paie en données
+> de joueur, et il ne s'exécute jamais chez nous.
 
 > **CE QUI EST TRANCHÉ ICI, ET CE QUI NE L'EST PAS.** Le principe est acquis et
 > s'applique à toute addition future — c'est déjà ce qui a fait retirer R02, R13,

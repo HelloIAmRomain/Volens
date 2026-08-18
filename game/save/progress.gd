@@ -6,7 +6,13 @@ extends RefCounted
 const PATH := "user://progress.json"
 ## 2 depuis le 14 août 2026 : les défis RG-18 obtenus sont conservés. La
 ## migration 1 -> 2 est écrite et préserve `solved` (voir `SaveStore._migrate`).
-const SCHEMA_VERSION := 2
+##
+## 3 depuis le 18 août 2026 : les éléments de carte déjà présentés au joueur.
+## Migration 2 -> 3 purement ADDITIVE — `solved` et `earned` sont repris tels
+## quels, `seen` naît vide. Le seul effet pour un joueur qui met à jour est de
+## revoir une fois la légende d'éléments qu'il connaît déjà : c'est le prix le
+## plus bas possible, et il est payé une seule fois.
+const SCHEMA_VERSION := 3
 
 ## id de niveau -> { "ticks": int, "lost": int } de la MEILLEURE résolution.
 var solved: Dictionary = {}
@@ -28,6 +34,15 @@ var solved: Dictionary = {}
 ## aucun ne se reprend. Même raison que pour `best_ticks` (EF-11).
 var earned: Dictionary = {}
 
+## Clés des éléments de carte déjà présentés (voir `MechanicPrimer`).
+##
+## POURQUOI C'EST DANS LA PROGRESSION ET NON DANS LES RÉGLAGES. Ce n'est pas une
+## préférence, c'est un fait sur la partie : « ce joueur a déjà rencontré la
+## bascule ». Une remise à zéro de la progression doit donc l'effacer aussi —
+## sinon un joueur qui recommence tout traverserait le jeu sans jamais revoir
+## une seule légende, et le chapitre 4 lui tomberait dessus sans un mot.
+var seen: PackedStringArray = PackedStringArray()
+
 static func load_from_disk() -> Progress:
 	var p := Progress.new()
 	var data := SaveStore.read(PATH, SCHEMA_VERSION)
@@ -40,10 +55,24 @@ static func load_from_disk() -> Progress:
 		for n in (raw_earned[key] as Array):
 			names.append(String(n))
 		p.earned[String(key)] = names
+	for k in (data.get("seen", []) as Array):
+		p.seen.append(String(k))
 	return p
 
 func save_to_disk() -> void:
-	SaveStore.write(PATH, {"solved": solved, "earned": earned}, SCHEMA_VERSION)
+	SaveStore.write(PATH, {"solved": solved, "earned": earned, "seen": seen},
+		SCHEMA_VERSION)
+
+## Marque des éléments comme déjà présentés. Union, jamais remplacement — et
+## jamais de retrait : une légende revue n'apprend rien, elle interrompt.
+func mark_seen(keys: PackedStringArray) -> void:
+	var changed := false
+	for k in keys:
+		if not seen.has(k):
+			seen.append(k)
+			changed = true
+	if changed:
+		save_to_disk()
 
 func is_solved(level_id: String) -> bool:
 	return solved.has(level_id)
@@ -83,4 +112,9 @@ func earned_challenges(level_id: String) -> PackedStringArray:
 func reset() -> void:
 	solved = {}
 	earned = {}
+	# LES LÉGENDES REPARTENT AVEC LE RESTE. Un joueur qui recommence tout
+	# traverserait sinon le jeu sans en revoir une seule, et le chapitre 4 lui
+	# tomberait dessus sans un mot — le champ serait resté en mémoire alors que
+	# tout ce qu'il documentait a disparu.
+	seen = PackedStringArray()
 	SaveStore.erase(PATH)

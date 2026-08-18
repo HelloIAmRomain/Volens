@@ -131,7 +131,30 @@ func _open_game(level_id: String, resume: bool) -> GameScreen:
 	# chargement lui-même émet `state_changed` et réécrit la session avec le
 	# tick zéro, effaçant précisément ce qu'on s'apprêtait à restaurer.
 	screen.state_changed.connect(_persist_session)
+	_present_new_mechanics(screen, level_data)
 	return screen
+
+## LA LÉGENDE DES ÉLÉMENTS JAMAIS RENCONTRÉS.
+##
+## Le jeu n'a pas de tutoriel, mais **ce que fait une case n'est pas une
+## découverte, c'est un fait** : rien à l'écran ne distingue une plaque à
+## pression d'une bascule, et le joueur l'apprenait en perdant.
+##
+## ON ENREGISTRE AU MOMENT DE MONTRER, pas au moment de refermer. Une carte
+## fermée par un retour au menu, par une mise en veille ou par la fin du
+## processus reviendrait sinon au niveau suivant — et la « une seule fois »
+## n'aurait plus rien d'une promesse.
+func _present_new_mechanics(screen: GameScreen, level_data: Dictionary) -> void:
+	var entries := MechanicPrimer.unseen_in(level_data, progress.seen)
+	if entries.is_empty():
+		return
+	var keys := PackedStringArray()
+	for entry in entries:
+		keys.append(String((entry as Dictionary)["key"]))
+	progress.mark_seen(keys)
+	var card := MechanicCard.new()
+	screen.add_child(card)
+	card.setup(entries)
 
 func _on_play_requested() -> void:
 	# « Continuer » et « Jouer » sont le MEME bouton : c'est l'existence d'une

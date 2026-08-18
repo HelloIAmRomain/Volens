@@ -74,14 +74,43 @@ static func read(path: String, expected_version: int) -> Dictionary:
 ## repris tel quel, `challenges` naît vide. Un joueur qui met à jour ne perd
 ## rien et n'a rien à refaire ; ses défis sont simplement à regagner, ce qui
 ## est exact puisqu'ils n'avaient jamais été enregistrés.
+##
+## 2 -> 3 : ajout des éléments de carte déjà présentés au joueur. Additif lui
+## aussi — `solved` et `earned` sont repris, `seen` naît vide. Le seul effet est
+## de revoir une fois la légende d'éléments déjà connus.
+##
+## LES MIGRATIONS SE CHAÎNENT, et il faut le dire parce que l'oubli est
+## silencieux : un joueur resté en schéma 1 n'aurait trouvé aucune règle
+## « 1 -> 3 » et serait tombé dans le repli propre — c'est-à-dire aurait tout
+## perdu au moment précis où l'on ajoute une commodité d'affichage. On applique
+## donc les étapes l'une après l'autre plutôt que d'écrire une règle par couple.
 static func _migrate(data: Dictionary, from_version: int, to_version: int, path: String) -> Dictionary:
+	if from_version < to_version and to_version - from_version > 1:
+		var stepped := _migrate(data, from_version, from_version + 1, path)
+		if stepped.is_empty():
+			return {}
+		return _migrate(stepped, from_version + 1, to_version, path)
 	if from_version == 1 and to_version == 2:
 		var out: Dictionary = {"schema_version": 2, "earned": {}}
 		out["solved"] = data.get("solved", {})
 		print("[save] schéma 1 -> 2 pour %s : progression conservée" % path)
 		return out
+	if from_version == 2 and to_version == 3:
+		var out3: Dictionary = {"schema_version": 3, "seen": []}
+		out3["solved"] = data.get("solved", {})
+		out3["earned"] = data.get("earned", {})
+		print("[save] schéma 2 -> 3 pour %s : progression et défis conservés" % path)
+		return out3
 	print("[save] schéma %d -> %d sans migration pour %s : repli propre" % [from_version, to_version, path])
 	return {}
+
+## LA MIGRATION EST INTERROGEABLE PAR UN TEST, et c'est délibéré. C'est le seul
+## code du dépôt dont la panne se paie en données de joueur, et il ne s'exécute
+## que chez quelqu'un qui met à jour — donc jamais chez nous, jamais en CI, et
+## jamais avant qu'il soit trop tard. Le passer par un fichier sur disque pour
+## l'éprouver aurait ajouté une source d'échec sans rien vérifier de plus.
+static func migrate_for_test(data: Dictionary, from_version: int, to_version: int) -> Dictionary:
+	return _migrate(data, from_version, to_version, "test://")
 
 ## Supprime un fichier de sauvegarde s'il existe (remise à zéro).
 static func erase(path: String) -> void:

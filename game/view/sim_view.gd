@@ -588,11 +588,29 @@ func _rebuild_static_layers() -> void:
 		# ATELIERS À BOUCLIERS : même balayage, même couche — ce sont tous des
 		# dispositifs de terrain qu'on traverse pour obtenir quelque chose.
 		var shields: Array[Vector2i] = []
+		# DANGER CYCLIQUE : la marque est posée DANS LES DEUX PHASES.
+		#
+		# Le défaut était réel et il tombait sous le principe de clarté : un
+		# danger cyclique ALLUMÉ était exactement de la même teinte qu'un danger
+		# permanent. Deux zones rigoureusement identiques à l'écran, dont l'une
+		# s'éteindra et l'autre jamais — le joueur n'avait aucun moyen de le
+		# savoir, et le jeu paraissait capricieux.
+		#
+		# La phase éteinte, elle, se distinguait déjà par sa teinte dormante.
+		# C'était le pire découpage possible : la différence n'apparaissait que
+		# lorsqu'elle avait cessé d'être utile, et disparaissait au moment où
+		# elle décidait de la vie d'un agent.
+		var pulsing: Array[Vector2i] = []
 		for y in range(grid.size.y):
 			for x in range(grid.size.x):
-				if grid.cell_type_at(Vector2i(x, y)) == GridState.CellType.SHIELD:
-					shields.append(Vector2i(x, y))
-		(_switches as _SwitchMarks).configure(armed, spent, shields, _cell_size, _grid_origin)
+				var cp := Vector2i(x, y)
+				match grid.cell_type_at(cp):
+					GridState.CellType.SHIELD:
+						shields.append(cp)
+					GridState.CellType.CYCLIC_DANGER:
+						pulsing.append(cp)
+		(_switches as _SwitchMarks).configure(armed, spent, shields, pulsing,
+			_cell_size, _grid_origin)
 
 	if _forbidden != null:
 		var banned: Array[Vector2i] = []
@@ -1329,18 +1347,27 @@ class _SwitchMarks extends Node2D:
 	var _origin: Vector2 = Vector2.ZERO
 
 	var _shields: Array[Vector2i] = []
+	var _pulsing: Array[Vector2i] = []
 
 	func configure(armed: Array[Vector2i], spent: Array[Vector2i],
-			shields: Array[Vector2i], cell: float, origin: Vector2) -> void:
+			shields: Array[Vector2i], pulsing: Array[Vector2i],
+			cell: float, origin: Vector2) -> void:
 		_armed = armed
 		_spent = spent
 		_shields = shields
+		_pulsing = pulsing
 		_cell = cell
 		_origin = origin
 		queue_redraw()
 
 	func _centre(p: Vector2i) -> Vector2:
 		return _origin + (Vector2(p) + Vector2(0.5, 0.5)) * _cell
+
+	## Combien de cases portent la marque « cette case change ». Publique parce
+	## qu'un test doit pouvoir l'interroger : une marque qu'aucune donnée
+	## n'alimente est invisible ET silencieuse, et le code a l'air correct.
+	func pulsing_count() -> int:
+		return _pulsing.size()
 
 	func _draw() -> void:
 		if _cell <= 0.0:
@@ -1375,6 +1402,30 @@ class _SwitchMarks extends Node2D:
 			draw_arc(c3, _cell * 0.30, PI * 1.10, PI * 1.90, 22, edge, thickness, true)
 			draw_line(c3 + Vector2(-_cell * 0.22, _cell * 0.16),
 				c3 + Vector2(_cell * 0.22, _cell * 0.16), edge, thickness * 0.8)
+
+		# DANGER CYCLIQUE — QUATRE CRANS AUX COINS, dans les deux phases.
+		#
+		# ILS NE BOUGENT PAS ET NE CLIGNOTENT PAS. Ce que la marque dit n'est pas
+		# « en ce moment c'est dangereux » — la teinte de la case le dit déjà, et
+		# mieux. Elle dit « CETTE case-là change », ce qui est une propriété
+		# permanente et doit donc s'afficher en permanence. Une marque qui
+		# apparaîtrait avec le danger n'ajouterait rien à la teinte ; une marque
+		# qui clignoterait demanderait d'être regardée au bon moment (ENF-21).
+		#
+		# QUATRE CRANS PLUTÔT QU'UN ANNEAU : l'anneau est déjà pris par la
+		# bascule et par l'atelier, et deux dispositifs qui se ressemblent sont
+		# exactement le défaut qu'on corrige ici.
+		for p in _pulsing:
+			var c4 := _centre(p)
+			var mark := ViewPalette.DANGER.lightened(0.45)
+			mark.a = 0.85
+			var arm: float = _cell * 0.16
+			var off: float = _cell * 0.34
+			for sx in [-1.0, 1.0]:
+				for sy in [-1.0, 1.0]:
+					var corner := c4 + Vector2(sx * off, sy * off)
+					draw_line(corner, corner - Vector2(sx * arm, 0.0), mark, thickness * 0.8)
+					draw_line(corner, corner - Vector2(0.0, sy * arm), mark, thickness * 0.8)
 
 ## PATROUILLES — un danger qui se déplace, et le trajet qu'il suit.
 ##
