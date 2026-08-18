@@ -18,6 +18,7 @@ const LEVELS := [
 	{"id": "ch2_03", "name": "La mauvaise porte", "path": "res://data/levels/ch2_03.json", "ready": true},
 	{"id": "ch2_04", "name": "Le détour long", "path": "res://data/levels/ch2_04.json", "ready": true},
 	{"id": "ch2_05", "name": "Les deux moitiés", "path": "res://data/levels/ch2_05.json", "ready": true},
+	{"id": "ch2_06", "name": "L'ouverture décalée", "path": "res://data/levels/ch2_06.json", "ready": true},
 	{"id": "ch3_01", "name": "La trace des autres", "path": "res://data/levels/ch3_01.json", "ready": true},
 	{"id": "ch3_02", "name": "La trace qui s'efface", "path": "res://data/levels/ch3_02.json", "ready": true},
 	{"id": "ch3_03", "name": "Le repli", "path": "res://data/levels/ch3_03.json", "ready": true},

@@ -515,10 +515,24 @@ func _emit(kept: Array) -> void:
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(_out))
 	print("\nMEILLEURS CANDIDATS")
 	const FACES := ["Nord", "Est", "Sud", "Ouest"]
-	for i in range(mini(_top, kept.size())):
+	# UN PALMARÈS DE SIX VARIANTES DE LA MÊME CARTE N'EST PAS UN PALMARÈS. Le
+	# balayage produit des géométries voisines — une colonne de nuée décalée, une
+	# grille d'une rangée de plus — qui donnent exactement les mêmes familles
+	# gagnantes. Elles occupaient les six places et masquaient les idées
+	# différentes plus bas dans le classement. On n'en montre donc qu'une par
+	# jeu de familles, et le choix se fait entre des propositions DISTINCTES.
+	var shown := 0
+	var seen_families: Dictionary = {}
+	for i in range(kept.size()):
+		if shown >= _top:
+			break
 		var c: Dictionary = kept[i]
 		var s: Dictionary = c["shape"]
-		print("\n#%d  score %d — %s" % [i + 1, int(c["score"]), String(c["why"])])
+		if seen_families.has(String(c["families"])):
+			continue
+		seen_families[String(c["families"])] = true
+		shown += 1
+		print("\n#%d  score %d — %s" % [shown, int(c["score"]), String(c["why"])])
 		print("    familles : %s" % String(c["families"]))
 		if not (c["fresh"] as PackedStringArray).is_empty():
 			print("    associations inédites : %s" % ", ".join(c["fresh"]))
@@ -536,7 +550,7 @@ func _emit(kept: Array) -> void:
 		# tout le dépôt s'interdit, et il n'y a aucune raison de le rouvrir ici.
 		var calibrated: int = clampi(int(c["min_ticks"]) * 2, 60, 300)
 		var text := _render(s, calibrated)
-		var path := "%s/forge_%02d.lvl" % [_out, i + 1]
+		var path := "%s/forge_%02d.lvl" % [_out, shown]
 		var f := FileAccess.open(path, FileAccess.WRITE)
 		if f != null:
 			f.store_string(text)

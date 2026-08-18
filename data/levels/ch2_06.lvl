@@ -1,0 +1,70 @@
+# N11 « L'ouverture decalee » — la lumiere ne mene pas a la porte.
+#
+# PREMIERE CARTE SORTIE DE LA FORGE PAR BALAYAGE. Mille cinq cents geometries
+# mesurees, vingt-huit conformes, et celle-ci retenue pour ce qu'elle raconte :
+# une paroi mediane percee d'UNE ouverture, decalee d'une seule case par
+# rapport a la colonne de la sortie.
+#
+# CE QUE LE DECALAGE PRODUIT, ET C'EST TOUT LE NIVEAU. « Vers la lumiere » est
+# GLOUTONNE : elle ne consent jamais a s'eloigner du but, meme d'une case. Les
+# agents montent donc droit sous la paroi, a l'aplomb de la sortie, et s'y
+# arretent — l'ouverture est a une case de la, et cette case coute un pas dans
+# la mauvaise direction. Seule la colonne qui tombe deja en face du trou passe.
+#
+# IL FAUT DONC UNE REGLE QUI ACCEPTE DE S'ECARTER, et il y en a deux : «
+# S'ecarter » desserre la nuee jusqu'a ce qu'elle trouve le trou, « Longer le
+# mur » la fait glisser le long de la paroi jusqu'a lui. Deux familles, deux
+# gestes qui n'ont rien a voir — l'une relache, l'autre suit une surface.
+#
+# L'ECHEANCE EST CE QUI LES DEPARTAGE DE LA TROISIEME. Deux piles menees par
+# « S'ecarter » ([R04, R01, R06] et [R04, R06, R01]) atteignent aussi la sortie,
+# mais en trente-sept ticks contre vingt-trois : elles font desserrer TOUTE la
+# nuee avant de la remonter. L'echeance de trente les exclut, et ce n'est pas
+# une coquetterie de reglage — sans elle, la pile [R04, R06, R01] resolvait
+# QUATRE niveaux du jeu, au-dessus du plafond QN-02 mesure a trois. Une pile qui
+# traverse le jeu le vide de son sujet.
+#
+# BIBLIOTHEQUE RESSERREE JUSQU'A CE QUE TOUT PORTE, et il a fallu quatre essais
+# pour y arriver. Le balayage avait trouve la carte avec six regles ; RG-13
+# signalait deja « Fuir le danger » et « Boucher » comme INOBSERVABLES — il n'y
+# a ici ni danger ni goulot a boucher. Retirees, il en restait quatre, et la
+# mesure des gagnantes minimales a montre que « Suivre les voisins » ne portait
+# AUCUNE d'entre elles. Remplacee par « Disperser si dense » : elle non plus.
+#
+# Restent trois regles, toutes porteuses, et trois familles gagnantes. Une
+# fausse piste ne rend pas un niveau plus difficile, elle le rend plus long —
+# c'est ce qui avait bloque un joueur au chapitre 5.
+#
+# IDIOME RESPECTE, ET C'EST LUI QU'ON DETOURNE : la lumiere est derriere le mur
+# de tete, la sortie en est l'ouverture. La paroi mediane n'est pas un second
+# mur de tete — c'est elle qui dit que le chemin le plus court n'est pas le
+# chemin droit.
+id: ch2_06
+name: L'ouverture decalee
+tutorial: false
+allowed_rules: [R01, R04, R06]
+slots: 3
+max_ticks: 30
+objective: extraction 85
+objective: preservation 3
+lesson: "L'ouverture n'est pas sous la lumiere. Il faut une regle qui accepte de s'en ecarter."
+expected_wins: 4
+expected_classes: 3
+calibrated_on: 4dd22b70022c8674
+# LES DEUX DEFIS EXIGENT DEUX PILES DIFFERENTES. L'abstinence de « Longer le
+# mur » force a desserrer la nuee, [R01, R04] ; l'efficience de 23 ticks n'est
+# atteinte que par [R01, R06], qui glisse droit vers l'ouverture. Aucun des deux
+# ne tombe avec l'autre.
+challenge: abstinence=R06 efficiency=23
+---
+. . . . L . . . .
+# # # # E # # # #
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+# # # . # # # # #
+. . . . . . . . .
+. o o o o o . . .
+. o o o o o . . .
+. o o o o o . . .
+. o o o o o . . .

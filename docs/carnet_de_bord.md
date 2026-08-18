@@ -2895,6 +2895,188 @@ R11 — encore faut-il des cartes qui le permettent.
 > sont utilisés par aucun niveau — seul l'en-tête `trail:` l'est. Le mécanisme
 > n'était donc pas « dormant », c'est son emploi qui était uniforme.)*
 
+### 196. La forge, deuxième version — c'est le VALIDATEUR qui juge
+
+Demande : « peaufine le générateur pour qu'il crée des niveaux conformes au CDC,
+et avec toutes les remarques faites auparavant — plusieurs solutions mais pas
+systématiquement les mêmes, des associations de règles différentes, pas toujours
+le même départ/arrivée ».
+
+**LE CHANGEMENT DE FOND EST DE NE PLUS JUGER SOI-MÊME.** La première forge avait
+son propre score maison ; elle produisait donc des cartes que le validateur
+pouvait refuser ensuite, et on aurait passé le temps gagné à arbitrer entre deux
+outils. Le verdict vient maintenant de `ValidateLib.validate_level`, celui-là
+même qui décide en ligne de commande. C'est l'esprit de DT-15 : une seule
+implémentation.
+
+Trois **vetos**, tous des motifs de refus du CDC :
+
+1. **QN-01** — hors de `3 ≤ classes ≤ 40`, la carte est un puzzle déguisé ou un
+   niveau creux. Sur un premier balayage de 140 géométries, **58 tombaient à
+   exactement deux classes** — juste sous le seuil. Le mur est réel, et il
+   explique pourquoi tant de niveaux écrits à la main n'y satisfont pas.
+2. **Sur-place perpétuel** — « le joueur y verra un bug », le motif exact qui a
+   fait rejeter la troisième refonte de ch2_05.
+3. **Solution trop courte** — la carte que `[R01]` seule résout.
+
+Et un quatrième, propre à la forge : **la signature déjà servie**. Un jeu de
+règles qui gagne déjà un autre niveau est refusé d'office, automatiquement — il
+fallait auparavant les lister à la main.
+
+#### La mesure qui rend la demande opérationnelle
+
+**27 associations sur 91 possibles.** C'est le chiffre de la photo du catalogue :
+sur les quatre-vingt-onze paires que quatorze règles peuvent former, vingt-sept
+seulement ont déjà gagné ensemble quelque part. **Moins d'un tiers.** C'est la
+forme chiffrée de « une règle ne fonctionne qu'avec certaines règles », et c'est
+devenu le poste le plus lourd du score : une paire inédite vaut trente points,
+une famille de plus n'en vaut que douze. Une carte qui réunit les mêmes règles
+que partout ailleurs ne vaut rien, même avec cinq familles.
+
+La photo coûte plusieurs minutes ; elle est **mise en cache**, clefée par une
+empreinte de tous les fichiers de niveau et de `data/rules.json`. Le moindre
+octet modifié la fait recalculer — un cache qui sert une réponse périmée sans le
+dire serait pire que pas de cache.
+
+#### « Pas toujours le même départ/arrivée » : la carte pivote
+
+La géométrie canonique est produite dans l'idiome — lumière derrière le mur,
+sortie = l'ouverture — puis **tournée d'un quart, d'un demi ou de trois quarts
+de tour**. La sortie passe au Nord, à l'Est, au Sud ou à l'Ouest.
+
+Ce n'est pas cosmétique, et l'invariant n°19 le garantit : à égalité toute règle
+préfère le Nord puis l'Est, donc **une nuée qui monte vers la sortie ne se
+comporte pas comme une nuée qui descend**. Chaque orientation est mesurée
+séparément, comme le niveau distinct qu'elle est.
+
+> **PREMIER DÉFAUT DE LA ROTATION, ET IL COÛTAIT LA MOITIÉ DU BUDGET** : un
+> quart de tour ÉCHANGE largeur et hauteur, et une grille 9×11 parfaitement
+> légale devient un 11×9 illégal au regard du CDC §8.1 (8×10 à 14×18). Trente
+> candidats sur soixante partaient au refus du convertisseur. Les bornes sont
+> désormais appliquées à la GÉNÉRATION, en tenant compte de l'orientation.
+
+#### La preuve expérimentale du moteur unique : 900 sur 900 sans gagnante
+
+Un balayage a été lancé avec une bibliothèque **sans R01** — `[R02, R04, R05,
+R06, R13]` — précisément pour forcer des associations neuves : toute famille
+gagnante y aurait été inédite par construction.
+
+**Neuf cents géométries, zéro pile gagnante. Pas une.**
+
+Ce n'est pas un échec du balayage, c'est sa mesure la plus utile. Elle démontre
+ce que la photo du catalogue laissait deviner : **le jeu n'a que deux règles
+capables d'aller quelque part**, R01 (la lumière) et R09 (la piste). Toutes les
+autres modulent un déplacement qu'elles ne savent pas produire — s'écarter, se
+regrouper, longer, disperser, boucher. Retirez les deux moteurs, et la nuée
+reste sur place quelle que soit la carte.
+
+> **CONSÉQUENCE DIRECTE SUR « TOUT DOIT ALLER AVEC TOUT »** : les 64 paires
+> jamais vues ne sont pas un oubli de conception des niveaux, elles sont une
+> propriété de la BIBLIOTHÈQUE. Une paire sans moteur ne peut gagner nulle part,
+> sur aucune géométrie — et l'immense majorité des paires manquantes est de
+> cette forme. Aucune forge ne les produira.
+>
+> La sortie est un **troisième moteur**, indépendant de la lumière et de la
+> trace. C'est une décision de conception, pas un correctif : ajouter une règle
+> change l'équilibre de tout le catalogue, et elle n'est pas prise ici.
+
+#### Deux renoncements, tous deux motivés par une mesure
+
+- **La forge ne pose plus aucune piste.** Une piste tronquée est structurellement
+  injouable (pathologie P3, mesurée sur ch3_04) et une piste complète rend le
+  niveau trivial. Le tracé d'un détour est une intention, pas un paramètre.
+- **Elle ne réénumère plus l'espace des piles.** Le validateur vient de le
+  simuler ; relire ses lignes coûte zéro, et surtout cela supprime une SECONDE
+  implémentation de « qui gagne » — le genre de doublon qui finit par diverger
+  et par faire mentir l'outil sur ses propres résultats.
+
+### 197. AUDIT DU VOCABULAIRE — quatre éléments en défaut du principe de clarté
+
+« Il faut que les éléments soient clairs. Ne pas ajouter des choses pour le fait
+de les ajouter. Si j'ai deux zones qui tuent ou qui font la même chose c'est une
+erreur de conception ; s'il y a une ambiguïté c'est pas normal. »
+
+Le principe ne vaut pas que pour la suite : il **met en cause l'existant**.
+Comptage des types de case réellement posés sur les 34 niveaux :
+
+| Élément | Niveaux | Verdict |
+|---|---|---|
+| Mur · Sortie · Lumière | 25 · 28 · 29 | le socle, rien à dire |
+| **Danger fixe** | 10 | la référence |
+| **Danger cyclique** | **2** | *tue aussi* — voir ci-dessous |
+| Ressource · Dépôt | 5 · 5 | paire indissociable, une seule idée en deux temps |
+| **Plaque à pression** | 4 | *ouvre une porte* |
+| **Bascule** | **1** | *ouvre une porte aussi* |
+| **Sens unique** | **0** | **jamais posé nulle part** |
+| **Atelier à boucliers** | **0** | **jamais posé nulle part** |
+
+**DEUX ÉLÉMENTS N'EXISTENT QUE DANS LE CODE.** Le sens unique est analysé,
+dessiné, testé, doté de quatre symboles — et **aucun niveau ne l'a jamais
+porté**. L'atelier à boucliers est dans le même cas, et sa raison est déjà
+écrite (décision 191). C'est la version « case » du défaut qui avait fait
+retirer R07 et R10 : *utile veut dire UTILISÉ*. Deux entrées mortes dans un
+vocabulaire clos à neuf éléments, c'est un cinquième du vocabulaire qui ne dit
+rien.
+
+**DEUX PAIRES SE RECOUVRENT, et c'est exactement le cas décrit :**
+
+- **Danger fixe / danger cyclique.** Les deux tuent, les deux sont rouges. La
+  seule différence est une fenêtre de temps — or le projet refuse ailleurs les
+  énigmes de minutage : « on ne compte pas les ticks entre deux passages, on
+  décide qui va la chercher » (décision 188). Le cyclique demande au joueur de
+  compter ce que le reste du jeu lui dit de ne pas compter, pour deux niveaux.
+- **Plaque à pression / bascule.** Les deux ouvrent une porte. La décision 188
+  les justifie comme contraires — la plaque coûte des agents en permanence, la
+  bascule un détour une seule fois — et l'argument tient **au niveau de la
+  conception**. Il ne tient pas forcément **à l'écran** : le joueur voit deux
+  marques distinctes qui produisent le même effet visible, et rien ne lui dit
+  laquelle est momentanée. Une seule est utilisée une seule fois.
+
+> **CE QUI EST TRANCHÉ ICI, ET CE QUI NE L'EST PAS.** Le principe est acquis et
+> s'applique à toute addition future — c'est déjà ce qui a fait retirer R02, R13,
+> R05 puis R14 de la bibliothèque de ch2_06, jusqu'à ce que les trois règles
+> restantes portent toutes une gagnante.
+>
+> Le nettoyage de l'existant, lui, n'est PAS fait : retirer un type de case
+> touche `core/sim/`, le parseur, la palette et les tests, et **renuméroter
+> l'énumération changerait toutes les empreintes d'or** — les cases sont hachées
+> par leur valeur. La sortie propre est de réserver les valeurs mortes sans les
+> réattribuer, exactement comme les identifiants de R07 et R10 restent réservés.
+> C'est une opération à part entière, à décider.
+
+### 196 bis. ch2_06 « L'ouverture décalée » — première carte retenue par balayage
+
+Mille cinq cents géométries mesurées, vingt-huit conformes QN-01, une retenue.
+
+**LE DISPOSITIF TIENT EN UNE CASE D'ÉCART.** Une paroi médiane percée d'UNE
+ouverture, décalée d'une seule colonne par rapport à la sortie. « Vers la
+lumière » est gloutonne — elle ne consent jamais à s'éloigner du but, même d'une
+case — donc elle monte la nuée droit sous la paroi, à l'aplomb de la sortie, et
+s'y arrête. Seule la colonne qui tombe déjà en face du trou passe.
+
+Trois familles, trois manières d'accepter le détour d'une case : `[R01, R04]`
+desserre la nuée jusqu'à ce qu'elle trouve le trou, `[R01, R06]` la fait glisser
+le long de la paroi jusqu'à lui, `[R01, R04, R06]` combine. **`[1,6]` est une
+signature inédite** — et c'est une petite trouvaille en soi, puisque
+l'invariant n°20 note que R06 et R01 se contredisent structurellement.
+
+> **IL A FALLU QUATRE RESSERRAGES DE BIBLIOTHÈQUE**, et c'est le vrai
+> enseignement. Le balayage avait trouvé la carte avec six règles. RG-13
+> signalait déjà R02 et R13 comme *inobservables* — pas de danger, pas de goulot
+> à boucher. Restaient quatre, et la mesure des gagnantes **minimales** a montré
+> que R05 « Suivre les voisins » n'en portait aucune. Remplacée par R14
+> « Disperser si dense » : elle non plus. Restent **trois règles, toutes
+> porteuses**.
+>
+> Une règle qui figure dans une bibliothèque sans porter aucune gagnante ne rend
+> pas le niveau plus difficile, elle le rend plus long — c'est exactement ce qui
+> avait bloqué un joueur au chapitre 5. **La forge trouve la géométrie ; c'est
+> la mesure des minimales qui taille la bibliothèque**, et les deux gestes sont
+> distincts.
+
+Ses deux défis exigent deux piles différentes : l'abstinence de R06 force
+`[R01, R04]`, l'efficience de 23 ticks n'est atteinte que par `[R01, R06]`.
+
 ### 195. Les défis étaient calculés, enregistrés, affichés — et illisibles
 
 Deux angles morts signalés au même essai, et ce sont **deux moitiés d'une même
