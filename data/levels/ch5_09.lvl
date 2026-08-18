@@ -1,0 +1,64 @@
+# N25 « Le peage » — le passage court se paie d'un agent, le long ne se paie
+# que de temps.
+#
+# POURQUOI CE NIVEAU EXISTE. La mesure de toutes les combinaisons a montre que
+# R13 « Boucher » n'avait qu'UN partenaire dans tout le jeu : R01. Elle gagnait
+# ch5_01 et ch5_05, toujours avec la lumiere, jamais avec autre chose. Une regle
+# qui ne fonctionne qu'avec une seule autre n'est pas une regle, c'est la moitie
+# d'une regle. Ce niveau lui en donne d'autres.
+#
+# LE DISPOSITIF : UNE PAROI, DEUX PASSAGES, ET ILS NE SE VALENT PAS. Celui de
+# l'Est est court — la nuee est posee juste dessous — mais un danger l'obstrue.
+# Celui de l'Ouest est libre et loin : il faut traverser toute la carte, puis
+# remonter, puis revenir vers la sortie.
+#
+# LE PEAGE. R13 ouvre le passage court en y consumant un agent, definitivement.
+# C'est la seule regle du jeu qui demande de perdre quelque chose, et ici le
+# calcul est explicite : un agent contre le trajet le plus court pour les dix-
+# neuf autres. L'objectif tolere trois pertes — la marge existe, mais elle est
+# comptee.
+#
+# ET LA LUMIERE NE SUFFIT PAS, elle mene meme droit dans le piege. Posee au
+# Nord-Ouest, elle tire la nuee vers le haut ; « vers la lumiere » ne sait rien
+# des dangers et fait monter les agents SUR le danger, ou ils meurent en nombre.
+# `[R01]` seule ne perd pas un agent : elle en perd assez pour echouer.
+#
+# TROIS FACONS D'Y ARRIVER, ET C'EST LE POINT. Payer le peage (R13). Contourner
+# en suivant la trace d'un passage precedent (R09). Ou desserrer la nuee pour
+# qu'elle trouve le passage d'elle-meme (R04). R13 cesse ainsi d'etre l'ombre
+# de R01.
+#
+# IDIOME RESPECTE : la lumiere est derriere le mur de tete, la sortie en est
+# l'ouverture. La paroi mediane n'est pas un second mur de tete — c'est le
+# peage, et c'est lui qui pose la question.
+id: ch5_09
+name: Le peage
+tutorial: false
+allowed_rules: [R01, R04, R09, R13]
+slots: 3
+max_ticks: 200
+objective: extraction 85
+objective: preservation 3
+lesson: "Un raccourci se paie d'un agent ; un detour, de temps. Les deux sont des reponses."
+expected_wins: 9
+expected_classes: 5
+calibrated_on: 16e7ebbb5d6d2db6
+# LES DEUX DEFIS EXIGENT DEUX PILES DIFFERENTES, et c'est delibere. L'economie
+# se gagne par [R09, R01] — le detour, deux regles, aucun mort. L'abstinence de
+# R09 interdit precisement ce detour et force a payer le peage : [R01, R04,
+# R13]. Un defi qui tombe en meme temps que l'autre n'est pas un defi, c'est une
+# ligne de plus sur le meme ecran.
+challenge: economy=2 abstinence=R09
+trail: 7,6=100 6,6=112 5,6=124 4,6=136 3,6=148 2,6=160 1,6=172 1,5=184 1,4=196 1,3=208 1,2=220 2,2=232
+---
+L . . . . . . . .
+# # E # # # # # #
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+# . # # X # # # #
+. . . . . . . . .
+. . . o o o o o .
+. . . o o o o o .
+. . . o o o o o .
+. . . o o o o o .

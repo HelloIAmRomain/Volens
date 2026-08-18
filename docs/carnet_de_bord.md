@@ -2895,6 +2895,44 @@ R11 — encore faut-il des cartes qui le permettent.
 > sont utilisés par aucun niveau — seul l'en-tête `trail:` l'est. Le mécanisme
 > n'était donc pas « dormant », c'est son emploi qui était uniforme.)*
 
+### 194. ch5_09 « Le péage » — le premier niveau sorti de la forge, et le premier CONFORME QN-01 depuis longtemps
+
+**LE DÉFAUT QU'IL CORRIGE EST MESURÉ, pas ressenti.** `combinations.gd` a montré
+que R13 « Boucher » n'avait qu'UN partenaire dans tout le jeu : R01. Elle gagnait
+ch5_01 et ch5_05, toujours avec la lumière, jamais avec autre chose. Une règle
+qui ne fonctionne qu'avec une seule autre n'est pas une règle, c'est la moitié
+d'une règle.
+
+**LE DISPOSITIF : une paroi, deux passages, et ils ne se valent pas.** Celui de
+l'Est est court — la nuée est posée juste dessous — mais un danger l'obstrue.
+Celui de l'Ouest est libre et loin. R13 ouvre le court en y consumant un agent ;
+la piste mène au long.
+
+| Pile | Résultat |
+|---|---|
+| `[R01]` seule | **16 perdus** — la lumière ignore les dangers et fait monter la nuée DESSUS |
+| `[R13, R01]` | 15 sortis sur 20 — **échoue**, R13 seule avec la lumière ne suffit plus |
+| `[R09, R01]` | **20/20** — le détour, sans un mort |
+| `[R01, R04, R13]` | **17/20, 2 perdus** — le péage payé |
+
+**R13 gagne donc enfin avec R04**, et l'attelage R13→R01 est rompu. Verdict du
+validateur : 9 gagnantes sur 41, **5 classes structurelles, CONFORME QN-01** —
+le premier niveau à passer ce seuil depuis longtemps, là où ch3_03 et ch3_04
+restent des « puzzles déguisés » à une seule classe.
+
+> **LES DEUX DÉFIS EXIGENT DEUX PILES DIFFÉRENTES**, et c'est une réponse
+> directe à « les défis ne devraient pas être réalisés en un coup ». L'économie
+> se gagne par `[R09, R01]` ; l'abstinence de R09 interdit précisément ce détour
+> et force à payer le péage, `[R01, R04, R13]`. Deux écrans, deux recherches.
+
+**CE QUE LA FORGE A APPORTÉ, ET CE QU'ELLE N'A PAS APPORTÉ.** Elle a trouvé la
+géométrie — paroi médiane, deux ouvertures, goulot bouché — et elle a écarté
+seule les 188 variantes sans gagnante et les 111 refusées par le convertisseur.
+Elle n'a pas trouvé la piste : celle qu'elle proposait était un moignon
+inutilisable de deux cases sous la paroi. **Elle produit une géométrie, pas une
+intention** — le tracé du détour, la valeur des objectifs et la leçon restent
+écrits à la main, et c'est bien la répartition annoncée.
+
 ### 193. ch3_04 refondu — et la PRÉDICTION écrite avant de toucher aux empreintes d'or
 
 Autorisation explicite reçue le 18 août 2026 de régénérer les recettes d'or
