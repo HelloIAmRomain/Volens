@@ -1,64 +1,72 @@
-# N27 « Le long relais » — une memoire plus longue coute plus cher.
+# N16 « Le long relais » — la memoire connait le detour que la lumiere refuse.
 #
-# EXAMEN DU CHAPITRE 3. Meme mecanisme qu'en N11, sur une nuee deux fois plus
-# profonde : neuf rangees au lieu de sept, et la piste heritee n'en touche
-# toujours que la premiere.
+# POURQUOI CE NIVEAU A ETE REFAIT. Il posait EXACTEMENT la meme question que
+# ch3_02 : meme bibliotheque, meme objectif, memes rangs, et les memes cases non
+# vides — les trois de la sortie, sur deux terrains par ailleurs entierement
+# vides. Une rangee de hauteur, trois agents et cinquante ticks les separaient,
+# et les deux se gagnaient par [8,9]. Deux fiches, une seule question.
 #
-# LA TRACE DOIT TOUCHER LA PREMIERE RANGEE, et c'est une contrainte, pas un
-# choix de dessin. Mesure : a trois rangees d'ecart, personne ne demarre — R09
-# ne regarde qu'a une case, et sans premier mouvement il n'y a rien a marquer,
-# donc rien a suivre. **Une memoire ne s'amorce pas toute seule.** On allonge
-# donc la QUEUE, jamais le vide devant.
+# CE QUI CHANGE : LA NUEE DEMARRE DANS UNE POCHE FERMEE AU NORD. La lumiere est
+# visible droit devant, derriere le mur de tete ; la sortie en est l'ouverture.
+# Mais la poche ne s'ouvre que par le BAS, a l'oppose.
 #
-# CE QUE LA LONGUEUR CHANGE. En N11, une rangee de tete montait sur la trace et
-# la rangee suivante voyait aussitot un marqueur frais : le relais tenait sur
-# deux rangs. Ici il doit tenir sur six, et chaque maillon depend du precedent.
-# Une seule rangee qui n'avance pas, et tout ce qui la suit reste dans le noir.
+# ET C'EST LA QUE R01 SE PIEGE TOUTE SEULE. « Vers la lumiere » est GLOUTONNE :
+# elle ne consent jamais a s'eloigner. Elle monte donc la nuee contre la paroi
+# nord de la poche, ou plus aucune direction ne rapproche — et elle s'abstient.
+# Vingt-cinq agents a une case de la sortie, immobiles pour toujours. Le joueur
+# voit tout de suite ce qui manque : quelque chose qui accepte de reculer.
 #
-# IL N'Y A PAS D'ECHEANCE, ET C'EST UNE MESURE QUI L'A RETIREE. Les cinq piles
-# gagnantes sortent toutes la nuee en VINGT-QUATRE ticks, a l'unite pres : le
-# relais impose son rythme, et aucune pile n'y va plus vite qu'une autre. Une
-# echeance n'aurait rien departage, et un defi d'efficience aurait ete acquis
-# d'avance — deux facons de mentir au joueur sur ce qu'il reste a chercher.
+# LA PISTE, ELLE, SAIT RECULER. Elle descend hors de la poche, contourne par
+# l'OUEST et remonte. R09 ne juge pas la direction : elle suit la pente, et la
+# pente descend avant de monter. C'est la premiere fois du jeu qu'une regle doit
+# s'eloigner du but pour l'atteindre.
 #
-# **Une memoire ne se rattrape pas : ce qui n'a pas ete marque au passage ne le
-# sera jamais.** C'est pourquoi le temps ne varie pas — on ne peut pas rattraper
-# un relais en allant plus vite, seulement le rompre.
+# LA PISTE MENE AU SEUIL ET S'Y ARRETE. Son sommet est la case sous la sortie :
+# R09 y arrive et n'a plus rien de meilleur a viser, donc elle s'abstient. Elle
+# ne franchit pas le seuil — **aucune piste ne mene hors du monde**. C'est la
+# lumiere qui fait le dernier pas, et elle seule.
 #
-# MARQUER DOIT PRECEDER SUIVRE, et c'est la lecon de N11 reappliquee sans etre
-# rappelee. Un effet ne s'applique que si la cascade l'ATTEINT ; place sous R09,
-# R08 n'est atteinte que par les agents qui n'ont rien trouve a suivre — ceux
-# qui sont deja perdus. Ils marquent la ou ils hesitent, jamais la ou ils
-# passent.
+# D'OU LE COEUR DU NIVEAU : [R09, R01] gagne, [R01, R09] perd. Les MEMES DEUX
+# REGLES, et seul l'ordre change. Devant, la lumiere piege tout le monde contre
+# la paroi de la poche et la piste ne parle jamais ; derriere, elle attend
+# sagement que la piste ait fini son detour et n'a plus qu'un pas a faire.
+#
+# LE SOMMET DEVAIT TOUCHER LE SEUIL, et trois essais l'ont appris a la mesure.
+# Une piste tronquee en plein champ ne marche pas : arrive au sommet, l'agent
+# passe sur une case vierge, y voit la trace DERRIERE lui plus forte que la
+# sienne, et redescend. Vingt-cinq agents ont ainsi fait la queue jusqu'a une
+# case de la sortie en oscillant indefiniment (pathologie P3 du parseur). Une
+# piste ne se coupe pas : elle se termine la ou l'agent disparait.
+#
+# DETOUR PAR L'OUEST, DELIBEREMENT (invariant n°19). A egalite tout prefere le
+# Nord puis l'Est ; un contournement vers l'Ouest est structurellement plus dur,
+# donc il ne s'improvise pas — il se suit.
 id: ch3_04
 name: Le long relais
 tutorial: false
 allowed_rules: [R01, R02, R04, R08, R09]
 slots: 3
-max_ticks: 200
+max_ticks: 150
 objective: extraction 100
-lesson: "Une memoire ne se rattrape pas : ce qui n'a pas ete marque au passage ne le sera jamais."
-expected_wins: 7
+lesson: "La piste mene au seuil ; la lumiere le franchit. Interverties, elles ne font plus rien."
+expected_wins: 9
 expected_classes: 1
-challenge: economy=2
-calibrated_on: 425368874dd32966
-trail: 4,0=256 5,0=256 6,0=256 4,1=244 5,1=244 6,1=244 4,2=232 5,2=232 6,2=232 4,3=220 5,3=220 6,3=220 4,4=208 5,4=208 6,4=208 4,5=196 5,5=196 6,5=196 4,6=184 5,6=184 6,6=184 4,7=172 5,7=172 6,7=172 4,8=160 5,8=160 6,8=160 4,9=148 5,9=148 6,9=148
+calibrated_on: b6cf80642a71d7e0
+trail: 3,10=300 4,10=300 5,10=300 6,10=300 7,10=300 3,11=312 4,11=312 5,11=312 6,11=312 7,11=312 3,12=324 4,12=324 5,12=324 6,12=324 7,12=324 3,13=336 4,13=336 5,13=336 6,13=336 7,13=336 3,14=348 4,14=348 5,14=348 6,14=348 7,14=348 7,15=360 6,15=372 5,15=384 4,15=396 3,15=408 2,15=420 1,15=432 1,14=444 1,13=456 1,12=468 1,11=480 1,10=492 1,9=504 1,8=516 1,7=528 1,6=540 1,5=552 1,4=564 1,3=576 1,2=588 2,2=600 3,2=612 4,2=624 5,2=636
 ---
-. . . . E E E . . . .
+. . . . . L . . . . .
+# # # # # E # # # # #
 . . . . . . . . . . .
 . . . . . . . . . . .
 . . . . . . . . . . .
+. . # # # # # # # . .
+. . # . . . . . # . .
+. . # . . . . . # . .
+. . # . . . . . # . .
+. . # . . . . . # . .
+. . # o o o o o # . .
+. . # o o o o o # . .
+. . # o o o o o # . .
+. . # o o o o o # . .
+. . # o o o o o # . .
 . . . . . . . . . . .
-. . . . . . . . . . .
-. . . . . . . . . . .
-. . . . . . . . . . .
-. . . . . . . . . . .
-. . . . . . . . . . .
-. . . . o o o . . . .
-. . . . o o o . . . .
-. . . . o o o . . . .
-. . . . o o o . . . .
-. . . . o o o . . . .
-. . . . o o o . . . .
-. . . . o o o . . . .
-. . . . o o o . . . .

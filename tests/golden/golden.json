@@ -843,22 +843,22 @@
     },
     {
       "hashes": {
-        "150": "7c0a29ff19d0e120",
-        "300": "ef44247a21772dec",
-        "50": "8a0d20b6d14dff24"
+        "150": "f20014c2be5ed33f",
+        "300": "70cedb4ec574d1d7",
+        "50": "029318ba664eb9c6"
       },
       "level": "res://data/levels/ch3_04.json",
       "rules_hash": "40ed3a60d8c2ba81",
       "stack": [
-        8.0,
-        9.0
+        9.0,
+        1.0
       ]
     },
     {
       "hashes": {
-        "150": "2f7256f71f0e0502",
-        "300": "92f36df14e84c1d7",
-        "50": "543d8b03b841fd40"
+        "150": "7c3135ffd017f6a5",
+        "300": "81f46a95780f981d",
+        "50": "529a84df72c82f36"
       },
       "level": "res://data/levels/ch3_04.json",
       "rules_hash": "40ed3a60d8c2ba81",

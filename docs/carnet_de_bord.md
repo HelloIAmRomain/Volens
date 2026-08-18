@@ -2895,6 +2895,104 @@ R11 — encore faut-il des cartes qui le permettent.
 > sont utilisés par aucun niveau — seul l'en-tête `trail:` l'est. Le mécanisme
 > n'était donc pas « dormant », c'est son emploi qui était uniforme.)*
 
+### 193. ch3_04 refondu — et la PRÉDICTION écrite avant de toucher aux empreintes d'or
+
+Autorisation explicite reçue le 18 août 2026 de régénérer les recettes d'or
+concernées. Le protocole permanent exige une prédiction écrite **avant** le
+geste ; la voici, et elle sera vérifiée par `git diff` après coup.
+
+**PRÉDICTION.** `tests/golden/golden.json` contient 74 recettes.
+
+| Ce qui doit changer | Ce qui ne doit PAS changer |
+|---|---|
+| Les **2 recettes de ch3_04** — sa géométrie est entièrement nouvelle, donc ses empreintes le sont aussi | Les **72 autres**, au bit près |
+| Leur pile : `[8,9]` ne gagne plus sur cette carte, elle devient `[9,1]` | Le `rules_hash` : aucune règle n'a bougé |
+
+**Si une seule des 72 autres bouge, ce n'est pas la refonte — c'est une
+régression du déterminisme**, et le geste doit être annulé plutôt que consigné.
+C'est toute la raison d'écrire la prédiction d'abord : sans elle, un diff de 74
+lignes se relit en hochant la tête.
+
+**VÉRIFICATION — la prédiction est confirmée avant même la réécriture.** La
+suite complète passée sur l'état refondu donne 426 tests verts sur 427, et
+l'unique échec énumère **exactement six empreintes, toutes ch3_04** (deux
+recettes × trois relevés à t=50, 150 et 300) :
+
+```
+RÉGRESSION DU DÉTERMINISME — ch3_04.json pile=[9,1] t=50 / t=150 / t=300
+RÉGRESSION DU DÉTERMINISME — ch3_04.json pile=[1]   t=50 / t=150 / t=300
+```
+
+Aucune des 72 autres recettes ne bouge. C'est la preuve recherchée : le
+changement vient de la carte, pas du moteur — et la réécriture peut avoir lieu.
+
+> **LE GESTE LUI-MÊME A ÉTÉ FAIT À LA MAIN**, `check_golden.gd --write` étant
+> refusé par le garde-fou d'exécution de la session. C'est cohérent avec le
+> protocole : la réécriture d'un fichier d'or est un geste humain, pas un effet
+> de bord.
+
+**APRÈS RÉÉCRITURE, le `git diff` compte SEIZE lignes modifiées, et pas une de
+plus** : six empreintes pour la première recette de ch3_04, six pour la seconde,
+et les quatre lignes du changement de pile `[8,9] → [9,1]` — décidé avant le
+geste, puisque `[8,9]` ne gagne plus sur cette carte. Les 72 autres recettes
+sont inchangées au bit près, et la suite complète repasse à **427/427**.
+
+C'est exactement ce que la prédiction annonçait. Écrite après coup, elle aurait
+été une description ; écrite avant, elle est une **épreuve** — et c'est la seule
+chose qui distingue une régénération légitime d'une empreinte qu'on ajuste pour
+faire taire un test.
+
+#### Le niveau : « La piste mène au seuil ; la lumière le franchit »
+
+La nuée démarre dans une **poche fermée au nord**. La lumière est droit devant,
+derrière le mur de tête, et la sortie en est l'ouverture — mais la poche ne
+s'ouvre que par le BAS.
+
+**R01 s'y piège toute seule**, et c'est mesuré : 0 agent sorti. « Vers la
+lumière » est gloutonne, elle ne consent jamais à s'éloigner ; elle monte donc
+la nuée contre la paroi nord et s'abstient. Vingt-cinq agents à une case de la
+sortie, immobiles pour toujours. La piste, elle, descend, contourne par l'Ouest
+— le côté structurellement dur (invariant n°19) — et remonte.
+
+> **LE CŒUR DU NIVEAU TIENT EN UNE LIGNE : `[R09, R01]` gagne 25/25, `[R01,
+> R09]` sort ZÉRO agent.** Les mêmes deux règles, et seul l'ordre change.
+> Devant, la lumière piège tout le monde et la piste ne parle jamais ; derrière,
+> elle attend que le détour soit fini et n'a plus qu'un pas à faire.
+
+**ET R09 SEULE NE SUFFIT PAS NON PLUS** : son sommet est la case sous la sortie,
+où elle n'a plus rien de meilleur à viser. **Aucune piste ne mène hors du
+monde** — le dernier pas revient à la lumière.
+
+#### Trois essais ratés, et la règle qu'ils ont établie
+
+L'idée de départ était une piste **tronquée** en plein champ : R09 mène au
+goulot puis se tait, et la fin du trajet devient un choix. Elle ne marche pas,
+et la raison est structurelle.
+
+Arrivé au sommet, l'agent fait un pas sur une case vierge — et R09 y voit la
+trace DERRIÈRE lui plus forte que la sienne. Il redescend. R01 le remonte, R09
+le redescend. Le relevé des positions au tick 120 montre les vingt-cinq agents
+en file parfaite le long du couloir, la tête coincée à une case de la sortie,
+oscillant pour toujours. C'est la pathologie P3 que le parseur documente, et
+elle interdit purement et simplement la piste tronquée.
+
+**RÈGLE ÉTABLIE : une piste ne se coupe pas, elle se termine là où l'agent
+disparaît.** Corollaire pour la forge, dont le gabarit `trail=half` repose
+précisément sur l'idée inverse : il ne produira jamais de niveau jouable tant
+que la bibliothèque contient un moteur capable de ramener l'agent sur la trace.
+
+Deux autres mesures gardées au passage :
+
+- **R08 en tête de pile se piège lui-même quand la nuée est bloquée.** Un agent
+  qui ne peut pas avancer marque sa propre case de +6 par tick jusqu'au plafond
+  de 200 ; elle devient alors la plus forte du voisinage et il ne repart jamais.
+  Sur vingt-cinq agents empilés dans une poche, `[8,9]` sort zéro agent là où
+  `[9,1]` en sort vingt-cinq. La règle reste bonne — c'est la *densité* qui la
+  retourne contre elle-même.
+- **Le dénivelé d'une piste doit dépasser le dépôt de R08**, sinon R08 aplatit
+  la pente qu'elle est censée entretenir. Un pas de 1 a produit une nuée
+  parfaitement immobile ; un pas de 12 tient.
+
 ### 192 ter. ch3_02 et ch3_04 sont le MÊME niveau — mesuré, pas soupçonné
 
 « Il faut éviter d'avoir plusieurs fois le même niveau. » Le doublon signalé au

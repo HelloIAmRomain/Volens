@@ -91,7 +91,12 @@ func _fingerprint(level_id: String) -> String:
 ## se voient pas s'accordent-elles ? » — n'a pas d'équivalent en ch2_04. Le
 ## doublon est réel du point de vue des SOLUTIONS, discutable du point de vue du
 ## sujet. C'est précisément ce qu'une décision humaine doit trancher.
-const KNOWN_TWINS := ["ch2_04 ≡ ch2_05", "ch3_02 ≡ ch3_04"]
+## ch3_02 ≡ ch3_04 A ÉTÉ RÉSOLU le 18 août 2026 : ch3_04 est refondu sur une
+## poche fermée au nord, où « vers la lumière » se piège elle-même et où la
+## piste connaît le détour. Son entrée a donc quitté cette liste — c'est le
+## second test qui l'exige, et c'est la seule façon qu'une liste d'attente ne
+## devienne pas une liste de tolérance.
+const KNOWN_TWINS := ["ch2_04 ≡ ch2_05"]
 
 func test_no_two_levels_pose_the_same_exercise() -> void:
 	var seen: Dictionary = {}
