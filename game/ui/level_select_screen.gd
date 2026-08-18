@@ -101,6 +101,7 @@ func _make_tile(entry: Dictionary, index: int, progress: Progress) -> Control:
 	var unlocked: bool = LevelCatalog.is_unlocked(level_id, progress)
 	var solved: bool = progress.is_solved(level_id)
 
+	var remaining := PackedStringArray()
 	var button := UiButtons.make("", UiButtons.Rank.PLAIN, 30)
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button.disabled = not unlocked
@@ -159,10 +160,68 @@ func _make_tile(entry: Dictionary, index: int, progress: Progress) -> Control:
 			if not marks.is_empty():
 				button.text += "   %s" % marks
 			button.add_theme_color_override("font_color", ViewPalette.EXIT)
+			remaining = _remaining_challenges(spec, earned)
 		# Un relâchement qui termine un GLISSEMENT n'ouvre pas le niveau sous le
 		# doigt : sans ce contrôle, faire défiler lancerait une partie au hasard.
 		button.pressed.connect(func() -> void:
 			if _drag != null and _drag.consumed_drag():
 				return
 			level_chosen.emit(level_id))
-	return button
+	if remaining.is_empty():
+		return button
+
+	# CE QUI RESTE À FAIRE, NOMMÉ — et rien d'autre.
+	#
+	# Les pastilles ◆◇ disent COMBIEN de défis sont acquis, jamais LESQUELS ni
+	# ce qu'ils demandent. Le joueur voyait un losange creux sans aucun moyen de
+	# savoir ce qu'il fallait chercher, ce qui en fait une énigme sur l'énigme.
+	#
+	# ON NE NOMME QUE LE RESTANT, pas la liste entière. C'est deux fois plus
+	# court — donc ça tient sur un écran étroit, où la tuile se tronque déjà par
+	# ellipse — et c'est exactement la question posée : « savoir ce qu'il reste à
+	# accomplir ». Un niveau dont tous les défis sont acquis n'affiche RIEN : le
+	# silence est la récompense, et la liste ne s'allonge pas pour les joueurs
+	# qui ont fini.
+	#
+	# RG-19 TIENT. La ligne est une PROPOSITION — « il reste » — jamais un
+	# reproche : rien n'est barré, rien n'est rouge, et elle ne conditionne
+	# aucune progression.
+	var tile := VBoxContainer.new()
+	tile.add_theme_constant_override("separation", 0)
+	# L'ENVELOPPE NE CONSOMME RIEN. Un conteneur qui intercepte avalerait le
+	# glissement du doigt dans l'interstice entre le bouton et sa ligne — le
+	# défilement se bloquerait par endroits, ce qui se diagnostique très mal.
+	# Les enfants continuent de recevoir leurs propres évènements.
+	tile.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tile.add_child(button)
+
+	var hint := Label.new()
+	hint.text = "        il reste : %s" % ", ".join(remaining)
+	# Sans enveloppe ni largeur minimale nulle, un libellé long imposerait sa
+	# largeur à toute la colonne — le défaut qui avait déjà décalé le bouton
+	# « Retour » hors de l'axe.
+	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint.custom_minimum_size.x = 0
+	hint.add_theme_font_size_override("font_size", UiMetrics.font_size(20))
+	hint.add_theme_color_override("font_color", Color(0.55, 0.60, 0.72))
+	# La ligne ne doit RIEN intercepter : posée sous le bouton, elle traverserait
+	# autrement le glissement du doigt et bloquerait le défilement de la liste.
+	hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tile.add_child(hint)
+	return tile
+
+## Les défis que le niveau propose et que le joueur n'a pas encore obtenus,
+## nommés par ce qu'ils DEMANDENT — « sans “Suivre la piste” » renseigne, « défi
+## d'abstinence » ne renseigne pas.
+static func _remaining_challenges(spec: Dictionary, earned: PackedStringArray) -> PackedStringArray:
+	var out := PackedStringArray()
+	var economy := int(spec.get("economy_max", 0))
+	if economy > 0 and not _has_challenge(earned, "Économie"):
+		out.append("%d règle%s au plus" % [economy, "s" if economy > 1 else ""])
+	var abstinence := int(spec.get("abstinence_rule", 0))
+	if abstinence != 0 and not _has_challenge(earned, "Abstinence"):
+		out.append("sans « %s »" % RuleCatalog.name_of(abstinence))
+	var deadline := int(spec.get("efficiency_ticks", 0))
+	if deadline > 0 and not _has_challenge(earned, "Efficience"):
+		out.append("%d ticks au plus" % deadline)
+	return out

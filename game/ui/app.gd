@@ -154,6 +154,13 @@ func _on_reset_requested() -> void:
 	_open_menu()
 
 func _on_level_finished(level_id: String, won: bool, ticks: int, lost: int, stack: Array, reason: String) -> void:
+	# PHOTO DES DÉFIS ACQUIS **AVANT** L'ENREGISTREMENT. L'écran de bilan doit
+	# distinguer « obtenu à l'instant » de « déjà acquis », et une fois
+	# `record_challenges` passé les deux ensembles se confondent — la question
+	# ne serait plus posable. L'ordre de ces deux lignes porte donc une
+	# information, et les intervertir ferait disparaître la distinction sans
+	# qu'aucun test de compilation ne bronche.
+	var already := progress.earned_challenges(level_id).duplicate()
 	if won:
 		progress.record_win(level_id, ticks, lost)
 		# Les défis obtenus s'accumulent et ne se reprennent jamais (RG-19).
@@ -164,7 +171,7 @@ func _on_level_finished(level_id: String, won: bool, ticks: int, lost: int, stac
 	summary.select_requested.connect(_open_select)
 	summary.next_level_requested.connect(func(next_id: String) -> void: _open_game(next_id, false))
 	_swap(summary, Screen.SUMMARY)
-	summary.setup(level_id, won, ticks, lost, stack, reason)
+	summary.setup(level_id, won, ticks, lost, stack, reason, already)
 	# Le niveau est terminé : plus rien à reprendre.
 	session.clear()
 

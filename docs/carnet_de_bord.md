@@ -2895,6 +2895,43 @@ R11 — encore faut-il des cartes qui le permettent.
 > sont utilisés par aucun niveau — seul l'en-tête `trail:` l'est. Le mécanisme
 > n'était donc pas « dormant », c'est son emploi qui était uniforme.)*
 
+### 195. Les défis étaient calculés, enregistrés, affichés — et illisibles
+
+Deux angles morts signalés au même essai, et ce sont **deux moitiés d'une même
+question** : « à la fin du niveau, ce n'est pas clair quels défis ont été
+résolus, à la fois en général et sur l'exécution actuelle » ; « dans le menu, il
+faudrait savoir ce qu'il reste à accomplir ».
+
+**LE BILAN NE CONNAISSAIT QUE LA PARTIE QUI VENAIT DE FINIR.** Un défi acquis
+trois parties plus tôt s'y affichait creux, exactement comme un défi jamais
+obtenu — et le joueur repartait le chercher pour rien. Il y a désormais trois
+états, pas deux : `obtenu à l'instant`, `déjà acquis`, et rien.
+
+> **UN DÉTAIL D'ORDRE PORTE TOUTE LA DISTINCTION**, et c'est le genre de chose
+> qu'aucun compilateur ne dit. `App` enregistrait les défis AVANT d'afficher le
+> bilan ; à ce moment-là les deux ensembles se confondent, et la question
+> « était-ce déjà acquis ? » n'est plus posable. Il fallait en prendre la photo
+> avant l'enregistrement et la passer à l'écran. Intervertir ces deux lignes
+> ferait disparaître la distinction en silence — d'où le commentaire à
+> l'endroit exact, et un test qui l'éprouve.
+
+**LE MENU DISAIT COMBIEN, JAMAIS QUOI.** Les pastilles `◆◇` comptent les défis
+acquis sans nommer ce qu'ils demandent : un losange creux sans libellé est une
+énigme sur l'énigme. Une ligne discrète sous la tuile nomme maintenant **ce qui
+reste, et seulement ce qui reste** — « il reste : sans “Suivre la piste” ».
+
+Trois raisons de ne nommer que le restant plutôt que la liste entière :
+
+- c'est **deux fois plus court**, donc ça tient sur un écran étroit, où la tuile
+  se tronque déjà par ellipse ;
+- c'est **exactement la question posée** — savoir ce qu'il reste à accomplir ;
+- un niveau dont tout est acquis n'affiche **rien**, et le silence est la
+  récompense. Une liste qui continue de réclamer après qu'on a tout fait
+  transforme un niveau fini en dette, ce que RG-19 interdit.
+
+RG-19 tient partout : rien n'est barré, rien n'est grisé, rien ne conditionne la
+progression. « Il reste » est une proposition, pas un reproche.
+
 ### 194. ch5_09 « Le péage » — le premier niveau sorti de la forge, et le premier CONFORME QN-01 depuis longtemps
 
 **LE DÉFAUT QU'IL CORRIGE EST MESURÉ, pas ressenti.** `combinations.gd` a montré

@@ -8,7 +8,12 @@ signal retry_requested
 signal select_requested
 signal next_level_requested(level_id: String)
 
-func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array, reason: String = "") -> void:
+## `already` = les défis DÉJÀ acquis avant cette partie. Il faut le passer, et
+## non le relire ici : au moment où cet écran s'affiche, la progression a déjà
+## enregistré ceux de la partie qui vient de finir, et les deux ensembles ne se
+## distinguent plus. C'est `App` qui en prend la photo avant d'enregistrer.
+func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array,
+		reason: String = "", already: PackedStringArray = PackedStringArray()) -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 	# Liseré d'état : reconnaissable en une demi-seconde, sans lire (DA-03).
@@ -80,6 +85,10 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array, rea
 	#
 	# Rien sur un échec : féliciter pour un défi obtenu au cours d'une partie
 	# perdue serait au mieux confus.
+	# TROIS ÉTATS, PAS DEUX — « on ne sait pas quels défis ont été résolus, à la
+	# fois en général et sur l'exécution actuelle ». L'écran ne disait que le
+	# second : un défi acquis trois parties plus tôt s'affichait creux, comme
+	# s'il restait à faire, et le joueur repartait le chercher pour rien.
 	if won:
 		for entry in challenge_states(level_id, stack, ticks):
 			# LE NOM DU DÉFI À GAUCHE, SA CONDITION À DROITE. « Défi » d'un côté et
@@ -87,9 +96,22 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array, rea
 			# libellé qui se tronquait par ellipse, précisément sur le mot qui
 			# porte l'information.
 			var done: bool = bool(entry["earned"])
+			var key := String(entry["key"])
+			var label := String(entry["label"])
+			var kept := _already_has(already, key)
+			# LA MENTION EST UN AJOUT, JAMAIS UN REMPLACEMENT : la condition reste
+			# lisible dans les trois cas. C'est elle qui dit quoi chercher, et un
+			# défi acquis reste une chose qu'on doit pouvoir relire.
+			if done:
+				label += "  ·  obtenu à l'instant"
+			elif kept:
+				label += "  ·  déjà acquis"
+			# RG-19 TIENT : le losange plein marque les deux formes d'acquis. Un
+			# défi gagné avant ne redevient pas creux parce qu'on a rejoué
+			# autrement — ce serait le reprendre, et les défis ne se reprennent
+			# jamais.
 			column.add_child(_stat(
-				"%s  %s" % ["◆" if done else "◇", String(entry["key"])],
-				String(entry["label"])))
+				"%s  %s" % ["◆" if (done or kept) else "◇", key], label))
 
 	var grow := Control.new()
 	grow.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -170,6 +192,15 @@ static func challenges_earned(level_id: String, stack: Array, ticks: int) -> Pac
 		if bool(entry["earned"]):
 			out.append("%s — %s" % [String(entry["key"]), String(entry["label"])])
 	return out
+
+## Un défi enregistré porte son libellé complet ; on le reconnaît par son
+## PRÉFIXE, seule partie stable. Les libellés ont déjà changé une fois, et une
+## correspondance exacte aurait effacé en silence tous les défis acquis.
+static func _already_has(already: PackedStringArray, key: String) -> bool:
+	for line in already:
+		if line.begins_with(key):
+			return true
+	return false
 
 static func _known_solutions(level_id: String) -> int:
 	var data := LevelCatalog.load_level_data(level_id)
