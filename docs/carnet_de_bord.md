@@ -2925,6 +2925,30 @@ restent des « puzzles déguisés » à une seule classe.
 > se gagne par `[R09, R01]` ; l'abstinence de R09 interdit précisément ce détour
 > et force à payer le péage, `[R01, R04, R13]`. Deux écrans, deux recherches.
 
+#### La mesure d'APRÈS, sur les 33 niveaux — et elle refroidit l'enthousiasme
+
+| | Avant | Après |
+|---|---|---|
+| Partenaires de **R13** | 1 (R01) | **2 (R01, R04)** |
+| Partenaires de **R04** | 4 | **5** |
+| Règles rigides (≤ 1 partenaire) | R08, R13, R15 | **R08, R15** |
+| `[8,9]` gagne | 3 niveaux | **2** |
+| Niveaux à une seule famille | 22 / 32 | **20 / 33** |
+| Monopoles | 20 | 21 |
+
+**L'ATTELAGE R13→R01 EST ROMPU**, et c'était l'objet. Mais il faut dire le
+reste : **`[1,9]` gagne maintenant trois niveaux** (ch3_04, ch5_09, ch6_02) là
+où `[8,9]` en gagnait trois. **On a déplacé une répétition, pas supprimé une
+répétition** — l'atténuation vient de ce que ch5_09 offre une seconde famille,
+donc `[1,9]` n'y est pas la seule réponse.
+
+**ET LE DÉFAUT DE FOND N'A PAS BOUGÉ : R01 reste le moteur universel**, présente
+dans les gagnantes de presque tous les niveaux, avec douze partenaires sur
+treize. Tant qu'une seule règle sait « aller quelque part », toute pile gagnante
+devra la contenir ou contenir R09 — les deux seuls moteurs du jeu. **Ce n'est pas
+un problème de niveaux, c'est un problème de bibliothèque**, et aucune géométrie
+ne le résoudra. La suite se joue là, pas sur des cartes supplémentaires.
+
 **CE QUE LA FORGE A APPORTÉ, ET CE QU'ELLE N'A PAS APPORTÉ.** Elle a trouvé la
 géométrie — paroi médiane, deux ouvertures, goulot bouché — et elle a écarté
 seule les 188 variantes sans gagnante et les 111 refusées par le convertisseur.
