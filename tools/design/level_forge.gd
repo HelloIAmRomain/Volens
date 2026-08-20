@@ -834,7 +834,11 @@ const MAX_H := 18
 func _fits_after_turn(w: int, h: int, face: int) -> bool:
 	var fw: int = h if face % 2 == 1 else w
 	var fh: int = w if face % 2 == 1 else h
-	return fw >= MIN_W and fw <= MAX_W and fh >= MIN_H and fh <= MAX_H
+	# LE CDC EXIGE UNE GRILLE PLUS HAUTE QUE LARGE (portrait). Le contrôle ne
+	# portait que sur les bornes, et 125 candidats sur 300 partaient au refus du
+	# convertisseur pour ce seul motif — un quart du budget dépensé à produire
+	# des cartes qu'une comparaison élimine.
+	return fw >= MIN_W and fw <= MAX_W and fh >= MIN_H and fh <= MAX_H and fh > fw
 
 ## LA COHÉRENCE AVEC LA BIBLIOTHÈQUE SE VÉRIFIE AVANT DE GÉNÉRER, pas après.
 ##
@@ -912,7 +916,55 @@ func _shapes() -> Array:
 													"sw": int(swarm[0]), "sh": int(swarm[1]),
 													"bx": bx, "face": face,
 												})
+	return _spread(out)
+
+## LE BUDGET DOIT COUVRIR L'ESPACE, PAS SON PREMIER COIN.
+##
+## C'est le défaut le plus coûteux de tout l'outil, et il n'apparaissait dans
+## aucun chiffre : le produit cartésien est parcouru dans l'ordre de ses
+## boucles, donc un budget de 1 500 candidats n'épuisait que les premières
+## valeurs de largeur, de hauteur et de position de sortie. Des dizaines de
+## milliers de formes n'étaient JAMAIS atteintes.
+##
+## La forme exacte de ch2_06 se trouve dans le produit — largeur 9, sortie en 4,
+## ouverture décalée d'une case. Le balayage ne l'a jamais rencontrée : il
+## travaillait des heures sur un coin et rendait « 0 retenue » en ayant à peine
+## regardé. Toutes les conclusions tirées de ces balayages portaient donc sur un
+## fragment, pas sur l'espace.
+##
+## ON PARCOURT DONC PAR PAS PREMIER AVEC LA TAILLE. On visite ainsi TOUTES les
+## formes exactement une fois, mais dans un ordre qui change à chaque cran les
+## dimensions extérieures : les mille premiers candidats deviennent un
+## échantillon de tout l'espace au lieu d'un fragment de son début.
+##
+## AUCUN TIRAGE ALÉATOIRE : le pas est fixe, l'ordre reproductible, et deux
+## exécutions rendent la même liste. C'est la condition posée depuis le premier
+## jour — une liste qu'on ne peut pas reproduire ne se discute pas.
+func _spread(all: Array) -> Array:
+	var n := all.size()
+	if n < 3:
+		return all
+	# Un pas voisin du nombre d'or : il évite les alignements avec les tailles
+	# rondes des boucles — trois largeurs, quatre décalages, quatre orientations
+	# — qui ramèneraient un ordre presque séquentiel.
+	var stride := int(float(n) * 0.618)
+	while stride > 1 and _gcd(stride, n) != 1:
+		stride -= 1
+	if stride < 1:
+		return all
+	var out: Array = []
+	var i := 0
+	for _k in range(n):
+		out.append(all[i])
+		i = (i + stride) % n
 	return out
+
+func _gcd(a: int, b: int) -> int:
+	while b != 0:
+		var t := b
+		b = a % b
+		a = t
+	return a
 
 func _station_x(w: int, gx: int, where: String) -> int:
 	match where:
