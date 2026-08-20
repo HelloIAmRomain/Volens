@@ -49,7 +49,40 @@ static func make(text: String, rank: int = Rank.PLAIN,
 	if rank != Rank.PLAIN:
 		_apply_rank(b, rank)
 	_drop_hover_on_touch(b)
+	# LE FOCUS NON PLUS N'EXISTE PAS AU DOIGT, et il laissait une trace encore
+	# plus trompeuse que le survol.
+	#
+	# Constaté sur l'appareil : dans la liste des niveaux, UNE tuile s'affichait
+	# en blanc au milieu des tuiles vertes — le dernier bouton touché gardait le
+	# focus, et le moteur peint alors le texte avec `font_focus_color`, qui
+	# ignore le `font_color` posé par l'appelant. Le joueur voyait un niveau
+	# distingué des autres sans qu'aucune règle du jeu ne le distingue.
+	#
+	# C'est le principe de clarté : une différence à l'écran doit vouloir dire
+	# quelque chose. Sur un téléphone il n'y a ni clavier ni tabulation — le
+	# focus ne peut rien vouloir dire, donc il ne doit rien montrer.
+	b.focus_mode = Control.FOCUS_NONE
 	return b
+
+## TEINTER UN BOUTON, C'EST TEINTER TOUS SES ÉTATS.
+##
+## LE DÉFAUT, MESURÉ AU PIXEL SUR L'APPAREIL : dans la liste des niveaux, une
+## tuile s'affichait à (242,242,242) au milieu de tuiles à (51,199,143). Elle
+## n'avait rien de particulier — c'était simplement celle qui se trouvait sous
+## le pointeur ÉMULÉ, laissé par le moteur à la dernière position touchée.
+##
+## `_drop_hover_on_touch` avait aligné le STYLE de survol sur l'état normal, mais
+## pas la COULEUR DU TEXTE : `font_hover_color` restait au blanc du thème et
+## écrasait le `font_color` posé par l'appelant. La correction précédente
+## paraissait complète et ne l'était qu'à moitié.
+##
+## Poser une couleur d'un seul état est donc une erreur qu'on ne peut pas voir en
+## la relisant : elle ne se manifeste que sous le doigt. Cette fonction pose les
+## quatre, et c'est par elle qu'on doit passer.
+static func tint(b: Button, color: Color) -> void:
+	for state in ["font_color", "font_hover_color", "font_focus_color",
+			"font_pressed_color"]:
+		b.add_theme_color_override(state, color)
 
 ## SUR UN ÉCRAN TACTILE, LE SURVOL N'EXISTE PAS — et le prétendre laisse une
 ## trace fausse à l'écran.

@@ -159,7 +159,9 @@ func _make_tile(entry: Dictionary, index: int, progress: Progress) -> Control:
 				marks += "◆" if _has_challenge(earned, "Efficience") else "◇"
 			if not marks.is_empty():
 				button.text += "   %s" % marks
-			button.add_theme_color_override("font_color", ViewPalette.EXIT)
+			# TOUS LES ÉTATS, pas seulement le normal : la tuile sous le pointeur
+			# émulé se repeignait sinon en blanc, seule au milieu des vertes.
+			UiButtons.tint(button, ViewPalette.EXIT)
 			remaining = _remaining_challenges(spec, earned)
 		# Un relâchement qui termine un GLISSEMENT n'ouvre pas le niveau sous le
 		# doigt : sans ce contrôle, faire défiler lancerait une partie au hasard.

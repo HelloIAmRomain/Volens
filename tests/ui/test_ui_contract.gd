@@ -260,3 +260,60 @@ func test_a_locked_rank_is_never_offered_as_the_next_free_one() -> void:
 	for slot in _screen._slots:
 		assert_false(slot._next_available,
 			"pile pleine : aucun rang ne doit inviter, surtout pas un rang fermé")
+
+## --- Ni survol, ni focus : rien qui distingue un bouton sans raison ----------
+##
+## DEUX TRACES FANTÔMES, trouvées à l'essai sur l'appareil et corrigées au même
+## endroit, parce qu'elles ont la même cause : l'interface prétend des états qui
+## n'existent pas au doigt.
+##
+##   · le SURVOL — le moteur maintient un pointeur émulé à la dernière position
+##     touchée ; le doigt est parti, la tuile restait « survolée » ;
+##   · le FOCUS — le dernier bouton touché le garde, et le moteur peint alors le
+##     texte avec `font_focus_color`, qui IGNORE le `font_color` posé par
+##     l'appelant. Dans la liste des niveaux, une tuile s'affichait en blanc au
+##     milieu des vertes, sans qu'aucune règle du jeu ne la distingue.
+##
+## Une différence à l'écran doit vouloir dire quelque chose. Sur un téléphone il
+## n'y a ni clavier ni tabulation : le focus ne peut rien vouloir dire.
+
+func test_no_button_can_take_focus() -> void:
+	var b := UiButtons.make("essai")
+	add_child_autofree(b)
+	assert_eq(b.focus_mode, Control.FOCUS_NONE,
+		("un bouton qui prend le focus se repeint avec `font_focus_color` et "
+		+ "efface la couleur voulue — une tuile blanche au milieu des vertes"))
+
+## L'AUTRE MOITIÉ — le survol — N'EST PAS ÉPROUVABLE ICI, et il vaut mieux
+## l'écrire que de laisser un test creux le prétendre.
+##
+## `_drop_hover_on_touch` ne s'applique que si `DisplayServer` annonce un écran
+## tactile. Une suite headless n'en a pas : la fonction sort immédiatement, et
+## un test qui comparerait les deux styles vérifierait la branche « poste de
+## travail » en croyant vérifier le téléphone. C'est exactement le genre
+## d'assertion qui passe au vert en ne regardant rien.
+##
+## Le survol est donc couvert par la capture d'appareil, et par elle seule. Le
+## FOCUS, lui, ne dépend d'aucun périphérique : il se teste partout, d'où le
+## test ci-dessus.
+
+func test_tinting_a_button_covers_every_state() -> void:
+	# MESURÉ AU PIXEL SUR L'APPAREIL : une tuile à (242,242,242) au milieu de
+	# tuiles à (51,199,143). Elle n'avait rien de particulier — c'était celle qui
+	# se trouvait sous le pointeur ÉMULÉ, laissé par le moteur à la dernière
+	# position touchée, et `font_hover_color` écrasait la couleur voulue.
+	#
+	# La correction précédente avait aligné le STYLE de survol sans toucher à la
+	# COULEUR DU TEXTE : elle paraissait complète et ne l'était qu'à moitié.
+	var b := UiButtons.make("essai")
+	add_child_autofree(b)
+	var wanted := Color(0.2, 0.78, 0.56)
+	UiButtons.tint(b, wanted)
+	var missing := PackedStringArray()
+	for state in ["font_color", "font_hover_color", "font_focus_color",
+			"font_pressed_color"]:
+		if b.get_theme_color(state) != wanted:
+			missing.append(state)
+	assert_eq(missing, PackedStringArray(),
+		("états non teintés : %s — celui qui manque est celui qui se verra, "
+		+ "et seulement sous le doigt") % ", ".join(missing))

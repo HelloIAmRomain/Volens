@@ -3113,6 +3113,28 @@ qu'elle décrit annule son propre surlignage.
 > blanc là où le jeu en met un ambre. Une désignation qui déguise ce qu'elle
 > désigne renseigne à moitié.
 
+#### Une correction qui paraissait complète et ne l'était qu'à moitié
+
+Dans la liste des niveaux, **une** tuile s'affichait en blanc au milieu des
+tuiles vertes. Rien ne la distinguait dans le jeu — c'était simplement celle qui
+se trouvait sous le **pointeur émulé**, laissé par le moteur à la dernière
+position touchée.
+
+Le survol avait pourtant déjà été corrigé (décision antérieure) : le STYLE de
+survol était aligné sur l'état normal. Mais **`font_hover_color` ne l'était
+pas**, et le thème y met du blanc, qui écrase le `font_color` posé par
+l'appelant. La correction précédente traitait la moitié visible du problème.
+
+> **POSER LA COULEUR D'UN SEUL ÉTAT EST UNE ERREUR QU'ON NE PEUT PAS VOIR EN
+> RELISANT** : elle ne se manifeste que sous le doigt, sur un seul élément, et
+> seulement tant que le doigt vient de passer là. `UiButtons.tint()` pose
+> désormais les quatre états d'un coup, et un test refuse qu'il en manque un.
+
+Le diagnostic tient à la mesure : (242,242,242) contre (51,199,143). Après
+correction, les quatre tuiles échantillonnées rendent la même valeur. Sans
+relevé de pixels, j'aurais cherché du côté du focus — hypothèse plausible,
+fausse, et qui m'avait déjà coûté un aller-retour.
+
 #### Un faux positif, gardé pour la méthode
 
 Une capture m'a paru montrer les boutons du bilan dupliqués en haut de l'écran.
