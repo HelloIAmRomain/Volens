@@ -126,3 +126,63 @@ func test_a_tap_without_movement_still_opens_the_level() -> void:
 	assert_false(drag.consumed_drag(),
 		("Deux pixels de tremblement ont été pris pour un défilement : le "
 		+ "seuil est trop bas, et plus aucun appui ne passerait."))
+
+## --- Le doigt parle deux fois, et c'est ce qui cassait la fluidité -----------
+##
+## Signalé à l'essai : « parfois le scroll se bloque, ça s'arrête net, mais
+## seulement à certains moments ». Trois causes, toutes trouvées sur l'appareil,
+## et la principale est la même que celle qui dédoublait les légendes.
+##
+## ANDROID ÉMET DEUX ÉVÈNEMENTS POUR UN SEUL MOUVEMENT : un `ScreenDrag` et un
+## `MouseMotion` émulé, portant la MÊME position. Le premier calculait la vitesse
+## correctement ; le second, avec un déplacement nul, la remettait à ZÉRO. La
+## vitesse rendue à la liste au relâchement était celle du dernier évènement
+## reçu — et le « parfois » venait de l'ordre d'arrivée, qui n'est pas garanti.
+
+func _drag_scroll() -> DragScroll:
+	var scroll := ScrollContainer.new()
+	scroll.size = Vector2(400, 800)
+	add_child_autofree(scroll)
+	return DragScroll.attach(scroll)
+
+func test_the_container_no_longer_scrolls_by_itself() -> void:
+	# Sans cela, deux systèmes écrivent `scroll_vertical` dans la même image :
+	# le nôtre en absolu, celui du conteneur en relatif.
+	var d := _drag_scroll()
+	assert_gt(d._scroll.scroll_deadzone, 10000,
+		("le défilement propre du conteneur doit être neutralisé : un seul "
+		+ "propriétaire du défilement, sinon l'ordre décide et il n'est pas garanti"))
+
+func test_an_emulated_mouse_event_cannot_kill_the_inertia() -> void:
+	var d := _drag_scroll()
+	var touch := InputEventScreenTouch.new()
+	touch.pressed = true
+	touch.position = Vector2(100, 400)
+	d._input(touch)
+
+	var drag := InputEventScreenDrag.new()
+	drag.position = Vector2(100, 300)
+	d._input(drag)
+	var after_real: float = d._velocity
+
+	# LE DOUBLON ÉMULÉ, avec la MÊME position : il ne doit plus rien changer.
+	var ghost := InputEventMouseMotion.new()
+	ghost.position = Vector2(100, 300)
+	ghost.button_mask = MOUSE_BUTTON_MASK_LEFT
+	d._input(ghost)
+
+	assert_eq(d._velocity, after_real,
+		("un évènement souris ÉMULÉ ne doit plus toucher à la vitesse une fois "
+		+ "le tactile vu — c'est lui qui remettait l'élan à zéro"))
+
+func test_the_desktop_path_still_works() -> void:
+	# L'AUTRE BORD : sans évènement tactile, la souris doit continuer de faire
+	# défiler. C'est au poste de travail que se font les captures et les tests,
+	# et un défilement qui n'y marcherait plus ne serait vérifiable nulle part.
+	var d := _drag_scroll()
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	press.position = Vector2(100, 400)
+	d._input(press)
+	assert_true(d._touching, "un appui souris doit ouvrir le geste hors appareil")

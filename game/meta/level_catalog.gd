@@ -82,6 +82,20 @@ static func is_unlocked(level_id: String, progress: Progress) -> bool:
 		return false
 	if i == 0:
 		return true
+	# CE QU'ON A DÉJÀ RÉSOLU NE SE REVERROUILLE JAMAIS.
+	#
+	# Constaté sur l'appareil : après l'insertion de ch5_09 au milieu du
+	# catalogue, ch6_01 — résolu depuis longtemps — s'affichait CADENASSÉ, nom
+	# masqué, derrière « terminez “Le péage” ». Le chapitre annonçait pourtant
+	# « 5 / 5 résolus » juste au-dessus, puisque le compte, lui, lit la
+	# progression. L'écran se contredisait sur la même colonne.
+	#
+	# Le verrou est en chaîne — chaque niveau demande le précédent — donc toute
+	# insertion en amont rompt la chaîne pour une progression existante. Reprendre
+	# à un joueur l'accès à ce qu'il a terminé ne se lit jamais comme une mise à
+	# jour : cela se lit comme une perte de sauvegarde.
+	if progress.is_solved(level_id):
+		return true
 	return progress.is_solved(String(LEVELS[i - 1]["id"]))
 
 ## Premier niveau non résolu et jouable, ou le dernier jouable si tout est

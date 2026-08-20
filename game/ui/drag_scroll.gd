@@ -73,13 +73,32 @@ var _last_time := 0.0
 ## tronquer à chaque image perdrait toute la course lente d'une inertie qui
 ## s'éteint.
 var _residue := 0.0
+## Le doigt a-t-il déjà parlé ? Voir `_input` : dès qu'un évènement TACTILE
+## arrive, les évènements souris deviennent des doublons émulés et sont ignorés.
+var _touch_seen := false
 
 ## Branche le défilement au doigt sur un conteneur. Le composant vit comme
 ## enfant du conteneur : il disparaît avec lui, et rien à défaire.
+## LE CONTENEUR CESSE DE DÉFILER TOUT SEUL, et c'est la condition pour que ce
+## composant ait un sens.
+##
+## `ScrollContainer` possède SON PROPRE défilement tactile, qui s'engage au-delà
+## de `scroll_deadzone` — nul par défaut, donc dès le premier pixel. Deux
+## systèmes écrivaient alors `scroll_vertical` dans la même image : le nôtre en
+## ABSOLU (position de départ moins déplacement), le sien en RELATIF (delta
+## ajouté). Le résultat dépend de l'ordre, et l'ordre n'est pas garanti — d'où
+## une liste qui accroche par moments sans qu'on puisse le reproduire.
+##
+## Une zone morte immense n'est pas un réglage de confort : c'est la façon
+## d'annoncer que ce conteneur ne défile plus de lui-même. Un seul propriétaire
+## du défilement, et il est ici.
+const OWN_SCROLL_OFF := 1_000_000
+
 static func attach(scroll: ScrollContainer) -> DragScroll:
 	var node := DragScroll.new()
 	node.name = "DragScroll"
 	node._scroll = scroll
+	scroll.scroll_deadzone = OWN_SCROLL_OFF
 	scroll.add_child(node)
 	return node
 
@@ -99,7 +118,25 @@ func _input(event: InputEvent) -> void:
 	# s'y ferme au bouton gauche. Un defilement qui ne marcherait que sur
 	# l'appareil ne serait verifiable nulle part ailleurs — or c'est au poste de
 	# travail que se font les captures et les tests d'interface.
-	if event is InputEventMouseButton \
+	# LE DOIGT PARLE DEUX FOIS, ET C'EST TOUT LE DÉFAUT DE FLUIDITÉ.
+	#
+	# Android émet, pour UN SEUL mouvement physique, un `InputEventScreenDrag`
+	# **et** un `InputEventMouseMotion` émulé portant la MÊME position. Le
+	# premier calculait la vitesse correctement ; le second, arrivant avec un
+	# déplacement nul, la remettait à ZÉRO. Au relâchement, la vitesse rendue à
+	# la liste était celle du dernier évènement reçu — souvent le doublon.
+	#
+	# D'où le symptôme exact rapporté à l'essai : « parfois le scroll se bloque,
+	# ça s'arrête net, mais seulement à certains moments ». Le « parfois » venait
+	# de l'ordre d'arrivée des deux évènements, qui n'est pas garanti.
+	#
+	# Dès qu'un évènement tactile est vu, la souris est donc ignorée pour de bon.
+	# Le poste de travail, lui, n'en émet jamais : son chemin reste intact, et
+	# c'est ce qui permet de continuer à éprouver le défilement hors appareil.
+	if event is InputEventScreenTouch or event is InputEventScreenDrag:
+		_touch_seen = true
+
+	if not _touch_seen and event is InputEventMouseButton \
 			and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
 		var click := event as InputEventMouseButton
 		if click.pressed:
@@ -126,7 +163,7 @@ func _input(event: InputEvent) -> void:
 	var pos := Vector2.ZERO
 	if event is InputEventScreenDrag:
 		pos = (event as InputEventScreenDrag).position
-	elif event is InputEventMouseMotion \
+	elif not _touch_seen and event is InputEventMouseMotion \
 			and ((event as InputEventMouseMotion).button_mask & MOUSE_BUTTON_MASK_LEFT) != 0:
 		pos = (event as InputEventMouseMotion).position
 	else:
@@ -140,12 +177,16 @@ func _input(event: InputEvent) -> void:
 
 	# Vitesse instantanée, relevée entre deux événements : c'est elle qui sera
 	# rendue à la liste au relâchement.
+	# UN ÉVÈNEMENT SANS DÉPLACEMENT NE DIT RIEN DE LA VITESSE, il dit seulement
+	# que le système a reparlé. Le prendre en compte écrasait l'élan par un zéro.
+	# Le verrou tactile ci-dessus supprime la cause ; ce contrôle garde le fond,
+	# car un pilote peut toujours répéter une position sans que ce soit un arrêt.
 	var t := _now()
 	var dt: float = t - _last_time
-	if dt > 0.0005:
+	if dt > 0.0005 and not is_equal_approx(pos.y, _last_pos):
 		_velocity = clampf((pos.y - _last_pos) / dt, -MAX_SPEED, MAX_SPEED)
-	_last_pos = pos.y
-	_last_time = t
+		_last_pos = pos.y
+		_last_time = t
 
 
 ## LE GESTE DOIT COMMENCER DANS LA LISTE. Sans ce contrôle, un glissement

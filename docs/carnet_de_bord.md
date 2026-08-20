@@ -3113,6 +3113,48 @@ qu'elle décrit annule son propre surlignage.
 > blanc là où le jeu en met un ambre. Une désignation qui déguise ce qu'elle
 > désigne renseigne à moitié.
 
+#### Le défilement accrochait — trois causes, et la première était déjà connue
+
+« Parfois le scroll se bloque, ça s'arrête net, mais seulement à certains
+moments. »
+
+1. **Le doigt parle deux fois.** Android émet, pour UN seul mouvement,
+   un `ScreenDrag` **et** un `MouseMotion` émulé portant la MÊME position. Le
+   premier calculait la vitesse ; le second, avec un déplacement nul, la
+   remettait à **zéro**. La vitesse rendue à la liste au relâchement était celle
+   du dernier évènement reçu — et le « parfois » venait de l'ordre d'arrivée,
+   qui n'est pas garanti. **C'est exactement la cause qui dédoublait les
+   légendes** : le même piège, deux symptômes sans rapport apparent, à deux
+   endroits du code.
+2. **Le conteneur défilait aussi de son côté.** `ScrollContainer` a son propre
+   défilement tactile, engagé au-delà de `scroll_deadzone` — nul par défaut,
+   donc dès le premier pixel. Deux systèmes écrivaient `scroll_vertical` dans la
+   même image : le nôtre en ABSOLU, le sien en RELATIF. Le résultat dépendait de
+   l'ordre. Un seul propriétaire désormais.
+3. **Un évènement sans déplacement rafraîchissait l'horloge.** `_last_time`
+   avançait à chaque doublon, si bien qu'un doigt immobilisé avant d'être levé
+   passait encore pour « en mouvement ». Corrigé au passage : l'horloge n'avance
+   plus que lorsque la position change vraiment.
+
+**MESURÉ APRÈS CORRECTION** : à distance de geste égale, un geste vif emporte la
+liste **1 136 pixels plus loin** qu'un geste lent — l'élan existe et se sent.
+Six gestes successifs : trois déplacements francs, puis zéro. Vérification faite,
+la liste était simplement **arrivée au bas** ; le troisième était le dernier
+possible. Un zéro n'est pas un blocage tant qu'on n'a pas regardé ce qu'il reste
+à faire défiler.
+
+#### Un niveau résolu ne se reverrouille jamais
+
+Toujours l'insertion de ch5_09 au milieu du catalogue, et cette fois le symptôme
+est grave : **ch6_01, résolu depuis longtemps, s'affichait cadenassé**, son nom
+masqué derrière « terminez “Le péage” » — pendant que l'en-tête annonçait « 5 / 5
+résolus » juste au-dessus. L'écran se contredisait sur la même colonne.
+
+Reprendre à un joueur l'accès à ce qu'il a terminé ne se lit jamais comme une
+mise à jour : cela se lit comme une **perte de sauvegarde**. Un niveau résolu est
+donc déverrouillé quoi qu'il arrive avant lui, et un test tient l'autre bord —
+un niveau jamais résolu reste derrière son prédécesseur.
+
 #### Une correction qui paraissait complète et ne l'était qu'à moitié
 
 Dans la liste des niveaux, **une** tuile s'affichait en blanc au milieu des

@@ -151,3 +151,25 @@ func test_an_untouched_chapter_stays_locked() -> void:
 	var progress := Progress.new()
 	assert_false(LevelCatalog.is_chapter_unlocked(6, progress),
 		"une progression vierge ne doit pas déverrouiller le dernier chapitre")
+
+func test_a_solved_level_is_never_locked_again() -> void:
+	# LE MÊME PIÈGE QUE LE CHAPITRE, un cran plus bas et plus grave. Après
+	# l'insertion d'un niveau au milieu du catalogue, un niveau RÉSOLU depuis
+	# longtemps s'affichait cadenassé, nom masqué — alors que le chapitre
+	# annonçait « 5 / 5 résolus » juste au-dessus. L'écran se contredisait sur
+	# la même colonne, et reprendre à un joueur l'accès à ce qu'il a terminé se
+	# lit comme une perte de sauvegarde, jamais comme une mise à jour.
+	var progress := Progress.new()
+	# On résout un niveau SANS résoudre celui qui le précède : c'est exactement
+	# l'état qu'une insertion en amont fabrique.
+	var target := String(LevelCatalog.entry(4)["id"])
+	progress.solved[target] = {"ticks": 20, "lost": 0}
+	assert_true(LevelCatalog.is_unlocked(target, progress),
+		"un niveau résolu doit rester jouable, quoi qu'il arrive avant lui")
+
+func test_an_unsolved_level_still_needs_its_predecessor() -> void:
+	# L'AUTRE BORD : sans lui, la correction ouvrirait tout le catalogue.
+	var progress := Progress.new()
+	var target := String(LevelCatalog.entry(4)["id"])
+	assert_false(LevelCatalog.is_unlocked(target, progress),
+		"un niveau jamais résolu reste derrière son prédécesseur")
