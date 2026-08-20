@@ -87,8 +87,46 @@ extends SceneTree
 ##       --rules=R01,R02,R04,R13 --slots=3 --want=R13 \
 ##       "--objective=extraction:85;preservation:3" --max=400 --top=5
 ##
-## Options : --min-sets  --max-sets  --min-len  --top  --out  --face=N,E,S,O
-##           --band=none,one_gap,two_gaps  --plug=true,false  --station=left,right
+## ## Les paramètres, et ce que chacun décide
+##
+## **Ce que le joueur reçoit**
+##   `--rules=R01,R04,R06`   la bibliothèque offerte. La forge la RESSERRE
+##                           ensuite à ce qui porte : c'est un point de départ,
+##                           pas un contrat.
+##   `--slots=3`             le nombre de rangs de la pile.
+##   `--objective=…`         `extraction:85;preservation:3` — plusieurs objectifs
+##                           séparés par « ; ».
+##
+## **Ce qu'on pose sur la carte**
+##   `--band=none,one_gap,two_gaps,split`
+##                           la paroi médiane. `two_gaps` ouvre deux passages
+##                           équidistants de la sortie (deux routes de coût
+##                           comparable) ; `split` en pose un À L'APLOMB de la
+##                           nuée et l'autre à l'opposé (raccourci contre
+##                           détour).
+##   `--plug=true,false`     un danger dans le goulot.
+##   `--station=none,left,right,under`
+##                           un atelier à boucliers, posé À L'ÉCART du goulot :
+##                           sous l'entonnoir il couvre tout le monde et la carte
+##                           redevient triviale (décision 191).
+##   `--face=N,E,S,O`        l'orientation. Une carte pivotée n'est PAS la même
+##                           carte (invariant n°19).
+##
+## **Ce qu'on exige du résultat**
+##   `--want=R13`            règles qui doivent PORTER une gagnante.
+##   `--min-sets` `--max-sets`  bornes sur le nombre de familles.
+##   `--min-len=2`           longueur minimale de la plus courte gagnante.
+##
+## **Ce qu'on dépense**
+##   `--max=1200`            budget de géométries évaluées.
+##   `--top=5`              combien de candidats écrire.
+##   `--probe-ticks=100`     plafond de ticks PENDANT la recherche.
+##   `--out=reports/forge/x` où écrire.
+##
+## LES COMBINAISONS INCOHÉRENTES SONT ÉCARTÉES AVANT GÉNÉRATION : un goulot
+## bouché sans R13 ni atelier ferme la carte, un atelier sans danger ne protège
+## de rien. C'est ce contrôle qui aurait évité les 1 054 candidats morts des
+## balayages « bouclier ».
 
 const OUT_DEFAULT := "res://reports/forge"
 ## Cache des signatures du catalogue. Le calculer coûte plusieurs minutes ; le
@@ -111,6 +149,18 @@ var _min_len := 2
 var _top := 5
 var _out := OUT_DEFAULT
 var _faces: Array[int] = []
+## PLAFOND DE TICKS PENDANT LA RECHERCHE — et c'est le premier poste de coût.
+##
+## Chaque pile PERDANTE tourne jusqu'au plafond, et la plupart des piles
+## perdent : sur 156 piles, une dizaine gagnent. Chercher à 300 ticks revenait à
+## payer 300 ticks pour chaque échec, alors que les cartes de l'idiome se
+## gagnent en 20 à 60 et que `max_ticks` est de toute façon RECALIBRÉ à
+## l'émission (le double du meilleur temps).
+##
+## Un plafond de recherche plus bas ne fausse donc rien : il écarte les piles
+## qui n'auraient pas tenu l'échéance finale de toute façon. Le relever ne sert
+## que si l'on cherche une carte volontairement longue.
+var _probe_ticks := 100
 var _bands: Array[String] = []
 var _plugs: Array[bool] = []
 var _stations: Array[String] = []
@@ -149,7 +199,7 @@ func _init() -> void:
 	for shape in _shapes():
 		if seen >= _max_candidates:
 			break
-		var text: String = _render(shape)
+		var text: String = _render(shape, _probe_ticks)
 		if text.is_empty():
 			continue   # gabarit impossible : ne consomme pas le budget
 		seen += 1
@@ -158,11 +208,52 @@ func _init() -> void:
 		if not errors.is_empty():
 			_tally(reasons, "convertisseur : " + errors[0].get_slice(":", 0))
 			continue
-		var verdict := _judge(parsed["level"], reasons)
+		# --- FILTRES À COÛT NUL, AVANT TOUTE SIMULATION ----------------------
+		#
+		# Le balayage passait l'essentiel de son temps à énumérer l'espace des
+		# piles de cartes qui n'avaient AUCUNE chance : sur 1 500 géométries,
+		# 700 à 1 400 sans une seule gagnante et 260 gagnées en une règle. Chacune
+		# coûtait 156 simulations complètes pour un verdict qu'un parcours de
+		# grille ou trois simulations donnent.
+		var level: Dictionary = parsed["level"]
+		# ASSEZ D'AGENTS PEUVENT-ILS SEULEMENT ARRIVER ?
+		#
+		# Le parcours rend le nombre d'agents dont la composante contient la
+		# sortie. Une bande médiane en mure régulièrement une partie : ceux-là ne
+		# sortiront jamais, quelle que soit la pile. Si le compte tombe sous ce
+		# que l'objectif d'extraction exige, la carte est perdue d'avance — et
+		# c'est SÛR, pas une heuristique.
+		var can_arrive := _agents_that_can_reach_exit(level)
+		if can_arrive < _required_exits(level):
+			_tally(reasons, "%d agents peuvent atteindre la sortie, %d exigés"
+				% [can_arrive, _required_exits(level)])
+			continue
+		# TOUTE ROUTE PASSE PAR UN DANGER, ET RIEN NE PEUT LE NEUTRALISER.
+		#
+		# C'est le motif qui a coûté le plus cher : les balayages « bouclier »
+		# ont produit 1 054 candidats sur 1 200 sans une seule gagnante, tous de
+		# cette forme. Chacun payait 156 simulations pour apprendre ce qu'un
+		# second parcours de grille dit en quelques microsecondes.
+		#
+		# LE RAISONNEMENT EST SOUND : si la sortie est inatteignable en évitant
+		# les dangers, alors TOUT agent qui sort en a traversé un. Sans R13 pour
+		# le boucher ni atelier pour l'encaisser, chacun y meurt — donc autant de
+		# pertes que d'agents sortis, ce qu'aucun budget de préservation
+		# raisonnable ne couvre. On ne rejette que dans ce cas-là.
+		if not _exit_is_reachable(level, true) and not _can_survive_a_danger(level):
+			_tally(reasons, "toute route traverse un danger que rien ne neutralise")
+			continue
+		# UNE RÈGLE SEULE QUI GAGNE SUFFIT À CONDAMNER LA CARTE, et le savoir
+		# coûte autant de simulations qu'il y a de règles — jamais 156.
+		var trivial := _shortest_winner_length(level)
+		if trivial > 0 and trivial < _min_len:
+			_tally(reasons, "gagnée en %d règle(s) : trop courte" % trivial)
+			continue
+
+		var verdict := _judge(level, reasons)
 		if int(verdict["score"]) <= 0:
 			continue
 		verdict["shape"] = shape
-		verdict["text"] = text
 		kept.append(verdict)
 
 	kept.sort_custom(func(a: Variant, b: Variant) -> bool:
@@ -173,7 +264,7 @@ func _init() -> void:
 	keys.sort()
 	for reason in keys:
 		print("    écarté × %-4d %s" % [int(reasons[reason]), String(reason)])
-	_emit(kept)
+	_emit(kept, reasons)
 	quit()
 
 ## --- Le jugement -------------------------------------------------------------
@@ -286,6 +377,34 @@ func _judge(data: Dictionary, reasons: Dictionary) -> Dictionary:
 		why.append("économie + abstinence")
 
 	score += borne.size() * 4
+
+	# L'ORDRE DOIT SE VOIR — c'est le jeu, pas un détail.
+	#
+	# RG-13 : deux règles dont les zones d'action ne se recouvrent jamais sur
+	# cette carte forment une paire à l'ordre INOBSERVABLE. Les permuter ne
+	# change rien, et le joueur qui essaie apprend que l'ordre ne compte pas —
+	# exactement le contraire de ce que Volens enseigne. Le validateur les
+	# comptait déjà ; la forge les ignorait.
+	#
+	# On récompense donc les cartes où les règles SE DISPUTENT la décision, et
+	# l'on pénalise chaque paire aveugle. C'est la mesure la plus proche de
+	# « intérêt de jeu » que l'outillage sache produire.
+	var blind: int = (summary["blind_pairs"] as PackedStringArray).size()
+	var contested := 0
+	for key in (summary["contention_by_pair"] as Dictionary):
+		if int((summary["contention_by_pair"] as Dictionary)[key]) > 0:
+			contested += 1
+	score += contested * 6 - blind * 4
+	why.append("%d paire(s) en dispute, %d aveugle(s)" % [contested, blind])
+
+	# LES ÉCHECS DOIVENT ÊTRE PROCHES (QN-03). Une pile qui échoue de peu donne
+	# envie de recommencer ; une pile qui échoue de loin décourage. Une carte
+	# dont AUCUN échec n'approche du but ne se laisse pas explorer : on y gagne
+	# ou l'on n'y comprend rien.
+	if int(summary["n_near_misses"]) > 0:
+		score += 10
+		why.append("%d échec(s) proche(s)" % int(summary["n_near_misses"]))
+
 	var names := PackedStringArray()
 	for key in sets:
 		names.append(String(key))
@@ -296,7 +415,262 @@ func _judge(data: Dictionary, reasons: Dictionary) -> Dictionary:
 		"best_stack": summary["best_stack"],
 		"n_win": int(summary["n_win"]),
 		"verdict": String(summary["qn01_verdict"]),
+		# CE QU'IL FAUT POUR ÉCRIRE UN NIVEAU FINI, et non un candidat à
+		# retoucher : la bibliothèque réduite à ce qui PORTE, les compteurs que
+		# la fiche doit déclarer, et l'empreinte de géométrie.
+		"carriers": borne.keys(),
+		"shortest": shortest,
+		"abstinence": _abstinence_options(minimal),
+		"geometry": String(data.get("geometry_hash", "")),
 	}
+
+## Règles qu'AU MOINS UNE gagnante minimale n'emploie pas — ce sont les seules
+## sur lesquelles un défi d'abstinence a un sens. Interdire une règle qu'aucune
+## solution ne peut éviter ne serait pas un défi, ce serait un mur.
+func _abstinence_options(minimal: Array) -> Array:
+	var out: Array = []
+	var all_rules: Dictionary = {}
+	for stack in minimal:
+		for r in _bases(stack):
+			all_rules[r] = true
+	for r in all_rules:
+		for stack in minimal:
+			if not _bases(stack).has(r):
+				out.append(r)
+				break
+	out.sort()
+	return out
+
+## UN FICHIER FINI, PAS UN CANDIDAT À RETOUCHER.
+##
+## Les trois choses qu'il fallait ajouter à la main après chaque balayage sont
+## écrites ici : les compteurs que la fiche doit déclarer (`expected_wins`,
+## `expected_classes`), l'empreinte de géométrie qui protège les paramètres
+## calibrés (invariant n°15), et une ligne de défis.
+##
+## LES COMPTEURS NE SONT PAS DÉCORATIFS. Le validateur les confronte à la
+## simulation : un niveau qui les déclare faux est signalé « ÉCART À LA FICHE ».
+## Les recopier depuis la mesure qu'on vient de faire est la seule façon qu'ils
+## soient justes le jour où le fichier est écrit.
+##
+## LES DEUX DÉFIS DOIVENT EXIGER DEUX PILES DIFFÉRENTES — « les défis ne
+## devraient pas être réalisés en un coup ». L'économie demande la plus courte
+## des gagnantes ; l'abstinence interdit une règle QUE CETTE PLUS COURTE EMPLOIE,
+## ce qui force à en chercher une autre. Interdire une règle qu'aucune gagnante
+## n'évite serait un mur, pas un défi : `_abstinence_options` ne rend que celles
+## qu'au moins une solution sait éviter.
+func _finish(shape: Dictionary, c: Dictionary, max_ticks: int,
+		library: Array) -> String:
+	var lines := _render(shape, max_ticks, library).split("\n")
+	var out := PackedStringArray()
+	for line in lines:
+		if line == "---":
+			out.append("expected_wins: %d" % int(c["n_win"]))
+			out.append("expected_classes: %d" % int(c["classes"]))
+			var geometry := String(c.get("geometry", ""))
+			if not geometry.is_empty():
+				out.append("calibrated_on: %s" % geometry)
+			var challenge := _challenge_line(c)
+			if not challenge.is_empty():
+				out.append("challenge: %s" % challenge)
+		out.append(line)
+	return "\n".join(out)
+
+## Deux défis au plus, et jamais deux que la même pile décroche.
+func _challenge_line(c: Dictionary) -> String:
+	var parts := PackedStringArray()
+	var shortest := int(c.get("shortest", 0))
+	var best: Array = c.get("best_stack", [])
+	if shortest > 0:
+		parts.append("economy=%d" % shortest)
+	# On cherche une abstinence portant sur une règle de la MEILLEURE pile :
+	# l'interdire écarte précisément la solution que l'économie récompense.
+	var used: Dictionary = {}
+	for r in best:
+		used[RuleRegistry.base_rule_id(int(r))] = true
+	for r in (c.get("abstinence", []) as Array):
+		if used.has(int(r)):
+			parts.append("abstinence=R%02d" % int(r))
+			break
+	return " ".join(parts)
+
+## --- Les deux filtres qui font tout le gain ----------------------------------
+##
+## LA SORTIE EST-ELLE SEULEMENT ATTEIGNABLE ? Un parcours en largeur sur la
+## grille, quelques centaines de cases, contre 156 simulations de 300 ticks. Il
+## ne dit pas qu'un niveau est jouable — c'est un CONTRE-EXEMPLE, pas une preuve
+## — mais quand il dit non, aucune pile ne peut gagner, et c'est sûr.
+##
+## On ignore les dangers et les portes : une porte close peut s'ouvrir, un danger
+## cyclique s'éteindre. Le mur, lui, ne bouge jamais. Un filtre de rejet doit
+## être PESSIMISTE sur ce qu'il refuse, sinon il écarte des cartes valables — et
+## c'est le genre d'erreur qu'on ne voit jamais, puisqu'elle se manifeste par une
+## absence.
+## Combien d'agents ont la sortie dans leur composante connexe. Remplace
+## l'ancien « la sortie est-elle atteignable » : la même question, mais chiffrée,
+## donc confrontable à l'objectif.
+func _agents_that_can_reach_exit(data: Dictionary) -> int:
+	var grid: Dictionary = data.get("grid", {})
+	var size: Array = grid.get("size", [0, 0])
+	var w: int = int(size[0])
+	var h: int = int(size[1])
+	var cells: Array = grid.get("cells", [])
+	if w <= 0 or h <= 0 or cells.size() < w * h:
+		return 0
+	# On part DE LA SORTIE : un seul parcours, et l'on compte ensuite les agents
+	# atteints. Partir de chaque agent en referait un par agent.
+	var queue: Array = []
+	var seen: Dictionary = {}
+	for i in range(cells.size()):
+		if int(cells[i]) == GridState.CellType.EXIT:
+			seen[i] = true
+			queue.append(i)
+	var head := 0
+	while head < queue.size():
+		var idx: int = queue[head]
+		head += 1
+		@warning_ignore("integer_division")
+		var x: int = idx % w
+		@warning_ignore("integer_division")
+		var y: int = idx / w
+		for step in [Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0)]:
+			var nx: int = x + step.x
+			var ny: int = y + step.y
+			if nx < 0 or ny < 0 or nx >= w or ny >= h:
+				continue
+			var n: int = ny * w + nx
+			if seen.has(n) or int(cells[n]) == GridState.CellType.WALL:
+				continue
+			seen[n] = true
+			queue.append(n)
+	var reachable := 0
+	for a in data.get("agents", []):
+		var p: Array = (a as Dictionary)["pos"]
+		if seen.has(int(p[1]) * w + int(p[0])):
+			reachable += 1
+	return reachable
+
+## Combien d'agents l'objectif d'extraction exige. Zéro si le niveau n'en porte
+## pas — un objectif de collecte ne se compte pas en sorties.
+func _required_exits(data: Dictionary) -> int:
+	var agents: int = (data.get("agents", []) as Array).size()
+	var needed := 0
+	for o in data.get("objectives", []):
+		var obj: Dictionary = o
+		if String(obj.get("type", "")) == "extraction":
+			@warning_ignore("integer_division")
+			needed = maxi(needed, (int(obj.get("percent", 100)) * agents + 99) / 100)
+	return needed
+
+## La carte offre-t-elle un moyen de traverser un danger sans y rester ?
+## R13 le neutralise en s'y consumant ; un atelier à boucliers encaisse le
+## contact. Sans l'un des deux, un danger sur le seul chemin est un mur qui tue.
+func _can_survive_a_danger(data: Dictionary) -> bool:
+	for v in data.get("allowed_rules", []):
+		if RuleRegistry.base_rule_id(int(v)) == RuleRegistry.R13_PLUG:
+			return true
+	for c in (data.get("grid", {}) as Dictionary).get("cells", []):
+		if int(c) == GridState.CellType.SHIELD:
+			return true
+	return false
+
+## `avoid_danger` : le même parcours, mais en refusant d'entrer sur un danger
+## fixe. Deux questions différentes — « peut-on arriver ? » et « peut-on arriver
+## SANS mourir ? » — avec le même code, ce qui évite qu'elles divergent.
+func _exit_is_reachable(data: Dictionary, avoid_danger: bool) -> bool:
+	var grid: Dictionary = data.get("grid", {})
+	var size: Array = grid.get("size", [0, 0])
+	var w: int = int(size[0])
+	var h: int = int(size[1])
+	var cells: Array = grid.get("cells", [])
+	if w <= 0 or h <= 0 or cells.size() < w * h:
+		return false
+	var queue: Array = []
+	var seen: Dictionary = {}
+	for a in data.get("agents", []):
+		var p: Array = (a as Dictionary)["pos"]
+		var idx: int = int(p[1]) * w + int(p[0])
+		if not seen.has(idx):
+			seen[idx] = true
+			queue.append(idx)
+	var head := 0
+	while head < queue.size():
+		var idx: int = queue[head]
+		head += 1
+		if int(cells[idx]) == GridState.CellType.EXIT:
+			return true
+		@warning_ignore("integer_division")
+		var x: int = idx % w
+		@warning_ignore("integer_division")
+		var y: int = idx / w
+		for step in [Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1), Vector2i(-1, 0)]:
+			var nx: int = x + step.x
+			var ny: int = y + step.y
+			if nx < 0 or ny < 0 or nx >= w or ny >= h:
+				continue
+			var n: int = ny * w + nx
+			if seen.has(n) or int(cells[n]) == GridState.CellType.WALL:
+				continue
+			if avoid_danger and int(cells[n]) == GridState.CellType.STATIC_DANGER:
+				continue
+			seen[n] = true
+			queue.append(n)
+	return false
+
+## Longueur de la plus courte pile gagnante parmi les piles COURTES, ou 0 si
+## aucune ne gagne. On monte par longueur croissante et on s'arrête au premier
+## succès : une carte que `[R01]` seule résout est condamnée par `--min-len`, et
+## l'apprendre coûte alors autant de simulations qu'il y a de règles.
+##
+## ON NE VA PAS AU-DELÀ DE `_min_len - 1` : au-dessus, ce n'est plus un motif de
+## rejet, et l'énumération complète du validateur fera le travail une seule fois.
+func _shortest_winner_length(data: Dictionary) -> int:
+	var allowed: Array[int] = []
+	for v in data.get("allowed_rules", []):
+		allowed.append(int(v))
+	for length in range(1, maxi(_min_len, 1)):
+		for stack_variant in StackEnumerator.enumerate(allowed, length):
+			var stack: Array[int] = []
+			for v in stack_variant:
+				stack.append(int(v))
+			if stack.size() != length:
+				continue
+			var row := ValidateLib.simulate_stack(data, _params, stack)
+			if int(row["outcome"]) == SimState.Outcome.WON:
+				return length
+	return 0
+
+## Retire de la bibliothèque tout ce qui ne porte aucune gagnante, et re-mesure.
+##
+## DEUX PASSES SUFFISENT EN PRATIQUE, mais la boucle est écrite pour converger :
+## retirer une règle supprime des piles, ce qui peut rendre MINIMALES des
+## gagnantes qui ne l'étaient pas — donc changer la liste des porteuses. On
+## s'arrête dès que la bibliothèque ne bouge plus, et on garde le dernier verdict
+## VALIDE : un resserrage qui ferait tomber le niveau sous QN-01 est un
+## resserrage de trop, et c'est alors le candidat entier qu'on écarte.
+func _narrow(shape: Dictionary, verdict: Dictionary, reasons: Dictionary) -> Dictionary:
+	var library: Array = _rules.duplicate()
+	var best := verdict
+	for _pass in range(3):
+		var carriers: Array = (best["carriers"] as Array).duplicate()
+		carriers.sort()
+		if carriers.size() >= library.size():
+			break
+		var text := _render(shape, _probe_ticks, carriers)
+		if text.is_empty():
+			break
+		var parsed := LvlParser.parse(text, _min_period, _flee_sq)
+		if not (parsed["errors"] as PackedStringArray).is_empty():
+			break
+		var judged := _judge(parsed["level"], reasons)
+		if int(judged["score"]) <= 0:
+			# La carte ne tenait que par ses fausses pistes.
+			_tally(reasons, "ne survit pas au resserrage de la bibliothèque")
+			return {"score": 0}
+		library = carriers
+		best = judged
+	best["library"] = library
+	return best
 
 ## Règles présentes dans TOUTES les gagnantes minimales.
 func _monopolies(minimal: Array) -> Array:
@@ -380,6 +754,30 @@ func _fits_after_turn(w: int, h: int, face: int) -> bool:
 	var fh: int = w if face % 2 == 1 else h
 	return fw >= MIN_W and fw <= MAX_W and fh >= MIN_H and fh <= MAX_H
 
+## LA COHÉRENCE AVEC LA BIBLIOTHÈQUE SE VÉRIFIE AVANT DE GÉNÉRER, pas après.
+##
+## Poser un mobilier qu'aucune règle du brief ne sait employer produit une carte
+## morte, et le balayage la paie au prix fort : les deux passes « bouclier » ont
+## produit **1 054 candidats sur 1 200 sans une seule gagnante**, tous parce
+## qu'un goulot bouché barrait la seule route alors que la bibliothèque n'avait
+## ni R13 pour le neutraliser ni atelier pour l'encaisser.
+##
+## C'est le pendant, côté GÉNÉRATION, du principe qui gouverne les règles : un
+## élément qui ne sert à rien ne rend pas le niveau plus difficile, il le rend
+## plus long. Ici il ne le rend même pas plus long : il le rend impossible.
+func _furniture_is_playable(plug: bool, station: String) -> bool:
+	var has_plug_rule := false
+	for r in _rules:
+		if RuleRegistry.base_rule_id(r) == RuleRegistry.R13_PLUG:
+			has_plug_rule = true
+	# Un goulot bouché sans rien pour le franchir ferme la carte.
+	if plug and not has_plug_rule and station == "none":
+		return false
+	# Un atelier sans danger ne protège de rien : c'est du décor.
+	if station != "none" and not plug:
+		return false
+	return true
+
 func _shapes() -> Array:
 	var out: Array = []
 	for w in [9, 11, 13]:
@@ -392,11 +790,30 @@ func _shapes() -> Array:
 				# doivent être essayés, pas seulement le premier.
 				for lx in [ox, maxi(0, ox - 2), mini(w - 1, ox + 2), 0, w - 1]:
 					for band in (_bands if not _bands.is_empty() else ["none", "one_gap", "two_gaps", "split"]):
-						for gx in [w / 3, w / 2, (2 * w) / 3]:
+						# L'OUVERTURE SE PLACE PAR RAPPORT À LA SORTIE, jamais en
+						# absolu — et c'est le réglage qui décide si le balayage
+						# trouve quelque chose.
+						#
+						# Mesuré sur 250 candidats : 103 se gagnaient avec une seule
+						# règle et 100 n'avaient aucune gagnante — 81 % aux deux
+						# extrêmes. Des colonnes absolues donnent soit un goulot pile
+						# sous la sortie (la lumière y mène seule, carte triviale),
+						# soit un détour d'une demi-carte (personne n'arrive).
+						#
+						# Le seul niveau retenu jusqu'ici, ch2_06, a son ouverture
+						# décalée d'UNE case : assez pour que « vers la lumière »
+						# refuse le pas de côté, pas assez pour que la carte devienne
+						# infranchissable. C'est cette bande étroite qu'on balaie.
+						for delta in [-2, -1, 1, 2]:
+							var gx: int = clampi(ox + delta, 1, w - 2)
+							if gx == ox:
+								continue
 							for plug in (_plugs if not _plugs.is_empty() else [false, true]):
 								if plug and band == "none":
 									continue   # rien à boucher sans goulot
 								for station in (_stations if not _stations.is_empty() else ["none"]):
+									if not _furniture_is_playable(plug, station):
+										continue
 									for swarm in [[4, 5], [5, 4], [5, 5]]:
 										for bx in [1, (w - int(swarm[0])) / 2, w - int(swarm[0]) - 1]:
 											for face in (_faces if not _faces.is_empty() else [0, 1, 2, 3]):
@@ -420,7 +837,11 @@ func _station_x(w: int, gx: int, where: String) -> int:
 
 ## Rend une géométrie en texte `.lvl`, dans l'orientation canonique — sortie au
 ## Nord — puis la fait pivoter d'un quart de tour par cran de `face`.
-func _render(s: Dictionary, max_ticks: int = 300) -> String:
+## `library` vide = la bibliothèque du brief. Le resserrage lui passe la liste
+## réduite, et l'émission finale la reprend : le fichier écrit porte donc
+## exactement les règles qui PORTENT une gagnante, pas celles qu'on avait
+## offertes au départ.
+func _render(s: Dictionary, max_ticks: int = 300, library: Array = []) -> String:
 	var w := int(s["w"])
 	var h := int(s["h"])
 	var rows: Array = []
@@ -450,7 +871,22 @@ func _render(s: Dictionary, max_ticks: int = 300) -> String:
 		if band != "split":
 			rows[my][int(s["gx"])] = "."
 		if band == "two_gaps":
-			var other: int = (int(s["gx"]) + w / 3) % (w - 2) + 1
+			# LA SECONDE OUVERTURE EST LE MIROIR DE LA PREMIÈRE PAR RAPPORT À
+			# LA SORTIE, et ce n'est pas une coquetterie de symétrie.
+			#
+			# Elle se calculait par une arithmétique arbitraire — un tiers de
+			# largeur modulo la grille — qui la posait n'importe où : tantôt
+			# collée à la première (une seule route en pratique), tantôt à
+			# l'autre bout (un détour que personne ne prend). Dans les deux cas
+			# une seule famille gagnante, et le candidat tombait.
+			#
+			# Deux ouvertures ÉQUIDISTANTES de la sortie donnent deux routes de
+			# coût comparable, donc deux réponses défendables — c'est la
+			# condition géométrique pour que le niveau porte plusieurs familles.
+			# Et l'invariant n°19 garantit qu'elles ne se valent pas tout à fait :
+			# à égalité tout préfère l'Est, donc le miroir n'est jamais un
+			# doublon.
+			var other: int = clampi(2 * int(s["ox"]) - int(s["gx"]), 1, w - 2)
 			if other != int(s["gx"]):
 				rows[my][other] = "."
 		elif band == "split":
@@ -507,7 +943,8 @@ func _render(s: Dictionary, max_ticks: int = 300) -> String:
 	header.append("id: forge_tmp")
 	header.append("name: Forge")
 	header.append("tutorial: false")
-	header.append("allowed_rules: [%s]" % ", ".join(_names(_rules)))
+	header.append("allowed_rules: [%s]" % ", ".join(
+		_names(library if not library.is_empty() else _rules)))
 	header.append("slots: %d" % _slots)
 	header.append("max_ticks: %d" % max_ticks)
 	for objective in _objective.split(";", false):
@@ -534,7 +971,7 @@ func _rotate(rows: Array, quarters: int) -> Array:
 	return out
 
 ## --- Sortie ------------------------------------------------------------------
-func _emit(kept: Array) -> void:
+func _emit(kept: Array, reasons: Dictionary) -> void:
 	if kept.is_empty():
 		print("\nAucun candidat ne satisfait le brief. Les motifs d'écart "
 			+ "ci-dessus disent où céder : bibliothèque, objectif, ou --min-sets.")
@@ -557,6 +994,20 @@ func _emit(kept: Array) -> void:
 		var s: Dictionary = c["shape"]
 		if seen_families.has(String(c["families"])):
 			continue
+		# LE RESSERRAGE EST UNE FINITION, PAS UN FILTRE — et le confondre coûtait
+		# quatre fois le prix. Il relance une énumération complète jusqu'à trois
+		# fois ; appliqué à chaque survivant, il empêchait un balayage de 250
+		# candidats de finir en neuf minutes, là où 50 candidats rejetés par les
+		# filtres bon marché prennent trois secondes.
+		#
+		# La règle de qualité ne change pas — un candidat qui ne survit pas au
+		# resserrage est écarté, et le suivant prend sa place — mais on ne la paie
+		# que sur la poignée qu'on va écrire.
+		var narrowed := _narrow(s, c, reasons)
+		if int(narrowed["score"]) <= 0:
+			continue
+		c = narrowed
+		c["shape"] = s
 		seen_families[String(c["families"])] = true
 		shown += 1
 		print("\n#%d  score %d — %s" % [shown, int(c["score"]), String(c["why"])])
@@ -576,13 +1027,16 @@ func _emit(kept: Array) -> void:
 		# rend le texte intact et rapporte un succès — c'est le mode de panne que
 		# tout le dépôt s'interdit, et il n'y a aucune raison de le rouvrir ici.
 		var calibrated: int = clampi(int(c["min_ticks"]) * 2, 60, 300)
-		var text := _render(s, calibrated)
+		var library: Array = c.get("library", _rules)
+		var text := _finish(s, c, calibrated, library)
 		var path := "%s/forge_%02d.lvl" % [_out, shown]
 		var f := FileAccess.open(path, FileAccess.WRITE)
 		if f != null:
 			f.store_string(text)
 			f.close()
-			print("    écrit : %s  (max_ticks calibré à %d)" % [path, calibrated])
+			print("    bibliothèque resserrée à %s" % ", ".join(_names(library)))
+			print("    écrit : %s  (max_ticks %d, %d gagnantes, %d classes)"
+				% [path, calibrated, int(c["n_win"]), int(c["classes"])])
 
 ## --- Mécanique commune -------------------------------------------------------
 ## Les gagnantes MINIMALES : celles dont aucune sous-suite ne gagne déjà. On
@@ -653,6 +1107,7 @@ func _read_brief() -> void:
 			"--min-sets": _min_sets = int(value)
 			"--max-sets": _max_sets = int(value)
 			"--min-len": _min_len = int(value)
+			"--probe-ticks": _probe_ticks = int(value)
 			"--top": _top = int(value)
 			"--out": _out = value if value.begins_with("res://") else "res://" + value
 			"--band":

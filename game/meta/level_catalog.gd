@@ -17,7 +17,19 @@ const LEVELS := [
 	{"id": "ch2_02", "name": "Sans lumière", "path": "res://data/levels/ch2_02.json", "ready": true},
 	{"id": "ch2_03", "name": "La mauvaise porte", "path": "res://data/levels/ch2_03.json", "ready": true},
 	{"id": "ch2_04", "name": "Le détour long", "path": "res://data/levels/ch2_04.json", "ready": true},
-	{"id": "ch2_05", "name": "Les deux moitiés", "path": "res://data/levels/ch2_05.json", "ready": true},
+	# ch2_05 « Les deux moitiés » A ÉTÉ FUSIONNÉ AVEC ch2_04 le 20 août 2026.
+	#
+	# Les deux niveaux acceptaient EXACTEMENT les mêmes trois familles gagnantes
+	# — `[1,4,5]`, `[1,4,6]`, `[4,5,6]` — sur le même mobilier, avec la même
+	# bibliothèque et le même objectif. Seule la nuée différait : un bloc de 5×4
+	# d'un côté, deux groupes de 2×5 de l'autre. Deux tableaux, une seule
+	# question, et le joueur qui résolvait l'un récitait sur l'autre.
+	#
+	# ON GARDE ch2_04, qui porte cinq gagnantes minimales contre quatre, et dont
+	# la leçon — l'asymétrie Nord>Est>Sud>Ouest — est le sujet du chapitre.
+	# Trois refontes de ch2_05 avaient été mesurées avant d'en arriver là ; la
+	# dernière a été refusée par le validateur pour agents en sur-place
+	# perpétuel. Fusionner valait mieux que garder un niveau qui a l'air cassé.
 	{"id": "ch2_06", "name": "L'ouverture décalée", "path": "res://data/levels/ch2_06.json", "ready": true},
 	{"id": "ch3_01", "name": "La trace des autres", "path": "res://data/levels/ch3_01.json", "ready": true},
 	{"id": "ch3_02", "name": "La trace qui s'efface", "path": "res://data/levels/ch3_02.json", "ready": true},

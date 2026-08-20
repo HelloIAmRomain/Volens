@@ -3063,11 +3063,25 @@ distinct. Un défaut y a été corrigé, invisible dans les chiffres et évident
 relisant la carte : il perçait **trois** ouvertures au lieu de deux, dont deux
 voisines, si bien que le goulot bouché se contournait d'une case.
 
-#### ch2_04 ≡ ch2_05 reste dans la liste d'attente
+#### ch2_04 ≡ ch2_05 — FUSIONNÉS le 20 août 2026
 
-Inchangé depuis la décision 192 ter : la correction invalide des empreintes d'or,
-et les trois refontes mesurées ont toutes échoué — la dernière refusée par le
-validateur pour agents en sur-place perpétuel.
+« Pour les niveaux identiques il faut les fusionner en effet. » ch2_05 est
+retiré ; ch2_04 reste.
+
+**RIEN DE JOUABLE NE SE PERD, et c'est mesuré** : les deux acceptaient
+exactement les mêmes trois familles gagnantes — `[1,4,5]`, `[1,4,6]`, `[4,5,6]`
+— sur le même mobilier, avec la même bibliothèque et le même objectif. Seule la
+nuée différait. On garde ch2_04, plus riche d'une gagnante minimale, et dont la
+leçon — l'asymétrie Nord>Est>Sud>Ouest — est le sujet du chapitre.
+
+> **LA SUPPRESSION N'A DEMANDÉ AUCUNE RÉGÉNÉRATION D'EMPREINTE**, et c'est ce
+> qui la distingue d'une refonte. Retirer les deux recettes de ch2_05 laisse les
+> 72 autres intactes : elles gardent leurs empreintes archivées et concordent
+> toujours. Le protocole n'interdit pas de RETIRER une recette dont le niveau
+> n'existe plus ; il interdit d'en réécrire une dont le niveau existe encore.
+
+La liste d'attente `KNOWN_TWINS` est désormais **vide**, et c'est l'état normal :
+une entrée n'y a sa place que le temps qu'une décision humaine soit prise.
 
 ### 199. PASSE COMPLÈTE SUR L'APPAREIL — six défauts, dont un qu'aucun test ne pouvait voir
 
@@ -3368,6 +3382,34 @@ l'alphabet.
 > par leur valeur. La sortie propre est de réserver les valeurs mortes sans les
 > réattribuer, exactement comme les identifiants de R07 et R10 restent réservés.
 > C'est une opération à part entière, à décider.
+
+### 200. La forge, troisième version — elle écrit un niveau FINI
+
+« Il faut que les niveaux créés soient bons. » La version précédente trouvait des
+géométries conformes ; il restait à faire à la main, à chaque fois, les trois
+gestes qui séparent un candidat d'un niveau. Ils sont désormais dans l'outil.
+
+**1. LA BIBLIOTHÈQUE SE RESSERRE JUSQU'À CE QUE TOUT PORTE.** C'est le geste que
+ch2_06 a demandé QUATRE fois de suite : le balayage l'avait trouvé avec six
+règles, dont deux que RG-13 déclarait inobservables et deux qui ne portaient
+aucune gagnante minimale. La forge retire donc les règles sans charge, **puis
+re-mesure** — retirer des règles change l'espace des piles, donc les gagnantes,
+donc le verdict.
+
+> **ET UN CANDIDAT QUI NE SURVIT PAS AU RESSERRAGE EST ÉCARTÉ.** S'il tombe sous
+> QN-01 une fois ses fausses pistes retirées, c'est qu'il ne tenait que par
+> elles. C'est un critère de qualité qu'aucune mesure sur la bibliothèque large
+> ne peut donner : il faut avoir enlevé pour savoir.
+
+**2. LES COMPTEURS SONT DÉCLARÉS DEPUIS LA MESURE.** `expected_wins`,
+`expected_classes` et `calibrated_on` sont écrits dans l'en-tête à partir de la
+simulation qu'on vient de faire. Le validateur les confronte ensuite à la
+sienne ; les recopier à la main était la seule source d'« ÉCART À LA FICHE ».
+
+**3. DEUX DÉFIS QUI EXIGENT DEUX PILES DIFFÉRENTES.** L'économie récompense la
+plus courte des gagnantes ; l'abstinence interdit une règle **que cette plus
+courte emploie**, ce qui force à en chercher une autre. Et elle ne porte jamais
+sur une règle qu'aucune gagnante n'évite — ce serait un mur, pas un défi.
 
 ### 196 bis. ch2_06 « L'ouverture décalée » — première carte retenue par balayage
 

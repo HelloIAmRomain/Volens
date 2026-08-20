@@ -68,35 +68,28 @@ func _fingerprint(level_id: String) -> String:
 	return "rules=%s|slots=%d|objectifs=%s|mobilier=%s" % [
 		str(rules), LevelSpec.open_slots(data), str(objectives), str(furniture)]
 
-## LES DEUX PAIRES CONNUES, ET POURQUOI ELLES SONT ENCORE LÀ.
+## LA LISTE D'ATTENTE EST VIDE, ET C'EST L'ÉTAT NORMAL.
 ##
-## Ce n'est pas une liste de tolérance : c'est une liste d'ATTENTE, et elle
-## attend une décision humaine précise. **Corriger l'un ou l'autre de ces
-## niveaux invalide des empreintes d'or archivées** — `tests/golden/golden.json`
-## en garde deux recettes pour ch2_05 et deux pour ch3_04. Or une empreinte d'or
-## qui change signale une régression du déterminisme ; la mettre à jour parce
-## qu'on a bougé un mur est exactement le geste que le protocole interdit de
-## faire seul. La géométrie de ces deux niveaux est donc GELÉE tant que la
-## régénération des recettes n'a pas été explicitement demandée.
+## Elle a porté deux paires, toutes deux résolues :
 ##
-## Trois tentatives de refonte de ch2_05 ont été mesurées avant ce constat, et
-## la dernière a été refusée par le validateur pour un motif qui vaut d'être
-## gardé : « 1 pile gagnante laisse jusqu'à 2 agents faire du sur-place
-## perpétuel — le joueur y verra un bug ». Un doublon assumé vaut mieux qu'un
-## niveau qui a l'air cassé.
+##   · **ch3_02 ≡ ch3_04** (18 août 2026) — ch3_04 refondu sur une poche fermée
+##     au nord, où « vers la lumière » se piège elle-même et où la piste connaît
+##     le détour. Ses recettes d'or ont été régénérées sur autorisation, après
+##     prédiction écrite : seize lignes modifiées, toutes ch3_04.
+##   · **ch2_04 ≡ ch2_05** (20 août 2026) — FUSIONNÉS. Les deux acceptaient
+##     exactement les mêmes trois familles gagnantes, sur le même mobilier, avec
+##     la même bibliothèque et le même objectif ; seule la nuée différait. On a
+##     gardé ch2_04, plus riche d'une gagnante et porteur de la leçon du
+##     chapitre. Trois refontes de ch2_05 avaient été mesurées d'abord, la
+##     dernière refusée par le validateur pour agents en sur-place perpétuel :
+##     fusionner valait mieux que garder un niveau qui a l'air cassé.
 ##
-## NUANCE HONNÊTE SUR ch2_04 ≡ ch2_05 : les deux acceptent les mêmes familles,
-## mais pas pour la même raison. ch2_05 sépare la nuée en deux groupes hors de
-## portée de perception, et sa question réelle — « comment deux moitiés qui ne
-## se voient pas s'accordent-elles ? » — n'a pas d'équivalent en ch2_04. Le
-## doublon est réel du point de vue des SOLUTIONS, discutable du point de vue du
-## sujet. C'est précisément ce qu'une décision humaine doit trancher.
-## ch3_02 ≡ ch3_04 A ÉTÉ RÉSOLU le 18 août 2026 : ch3_04 est refondu sur une
-## poche fermée au nord, où « vers la lumière » se piège elle-même et où la
-## piste connaît le détour. Son entrée a donc quitté cette liste — c'est le
-## second test qui l'exige, et c'est la seule façon qu'une liste d'attente ne
-## devienne pas une liste de tolérance.
-const KNOWN_TWINS := ["ch2_04 ≡ ch2_05"]
+## CE QU'ELLE RESTE. Non pas une liste de tolérance mais une liste d'ATTENTE :
+## une entrée n'y a sa place que le temps qu'une décision humaine soit prise —
+## typiquement parce que la correction invaliderait des empreintes d'or, ce qui
+## ne se fait jamais seul. Le second test refuse qu'une entrée y survive à son
+## motif, et c'est ce qui empêche l'attente de devenir une habitude.
+const KNOWN_TWINS: Array = []
 
 func test_no_two_levels_pose_the_same_exercise() -> void:
 	var seen: Dictionary = {}
