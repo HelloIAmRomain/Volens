@@ -3383,6 +3383,97 @@ l'alphabet.
 > réattribuer, exactement comme les identifiants de R07 et R10 restent réservés.
 > C'est une opération à part entière, à décider.
 
+### 201. La forge, quatrième version — la rendre RAPIDE, puis la rendre UTILE
+
+Deux demandes en une : « optimise l'algorithme, supprime les choses impossibles
+le plus tôt » et « il faut que les niveaux créés soient bons ».
+
+#### Ce qui a fait gagner du temps, mesuré à chaque étape
+
+| État | 250 candidats |
+|---|---|
+| Départ | **ne finit pas en 9 min 20** |
+| + filtres de grille + sonde à une règle | 5 min 44 |
+| + resserrage déplacé à l'émission | **finit** |
+
+Trois leviers, du plus au moins rentable :
+
+1. **DEUX PARCOURS DE GRILLE, GRATUITS ET SÛRS.** « Assez d'agents peuvent-ils
+   seulement atteindre la sortie ? » — une bande médiane en mure régulièrement
+   une partie, et l'objectif d'extraction devient inatteignable quelle que soit
+   la pile. Puis : « toute route traverse-t-elle un danger que rien ne
+   neutralise ? » — celui-là aurait tué d'un coup les **1 054 candidats morts
+   sur 1 200** des balayages bouclier.
+
+   > Un filtre de rejet doit être **pessimiste sur ce qu'il refuse** : on ignore
+   > donc portes et dangers cycliques, qui peuvent s'ouvrir ou s'éteindre. Seul
+   > le mur ne bouge jamais. L'erreur inverse — écarter une carte valable — ne
+   > se voit jamais, puisqu'elle se manifeste par une absence.
+
+2. **UNE SONDE À UNE RÈGLE** condamne les cartes triviales pour *k* simulations
+   au lieu de 156.
+
+3. **LE PLAFOND DE TICKS DE RECHERCHE**, ramené de 300 à 100 : chaque pile
+   PERDANTE tournait jusqu'au bout, et `max_ticks` est de toute façon recalibré
+   à l'émission.
+
+Et une erreur de conception corrigée : **le resserrage de bibliothèque est une
+FINITION, pas un filtre.** Il relance une énumération complète jusqu'à trois
+fois ; appliqué à chaque survivant, il multipliait par quatre le poste dominant.
+On ne le paie plus que sur les candidats qu'on va écrire.
+
+#### Ce qui a fait gagner en QUALITÉ
+
+**LE BALAYAGE VISAIT MAL.** Sur 250 candidats, 103 se gagnaient en une seule
+règle et 100 n'avaient aucune gagnante : **81 % aux deux extrêmes**. La cause
+était le placement du goulot en colonnes ABSOLUES — soit pile sous la sortie
+(la lumière y mène seule), soit à une demi-carte (personne n'arrive).
+
+L'ouverture se place désormais **par rapport à la sortie**, à ±1 ou ±2 cases.
+C'est la bande étroite où vit le seul niveau retenu jusqu'ici : ch2_06 a son
+ouverture décalée d'UNE case — assez pour que « vers la lumière » refuse le pas
+de côté, pas assez pour rendre la carte infranchissable. Après correction : 74
+triviales au lieu de 103, et 68 candidats à une ou deux classes, c'est-à-dire
+*juste sous le seuil*.
+
+Et la seconde ouverture de `two_gaps` est maintenant le **miroir** de la
+première par rapport à la sortie — deux routes de coût comparable, condition
+géométrique pour porter plusieurs familles.
+
+#### Ce qui rend l'outil UTILISABLE : montrer les manqués
+
+Un balayage qui rend « 0 retenue » fait perdre son temps deux fois — celui qu'il
+a pris, et celui qu'on passe à deviner de combien on était loin. Il affiche
+maintenant **les meilleurs candidats refusés, avec leur carte dessinée**.
+
+> C'est exactement ainsi que ch2_06 est né : en reprenant à la main un candidat
+> qui frôlait le seuil. La géométrie était bonne, il fallait resserrer la
+> bibliothèque — et rien dans « 0 retenue » ne l'aurait dit.
+
+**LA RELECTURE DE LA CARTE A IMMÉDIATEMENT PAYÉ.** Les premiers niveaux de
+collecte se gagnaient en **quatre ticks** : les ressources tombaient collées à
+la nuée. Trois placements ont été essayés et mesurés — derrière la nuée (152
+candidats sans une seule gagnante : avec « vers la lumière » pour seul moteur,
+rien ne fait descendre une nuée à l'opposé du but), à mi-hauteur (collées aux
+dépôts), au-dessus du bloc (ramassage au premier tick).
+
+Les trois disent la même chose, et ce n'était pas la position : **c'était la
+hauteur de carte**. Un niveau de transport a besoin d'une carte haute, le trajet
+étant le sujet. Les cartes de collecte se génèrent donc en 15 ou 17 rangées, et
+le temps de la meilleure pile a doublé.
+
+#### Les paramètres, puisqu'un générateur se pilote
+
+`--rules`, `--slots`, `--objective`, `--band`, `--plug`, `--station`, `--face`,
+`--elements`, `--want`, `--min-sets`, `--max-sets`, `--min-len`, `--max`,
+`--top`, `--probe-ticks`, `--out`. Tous documentés en tête du fichier.
+
+**LES COMBINAISONS INCOHÉRENTES SONT REFUSÉES AVANT DE BALAYER** : des
+ressources sans « Porter » ni « Déposer » arrêtent la commande sur-le-champ, un
+goulot bouché sans R13 ni atelier n'est jamais généré, un atelier sans danger
+non plus. C'est le principe de clarté appliqué à l'outillage — un élément qui ne
+sert à rien ne rend pas la carte plus difficile, il la rend impossible.
+
 ### 200. La forge, troisième version — elle écrit un niveau FINI
 
 « Il faut que les niveaux créés soient bons. » La version précédente trouvait des

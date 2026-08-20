@@ -164,6 +164,47 @@ var _probe_ticks := 100
 var _bands: Array[String] = []
 var _plugs: Array[bool] = []
 var _stations: Array[String] = []
+## Mobilier supplémentaire demandé au brief : `ressource` pose des ressources et
+## leurs dépôts, ce qui ouvre les niveaux de COLLECTE. La cohérence est vérifiée
+## au démarrage — des ressources sans « Porter » ni « Déposer » sont du décor.
+var _elements: Array[String] = []
+
+## Les meilleurs candidats REFUSÉS, gardés pour être proposés quand rien ne
+## passe. Un outil qui ne rend que « 0 retenue » fait perdre le balayage entier.
+var _near: Array = []
+
+func _remember_near(classes: int, data: Dictionary, summary: Dictionary) -> void:
+	if classes < 2:
+		return   # à une seule classe, il n'y a rien à reprendre
+	_near.append({
+		"classes": classes,
+		"n_win": int(summary["n_win"]),
+		"min_ticks": int(summary["min_ticks"]),
+		"best_stack": summary["best_stack"],
+		"grid": _grid_text(data),
+	})
+
+## La grille telle qu'on la relit — c'est en RELISANT la carte produite que j'ai
+## trouvé le défaut des trois ouvertures, invisible dans tous les chiffres.
+func _grid_text(data: Dictionary) -> String:
+	var grid: Dictionary = data.get("grid", {})
+	var size: Array = grid.get("size", [0, 0])
+	var w: int = int(size[0])
+	var cells: Array = grid.get("cells", [])
+	const GLYPH := {0: ".", 1: "#", 2: "E", 3: "X", 4: "C", 5: "r", 6: "D",
+		7: "P", 8: "^", 9: "L", 10: "S", 11: "s", 12: "B"}
+	var occupied: Dictionary = {}
+	for a in data.get("agents", []):
+		var p: Array = (a as Dictionary)["pos"]
+		occupied[int(p[1]) * w + int(p[0])] = true
+	var out := PackedStringArray()
+	var line := PackedStringArray()
+	for i in range(cells.size()):
+		line.append("o" if occupied.has(i) else String(GLYPH.get(int(cells[i]), "?")))
+		if line.size() == w:
+			out.append(" ".join(line))
+			line = PackedStringArray()
+	return "\n".join(out)
 
 # --- ce que le catalogue occupe DÉJÀ ------------------------------------------
 var _known_sets: Dictionary = {}      # "[1, 9]" -> true
@@ -184,6 +225,20 @@ func _init() -> void:
 		print("Brief vide : --rules=R01,R04,… est obligatoire.")
 		quit(2)
 		return
+	# LA COHÉRENCE DU BRIEF SE VÉRIFIE AVANT DE BALAYER, pas après mille
+	# géométries. Des ressources sans « Porter » ni « Déposer » sont du décor : la
+	# carte serait insoluble et l'on mettrait dix minutes à l'apprendre.
+	if _elements.has("ressource"):
+		var carries := false
+		for r in _rules:
+			var base := RuleRegistry.base_rule_id(r)
+			if base == RuleRegistry.R11_CARRY or base == RuleRegistry.R12_DROP_AT_GOAL:
+				carries = true
+		if not carries:
+			print("Brief incohérent : --elements=ressource sans R11 ni R12. "
+				+ "Personne ne peut porter, donc rien ne peut être déposé.")
+			quit(2)
+			return
 
 	_load_catalogue()
 	print("FORGE — bibliothèque %s, %d rangs, objectif « %s »"
@@ -284,6 +339,12 @@ func _judge(data: Dictionary, reasons: Dictionary) -> Dictionary:
 	# validateur qui l'applique en ligne de commande sur les mêmes chiffres.
 	if classes < 3:
 		_tally(reasons, "QN-01 : %d classe(s), puzzle déguisé" % classes)
+		# ON GARDE LE MEILLEUR DES MANQUÉS, et c'est ce qui rend l'outil
+		# utilisable. Un balayage qui retient zéro ne dit RIEN d'actionnable : on
+		# relance en changeant un paramètre au hasard, sans savoir de combien on
+		# était loin. Or c'est exactement ainsi que ch2_06 est né — en reprenant
+		# à la main un candidat qui frôlait le seuil.
+		_remember_near(classes, data, summary)
 		return {"score": 0}
 	if classes > 40:
 		_tally(reasons, "QN-01 : %d classes, niveau creux" % classes)
@@ -475,6 +536,27 @@ func _finish(shape: Dictionary, c: Dictionary, max_ticks: int,
 				out.append("challenge: %s" % challenge)
 		out.append(line)
 	return "\n".join(out)
+
+## LES MEILLEURS MANQUÉS, avec leur carte. Un balayage qui ne rend rien fait
+## perdre son temps deux fois : celui qu'il a pris, et celui qu'on passe à
+## deviner de combien on était loin. Les candidats à DEUX classes ne sont qu'à
+## un cran du seuil QN-01, et c'est en reprenant l'un d'eux à la main que ch2_06
+## est né — la géométrie était bonne, il fallait resserrer la bibliothèque.
+func _show_near() -> void:
+	if _near.is_empty():
+		return
+	_near.sort_custom(func(a: Variant, b: Variant) -> bool:
+		if int(a["classes"]) != int(b["classes"]):
+			return int(a["classes"]) > int(b["classes"])
+		return int(a["n_win"]) > int(b["n_win"]))
+	print("\nLES PLUS PROCHES DU SEUIL — à reprendre à la main plutôt qu'à jeter")
+	for i in range(mini(2, _near.size())):
+		var n: Dictionary = _near[i]
+		print("\n  %d classes (seuil 3), %d gagnantes, meilleure %s en %d ticks"
+			% [int(n["classes"]), int(n["n_win"]), str(n["best_stack"]),
+				int(n["min_ticks"])])
+		for line in String(n["grid"]).split("\n"):
+			print("      " + line)
 
 ## Deux défis au plus, et jamais deux que la même pile décroche.
 func _challenge_line(c: Dictionary) -> String:
@@ -781,7 +863,11 @@ func _furniture_is_playable(plug: bool, station: String) -> bool:
 func _shapes() -> Array:
 	var out: Array = []
 	for w in [9, 11, 13]:
-		for h in [11, 13, 15]:
+		# UNE CARTE DE TRANSPORT EST HAUTE, et ce n'est pas un goût : le trajet
+		# EST le sujet. Sur onze rangées, la nuée en occupe cinq et il ne reste
+		# que deux cases entre la ressource et le dépôt — les meilleures piles
+		# gagnaient en quatre ticks, et le niveau ne portait que deux classes.
+		for h in ([15, 17] if _elements.has("ressource") else [11, 13, 15]):
 			for ox in [1, w / 4, w / 2, (3 * w) / 4, w - 2]:
 				# LA LUMIÈRE-LEURRE EST BALAYÉE, ET C'EST LA LEÇON DE ch2_04.
 				# Posée derrière la sortie, elle rend `[R01]` suffisante et le
@@ -923,6 +1009,22 @@ func _render(s: Dictionary, max_ticks: int = 300, library: Array = []) -> String
 			if x >= 0 and x < w and rows[my + 1][x] == ".":
 				rows[my + 1][x] = "B"
 
+	# RESSOURCES ET DÉPÔTS — la forge sait produire autre chose qu'un niveau
+	# d'extraction.
+	#
+	# Elle ne connaissait qu'une seule forme de but : faire sortir la nuée. Or le
+	# chapitre 4 en pose un autre — porter, puis déposer — et c'est une mécanique
+	# en deux temps qu'aucune géométrie d'extraction ne peut exercer.
+	#
+	# LES DÉPÔTS SE POSENT PRÈS DE LA SORTIE ET LES RESSOURCES LOIN D'ELLE, sans
+	# quoi le trajet aller-retour n'existe pas : c'est lui le sujet. On les met
+	# donc de part et d'autre de ce que la nuée doit traverser.
+	if _elements.has("ressource"):
+		for dx in [-2, 2]:
+			var dpos: int = clampi(int(s["ox"]) + dx, 0, w - 1)
+			if rows[2][dpos] == ".":
+				rows[2][dpos] = "D"
+
 	# La nuée se place par rapport à la BANDE, pas au bas de la grille : calée
 	# sur le bas, elle chevauchait la bande deux fois sur trois.
 	var floor_by: int = h - int(s["sh"]) - 1
@@ -934,6 +1036,50 @@ func _render(s: Dictionary, max_ticks: int = 300, library: Array = []) -> String
 			var x: int = int(s["bx"]) + dx
 			if x >= 0 and x < w:
 				rows[by + dy][x] = "o"
+
+	# LES RESSOURCES SE POSENT UNE FOIS LA NUÉE PLACÉE, sur la rangée qui la
+	# précède immédiatement. Elles étaient calculées AVANT, à partir d'une
+	# hauteur devinée : la condition tombait presque toujours à faux et le
+	# convertisseur refusait les 400 candidats d'un « collect 3 > 0 ressource(s)
+	# sur la grille ». Un élément qu'on croit poser et qui n'arrive jamais est la
+	# forme la plus coûteuse de l'erreur : tout le balayage travaille pour rien.
+	if _elements.has("ressource"):
+		# À MI-CHEMIN ENTRE LA NUÉE ET LES DÉPÔTS, jamais collées à la nuée.
+		#
+		# Posées juste au-dessus du bloc, elles se ramassaient au premier tick et
+		# le dépôt suivait deux cases plus haut : les meilleures piles gagnaient
+		# en QUATRE ticks. Un aller-retour de quatre ticks n'est pas un trajet,
+		# c'est un réflexe — et le niveau ne portait que deux classes.
+		#
+		# Le sujet du chapitre 4 est le VOYAGE en deux temps : aller chercher,
+		# puis rapporter. Il faut donc de la distance des deux côtés.
+		# SOUS LA NUÉE, LES DÉPÔTS EN HAUT — l'aller ET le retour.
+		#
+		# Deux placements ont été essayés et mesurés, tous deux gagnés en QUATRE
+		# ticks : juste au-dessus du bloc (ramassage au premier tick), puis à
+		# mi-chemin — où elles se retrouvaient COLLÉES aux dépôts, un pas de
+		# transport. Un trajet de quatre ticks n'est pas un voyage.
+		#
+		# Le sujet du chapitre 4 est le transport en deux temps. On place donc la
+		# ressource DERRIÈRE la nuée et le dépôt devant elle : il faut descendre
+		# chercher, puis remonter toute la carte pour rapporter.
+		# SUR LE CHEMIN, ET LE CHEMIN DOIT ÊTRE LONG.
+		#
+		# TROIS placements mesurés avant celui-ci. Derrière la nuée : aucune pile
+		# gagnante sur 152 candidats — avec « vers la lumière » pour seul moteur,
+		# rien ne fait descendre une nuée à l'opposé du but, donc personne ne va
+		# chercher. À mi-hauteur : collées aux dépôts, un pas de transport. Juste
+		# au-dessus du bloc : ramassage au premier tick.
+		#
+		# Les trois disent la même chose : ce n'est pas la POSITION qui manquait,
+		# c'est la HAUTEUR. Un niveau de transport a besoin d'une carte haute, et
+		# `_shapes` en réserve pour lui.
+		var rrow: int = by - 1
+		if rrow > 2:
+			for dx in range(int(s["sw"])):
+				var rx: int = int(s["bx"]) + dx
+				if rx >= 0 and rx < w and rows[rrow][rx] == "." and dx % 2 == 0:
+					rows[rrow][rx] = "r"
 
 	rows = _rotate(rows, int(s["face"]))
 	var lines := PackedStringArray()
@@ -975,6 +1121,7 @@ func _emit(kept: Array, reasons: Dictionary) -> void:
 	if kept.is_empty():
 		print("\nAucun candidat ne satisfait le brief. Les motifs d'écart "
 			+ "ci-dessus disent où céder : bibliothèque, objectif, ou --min-sets.")
+		_show_near()
 		return
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(_out))
 	print("\nMEILLEURS CANDIDATS")
@@ -1119,6 +1266,9 @@ func _read_brief() -> void:
 			"--station":
 				for token in value.split(",", false):
 					_stations.append(token.strip_edges())
+			"--elements":
+				for token in value.split(",", false):
+					_elements.append(token.strip_edges())
 			"--face":
 				for token in value.split(",", false):
 					_faces.append(["N", "E", "S", "O"].find(token.strip_edges().to_upper()))
