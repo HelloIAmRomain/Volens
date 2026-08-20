@@ -133,6 +133,8 @@ func _input(event: InputEvent) -> void:
 	# Dès qu'un évènement tactile est vu, la souris est donc ignorée pour de bon.
 	# Le poste de travail, lui, n'en émet jamais : son chemin reste intact, et
 	# c'est ce qui permet de continuer à éprouver le défilement hors appareil.
+	if PointerEvents.is_emulated_duplicate(event):
+		return
 	if event is InputEventScreenTouch or event is InputEventScreenDrag:
 		_touch_seen = true
 

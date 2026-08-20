@@ -186,3 +186,30 @@ func test_the_desktop_path_still_works() -> void:
 	press.position = Vector2(100, 400)
 	d._input(press)
 	assert_true(d._touching, "un appui souris doit ouvrir le geste hors appareil")
+
+## --- Le verrou partagé, éprouvé pour lui-même --------------------------------
+
+## LE VERROU EST UN ÉTAT DE PROCESSUS, donc il fuit d'un test au suivant : un
+## test qui voit passer un évènement tactile ferme le verrou pour tous ceux qui
+## suivent, et le test du chemin « poste de travail » échouait sans rapport avec
+## son objet. On repart de zéro avant CHAQUE test, pas une fois pour toutes.
+func before_each() -> void:
+	PointerEvents.reset_for_test()
+
+func test_the_lock_only_closes_once_a_finger_has_spoken() -> void:
+	PointerEvents.reset_for_test()
+	var click := InputEventMouseButton.new()
+	click.button_index = MOUSE_BUTTON_LEFT
+	click.pressed = true
+	assert_false(PointerEvents.is_emulated_duplicate(click),
+		("sans évènement tactile, la souris est la seule source : c'est le cas du "
+		+ "poste de travail, où se font les captures et les tests"))
+
+	var touch := InputEventScreenTouch.new()
+	touch.pressed = true
+	assert_false(PointerEvents.is_emulated_duplicate(touch),
+		"un évènement tactile n'est jamais un doublon")
+	assert_true(PointerEvents.is_emulated_duplicate(click),
+		("une fois le doigt vu, la souris n'est plus qu'un écho — c'est ce qui "
+		+ "dédoublait la légende, écrasait l'élan et annulait la mise en pause"))
+	PointerEvents.reset_for_test()

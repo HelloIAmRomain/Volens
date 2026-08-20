@@ -3113,6 +3113,42 @@ qu'elle décrit annule son propre surlignage.
 > blanc là où le jeu en met un ambre. Une désignation qui déguise ce qu'elle
 > désigne renseigne à moitié.
 
+#### LE MÊME PIÈGE, TROIS FOIS, TROIS SYMPTÔMES SANS RAPPORT APPARENT
+
+Android émet, pour un seul geste physique, l'évènement tactile **et** son
+équivalent souris ÉMULÉ, à la même position et dans la même image. Tout code qui
+traite les deux agit en double — et le symptôme n'a rien à voir avec la cause :
+
+| Où | Ce qu'on voyait | Ce qui se passait |
+|---|---|---|
+| **Légende** | une légende ET l'objectif affichés ensemble | la carte suivante créée deux fois ; l'une se refermait sur le même geste |
+| **Défilement** | « ça s'arrête net, mais seulement à certains moments » | le doublon portait un déplacement NUL et écrasait la vitesse par zéro |
+| **Pause** | « toucher une zone vide ne fait rien » | `_toggle_play()` appelé deux fois, donc pas du tout |
+
+**TROIS CORRECTIONS LOCALES AURAIENT LAISSÉ PASSER LA QUATRIÈME.** Le verrou vit
+donc dans `PointerEvents`, et tout code qui lit des évènements de pointage y
+passe. C'est le même raisonnement que l'invariant n°16 : après trois divergences
+sur trois champs, on ne corrige plus au cas par cas.
+
+> **POURQUOI UN VERROU DÉFINITIF ET NON UN FILTRE PAR ÉVÈNEMENT** : on ne peut
+> pas reconnaître un évènement souris émulé à son contenu — il est en tout point
+> semblable à un vrai. Ce qu'on sait, c'est qu'un appareil ayant produit un
+> évènement tactile n'a pas de souris. Une fois le doigt vu, la souris n'est
+> qu'un écho. Le poste de travail, lui, n'émet jamais de tactile : le verrou ne
+> s'y ferme jamais, et les captures comme les tests d'interface continuent de
+> fonctionner à la souris.
+
+#### Le message de pile vide est retiré
+
+« Le message quand la pile est vide ne sert à rien, pire il gêne. » Exact sur les
+deux points : la pile est visible à l'écran et ses emplacements vides disent déjà
+ce que la phrase répétait, tandis que le bandeau se posait sur le terrain et
+masquait la nuée au moment précis où le joueur cherchait pourquoi rien ne part.
+
+**Le refus, lui, reste** — une nuée sans règle ne bouge pas, et la simulation ne
+pourrait que courir jusqu'au bout du temps pour rendre une défaite imméritée. Le
+retour haptique suffit à dire non.
+
 #### Le défilement accrochait — trois causes, et la première était déjà connue
 
 « Parfois le scroll se bloque, ça s'arrête net, mais seulement à certains

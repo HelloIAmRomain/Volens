@@ -613,6 +613,12 @@ func _show_note(text: String) -> void:
 ##   en pause, à vide       → relance.
 ## C'est ce qui rend le bouton du haut redondant, donc jamais requis.
 func _on_view_input(event: InputEvent) -> void:
+	# UN CONTACT DANS LE VIDE BASCULAIT LA LECTURE DEUX FOIS, donc pas du tout :
+	# Android émet le tactile ET la souris émulée pour le même geste. Le
+	# symptôme — « toucher une zone vide ne fait rien » — ne ressemblait pas du
+	# tout à sa cause. Voir `PointerEvents`.
+	if PointerEvents.is_emulated_duplicate(event):
+		return
 	var pressed := false
 	var pos := Vector2.ZERO
 	if event is InputEventMouseButton and (event as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
@@ -905,8 +911,20 @@ func _toggle_play() -> void:
 	# lancer — produisait donc un échec certain, immérité, et sans rapport avec
 	# ce que le joueur avait tenté. Il n'y a rien à observer dans une nuée qui ne
 	# bouge pas ; le refus vaut mieux que la punition.
+	# LE REFUS EST MUET, ET C'EST MIEUX AINSI.
+	#
+	# Il s'accompagnait d'un bandeau « Posez au moins une règle ». Signalé à
+	# l'essai : « le message quand la pile est vide ne sert à rien, pire il
+	# gêne ». Il a raison sur les deux points — la pile est visible à l'écran, et
+	# ses emplacements vides disent déjà tout ce que la phrase répétait. Le
+	# bandeau, lui, se posait sur le terrain et masquait la nuée au moment où le
+	# joueur cherchait justement à comprendre pourquoi rien ne partait.
+	#
+	# Reste le refus lui-même, et lui n'est pas négociable : une nuée sans règle
+	# ne bouge pas, la simulation ne peut que courir jusqu'au bout du temps et
+	# rendre une défaite imméritée. Le retour haptique suffit à dire non.
 	if not _playing and _compact_stack().is_empty():
-		_show_note("Posez au moins une règle : sans elle, la nuée ne bouge pas.")
+		Haptics.refuse(self)
 		return
 	_playing = not _playing
 	if _playing:
