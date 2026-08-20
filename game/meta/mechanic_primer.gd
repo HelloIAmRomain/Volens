@@ -91,6 +91,8 @@ static func present_in(level_data: Dictionary) -> Array:
 		var t := int(c)
 		if ENTRIES.has(t):
 			found[t] = true
+	var size: Array = grid.get("size", [0, 0])
+	var width: int = int(size[0]) if size.size() > 0 else 0
 	var out: Array = []
 	for t in [
 			GridState.CellType.LIGHT_SOURCE,
@@ -101,10 +103,28 @@ static func present_in(level_data: Dictionary) -> Array:
 			GridState.CellType.PRESSURE_DOOR,
 			GridState.CellType.SWITCH,
 			GridState.CellType.SHIELD]:
-		if found.has(t):
-			out.append(ENTRIES[t])
-	if not (grid.get("one_way", []) as Array).is_empty():
-		out.append(ONE_WAY_ENTRY)
+		if not found.has(t):
+			continue
+		# CHAQUE ENTRÉE PORTE SES CASES, et c'est ce qui la rend montrable.
+		# Nommer « la lumière » sans désigner laquelle ne renseigne qu'à moitié :
+		# le joueur lit un mot et cherche à quoi il correspond parmi huit
+		# marques colorées.
+		var entry: Dictionary = (ENTRIES[t] as Dictionary).duplicate()
+		var cells_of: Array = []
+		for i in range(cells.size()):
+			if int(cells[i]) == t and width > 0:
+				@warning_ignore("integer_division")
+				cells_of.append(Vector2i(i % width, i / width))
+		entry["cells"] = cells_of
+		out.append(entry)
+	var one_way: Array = grid.get("one_way", [])
+	if not one_way.is_empty():
+		var ow: Dictionary = ONE_WAY_ENTRY.duplicate()
+		var ow_cells: Array = []
+		for triplet in one_way:
+			ow_cells.append(Vector2i(int(triplet[0]), int(triplet[1])))
+		ow["cells"] = ow_cells
+		out.append(ow)
 	return out
 
 ## Ceux que le joueur n'a jamais vus. Au plus DEUX à la fois : trois cartes

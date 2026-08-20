@@ -126,12 +126,27 @@ func _open_game(level_id: String, resume: bool) -> GameScreen:
 		session.speed_index = 0 if LevelCatalog.index_of(level_id) == 0 else 1
 		screen.set_speed_index(session.speed_index)
 		session.save_to_disk()
-		screen.show_objective_panel()
 	# La persistance n'est branchée qu'UNE FOIS l'écran en place : sinon le
 	# chargement lui-même émet `state_changed` et réécrit la session avec le
 	# tick zéro, effaçant précisément ce qu'on s'apprêtait à restaurer.
 	screen.state_changed.connect(_persist_session)
-	_present_new_mechanics(screen, level_data)
+
+	# UNE SEULE SURCOUCHE À LA FOIS, ET DANS CET ORDRE. Les deux s'affichaient
+	# ensemble à l'essai sur l'appareil : la légende par-dessus le panneau
+	# d'objectif, chacune avec son « touchez pour… », et le joueur ne savait plus
+	# ce qu'il refermait. Deux panneaux simultanés ne font pas deux informations,
+	# ils en font zéro.
+	#
+	# LA LÉGENDE PASSE D'ABORD parce qu'elle explique le vocabulaire que
+	# l'objectif emploie. Lire « faire sortir 17 agents » sans savoir ce qu'est
+	# la lumière qu'on voit à l'écran, c'est lire la consigne avant l'alphabet.
+	var showing_resume: bool = resume and session.level_id == level_id
+	var card := _present_new_mechanics(screen, level_data)
+	if card == null:
+		if not showing_resume:
+			screen.show_objective_panel()
+	elif not showing_resume:
+		card.dismissed.connect(func() -> void: screen.show_objective_panel())
 	return screen
 
 ## LA LÉGENDE DES ÉLÉMENTS JAMAIS RENCONTRÉS.
@@ -144,17 +159,28 @@ func _open_game(level_id: String, resume: bool) -> GameScreen:
 ## fermée par un retour au menu, par une mise en veille ou par la fin du
 ## processus reviendrait sinon au niveau suivant — et la « une seule fois »
 ## n'aurait plus rien d'une promesse.
-func _present_new_mechanics(screen: GameScreen, level_data: Dictionary) -> void:
+func _present_new_mechanics(screen: GameScreen, level_data: Dictionary) -> MechanicCard:
 	var entries := MechanicPrimer.unseen_in(level_data, progress.seen)
 	if entries.is_empty():
-		return
+		return null
 	var keys := PackedStringArray()
 	for entry in entries:
 		keys.append(String((entry as Dictionary)["key"]))
 	progress.mark_seen(keys)
+	# LES CASES DÉCRITES SONT DÉSIGNÉES À L'ÉCRAN. « Lumière » ne veut rien dire
+	# devant huit marques colorées ; le joueur lit un mot et cherche à quoi il
+	# correspond. On rassemble les cases de TOUTES les entrées montrées — deux au
+	# plus — parce qu'elles apparaissent ensemble sur la même carte.
+	var cells: Array = []
+	for entry in entries:
+		cells.append_array((entry as Dictionary).get("cells", []) as Array)
 	var card := MechanicCard.new()
 	screen.add_child(card)
-	card.setup(entries)
+	# Le calcul des rectangles vient APRÈS l'ajout à l'arbre : la vue n'a pas de
+	# géométrie tant qu'elle n'a pas été disposée, et les rectangles vaudraient
+	# tous zéro.
+	card.setup(entries, screen.screen_rects_of(cells))
+	return card
 
 func _on_play_requested() -> void:
 	# « Continuer » et « Jouer » sont le MEME bouton : c'est l'existence d'une

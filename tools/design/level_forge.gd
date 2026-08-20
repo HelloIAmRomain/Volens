@@ -391,7 +391,7 @@ func _shapes() -> Array:
 				# piège et il faut composer pour l'atteindre. Les deux régimes
 				# doivent être essayés, pas seulement le premier.
 				for lx in [ox, maxi(0, ox - 2), mini(w - 1, ox + 2), 0, w - 1]:
-					for band in (_bands if not _bands.is_empty() else ["none", "one_gap", "two_gaps"]):
+					for band in (_bands if not _bands.is_empty() else ["none", "one_gap", "two_gaps", "split"]):
 						for gx in [w / 3, w / 2, (2 * w) / 3]:
 							for plug in (_plugs if not _plugs.is_empty() else [false, true]):
 								if plug and band == "none":
@@ -442,13 +442,40 @@ func _render(s: Dictionary, max_ticks: int = 300) -> String:
 	if band != "none":
 		for x in range(w):
 			rows[my][x] = "#"
-		rows[my][int(s["gx"])] = "."
+		# `split` PERCE SES PROPRES OUVERTURES et n'utilise pas `gx` : lui laisser
+		# ouvrir la sienne en plus donnait TROIS passages, dont deux voisins — le
+		# goulot bouché se contournait d'une case, et le raccourci qu'on voulait
+		# faire payer devenait gratuit. Le défaut ne se voyait pas dans les
+		# chiffres, seulement en relisant la carte produite.
+		if band != "split":
+			rows[my][int(s["gx"])] = "."
 		if band == "two_gaps":
 			var other: int = (int(s["gx"]) + w / 3) % (w - 2) + 1
 			if other != int(s["gx"]):
 				rows[my][other] = "."
+		elif band == "split":
+			# DEUX ROUTES DE COÛTS DIFFÉRENTS, et c'est une forme que les autres
+			# gabarits ne savent pas produire. `two_gaps` place ses ouvertures au
+			# hasard de l'arithmétique : elles finissent voisines, les deux
+			# routes se valent, et le choix n'existe pas.
+			#
+			# Ici l'une des ouvertures tombe À L'APLOMB de la nuée — le chemin le
+			# plus court possible — et l'autre à l'extrémité opposée de la paroi.
+			# Le raccourci est alors court PARCE QU'il est court, pas par
+			# accident, et le détour coûte toute la largeur de la carte.
+			#
+			# C'EST LA FORME QUE LA DÉCISION 191 RÉCLAME POUR LE BOUCLIER :
+			# « une carte où traverser le danger est un CHOIX — un raccourci
+			# payant contre un détour lent ». Bouché, le raccourci se paie ; libre
+			# et lointain, le détour se paie en temps.
+			var near: int = clampi(int(s["bx"]) + int(s["sw"]) / 2, 1, w - 2)
+			var far: int = 1 if near > w / 2 else w - 2
+			rows[my][near] = "."
+			rows[my][far] = "."
+			s["near_gap"] = near
 		if bool(s["plug"]):
-			rows[my][int(s["gx"])] = "X"
+			var plugged: int = int(s.get("near_gap", s["gx"]))
+			rows[my][plugged] = "X"
 
 	# L'ATELIER À BOUCLIERS, À L'ÉCART de la ligne droite : posé dans
 	# l'entonnoir il couvre tout le monde et `[R01]` seule regagne (décision

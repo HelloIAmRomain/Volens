@@ -2990,6 +2990,49 @@ reste sur place quelle que soit la carte.
   implémentation de « qui gagne » — le genre de doublon qui finit par diverger
   et par faire mentir l'outil sur ses propres résultats.
 
+### 198. Ce qui reste ouvert, et pourquoi — l'état honnête du catalogue
+
+Trois chantiers sont mesurés, compris, et **non résolus**. Les laisser nommés
+vaut mieux que de les laisser se redécouvrir.
+
+#### ch4_04 « Le tri » — une seule famille, et la géométrie en est la cause
+
+Deux gagnantes minimales, **un seul jeu de règles** `[1, 11, 12]`, et les trois
+règles en monopole : le joueur n'y choisit que l'ordre. `widen_search.gd` a
+passé les quatorze règles dessus et conclut « aucune n'enrichit ce niveau sans
+le banaliser » — exactement le verdict rendu sur ch3_03.
+
+**C'est donc la carte qu'il faudrait refaire, pas la bibliothèque**, et sa
+refonte invaliderait ses deux recettes d'or. Le geste est identique à celui de
+ch3_04 et demande la même autorisation.
+
+> **NUANCE À NE PAS PERDRE : le monopole R11/R12 du chapitre 4 n'est PAS un
+> défaut.** L'objectif y est `collect` ; porter sans déposer est inerte, déposer
+> sans porter aussi. Les deux règles ne font pas deux choix, elles font une
+> mécanique en deux temps — c'est le SUJET du chapitre. Ce qui doit varier, et
+> qui varie déjà en ch4_01, ch4_02 et ch4_03, c'est le **troisième rang** :
+> `[1,…]`, `[5,…]`, `[9,…]`. ch4_04 est le seul à n'en offrir qu'un.
+
+#### L'atelier à boucliers n'a toujours pas de niveau — deux balayages de plus
+
+2 400 géométries mesurées en deux passes, aucune retenue. Le motif est chiffré :
+**1 054 sur 1 200 n'avaient aucune pile gagnante** avec un goulot bouché et une
+préservation serrée. La décision 191 l'avait annoncé et la mesure le confirme —
+sur un chemin forcé le bouclier est un laissez-passer, et sur un chemin punitif
+il ne sauve pas assez d'agents.
+
+Ce qu'il faudrait est écrit depuis la décision 191 et reste vrai : **une carte
+où traverser le danger est un CHOIX** — un raccourci payant contre un détour
+lent. La forge ne sait pas produire cette forme-là : son gabarit place l'atelier
+par rapport au goulot, jamais par rapport à deux routes de coûts différents.
+C'est un gabarit à écrire, pas un réglage à trouver.
+
+#### ch2_04 ≡ ch2_05 reste dans la liste d'attente
+
+Inchangé depuis la décision 192 ter : la correction invalide des empreintes d'or,
+et les trois refontes mesurées ont toutes échoué — la dernière refusée par le
+validateur pour agents en sur-place perpétuel.
+
 ### 197. AUDIT DU VOCABULAIRE — quatre éléments en défaut du principe de clarté
 
 « Il faut que les éléments soient clairs. Ne pas ajouter des choses pour le fait
@@ -3083,6 +3126,33 @@ Trois contraintes de forme, chacune contre un défaut connu : la carte **ne
 bloque rien** (la simulation tourne derrière, un contact n'importe où la
 referme) ; elle **ne se répète jamais** ; **deux au plus à la fois**, parce que
 trois légendes d'affilée se referment sans être lues.
+
+**LA LÉGENDE DÉSIGNE CE DONT ELLE PARLE**, et c'est l'essai sur l'appareil qui
+l'a exigé : « lorsque l'on décrit un élément, il faut qu'il soit en surbrillance
+par rapport au reste pour comprendre de quoi on parle ». Le mot « Lumière »
+devant huit marques colorées ne renseigne pas — le joueur lit un nom et cherche
+à quoi il correspond. Le voile s'assombrit donc à 0,72 et les cases décrites
+reçoivent un halo par-dessus lui, plus lumineuses que tout le reste de l'écran.
+
+> **LA SURBRILLANCE PASSE PAR-DESSUS LE VOILE, jamais en le trouant.** Découper
+> des trous demanderait de composer des rectangles, et laisserait de toute façon
+> la case au même éclat que le reste. Un halo par-dessus la rend PLUS lumineuse
+> que son entourage, ce qui est exactement le geste de désignation cherché.
+
+**TROIS DÉFAUTS DE MISE EN PAGE, tous invisibles au poste de travail et tous
+évidents sur la première capture.** La carte partait sur le côté et chevauchait
+les emplacements de règles — un `PRESET_CENTER` en mode MINSIZE se cale sur la
+taille minimale du panneau, or celle d'un libellé à retour à la ligne
+automatique vaut zéro ; il fallait un `CenterContainer` plein écran. Le texte se
+posait à même la grille, la nuée passant derrière les mots. Et surtout **la
+légende s'affichait EN MÊME TEMPS que le panneau d'objectif** — deux surcouches,
+chacune avec son « touchez pour… », et le joueur ne sait plus ce qu'il referme.
+Deux panneaux simultanés ne font pas deux informations, ils en font zéro.
+
+L'ordre retenu est légende PUIS objectif, parce que la légende explique le
+vocabulaire que l'objectif emploie : lire « faire sortir 17 agents » sans savoir
+ce qu'est la lumière qu'on voit à l'écran, c'est lire la consigne avant
+l'alphabet.
 
 > **DEUX PIÈGES ÉVITÉS DE JUSTESSE, tous deux silencieux.**
 >

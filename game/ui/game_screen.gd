@@ -617,6 +617,21 @@ func _on_view_input(event: InputEvent) -> void:
 		_hide_explain()
 		_toggle_play()
 
+## Rectangles occupés à L'ÉCRAN par une liste de cases. La vue vit dans un
+## sous-écran ; ses pixels ne sont ceux de l'écran qu'une fois décalés de la
+## position de son hôte, et l'oublier place la surbrillance à côté de ce qu'elle
+## désigne — d'autant plus loin que la grille est haute.
+func screen_rects_of(cells: Array) -> Array:
+	var out: Array = []
+	if _view == null or _view_host == null:
+		return out
+	for c in cells:
+		var r: Rect2 = _view.cell_rect_of(c)
+		if r.size.x <= 0.0:
+			continue
+		out.append(Rect2(r.position + _view_host.position, r.size))
+	return out
+
 func _show_explain_at(local_pos: Vector2) -> bool:
 	if _view == null or _view.current_state() == null:
 		return false

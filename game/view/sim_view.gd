@@ -427,6 +427,15 @@ func _fit_to_viewport() -> void:
 func _to_pixels(cell: Vector2) -> Vector2:
 	return _grid_origin + (cell + Vector2(0.5, 0.5)) * _cell_size
 
+## Rectangle occupé par une case, en pixels de la vue. L'inverse de
+## `cell_at_pixel`, et il sert à DÉSIGNER : une légende qui nomme « la lumière »
+## sans montrer laquelle ne renseigne qu'à moitié.
+func cell_rect_of(cell: Vector2i) -> Rect2:
+	if _cell_size <= 0.0:
+		return Rect2()
+	return Rect2(_grid_origin + Vector2(cell) * _cell_size,
+		Vector2(_cell_size, _cell_size))
+
 ## Case de grille sous un point de l'écran, ou (-1,-1) hors grille. Sert au
 ## diagnostic EF-05 : le joueur touche un agent, pas une coordonnée.
 func cell_at_pixel(pixel: Vector2) -> Vector2i:

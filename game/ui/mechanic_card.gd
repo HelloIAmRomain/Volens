@@ -28,27 +28,67 @@ extends Control
 
 signal dismissed
 
-func setup(entries: Array) -> void:
+## Rectangles à faire ressortir, en pixels d'écran.
+var _spots: Array = []
+
+func setup(entries: Array, spots: Array = []) -> void:
+	_spots = spots
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	# ELLE INTERCEPTE LE CONTACT, mais ne fige rien : c'est ce qui permet de la
 	# refermer en touchant n'importe où plutôt qu'en visant un bouton — geste
 	# qu'on fait sans regarder, donc sans quitter la grille des yeux.
 	mouse_filter = Control.MOUSE_FILTER_STOP
 
+	# LE VOILE EST PLUS SOMBRE QU'UN VOILE ORDINAIRE, parce qu'il ne sert pas à
+	# atténuer : il sert à FAIRE RESSORTIR. C'est le contraste entre lui et les
+	# cases désignées qui répond à la question « de quoi parle-t-on ? ».
 	var veil := ColorRect.new()
 	veil.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	veil.color = Color(0.02, 0.03, 0.05, 0.55)
+	veil.color = Color(0.02, 0.03, 0.05, 0.72)
 	veil.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(veil)
 
+	# LA SURBRILLANCE PASSE PAR-DESSUS LE VOILE, jamais en trouant le voile.
+	# Découper des trous demanderait de composer des rectangles et laisserait la
+	# case au même éclat que le reste de l'écran ; un halo par-dessus la rend
+	# PLUS lumineuse que tout ce qui l'entoure, ce qui est exactement le geste
+	# de désignation recherché.
+	var spotlight := _Spotlight.new()
+	spotlight.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	spotlight.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	spotlight.rects = _spots
+	add_child(spotlight)
+
+	# LE CENTRAGE PASSE PAR UN CONTENEUR PLEIN ÉCRAN, jamais par un preset posé
+	# sur le panneau lui-même. Essayé, mesuré sur l'appareil : un `PRESET_CENTER`
+	# en mode MINSIZE se cale sur la taille minimale du panneau, or celle d'un
+	# libellé à retour à la ligne automatique vaut zéro — la carte partait sur le
+	# côté et chevauchait les emplacements de règles.
+	var centre := CenterContainer.new()
+	centre.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	centre.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(centre)
+
 	var panel := PanelContainer.new()
-	panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER,
-		Control.PRESET_MODE_MINSIZE, int(UiMetrics.MARGIN))
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(panel)
+	# UN FOND OPAQUE, ET C'EST LA MOITIÉ DE LA LISIBILITÉ. Sans lui, le texte se
+	# posait directement sur la grille : la nuée passait derrière les mots, et la
+	# légende avait l'air d'un défaut d'affichage plutôt que d'un message.
+	var box := StyleBoxFlat.new()
+	box.bg_color = Color(0.08, 0.10, 0.15, 0.98)
+	box.border_color = Color(0.30, 0.38, 0.52)
+	box.set_border_width_all(2)
+	box.set_corner_radius_all(int(UiMetrics.GAP))
+	box.set_content_margin_all(UiMetrics.MARGIN)
+	panel.add_theme_stylebox_override("panel", box)
+	centre.add_child(panel)
 
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", int(UiMetrics.GAP))
+	# LARGEUR IMPOSÉE. Un libellé qui se replie tout seul choisit une largeur
+	# absurde — trois mots par ligne sur une carte deux fois trop étroite, ce que
+	# la capture d'essai montrait exactement.
+	column.custom_minimum_size.x = 620.0
 	panel.add_child(column)
 
 	for entry in entries:
@@ -85,3 +125,31 @@ func _gui_input(event: InputEvent) -> void:
 	elif event is InputEventScreenTouch and not (event as InputEventScreenTouch).pressed:
 		dismissed.emit()
 		queue_free()
+
+## LE HALO DE DÉSIGNATION — un cadre clair et un fond éclairci sur chaque case
+## décrite, dessinés par-dessus le voile.
+##
+## POURQUOI UN NŒUD À PART. `_draw` d'un Control ne peint que sous ses enfants ;
+## le halo doit passer AU-DESSUS du voile et EN DESSOUS du panneau, ce qui est
+## exactement une position dans la liste des enfants — pas un réglage de couche.
+##
+## AUCUNE ANIMATION : le halo ne pulse pas, ne clignote pas. Un clignotement
+## demanderait d'être regardé au bon moment (ENF-21), alors qu'ici tout est déjà
+## à l'arrêt pour être lu.
+class _Spotlight extends Control:
+	var rects: Array = []
+
+	func _draw() -> void:
+		for r in rects:
+			var rect: Rect2 = r
+			# Le halo déborde d'un tiers de case : sur une grille dense, un cadre
+			# calé pile sur la case se confond avec le trait de grille.
+			var pad: float = rect.size.x * 0.34
+			var wide := Rect2(rect.position - Vector2(pad, pad),
+				rect.size + Vector2(pad, pad) * 2.0)
+			var glow := ViewPalette.AGENT_PLAIN
+			glow.a = 0.16
+			draw_rect(wide, glow, true)
+			var edge := ViewPalette.AGENT_PLAIN
+			edge.a = 0.95
+			draw_rect(wide, edge, false, maxf(rect.size.x * 0.08, 2.0))
