@@ -3013,6 +3013,25 @@ ch3_04 et demande la même autorisation.
 > qui varie déjà en ch4_01, ch4_02 et ch4_03, c'est le **troisième rang** :
 > `[1,…]`, `[5,…]`, `[9,…]`. ch4_04 est le seul à n'en offrir qu'un.
 
+> ### ⚠ CETTE CONCLUSION EST À REPRENDRE (21 août 2026)
+>
+> Elle s'appuie sur « ~4 900 géométries mesurées ». Le chiffre est exact, mais
+> **le balayage explorait un coin de l'espace, pas l'espace** : le produit
+> cartésien était parcouru dans l'ordre de ses boucles, si bien qu'un budget de
+> 1 500 candidats n'épuisait que les premières valeurs de largeur, de hauteur et
+> de position de sortie (décision 202). Les quatre passes « bouclier » ont donc
+> exploré quatre fois la même région.
+>
+> Ce qui reste vrai : les DEUX BORDS mesurés — atelier dans l'entonnoir,
+> `[R01]` seule sort 20/20 ; atelier à l'écart, zéro gagnante. Ce qui ne tient
+> plus : « la fenêtre est vide », qui affirmait quelque chose sur tout l'espace
+> à partir d'un fragment. Un balayage relancé sur l'espace réellement étalé est
+> en cours.
+>
+> **La leçon de méthode dépasse le bouclier** : une conclusion négative tirée
+> d'une recherche ne vaut que ce que vaut la couverture de la recherche, et je
+> n'avais jamais vérifié la mienne.
+
 #### L'ATELIER À BOUCLIERS EST INERTE PAR CONSTRUCTION — et cette fois on sait pourquoi
 
 **~4 900 géométries mesurées en quatre balayages, plus une dizaine de cartes
@@ -3382,6 +3401,61 @@ l'alphabet.
 > par leur valeur. La sortie propre est de réserver les valeurs mortes sans les
 > réattribuer, exactement comme les identifiants de R07 et R10 restent réservés.
 > C'est une opération à part entière, à décider.
+
+### 202. LE BALAYAGE EXPLORAIT UN COIN DE L'ESPACE — et rien ne le disait
+
+Le défaut le plus coûteux de tout l'outil, et le plus silencieux.
+
+`_shapes()` produit un produit cartésien : largeur, hauteur, position de sortie,
+lumière, bande, décalage, goulot, atelier, nuée, orientation. Il était **parcouru
+dans l'ordre de ses boucles**. Un budget de 1 500 candidats n'épuisait donc que
+les premières valeurs des dimensions EXTÉRIEURES — largeur 9, hauteur 11, sortie
+en colonne 1 — et n'atteignait jamais le reste.
+
+> **LA FORME EXACTE DE ch2_06 SE TROUVE DANS LE PRODUIT** : largeur 9, sortie en
+> colonne 4, ouverture décalée d'une case, nuée de cinq de large. Le balayage ne
+> l'a jamais rencontrée. Il travaillait des heures sur un coin et rendait
+> « 0 retenue » **en ayant à peine regardé**.
+
+**TOUTES LES CONCLUSIONS TIRÉES DE CES BALAYAGES PORTAIENT SUR UN FRAGMENT.** Y
+compris « l'atelier à boucliers est inerte par construction », qui affirmait
+quelque chose sur tout l'espace à partir de quatre passes dans la même région.
+La décision 198 porte désormais un avertissement.
+
+#### Le correctif, et pourquoi il n'introduit aucun hasard
+
+On parcourt la liste **par pas premier avec sa taille**. Toutes les formes sont
+visitées exactement une fois — c'est une permutation, pas un échantillon — mais
+dans un ordre qui change à chaque cran les dimensions extérieures. Les mille
+premiers candidats deviennent un échantillon de tout l'espace au lieu d'un
+fragment de son début.
+
+Le pas est fixe, l'ordre reproductible, deux exécutions rendent la même liste :
+la condition posée depuis le premier jour tient. **Un balayage aléatoire aurait
+donné le même bénéfice et perdu la reproductibilité** — c'est-à-dire la
+possibilité de discuter la liste.
+
+#### Ce que ça change, immédiatement
+
+| | avant | après |
+|---|---|---|
+| 300 candidats | (1 500 en donnaient 0) | **5 niveaux retenus** |
+
+Le meilleur porte **6 classes, 3 familles, aucun monopole, zéro paire aveugle** —
+et il se gagne **SANS la lumière**, par `[R04, R05, R06]`. C'est rare : R01 est le
+moteur de presque tout le catalogue, et une carte qui s'en passe est exactement
+ce que cherchait la mesure des associations.
+
+**Un quart du budget partait aussi en fumée** pour un motif trivial : le CDC
+exige des grilles en PORTRAIT, ce que le contrôle de rotation ignorait. 125
+candidats sur 300 étaient produits puis refusés par le convertisseur.
+
+> **LA LEÇON DE MÉTHODE DÉPASSE LA FORGE.** Une conclusion négative tirée d'une
+> recherche ne vaut que ce que vaut la COUVERTURE de la recherche. J'ai passé
+> des heures à raffiner des filtres et un score sur une recherche qui ne
+> regardait presque rien, sans jamais vérifier ce qu'elle regardait. Le premier
+> contrôle à faire sur un chercheur n'est pas sa vitesse : c'est l'étendue de ce
+> qu'il visite.
 
 ### 201. La forge, quatrième version — la rendre RAPIDE, puis la rendre UTILE
 
