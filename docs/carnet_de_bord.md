@@ -3013,19 +3013,55 @@ ch3_04 et demande la même autorisation.
 > qui varie déjà en ch4_01, ch4_02 et ch4_03, c'est le **troisième rang** :
 > `[1,…]`, `[5,…]`, `[9,…]`. ch4_04 est le seul à n'en offrir qu'un.
 
-#### L'atelier à boucliers n'a toujours pas de niveau — deux balayages de plus
+#### L'ATELIER À BOUCLIERS EST INERTE PAR CONSTRUCTION — et cette fois on sait pourquoi
 
-2 400 géométries mesurées en deux passes, aucune retenue. Le motif est chiffré :
-**1 054 sur 1 200 n'avaient aucune pile gagnante** avec un goulot bouché et une
-préservation serrée. La décision 191 l'avait annoncé et la mesure le confirme —
-sur un chemin forcé le bouclier est un laissez-passer, et sur un chemin punitif
-il ne sauve pas assez d'agents.
+**~4 900 géométries mesurées en quatre balayages, plus une dizaine de cartes
+dessinées à la main. Aucun niveau.** Ce n'est plus un échec de recherche, c'est
+un résultat, et il porte sur la mécanique elle-même.
 
-Ce qu'il faudrait est écrit depuis la décision 191 et reste vrai : **une carte
-où traverser le danger est un CHOIX** — un raccourci payant contre un détour
-lent. La forge ne sait pas produire cette forme-là : son gabarit place l'atelier
-par rapport au goulot, jamais par rapport à deux routes de coûts différents.
-C'est un gabarit à écrire, pas un réglage à trouver.
+**LA FENÊTRE EST VIDE, et les deux bords sont mesurés :**
+
+| L'atelier est… | Résultat | Mesuré sur |
+|---|---|---|
+| **sur le chemin forcé** | `[R01]` seule sort **20/20 sans une perte** | 5 géométries |
+| **à l'écart du chemin** | **0 pile gagnante** — insoluble | 5 géométries |
+
+La preuve que la mécanique FONCTIONNE est pourtant nette : sur la même carte,
+avec l'atelier **17 piles gagnantes et CONFORME QN-01**, sans lui **zéro,
+insoluble**. Le bouclier porte donc — mais il porte pour tout le monde, ou pour
+personne.
+
+> **LA CAUSE EST STRUCTURELLE ET ELLE TIENT EN UNE PHRASE : aucune règle ne peut
+> viser l'atelier.** L'agent le ramasse en marchant dessus, passivement. Or
+> Volens est un jeu où l'on n'exprime des choix que par l'ORDRE DES RÈGLES —
+> un élément de carte qu'aucune règle ne peut cibler ne peut jamais devenir un
+> choix. Il est décoratif, ou il est obligatoire ; il ne peut pas être une
+> décision.
+>
+> C'est le même raisonnement qui avait fait retirer R07 et R10, appliqué à une
+> case au lieu d'une règle — et il rejoint exactement le principe de clarté :
+> *ne pas ajouter des choses pour le fait de les ajouter*.
+
+**DEUX SORTIES, ET AUCUNE N'EST À PRENDRE SEUL** puisque le bouclier a été
+demandé explicitement :
+
+1. **Une règle qui cherche l'abri.** Elle rendrait l'atelier ciblable, donc
+   choisissable, donc un vrai rang de pile à disputer. C'est l'ajout d'une
+   quinzième règle — décision de conception.
+2. **Le retrait de l'atelier.** Sa valeur d'énumération n'étant portée par aucun
+   niveau, elle se réserve sans toucher à une seule empreinte d'or, exactement
+   comme les identifiants de R07 et R10 restent réservés.
+
+La troisième voie — un atelier à charges limitées — est **fermée depuis la
+décision 191** : « un bouclier unique pour vingt agents ferait un puzzle de
+PILOTAGE », et on ne pilote pas les agents de Volens.
+
+**CE QUE LA FORGE A GAGNÉ AU PASSAGE** : le gabarit `split`, deux routes de
+coûts différents, qui produit désormais des cartes conformes — dont une **avec
+sortie au Sud**, première preuve que la rotation fabrique bien un niveau
+distinct. Un défaut y a été corrigé, invisible dans les chiffres et évident en
+relisant la carte : il perçait **trois** ouvertures au lieu de deux, dont deux
+voisines, si bien que le goulot bouché se contournait d'une case.
 
 #### ch2_04 ≡ ch2_05 reste dans la liste d'attente
 
