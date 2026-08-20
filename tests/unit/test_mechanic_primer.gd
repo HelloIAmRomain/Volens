@@ -116,3 +116,38 @@ func test_migrations_chain_across_more_than_one_version() -> void:
 	assert_eq(int(out.get("schema_version", 0)), 3, "1 -> 3 doit aboutir")
 	assert_true((out.get("solved", {}) as Dictionary).has("ch1_02"),
 		"une progression de schéma 1 doit traverser DEUX migrations intacte")
+
+## --- Un chapitre déjà joué ne se dit pas verrouillé ---------------------------
+##
+## POURQUOI C'EST ICI. Le défaut vient de la même famille que les légendes : ce
+## que l'écran RACONTE au joueur, et la contradiction qu'il y laisse passer.
+##
+## Constaté sur l'appareil après l'insertion de ch2_06 au milieu du catalogue.
+## Le verrou étant en chaîne — chaque niveau demande le précédent — ajouter un
+## niveau avant le chapitre 3 a reverrouillé son premier niveau pour une
+## progression existante, et l'écran affichait « Chapitre 3 — verrouillé »
+## au-dessus de trois niveaux marqués RÉSOLUS. Le joueur ne lit pas cela comme
+## une conséquence de mise à jour : il se demande s'il a perdu sa progression.
+
+func test_a_chapter_with_solved_levels_is_never_reported_locked() -> void:
+	var progress := Progress.new()
+	# On résout un niveau du chapitre 3 SANS rien du chapitre 2 : c'est
+	# exactement l'état qu'une insertion en amont fabrique.
+	var target := ""
+	for i in range(LevelCatalog.count()):
+		var id := String(LevelCatalog.entry(i)["id"])
+		if LevelCatalog.chapter_of(id) == 3:
+			target = id
+			break
+	assert_ne(target, "", "le chapitre 3 doit exister, sinon ce test est creux")
+	progress.solved[target] = {"ticks": 20, "lost": 0}
+	assert_true(LevelCatalog.is_chapter_unlocked(3, progress),
+		("un chapitre dont un niveau est résolu ne peut pas s'annoncer verrouillé : "
+		+ "l'écran se contredirait sous les yeux du joueur"))
+
+func test_an_untouched_chapter_stays_locked() -> void:
+	# L'AUTRE BORD, sans lequel le correctif ouvrirait tout le jeu : un chapitre
+	# où l'on n'a jamais rien résolu reste verrouillé.
+	var progress := Progress.new()
+	assert_false(LevelCatalog.is_chapter_unlocked(6, progress),
+		"une progression vierge ne doit pas déverrouiller le dernier chapitre")

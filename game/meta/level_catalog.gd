@@ -136,7 +136,25 @@ static func chapters() -> Array[int]:
 
 ## Un chapitre est ouvert des que son PREMIER niveau l'est. Le verrouillage
 ## reste celui des niveaux : on n'ajoute pas une seconde serrure par-dessus.
+## UN CHAPITRE OÙ L'ON A DÉJÀ JOUÉ N'EST PAS VERROUILLÉ, quoi qu'en dise son
+## premier niveau.
+##
+## LE DÉFAUT S'EST VU SUR L'APPAREIL, et il vient de l'INSERTION d'un niveau au
+## milieu du catalogue. Le verrou est en chaîne — chaque niveau demande le
+## précédent — donc ajouter ch2_06 avant le chapitre 3 a reverrouillé son
+## premier niveau pour une progression existante. L'écran affichait alors
+## « Chapitre 3 — verrouillé » au-dessus de trois niveaux marqués RÉSOLUS.
+##
+## Une contradiction pareille ne se lit pas comme une conséquence de mise à
+## jour : elle se lit comme un défaut, et le joueur se demande s'il a perdu sa
+## progression. Le verrou du niveau inséré reste, lui — le jouer est justement
+## ce qu'on lui propose — mais le chapitre cesse de mentir sur ce qu'il contient.
 static func is_chapter_unlocked(chapter: int, progress: Progress) -> bool:
+	for entry_data in LEVELS:
+		if chapter_of(String(entry_data["id"])) != chapter:
+			continue
+		if progress.is_solved(String(entry_data["id"])):
+			return true
 	for entry_data in LEVELS:
 		if chapter_of(String(entry_data["id"])) == chapter:
 			return is_unlocked(String(entry_data["id"]), progress)

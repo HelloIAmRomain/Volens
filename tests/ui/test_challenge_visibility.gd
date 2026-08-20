@@ -151,3 +151,81 @@ func _labels(node: Node) -> PackedStringArray:
 	for child in node.get_children():
 		out.append_array(_labels(child))
 	return out
+
+## --- Le CHEMIN DE RENDU du menu, et pas seulement le calcul -------------------
+##
+## POURQUOI CETTE SECTION EXISTE. `_remaining_challenges` peut être parfaitement
+## juste et la ligne ne jamais atteindre l'écran : il suffit que la tuile ne soit
+## plus une enveloppe, qu'un `if` change, ou que le libellé parte dans une
+## branche morte. Ce dépôt compte DOUZE cas de dessin qu'aucune donnée
+## n'alimentait — marques de mort jamais créées, zone interdite jamais tracée —
+## et chacun a survécu à des tests qui vérifiaient le calcul en amont.
+##
+## On construit donc le vrai écran, avec une vraie progression, et on lit les
+## libellés qu'il produit.
+
+## LA PROGRESSION DOIT ÊTRE CRÉDIBLE, pas minimale. Un premier montage ne
+## marquait que le niveau visé comme résolu : son chapitre restait VERROUILLÉ, la
+## tuile s'affichait cadenassée, et le test échouait en accusant le rendu d'un
+## défaut qui venait du décor. On résout donc tout ce qui précède, comme un
+## joueur qui arrive là l'aurait fait.
+func _progress_with(level_id: String, ticks: int, earned: PackedStringArray) -> Progress:
+	var p := Progress.new()
+	for i in range(LevelCatalog.count()):
+		var entry: Dictionary = LevelCatalog.entry(i)
+		var id := String(entry["id"])
+		p.solved[id] = {"ticks": ticks, "lost": 0}
+		if id == level_id:
+			break
+	p.earned[level_id] = earned
+	return p
+
+func _screen_labels(progress: Progress) -> PackedStringArray:
+	var screen := LevelSelectScreen.new()
+	add_child_autofree(screen)
+	screen.setup(progress)
+	return _labels(screen)
+
+func test_the_menu_actually_renders_the_remaining_line() -> void:
+	# ch2_06 propose l'abstinence de R06 et une échéance. On n'accorde que
+	# l'échéance : l'abstinence doit rester annoncée, EN TOUTES LETTRES.
+	var progress := _progress_with("ch2_06", 23,
+		PackedStringArray(["Efficience — 23 ticks au plus"]))
+	var texts := _screen_labels(progress)
+	assert_gt(texts.size(), 0, "l'écran des niveaux n'a produit aucun libellé")
+	var joined := " | ".join(texts)
+	assert_true(joined.contains("il reste"),
+		("la ligne « il reste » n'atteint pas l'écran alors qu'un défi manque — "
+		+ "c'est le défaut classique du dessin qu'aucune donnée n'alimente"))
+
+func test_the_rendered_line_names_the_condition() -> void:
+	var progress := _progress_with("ch2_06", 23,
+		PackedStringArray(["Efficience — 23 ticks au plus"]))
+	var joined := " | ".join(_screen_labels(progress))
+	assert_true(joined.contains("sans «"),
+		"la ligne doit nommer la CONDITION restante, pas le nom du défi : %s" % joined)
+
+## La ligne EXACTE que ch2_06 produit quand rien n'est acquis. Elle sert de
+## marqueur : chercher « il reste » tout court attrapait les lignes des AUTRES
+## niveaux — tous résolus et sans défi acquis dans ce montage — et le test
+## accusait le rendu d'afficher ce qu'il n'affichait pas.
+func _marker() -> String:
+	var spec := LevelSpec.challenges(LevelCatalog.load_level_data("ch2_06"))
+	return ", ".join(LevelSelectScreen._remaining_challenges(spec, PackedStringArray()))
+
+func test_a_level_with_everything_earned_renders_no_line() -> void:
+	# LE SILENCE EST LA RÉCOMPENSE, et il doit se vérifier sur le rendu : une
+	# ligne qui réclamerait encore après qu'on a tout fait transformerait un
+	# niveau fini en dette (RG-19).
+	var marker := _marker()
+	assert_false(marker.is_empty(), "ch2_06 doit proposer des défis")
+	var before := " | ".join(_screen_labels(
+		_progress_with("ch2_06", 23, PackedStringArray())))
+	assert_true(before.contains(marker),
+		"sans défi acquis, la ligne de ch2_06 doit être là : %s" % marker)
+	var after := " | ".join(_screen_labels(_progress_with("ch2_06", 23,
+		PackedStringArray([
+			"Efficience — 23 ticks au plus",
+			"Abstinence — sans « Longer le mur »"]))))
+	assert_false(after.contains(marker),
+		"tous les défis acquis : la ligne de ch2_06 doit disparaître (%s)" % after)
