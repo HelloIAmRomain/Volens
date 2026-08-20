@@ -30,6 +30,23 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array,
 	column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT,
 		Control.PRESET_MODE_MINSIZE, int(UiMetrics.MARGIN))
 
+	# UN VIDE EN HAUT, PLUS GRAND EN BAS — et les deux sont voulus.
+	#
+	# Constaté sur l'appareil : le bilan collait son verdict sous la barre
+	# d'état, alignait trois lignes de chiffres, puis laissait les deux tiers de
+	# l'écran vides avant les boutons. Un écran de fin qui a l'air inachevé donne
+	# l'impression que quelque chose n'a pas fini de charger.
+	#
+	# LES BOUTONS RESTENT EN BAS, eux, et ce n'est pas négociable : l'appareil de
+	# référence fait 6,8 pouces, et le haut de l'écran ne s'atteint pas au pouce.
+	# On respire donc SOUS le titre, pas au-dessus des boutons — le rapport 0,4
+	# contre 1 place le bloc dans le tiers supérieur, là où l'œil le cherche,
+	# sans jamais remonter ce qu'on doit toucher.
+	var lead := Control.new()
+	lead.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	lead.size_flags_stretch_ratio = 0.4
+	column.add_child(lead)
+
 	var verdict := Label.new()
 	verdict.text = "Objectif atteint" if won else "Objectif manqué"
 	verdict.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

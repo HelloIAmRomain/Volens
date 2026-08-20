@@ -141,12 +141,11 @@ func _open_game(level_id: String, resume: bool) -> GameScreen:
 	# l'objectif emploie. Lire « faire sortir 17 agents » sans savoir ce qu'est
 	# la lumière qu'on voit à l'écran, c'est lire la consigne avant l'alphabet.
 	var showing_resume: bool = resume and session.level_id == level_id
-	var card := _present_new_mechanics(screen, level_data)
-	if card == null:
-		if not showing_resume:
+	var then := func() -> void:
+		if not showing_resume and is_instance_valid(screen):
 			screen.show_objective_panel()
-	elif not showing_resume:
-		card.dismissed.connect(func() -> void: screen.show_objective_panel())
+	if not _present_new_mechanics(screen, level_data, then):
+		then.call()
 	return screen
 
 ## LA LÉGENDE DES ÉLÉMENTS JAMAIS RENCONTRÉS.
@@ -159,28 +158,45 @@ func _open_game(level_id: String, resume: bool) -> GameScreen:
 ## fermée par un retour au menu, par une mise en veille ou par la fin du
 ## processus reviendrait sinon au niveau suivant — et la « une seule fois »
 ## n'aurait plus rien d'une promesse.
-func _present_new_mechanics(screen: GameScreen, level_data: Dictionary) -> MechanicCard:
+func _present_new_mechanics(screen: GameScreen, level_data: Dictionary,
+		then: Callable) -> bool:
 	var entries := MechanicPrimer.unseen_in(level_data, progress.seen)
 	if entries.is_empty():
-		return null
+		return false
 	var keys := PackedStringArray()
 	for entry in entries:
 		keys.append(String((entry as Dictionary)["key"]))
 	progress.mark_seen(keys)
-	# LES CASES DÉCRITES SONT DÉSIGNÉES À L'ÉCRAN. « Lumière » ne veut rien dire
-	# devant huit marques colorées ; le joueur lit un mot et cherche à quoi il
-	# correspond. On rassemble les cases de TOUTES les entrées montrées — deux au
-	# plus — parce qu'elles apparaissent ensemble sur la même carte.
-	var cells: Array = []
-	for entry in entries:
-		cells.append_array((entry as Dictionary).get("cells", []) as Array)
+	_show_card(screen, entries, 0, then)
+	return true
+
+## UNE LEGENDE, PUIS LA SUIVANTE — jamais les deux ensemble.
+##
+## A l'essai sur l'appareil, une carte portant « Ressource » et « Depot »
+## surlignait les deux jeux de cases avec le MEME cadre : le joueur lisait deux
+## noms et voyait deux groupes, sans rien pour les apparier. Une designation
+## ambigue ne designe pas — c'est le principe de clarte applique a l'interface
+## plutot qu'aux mecaniques.
+##
+## LA CONTINUATION TRAVERSE TOUTE LA CHAINE. Un premier montage rebranchait le
+## panneau d'objectif sur la PREMIERE carte : il s'ouvrait donc derriere la
+## seconde legende, et l'on retrouvait les deux surcouches simultanees qu'on
+## venait justement de separer. Elle est passee de carte en carte et n'est
+## appelee qu'apres la derniere.
+func _show_card(screen: GameScreen, entries: Array, index: int,
+		then: Callable) -> void:
+	var entry: Dictionary = entries[index]
+	var spots: Array = []
+	for r in screen.screen_rects_of(entry.get("cells", []) as Array):
+		spots.append({"rect": r, "cell": int(entry.get("cell", -1))})
 	var card := MechanicCard.new()
 	screen.add_child(card)
-	# Le calcul des rectangles vient APRÈS l'ajout à l'arbre : la vue n'a pas de
-	# géométrie tant qu'elle n'a pas été disposée, et les rectangles vaudraient
-	# tous zéro.
-	card.setup(entries, screen.screen_rects_of(cells))
-	return card
+	card.setup(entry, spots)
+	card.dismissed.connect(func() -> void:
+		if index + 1 < entries.size() and is_instance_valid(screen):
+			_show_card(screen, entries, index + 1, then)
+		else:
+			then.call())
 
 func _on_play_requested() -> void:
 	# « Continuer » et « Jouer » sont le MEME bouton : c'est l'existence d'une

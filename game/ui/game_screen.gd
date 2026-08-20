@@ -543,6 +543,11 @@ func _index_of_rule(rule_id: int) -> int:
 func _open_panel() -> void:
 	if _panel.visible:
 		return
+	# LA NOTE S'EFFACE QUAND LE PANNEAU MONTE. Elle occupait le bas du terrain,
+	# c'est-à-dire exactement l'endroit où le panneau vient se poser — et une
+	# note qui réclamait « posez une règle » se retrouvait sous le panneau qui
+	# sert à en poser une. Le message a été entendu ; il n'a plus lieu d'être.
+	_hide_explain()
 	_panel.size = Vector2(_panel_width(), _panel.get_combined_minimum_size().y)
 	_panel.position.y = _panel_resting_y() + _panel.size.y
 	_panel.visible = true
@@ -575,9 +580,28 @@ func _on_slot_long_pressed(slot_index: int) -> void:
 	else:
 		_show_note("%d. %s — %s" % [slot_index + 1, RuleCatalog.name_of(rule_id), RuleCatalog.line_of(rule_id)])
 
+## Durée de vie d'une NOTE — un message que le jeu adresse au joueur de sa
+## propre initiative, par opposition au diagnostic qu'il ouvre lui-même en
+## touchant un agent. Ce dernier reste tant qu'on ne le referme pas : on l'a
+## demandé. Une note, non.
+const NOTE_SECONDS := 4.0
+var _note_left: float = 0.0
+
+## UN MESSAGE TRANSITOIRE QUI NE PART JAMAIS DEVIENT DU MOBILIER.
+##
+## Constaté sur l'appareil : « Posez au moins une règle » restait affiché pour
+## toujours, et se retrouvait SOUS le panneau de règles dès que le joueur
+## l'ouvrait — deux boîtes empilées, dont l'une réclamait encore ce que l'autre
+## servait à faire. Le panneau est positionné au moment où on l'affiche ; il ne
+## pouvait pas savoir qu'une autre surface viendrait se poser là.
+##
+## La note s'efface donc d'elle-même, et surtout dès que le joueur FAIT ce
+## qu'elle demandait — c'est la seule façon qu'un message ne survive pas à son
+## motif.
 func _show_note(text: String) -> void:
 	_explain_label.text = text
 	_explain_panel.visible = true
+	_note_left = NOTE_SECONDS
 	_position_explain_panel()
 
 
@@ -689,6 +713,7 @@ func _position_explain_panel() -> void:
 func _hide_explain() -> void:
 	if _explain_panel != null:
 		_explain_panel.visible = false
+	_note_left = 0.0
 
 # --- disposition ----------------------------------------------------------
 
@@ -926,6 +951,10 @@ func _process(delta: float) -> void:
 			(hint as Label).text = "" if _objective_elapsed < OBJECTIVE_MIN_SECONDS else "toucher pour fermer"
 		if _objective_elapsed >= OBJECTIVE_MAX_SECONDS:
 			_hide_objective_panel()
+	if _note_left > 0.0:
+		_note_left -= delta
+		if _note_left <= 0.0:
+			_hide_explain()
 	if _banner_flash > 0.0:
 		_banner_flash -= delta
 		var t2: float = fmod(_banner_flash, 0.4) / 0.4

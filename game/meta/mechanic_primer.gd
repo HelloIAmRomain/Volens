@@ -110,6 +110,12 @@ static func present_in(level_data: Dictionary) -> Array:
 		# le joueur lit un mot et cherche à quoi il correspond parmi huit
 		# marques colorées.
 		var entry: Dictionary = (ENTRIES[t] as Dictionary).duplicate()
+		# LE TYPE VOYAGE AVEC L'ENTRÉE, et pas seulement ses coordonnées : la
+		# surbrillance doit rendre à la case SA teinte. Un halo blanc uniforme
+		# désigne bien, mais il montre au joueur une couleur qu'il ne reverra
+		# jamais — il cherchera ensuite un carré blanc là où le jeu en met un
+		# ambre.
+		entry["cell"] = t
 		var cells_of: Array = []
 		for i in range(cells.size()):
 			if int(cells[i]) == t and width > 0:
@@ -120,6 +126,7 @@ static func present_in(level_data: Dictionary) -> Array:
 	var one_way: Array = grid.get("one_way", [])
 	if not one_way.is_empty():
 		var ow: Dictionary = ONE_WAY_ENTRY.duplicate()
+		ow["cell"] = GridState.CellType.ONE_WAY
 		var ow_cells: Array = []
 		for triplet in one_way:
 			ow_cells.append(Vector2i(int(triplet[0]), int(triplet[1])))

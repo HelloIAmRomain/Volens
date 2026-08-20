@@ -22,16 +22,31 @@ extends Control
 ##     panneau à la reprise) ;
 ##   · **elle ne se répète jamais** — vue une fois, elle est enregistrée dans la
 ##     progression. Une légende revue n'apprend rien, elle interrompt ;
-##   · **deux au plus à la fois** — trois cartes d'affilée devant un niveau
-##     qu'on vient d'ouvrir se referment sans être lues, et l'on aurait dépensé
-##     la seule occasion de les montrer.
+##   · **UNE SEULE À LA FOIS** — et c'est un essai sur l'appareil qui l'a
+##     imposé. Deux légendes sur la même carte affichaient deux noms et
+##     surlignaient deux jeux de cases avec le MÊME cadre : rien ne disait
+##     laquelle allait avec laquelle. Une désignation ambiguë ne désigne pas.
+##     Elles s'enchaînent donc, deux au plus, chacune avec son seul surlignage.
+##
+## ET ELLE NE SE POSE JAMAIS SUR CE QU'ELLE MONTRE. Même essai : la carte
+## couvrait les ressources qu'elle décrivait, et il ne restait visible que les
+## dépôts. Elle se place maintenant dans la moitié d'écran OPPOSÉE aux cases
+## désignées.
 
 signal dismissed
 
 ## Rectangles à faire ressortir, en pixels d'écran.
 var _spots: Array = []
 
-func setup(entries: Array, spots: Array = []) -> void:
+## Ordonnée moyenne des cases désignées, en pixels d'écran.
+func _spots_centre_y() -> float:
+	var total := 0.0
+	for s in _spots:
+		var r: Rect2 = (s as Dictionary)["rect"]
+		total += r.position.y + r.size.y * 0.5
+	return total / float(_spots.size())
+
+func setup(entry: Dictionary, spots: Array = []) -> void:
 	_spots = spots
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	# ELLE INTERCEPTE LE CONTACT, mais ne fige rien : c'est ce qui permet de la
@@ -64,9 +79,19 @@ func setup(entries: Array, spots: Array = []) -> void:
 	# en mode MINSIZE se cale sur la taille minimale du panneau, or celle d'un
 	# libellé à retour à la ligne automatique vaut zéro — la carte partait sur le
 	# côté et chevauchait les emplacements de règles.
+	#
+	# LA MOITIÉ CHOISIE EST CELLE QUE LES CASES N'OCCUPENT PAS. Une carte posée
+	# sur ce qu'elle décrit annule son propre surlignage : à l'essai, elle
+	# couvrait les ressources et ne laissait voir que les dépôts.
 	var centre := CenterContainer.new()
 	centre.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	centre.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var screen_h: float = get_viewport_rect().size.y
+	if not _spots.is_empty() and _spots_centre_y() < screen_h * 0.5:
+		# Les cases sont en haut : la carte descend dans le tiers bas.
+		centre.offset_top = screen_h * 0.34
+	else:
+		centre.offset_bottom = -screen_h * 0.34
 	add_child(centre)
 
 	var panel := PanelContainer.new()
@@ -91,22 +116,21 @@ func setup(entries: Array, spots: Array = []) -> void:
 	column.custom_minimum_size.x = 620.0
 	panel.add_child(column)
 
-	for entry in entries:
-		var name_label := Label.new()
-		name_label.text = String((entry as Dictionary)["name"])
-		name_label.add_theme_font_size_override("font_size", UiMetrics.font_size(34))
-		name_label.add_theme_color_override("font_color", ViewPalette.AGENT_PLAIN)
-		column.add_child(name_label)
+	var name_label := Label.new()
+	name_label.text = String(entry["name"])
+	name_label.add_theme_font_size_override("font_size", UiMetrics.font_size(34))
+	name_label.add_theme_color_override("font_color", ViewPalette.AGENT_PLAIN)
+	column.add_child(name_label)
 
-		var line := Label.new()
-		line.text = String((entry as Dictionary)["line"])
-		# Sans enveloppe ni largeur minimale nulle, une phrase longue impose sa
-		# largeur au panneau et déborde d'un écran étroit.
-		line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		line.custom_minimum_size.x = 0
-		line.add_theme_font_size_override("font_size", UiMetrics.font_size(26))
-		line.add_theme_color_override("font_color", Color(0.78, 0.83, 0.93))
-		column.add_child(line)
+	var line := Label.new()
+	line.text = String(entry["line"])
+	# Sans enveloppe ni largeur minimale nulle, une phrase longue impose sa
+	# largeur au panneau et déborde d'un écran étroit.
+	line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	line.custom_minimum_size.x = 0
+	line.add_theme_font_size_override("font_size", UiMetrics.font_size(26))
+	line.add_theme_color_override("font_color", Color(0.78, 0.83, 0.93))
+	column.add_child(line)
 
 	var hint := Label.new()
 	hint.text = "touchez pour continuer"
@@ -115,16 +139,36 @@ func setup(entries: Array, spots: Array = []) -> void:
 	hint.add_theme_color_override("font_color", Color(0.55, 0.60, 0.72))
 	column.add_child(hint)
 
+## UN SEUL CONGÉ, MÊME SI ANDROID EN ANNONCE DEUX.
+##
+## LE DÉFAUT, MESURÉ SUR L'APPAREIL, ne se voit pas au poste de travail : un
+## contact tactile y produit **deux** évènements — un `InputEventScreenTouch` et
+## un `InputEventMouseButton` simulé. Les deux branches tiraient `dismissed`, et
+## le récepteur enchaînait donc DEUX fois : deux légendes suivantes créées l'une
+## sur l'autre, dont la première se refermait aussitôt sur le même geste et
+## ouvrait le panneau d'objectif — pendant que la seconde restait affichée.
+##
+## À l'écran, cela donnait exactement ce qu'on venait de corriger : une légende
+## et un objectif en même temps. La cause était ailleurs que là où le symptôme
+## se voyait, et c'est pourquoi le verrou est ici, à la source, plutôt qu'une
+## rustine chez l'appelant.
+var _done := false
+
 func _gui_input(event: InputEvent) -> void:
+	if _done:
+		return
 	# UN RELÂCHEMENT, PAS UN APPUI. Fermer sur l'appui ferait passer le même
 	# geste au travers : le relâchement atteindrait la grille en dessous et
 	# lancerait la simulation sans que personne l'ait demandé.
-	if event is InputEventMouseButton and not (event as InputEventMouseButton).pressed:
-		dismissed.emit()
-		queue_free()
-	elif event is InputEventScreenTouch and not (event as InputEventScreenTouch).pressed:
-		dismissed.emit()
-		queue_free()
+	var released: bool = (event is InputEventMouseButton
+			and not (event as InputEventMouseButton).pressed) \
+		or (event is InputEventScreenTouch
+			and not (event as InputEventScreenTouch).pressed)
+	if not released:
+		return
+	_done = true
+	dismissed.emit()
+	queue_free()
 
 ## LE HALO DE DÉSIGNATION — un cadre clair et un fond éclairci sur chaque case
 ## décrite, dessinés par-dessus le voile.
@@ -140,16 +184,24 @@ class _Spotlight extends Control:
 	var rects: Array = []
 
 	func _draw() -> void:
-		for r in rects:
-			var rect: Rect2 = r
-			# Le halo déborde d'un tiers de case : sur une grille dense, un cadre
-			# calé pile sur la case se confond avec le trait de grille.
+		for spot in rects:
+			var s: Dictionary = spot
+			var rect: Rect2 = s["rect"]
+			var thick: float = maxf(rect.size.x * 0.08, 2.0)
+			# LA CASE REPREND SA PROPRE TEINTE, À PLEINE OPACITÉ, PAR-DESSUS LE
+			# VOILE. C'est le point qui a demandé une seconde capture : un halo
+			# blanc uniforme désignait très bien la case, mais il la MONTRAIT
+			# BLANCHE — et le joueur allait ensuite chercher un carré blanc là où
+			# le jeu en met un ambre. Une désignation qui déguise ce qu'elle
+			# désigne renseigne à moitié.
+			var own := ViewPalette.element_color(int(s.get("cell", -1)))
+			own.a = 1.0
+			draw_rect(rect, own, true)
+			# Le cadre déborde d'un tiers de case : sur une grille dense, un
+			# contour calé pile sur la case se confond avec le trait de grille.
 			var pad: float = rect.size.x * 0.34
 			var wide := Rect2(rect.position - Vector2(pad, pad),
 				rect.size + Vector2(pad, pad) * 2.0)
-			var glow := ViewPalette.AGENT_PLAIN
-			glow.a = 0.16
-			draw_rect(wide, glow, true)
 			var edge := ViewPalette.AGENT_PLAIN
 			edge.a = 0.95
-			draw_rect(wide, edge, false, maxf(rect.size.x * 0.08, 2.0))
+			draw_rect(wide, edge, false, thick)

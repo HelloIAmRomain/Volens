@@ -3069,6 +3069,58 @@ Inchangé depuis la décision 192 ter : la correction invalide des empreintes d'
 et les trois refontes mesurées ont toutes échoué — la dernière refusée par le
 validateur pour agents en sur-place perpétuel.
 
+### 199. PASSE COMPLÈTE SUR L'APPAREIL — six défauts, dont un qu'aucun test ne pouvait voir
+
+Parcours joué de bout en bout sur le S22, progression effacée pour éprouver le
+chemin du NOUVEAU joueur — celui qui exerce les légendes et que personne n'avait
+jamais suivi. La sauvegarde a été extraite avant, remise après ; au passage,
+**la migration de schéma 2 → 3 s'est exécutée sur une vraie progression et l'a
+conservée intacte**.
+
+| # | Défaut | Où il se voyait |
+|---|---|---|
+| 1 | La légende blanchissait la case qu'elle désignait | capture |
+| 2 | Le bandeau « posez une règle » ne partait jamais | capture |
+| 3 | …et se retrouvait SOUS le panneau de règles | capture |
+| 4 | Le bilan collait son contenu au bord haut, deux tiers d'écran vides | capture |
+| 5 | La carte se posait SUR les cases qu'elle décrivait | capture |
+| 6 | **Deux légendes créées en double, l'objectif ouvert trop tôt** | **appareil seul** |
+
+**LE SIXIÈME EST LE SEUL QUI COMPTE VRAIMENT**, parce qu'il était invisible
+partout ailleurs. Sur Android, un contact tactile produit **deux** évènements :
+un `InputEventScreenTouch` et un `InputEventMouseButton` simulé. Les deux
+branches émettaient `dismissed`, donc le récepteur enchaînait deux fois : deux
+légendes suivantes créées l'une sur l'autre, la première se refermant aussitôt
+sur le même geste et ouvrant le panneau d'objectif, la seconde restant affichée.
+
+À l'écran, cela reproduisait exactement le défaut qu'on venait de corriger — une
+légende et un objectif en même temps. **La cause était ailleurs que là où le
+symptôme se voyait**, et deux corrections successives auraient pu être faites au
+mauvais endroit avant de la trouver. Au poste de travail, une souris n'émet
+qu'un évènement : le bogue ne pouvait pas exister.
+
+#### Ce que le principe de clarté a imposé à l'interface
+
+Deux légendes sur une même carte affichaient deux noms et surlignaient deux jeux
+de cases **avec le même cadre** : rien ne disait laquelle allait avec laquelle.
+Une désignation ambiguë ne désigne pas. Elles s'enchaînent désormais, une seule
+à la fois, chacune avec son seul surlignage — et la carte se place dans la
+moitié d'écran OPPOSÉE aux cases qu'elle montre, parce qu'une carte posée sur ce
+qu'elle décrit annule son propre surlignage.
+
+> **ET LA CASE GARDE SA COULEUR.** Un halo blanc uniforme désignait très bien,
+> mais il montrait la lumière BLANCHE — le joueur serait allé chercher un carré
+> blanc là où le jeu en met un ambre. Une désignation qui déguise ce qu'elle
+> désigne renseigne à moitié.
+
+#### Un faux positif, gardé pour la méthode
+
+Une capture m'a paru montrer les boutons du bilan dupliqués en haut de l'écran.
+Vérification des pixels : les trois cents premières lignes étaient uniformément
+sombres (luminance 16 sur 255). **Il n'y avait rien.** La lecture d'un rendu
+réduit avait inventé un défaut, et sans la mesure j'aurais « corrigé » du code
+sain. Devant une capture, les pixels tranchent, pas l'impression.
+
 ### 197. AUDIT DU VOCABULAIRE — quatre éléments en défaut du principe de clarté
 
 « Il faut que les éléments soient clairs. Ne pas ajouter des choses pour le fait
