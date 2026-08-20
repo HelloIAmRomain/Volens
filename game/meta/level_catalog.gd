@@ -31,6 +31,7 @@ const LEVELS := [
 	# dernière a été refusée par le validateur pour agents en sur-place
 	# perpétuel. Fusionner valait mieux que garder un niveau qui a l'air cassé.
 	{"id": "ch2_06", "name": "L'ouverture décalée", "path": "res://data/levels/ch2_06.json", "ready": true},
+	{"id": "ch2_07", "name": "Le passage par la droite", "path": "res://data/levels/ch2_07.json", "ready": true},
 	{"id": "ch3_01", "name": "La trace des autres", "path": "res://data/levels/ch3_01.json", "ready": true},
 	{"id": "ch3_02", "name": "La trace qui s'efface", "path": "res://data/levels/ch3_02.json", "ready": true},
 	{"id": "ch3_03", "name": "Le repli", "path": "res://data/levels/ch3_03.json", "ready": true},

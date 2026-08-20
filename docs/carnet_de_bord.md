@@ -3402,6 +3402,44 @@ l'alphabet.
 > réattribuer, exactement comme les identifiants de R07 et R10 restent réservés.
 > C'est une opération à part entière, à décider.
 
+### 203. ch2_07 « Le passage par la droite » — le premier niveau ENTIÈREMENT forgé
+
+Trois cents géométries, cinq conformes, celle-ci au meilleur score. Et c'est le
+premier que je n'ai pas eu à retoucher : la forge a écrit la carte, resserré la
+bibliothèque, calibré l'échéance, déclaré ses compteurs et choisi ses deux défis.
+
+**LE DISPOSITIF TIENT EN UNE PHRASE** : la nuée démarre en bas à GAUCHE, la
+sortie est en haut à DROITE, et l'unique ouverture de la paroi médiane se trouve
+encore **plus à droite que la sortie**. Il faut dépasser le but pour l'atteindre
+— et « vers la lumière » est gloutonne : arrivée à l'aplomb de la sortie, elle
+s'abstient plutôt que de faire un pas qui éloigne.
+
+| Mesure | Valeur |
+|---|---|
+| Familles gagnantes | **3** — `[1,5]`, `[1,4,6]`, `[4,5,6]` |
+| Classes structurelles | **6** (QN-01 conforme) |
+| Monopole | **aucun** |
+| Paires à l'ordre inobservable | **zéro** |
+
+**LA TROISIÈME FAMILLE EST RARE : `[R04, R05, R06]` GAGNE SANS LA LUMIÈRE.** La
+nuée longe la paroi jusqu'au trou, se suit elle-même, et sort sans jamais avoir
+vu le but. Sur trente-quatre niveaux, presque aucun ne se passe de R01 — c'est
+le moteur de tout le catalogue, et la mesure des associations le répétait depuis
+le début.
+
+#### Un défaut d'émission trouvé en le promouvant
+
+La forge annonçait 8 gagnantes et 6 classes ; le validateur en trouvait 6 et 4.
+**Elle mesure à `--probe-ticks` (100) puis écrit une échéance calibrée au double
+du meilleur temps (64)** — ce ne sont pas les mêmes conditions, et des piles qui
+gagnaient en 80 ticks ne gagnent plus sous 64.
+
+C'était exactement l'« ÉCART À LA FICHE » que ces compteurs devaient supprimer.
+**Un fichier qui se décrit faux est pire qu'un fichier sans description : on lui
+fait confiance.** La forge re-mesure désormais à l'échéance qu'elle va écrire,
+et retombe sur celle de la recherche si le serrage fait tomber le niveau sous
+QN-01 — ce qui est le cas ici : à 64 ticks, deux familles disparaissent.
+
 ### 202. LE BALAYAGE EXPLORAIT UN COIN DE L'ESPACE — et rien ne le disait
 
 Le défaut le plus coûteux de tout l'outil, et le plus silencieux.

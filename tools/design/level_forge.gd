@@ -1225,8 +1225,31 @@ func _emit(kept: Array, reasons: Dictionary) -> void:
 		# dans le texte déjà produit. Un remplacement qui ne correspond à rien
 		# rend le texte intact et rapporte un succès — c'est le mode de panne que
 		# tout le dépôt s'interdit, et il n'y a aucune raison de le rouvrir ici.
-		var calibrated: int = clampi(int(c["min_ticks"]) * 2, 60, 300)
+		# ON RE-MESURE À L'ÉCHÉANCE QU'ON VA ÉCRIRE, et pas avant.
+		#
+		# La recherche tourne à `--probe-ticks` (100 par défaut) ; le fichier
+		# émis porte une échéance CALIBRÉE, le double du meilleur temps. Ce ne
+		# sont pas les mêmes conditions : des piles qui gagnaient en 80 ticks ne
+		# gagnent plus sous 64, et les compteurs déclarés devenaient faux.
+		#
+		# Mesuré sur le premier niveau émis : la forge annonçait 8 gagnantes et
+		# 6 classes, le validateur en trouvait 6 et 4 — « ÉCART À LA FICHE »,
+		# exactement le défaut que ces compteurs devaient supprimer. Un fichier
+		# qui se décrit faux est pire qu'un fichier sans description : on lui
+		# fait confiance.
 		var library: Array = c.get("library", _rules)
+		var calibrated: int = clampi(int(c["min_ticks"]) * 2, 60, 300)
+		var recheck := LvlParser.parse(_render(s, calibrated, library),
+			_min_period, _flee_sq)
+		if (recheck["errors"] as PackedStringArray).is_empty():
+			var remeasured := _judge(recheck["level"], reasons)
+			if int(remeasured["score"]) > 0:
+				remeasured["library"] = library
+				c = remeasured
+			else:
+				# L'échéance serrée fait tomber le niveau sous QN-01 : on garde
+				# celle de la recherche, sous laquelle il a été jugé bon.
+				calibrated = _probe_ticks
 		var text := _finish(s, c, calibrated, library)
 		var path := "%s/forge_%02d.lvl" % [_out, shown]
 		var f := FileAccess.open(path, FileAccess.WRITE)

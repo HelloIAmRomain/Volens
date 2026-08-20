@@ -1,0 +1,58 @@
+# N12 « Le passage par la droite » — l'ouverture est plus loin que le but.
+#
+# PREMIER NIVEAU ENTIEREMENT SORTI DE LA FORGE. Trois cents geometries mesurees,
+# cinq conformes, celle-ci retenue au meilleur score : six classes
+# structurelles, trois familles gagnantes, aucun monopole, et AUCUNE paire de
+# regles a l'ordre inobservable — sur cette carte, permuter deux rangs se voit
+# toujours.
+#
+# LE DISPOSITIF. La nuee demarre en bas a GAUCHE, la sortie est en haut a
+# DROITE, et l'unique ouverture de la paroi mediane se trouve encore PLUS a
+# droite que la sortie. Il faut donc depasser le but pour l'atteindre.
+#
+# CE QUE CA DEMANDE A « VERS LA LUMIERE ». Elle est gloutonne : arrivee sous la
+# paroi, a l'aplomb de la sortie, plus aucune direction ne rapproche et elle
+# s'abstient. Continuer vers la droite est un pas qui ELOIGNE, et c'est
+# exactement ce qu'elle refuse de faire.
+#
+# TROIS FAMILLES, ET LA TROISIEME EST RARE. « S'ecarter » desserre la nuee
+# jusqu'a ce qu'une frange trouve l'ouverture ; « Suivre les voisins » propage
+# le passage de ceux qui l'ont franchie ; et [R04, R05, R06] gagne SANS LA
+# LUMIERE — la nuee longe la paroi jusqu'au trou, se suit elle-meme, et sort
+# sans jamais avoir vu le but. Sur trente-trois niveaux, presque aucun ne se
+# gagne sans R01 : c'est le moteur de tout le catalogue.
+#
+# L'ECHEANCE EST LARGE, ET C'EST MESURE. A soixante-quatre ticks — le double du
+# meilleur temps — deux familles tombent et le niveau perd deux classes. Le
+# detour par la droite coute cher a qui le decouvre lentement ; le serrer
+# reviendrait a n'autoriser que la solution la plus directe.
+id: ch2_07
+name: Le passage par la droite
+tutorial: false
+allowed_rules: [R01, R04, R05, R06]
+slots: 3
+max_ticks: 100
+objective: extraction 85
+objective: preservation 3
+lesson: "L'ouverture peut etre plus loin que le but. Vers la lumiere ne fait jamais un pas qui eloigne."
+expected_wins: 8
+expected_classes: 6
+calibrated_on: e06415f2e35686f8
+# LES DEUX DEFIS EXIGENT DEUX PILES DIFFERENTES. L'economie se gagne en deux
+# rangs ; l'abstinence de « Vers la lumiere » force la troisieme famille, celle
+# qui traverse la carte sans jamais voir le but.
+challenge: economy=2 abstinence=R01
+---
+. . . . . . . . L . .
+# # # # # # # # E # #
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+# # # # # # # # # . #
+. . . . . . . . . . .
+. o o o o . . . . . .
+. o o o o . . . . . .
+. o o o o . . . . . .
+. o o o o . . . . . .
+. o o o o . . . . . .
