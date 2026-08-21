@@ -3402,6 +3402,149 @@ l'alphabet.
 > réattribuer, exactement comme les identifiants de R07 et R10 restent réservés.
 > C'est une opération à part entière, à décider.
 
+### 207. La fusion a fait ses dégâts ailleurs qu'où je l'ai faite — le chapitre 4 posait une question, quatre fois
+
+La suite est revenue avec un échec que je n'avais pas prédit :
+
+> AGGRAVATION : la pile `[11, 1, 5]` résout **4 niveaux** (plafond mesuré 3).
+
+Le cliquet de passe-partout a fait exactement ce pour quoi il existe. Il ne
+signalait pourtant pas ce que j'ai cru d'abord — « la fusion a cassé quelque
+chose » — mais quelque chose de bien pire : **la fusion a rendu VISIBLE un
+défaut qui dormait depuis la conception du chapitre.**
+
+#### Le mécanisme, et il vaut pour toute réduction de coût
+
+Tant que porter et déposer coûtaient DEUX rangs, `[R11, R12, moteur]` remplissait
+les trois emplacements du chapitre 4 : aucun quatrième rang n'était disponible
+pour un second moteur. Le rang libéré par la fusion a suffi à ce qu'une seule
+pile balaie le chapitre entier. **Rendre un mécanisme moins cher ne le rend pas
+seulement plus agréable : cela agrandit l'espace des piles composables, et
+l'agrandit là où le concepteur ne regarde pas.**
+
+#### Ce que la mesure a trouvé en dessous
+
+Les gagnantes minimales des quatre niveaux, mesurées une à une :
+
+| Niveau | Jeux gagnants | Classes |
+|---|---|---|
+| ch4_01 « Le premier fardeau » | `{1,11}` `{5,11}` | 1 |
+| ch4_02 « Le sas » | `{1,11}` `{5,11}` | 2 |
+| ch4_03 « La navette » | `{5,11}` `{9,11}` | 3 |
+| ch4_04 « Le tri » | `{1,11}` | 1 |
+
+Le chapitre entier tient en une phrase : *« Porter et déposer » en tête, un
+moteur dessous.* Quatre tableaux, deux questions.
+
+**Et ch4_01 ≡ ch4_02, à la pile près.** Même bibliothèque, mêmes trois rangs,
+même objectif, **même phrase de leçon recopiée** — et les DIX MÊMES piles
+gagnantes, dans le même ordre :
+
+```
+[11,1] [11,5] [11,1,3] [11,1,5] [11,3,1] [11,3,5] [11,5,1] [11,5,3] [3,11,1] [3,11,5]
+```
+
+Le mur et le sas à sens unique de ch4_02 changent le trajet ; ils ne changent
+aucune réponse. `test_no_duplicate_levels` ne pouvait pas le voir — il compare
+le mobilier, et le mobilier diffère. **Le doublon ne se voit qu'en comparant les
+GAGNANTES**, et c'est le troisième doublon trouvé ainsi.
+
+#### Trois corrections, toutes mesurées
+
+**1. ch4_03 offrait « Vers la lumière » sur une carte SANS LUMIÈRE.** Sa propre
+fiche l'écrivait trois paragraphes plus haut : « PAS DE LUMIERE. C'est la
+condition établie au chapitre 3. » La règle était là, inerte par construction —
+du temps perdu à l'essayer, rien de plus. Retirée. `widen_search` a rendu son
+verdict sur ce qui pouvait la remplacer : **R04 « S'écarter » ENRICHIT**, avec
+`{4,11}` inédit. Le niveau passe de 16 gagnantes / 3 classes à **20 / 10**, et
+son choix « quatre règles pour trois rangs » — que la fusion avait effacé en
+silence, R08+R09+R11 tenant désormais dans trois — revient sous une autre forme :
+non plus « laquelle abandonner », mais « par où faire passer la nuée ».
+
+**2. ch4_02 est retiré du catalogue.** Ses fichiers restent : deux recettes d'or
+les rejouent, et les supprimer aurait obligé à régénérer des empreintes.
+
+**3. ch4_05 « Le retour » le remplace**, sorti de la forge — 400 géométries
+balayées, 3 retenues. Il pose l'inverse du chapitre : **trois rangs
+obligatoires, dont un qui ne sert pas au transport.** Vingt agents, trois
+ressources, une paroi médiane percée de deux trous ; le transport est trivial
+(on ramasse au premier tick) et c'est le RETOUR qui coûte. Deux familles :
+
+    [R11, R04, R01]   desserrer, puis viser        — 22 ticks
+    [R11, R01, R14]   viser, relâcher sous la paroi — 28 ticks
+
+**Deux associations inédites au catalogue : R04–R11 et R11–R14.** « Porter » ne
+s'était jamais associée qu'à des moteurs — lumière, voisins, piste. C'est la
+première fois qu'elle a besoin d'une règle de FORME.
+
+Après quoi `[11, 1, 5]` ne gagne plus que deux niveaux, et le cliquet tient sans
+avoir été touché. **Un plafond qui ne remonte jamais force à corriger le jeu ;
+c'est toute sa valeur, et c'est aussi tout son inconfort.**
+
+### 206. « Porter » et « Déposer » n'en font plus qu'une — et la mesure l'a tranché
+
+« Je n'aime pas trop que porter et déposer soient deux règles distinctes. À
+moins qu'il y ait un vrai intérêt à les garder séparées, essaie d'en faire une
+seule règle combinée. »
+
+**LA CONTENTION RG-13 ENTRE R11 ET R12 VAUT ZÉRO SUR LES CINQ NIVEAUX QUI LES
+EMPLOIENT.** Leur ordre relatif n'a jamais changé le moindre résultat. Et ce
+n'est pas un accident de cartes, c'est structurel : un agent est soit les mains
+VIDES sur une ressource, soit CHARGÉ près d'un dépôt. Les deux gardes s'excluent
+au même tick, donc les deux effets ne peuvent jamais se disputer une décision —
+sur aucune carte concevable.
+
+Deux rangs de pile pour une seule décision, c'est un coût sans retour : le joueur
+en a trois ou quatre. Et les deux règles apparaissaient de toute façon en
+**monopole** dans chaque famille gagnante du chapitre 4 : ensemble, ou pas du
+tout.
+
+#### Ce que ma première « preuve » ne couvrait pas
+
+Elle portait sur l'ordre DIRECT entre les deux. Mais les garder séparées permet
+aussi d'**intercaler un proposeur** : `[R11, R09, R12]` signifie « ramasse
+toujours ; suis la piste ; dépose seulement si la piste s'est tue ». C'est une
+différence expressive réelle, que la contention par paires ne peut pas voir.
+
+J'ai donc mesuré la seule question qui tranche : **une pile séparée gagne-t-elle
+là où la même pile recollée perd ?**
+
+| Niveau | Gagnantes 11/12 adjacentes | Séparées | Séparation DÉCISIVE |
+|---|---|---|---|
+| ch4_01 | 4 | 0 | 0 |
+| ch4_02 | 4 | 1 | **0** |
+| ch4_03 | 4 | 2 | **0** |
+| ch4_04 | 2 | 0 | 0 |
+| ch6_05 | 12 | 8 | **0** |
+
+**Zéro.** Partout où une pile séparée gagne, la coller gagne aussi. La séparation
+n'est jamais décisive.
+
+#### La fusion est fidèle, et les empreintes d'or le prouvent
+
+La cascade est reproduite à l'identique : ramasser d'abord, déposer ensuite,
+**dans le même tick**. C'était le comportement de `[R11, R12]`, où R12 lisait le
+drapeau que R11 venait de poser — une ressource adjacente à un dépôt se ramassait
+et se livrait d'un coup. Fusionner en « sinon » aurait changé cela en silence.
+
+> **PRÉDICTION ÉCRITE AVANT DE TOUCHER AUX RECETTES** : si la fusion est fidèle,
+> **aucune empreinte ne doit bouger** — seules les piles des recettes perdent
+> leur `12`. Je m'attendais malgré tout à une exception, `ch4_03 [11, 9, 12]`, où
+> le dépôt vivait SOUS un proposeur et ne s'appliquait donc que si R09 se taisait.
+>
+> **Les 72 recettes concordent, ch4_03 comprise.** Pas une empreinte réécrite. La
+> fusion ne change rien à ce que le moteur produit.
+
+Ce qui change, en revanche : l'espace des piles rétrécit d'une règle, donc les
+compteurs déclarés bougent — de 4 à 10 gagnantes sur ch4_01, par exemple, parce
+qu'une pile de DEUX rangs suffit désormais là où il en fallait trois. Trois
+niveaux perdent une classe structurelle au passage : c'est le prix, et il est
+mesuré. **On échange de la variété de PILES contre un rang de liberté rendu au
+joueur.**
+
+L'identifiant 12 reste réservé, comme R07 et R10 : une sauvegarde ou une recette
+qui le porterait encore doit rester lisible comme ce qu'elle était.
+
 ### 205. La récolte de la nuit — et ch5_10, où fuir un danger ouvre un chemin
 
 Cinq briefs enchaînés sur l'espace enfin étalé.

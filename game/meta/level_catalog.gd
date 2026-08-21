@@ -37,9 +37,31 @@ const LEVELS := [
 	{"id": "ch3_03", "name": "Le repli", "path": "res://data/levels/ch3_03.json", "ready": true},
 	{"id": "ch3_04", "name": "Le long relais", "path": "res://data/levels/ch3_04.json", "ready": true},
 	{"id": "ch4_01", "name": "Le premier fardeau", "path": "res://data/levels/ch4_01.json", "ready": true},
-	{"id": "ch4_02", "name": "Le sas", "path": "res://data/levels/ch4_02.json", "ready": true},
+	# ch4_02 « Le sas » A ÉTÉ RETIRÉ le 21 août 2026, pour la même raison que
+	# ch2_05 : il posait la question de ch4_01, à l'identique.
+	#
+	# LA MESURE NE LAISSE AUCUNE PLACE À L'INTERPRÉTATION. Même bibliothèque
+	# [R01, R03, R05, R11], mêmes trois rangs, même objectif de collecte, même
+	# phrase de leçon — et surtout LES DIX MÊMES PILES GAGNANTES, dans le même
+	# ordre, du premier au dernier rang. Un mur et un sas dessinés par-dessus ne
+	# changent aucune réponse : ils changent le trajet, pas la question.
+	#
+	# LA FUSION R11+R12 L'A RÉVÉLÉ SANS L'AVOIR CAUSÉ. Tant que porter et
+	# déposer coûtaient deux rangs, la pile [R11, R01, R05] ne tenait pas dans
+	# trois emplacements ; une fois le rang libéré, elle a résolu QUATRE niveaux
+	# d'un coup et le cliquet de passe-partout (plafond mesuré : 3) l'a signalé.
+	# Le doublon, lui, était là depuis le début.
+	#
+	# LES FICHIERS `data/levels/ch4_02.*` SONT CONSERVÉS, et ce n'est pas un
+	# oubli : deux recettes du corpus d'or les rejouent. Les supprimer aurait
+	# obligé à régénérer des empreintes — c'est-à-dire à toucher la seule chose
+	# qui distingue « le code a régressé » de « l'entrée a changé ».
+	#
+	# ch4_05 « Le retour » le remplace, et pose l'inverse : trois rangs
+	# obligatoires, dont un qui ne sert pas au transport.
 	{"id": "ch4_03", "name": "La navette", "path": "res://data/levels/ch4_03.json", "ready": true},
 	{"id": "ch4_04", "name": "Le tri", "path": "res://data/levels/ch4_04.json", "ready": true},
+	{"id": "ch4_05", "name": "Le retour", "path": "res://data/levels/ch4_05.json", "ready": true},
 	{"id": "ch5_01", "name": "Le passage", "path": "res://data/levels/ch5_01.json", "ready": true},
 	{"id": "ch5_02", "name": "Les deux vigies", "path": "res://data/levels/ch5_02.json", "ready": true},
 	{"id": "ch5_03", "name": "La fenêtre", "path": "res://data/levels/ch5_03.json", "ready": true},

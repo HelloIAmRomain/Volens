@@ -232,10 +232,10 @@ func _init() -> void:
 		var carries := false
 		for r in _rules:
 			var base := RuleRegistry.base_rule_id(r)
-			if base == RuleRegistry.R11_CARRY or base == RuleRegistry.R12_DROP_AT_GOAL:
+			if base == RuleRegistry.R11_CARRY:
 				carries = true
 		if not carries:
-			print("Brief incohérent : --elements=ressource sans R11 ni R12. "
+			print("Brief incohérent : --elements=ressource sans R11. "
 				+ "Personne ne peut porter, donc rien ne peut être déposé.")
 			quit(2)
 			return
@@ -864,6 +864,24 @@ func _furniture_is_playable(plug: bool, station: String) -> bool:
 		return false
 	return true
 
+## Ce que l'objectif exige de ressources livrées. Zéro si le brief n'en demande
+## aucune — un niveau d'extraction ne compte rien de tel.
+func _collect_needed() -> int:
+	var needed := 0
+	for objective in _objective.split(";", false):
+		var parts := objective.strip_edges().split(" ", false)
+		if parts.size() >= 2 and String(parts[0]) == "collect":
+			needed = maxi(needed, int(parts[1]))
+	return needed
+
+## Combien de ressources le gabarit posera pour une nuée de cette largeur : une
+## colonne sur deux, à partir de la première. C'est une BORNE HAUTE — une case
+## déjà occupée en retire — donc la comparer à l'objectif ne peut écarter que
+## des formes réellement impossibles.
+func _resource_capacity(swarm_width: int) -> int:
+	@warning_ignore("integer_division")
+	return (swarm_width + 1) / 2
+
 func _shapes() -> Array:
 	var out: Array = []
 	for w in [9, 11, 13]:
@@ -905,6 +923,25 @@ func _shapes() -> Array:
 									if not _furniture_is_playable(plug, station):
 										continue
 									for swarm in [[4, 5], [5, 4], [5, 5]]:
+										# UNE NUÉE TROP ÉTROITE NE PORTE PAS ASSEZ DE
+										# RESSOURCES POUR L'OBJECTIF DEMANDÉ, et cela
+										# se sait AVANT de dessiner la carte.
+										#
+										# Les ressources se posent une case au-dessus
+										# du bloc, une colonne sur deux : une nuée
+										# large de quatre en porte DEUX, une nuée large
+										# de cinq en porte TROIS. Un brief « collect 3 »
+										# condamne donc d'avance un tiers des formes.
+										#
+										# Mesuré sur le balayage qui a produit ch4_05 :
+										# **134 candidats sur 400** — un tiers du budget
+										# — dessinés en entier, convertis, puis refusés
+										# par « collect 3 > 2 ressource(s) sur la
+										# grille ». Le budget ne comptait plus ce qu'on
+										# croyait qu'il comptait.
+										if _elements.has("ressource") \
+												and _resource_capacity(int(swarm[0])) < _collect_needed():
+											continue
 										for bx in [1, (w - int(swarm[0])) / 2, w - int(swarm[0]) - 1]:
 											for face in (_faces if not _faces.is_empty() else [0, 1, 2, 3]):
 												if not _fits_after_turn(w, h, face):

@@ -1,0 +1,73 @@
+# N34 « Le retour » — trois porteurs dans une nuee de vingt.
+#
+# IL REMPLACE ch4_02, ET IL EN EST L'INVERSE. « Le sas » posait EXACTEMENT la
+# meme question que le niveau d'introduction : meme bibliotheque, memes trois
+# rangs, et — mesure faite — LES DIX MEMES PILES GAGNANTES, dans le meme ordre.
+# Un mur dessine par-dessus ne change pas la question posee (carnet, 207).
+#
+# CE NIVEAU DEMANDE TROIS REGLES, ET C'EST LA LA DIFFERENCE. Partout ailleurs
+# au chapitre 4, deux suffisent : « Porter et deposer » en tete, un moteur
+# dessous. Ici deux ne suffisent JAMAIS — il faut un troisieme rang, et ce rang
+# ne sert pas au transport.
+#
+# POURQUOI. Trois ressources, vingt agents, et une paroi mediane percee de deux
+# ouvertures seulement. Le transport lui-meme est trivial : on ramasse au
+# premier tick, la ressource est sous les pieds. Le niveau est le RETOUR — vingt
+# agents qui remontent ensemble vers deux trous. La nuee se tasse sous la paroi
+# et les porteurs sont pris dedans, sans que rien dans leur pile ne sache qu'ils
+# portent quelque chose.
+#
+# IL FAUT DONC DESSERRER LA NUEE, et il y a deux facons de le faire — « S'ecarter
+# » relache tout le monde en permanence, « Disperser si dense » n'agit que la ou
+# ca se tasse. Deux familles, deux gestes qui ne se ressemblent pas :
+#
+#     [R11, R04, R01]  desserrer d'abord, puis viser
+#     [R11, R01, R14]  viser, et ne relacher que sous la paroi
+#
+# DEUX ASSOCIATIONS INEDITES AU CATALOGUE : R04-R11 et R11-R14. « Porter » ne
+# s'etait jamais associee qu'a des moteurs — la lumiere, les voisins, la piste.
+# C'est la premiere fois qu'elle a besoin d'une regle de FORME.
+#
+# LES DEPOTS NE SONT PAS SOUS LES OUVERTURES, et c'est mesure, pas decoratif.
+# Les trous de la paroi tombent en colonnes 1 et 5 ; les depots en colonnes 2 et
+# 6. Un porteur qui franchit un trou arrive donc A COTE d'un depot, jamais
+# dessus — il depose au passage, sans s'arreter, exactement comme a « La
+# navette ». Ce qui s'agglutine sur un depot n'en repart plus.
+#
+# IDIOME RESPECTE : la lumiere est derriere le mur de tete, la sortie en est
+# l'ouverture, et la paroi mediane est ce qui rend le retour cher. Sortie de la
+# forge par balayage de 400 geometries, 3 retenues.
+id: ch4_05
+name: Le retour
+tutorial: false
+allowed_rules: [R01, R04, R11, R14]
+slots: 3
+max_ticks: 60
+objective: collect 3
+lesson: "Trois porteurs dans une nuee de vingt : ce n'est pas eux qu'il faut faire passer, c'est la nuee qu'il faut desserrer."
+expected_wins: 4
+expected_classes: 4
+calibrated_on: 33c685092a68f306
+# L'ABSTINENCE ET L'EFFICIENCE EXIGENT DEUX PILES DIFFERENTES. Se passer de
+# « S'ecarter » force la famille [R11, R01, R14], qui ne relache que sous la
+# paroi et met plus longtemps ; l'etalon de vingt-deux ticks n'est tenu que par
+# [R11, R04, R01]. Aucun des deux ne tombe avec l'autre.
+challenge: abstinence=R04 efficiency=22
+---
+. . . . L . . . .
+# # # # E # # # #
+. . D . . . D . .
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+# . # # # . # # #
+. . . . . . . . .
+. . . . . . . . .
+. . . r . r . r .
+. . . o o o o o .
+. . . o o o o o .
+. . . o o o o o .
+. . . o o o o o .
+. . . . . . . . .

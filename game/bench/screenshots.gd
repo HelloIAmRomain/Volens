@@ -123,7 +123,9 @@ func _capture_all() -> void:
 		game._view.step_forward()
 	await _shot("12-ch3-02-piste")
 
-	game = _app._open_game("ch4_02", false)
+	# ch4_02 A QUITTE LE CATALOGUE (carnet 207) ; ch6_05 porte les memes deux
+	# elements a la fois — des ressources a transporter ET des sens uniques.
+	game = _app._open_game("ch6_05", false)
 	game._hide_objective_panel()
 	# LES PORTEURS DOIVENT SE VOIR. Sans cette capture, on ne saurait pas si la
 	# marque de charge est lisible sur une nuee en mouvement — et tout le
@@ -132,13 +134,13 @@ func _capture_all() -> void:
 	# simules s'arretaient au deuxieme rang, et ce n'est pas l'interface qu'on
 	# veut eprouver ici mais le RENDU des porteurs.
 	var carry := Session.new()
-	carry.level_id = "ch4_02"
-	carry.stack = [RuleRegistry.R11_CARRY, RuleRegistry.R12_DROP_AT_GOAL,
+	carry.level_id = "ch6_05"
+	carry.stack = [RuleRegistry.R11_CARRY,
 		RuleRegistry.R01_TOWARD_LIGHT]
 	game.restore_session(carry)
 	for i in range(3):
 		game._view.step_forward()
-	await _shot("13-ch4-02-ressources-sens-unique")
+	await _shot("13-ch6-05-ressources-sens-unique")
 
 	game = _app._open_game("ch5_02", false)
 	game._hide_objective_panel()

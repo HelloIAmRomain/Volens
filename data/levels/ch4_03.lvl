@@ -17,6 +17,24 @@
 # l'entretenir ne sert a rien ici. **C'est le premier niveau ou la bonne
 # reponse est de RETIRER une regle qui marche.**
 #
+# CE PARAGRAPHE A ETE RENDU FAUX PAR LA FUSION DE R11 ET R12 (21 aout 2026, et
+# carnet 206). Porter et deposer ne coutent plus qu'un rang : il restait R08,
+# R09, R11 pour trois rangs, donc plus rien a abandonner. Le niveau perdait son
+# sujet en silence — c'est le genre de degat qu'une fusion fait ailleurs qu'a
+# l'endroit ou on la fait.
+#
+# DEUX CORRECTIONS, TOUTES DEUX MESUREES.
+#
+# 1. R01 « Vers la lumiere » EST RETIREE. Elle etait offerte sur une carte SANS
+#    LUMIERE — la fiche ci-dessus l'ecrit noir sur blanc trois paragraphes plus
+#    haut. Une regle qui ne peut structurellement rien faire n'est pas une
+#    difficulte, c'est du temps perdu a l'essayer (RG-13, inobservable).
+#
+# 2. R04 « S'ecarter » EST AJOUTEE, sur verdict de `widen_search` : ENRICHIT,
+#    trois jeux gagnants au lieu de deux, avec [R04, R11] inedit. Le choix «
+#    quatre regles pour trois rangs » revient, et il revient AUTREMENT : ce
+#    n'est plus « laquelle abandonner », c'est « par ou faire passer la nuee ».
+#
 # LES EFFETS SE METTENT EN TETE, sans exception. R11 et R12 ne s'appliquent que
 # si la cascade les atteint, et R09 decide partout ou il y a une trace —
 # c'est-a-dire partout. Une seule regle de deplacement au-dessus d'elles, et
@@ -37,16 +55,21 @@
 id: ch4_03
 name: La navette
 tutorial: false
-allowed_rules: [R01, R05, R08, R09, R11, R12]
+allowed_rules: [R04, R05, R08, R09, R11]
 slots: 3
 max_ticks: 180
 objective: collect 2
 lesson: "Aucune regle ne connait le but du transport. On ne fait faire un trajet a une nuee qu'en le lui ayant trace."
-expected_wins: 6
-expected_classes: 4
+expected_wins: 20
+expected_classes: 10
 calibrated_on: 3f1d7a5526365bb9
 trail: 4,0=196 5,0=196 6,0=196 4,1=184 5,1=184 6,1=184 4,2=172 5,2=172 6,2=172 4,3=160 5,3=160 6,3=160 4,4=148 5,4=148 6,4=148 4,5=136 5,5=136 6,5=136 4,6=124 5,6=124 6,6=124 4,7=112 5,7=112 6,7=112 4,8=100 5,8=100 6,8=100 4,9=88 5,9=88 6,9=88 4,10=76 5,10=76 6,10=76 4,11=64 5,11=64 6,11=64 4,12=52 5,12=52 6,12=52
-challenge: abstinence=R09 efficiency=7
+# L'ABSTINENCE A CHANGE DE CIBLE AVEC L'ARRIVEE DE R04. L'etalon d'efficience —
+# sept ticks — est desormais tenu par [R11, R04], qui se passe deja de R09 :
+# les deux defis tombaient d'un seul coup, et un defi qu'on obtient sans le
+# viser n'en est pas un. Se passer de R04 demande [R11, R09] ou [R11, R05],
+# plus lentes : les deux exigent maintenant deux piles differentes.
+challenge: abstinence=R04 efficiency=7
 ---
 . . . D . . . D . . .
 . . . D . . . D . . .

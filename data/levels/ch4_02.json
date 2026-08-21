@@ -125,16 +125,15 @@
     1,
     3,
     5,
-    11,
-    12
+    11
   ],
   "calibrated_on": "a37acc8160738b91",
   "challenges": {
     "abstinence_rule": 5,
     "efficiency_ticks": 6
   },
-  "expected_classes": 3,
-  "expected_wins": 5,
+  "expected_classes": 2,
+  "expected_wins": 10,
   "geometry_hash": "a37acc8160738b91",
   "grid": {
     "cells": [

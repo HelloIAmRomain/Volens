@@ -128,20 +128,19 @@
     }
   ],
   "allowed_rules": [
-    1,
+    4,
     5,
     8,
     9,
-    11,
-    12
+    11
   ],
   "calibrated_on": "3f1d7a5526365bb9",
   "challenges": {
-    "abstinence_rule": 9,
+    "abstinence_rule": 4,
     "efficiency_ticks": 7
   },
-  "expected_classes": 4,
-  "expected_wins": 6,
+  "expected_classes": 10,
+  "expected_wins": 20,
   "geometry_hash": "3f1d7a5526365bb9",
   "grid": {
     "cells": [

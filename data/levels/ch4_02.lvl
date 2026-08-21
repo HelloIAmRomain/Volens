@@ -1,3 +1,19 @@
+# ===========================================================================
+# NIVEAU RETIRE DU CATALOGUE LE 21 AOUT 2026 — IL N'EST PLUS JOUE.
+#
+# Il posait la question de ch4_01 A L'IDENTIQUE : meme bibliotheque, memes
+# trois rangs, meme objectif, meme phrase de lecon, et LES DIX MEMES PILES
+# GAGNANTES dans le meme ordre. Le mur et le sas changent le trajet, pas la
+# question. Raisonnement complet dans `game/meta/level_catalog.gd` et au
+# carnet, decision 207. Son remplacant est ch4_05 « Le retour ».
+#
+# CE FICHIER RESTE, ET IL RESTE POUR UNE SEULE RAISON : deux recettes du corpus
+# d'or rejouent `ch4_02.json`. Le supprimer obligerait a regenerer des
+# empreintes, c'est-a-dire a effacer la frontiere entre « le code a regresse »
+# et « l'entree a change ». Ne pas le remettre au catalogue ; ne pas le
+# modifier — toute retouche de la geometrie casserait ces deux recettes.
+# ===========================================================================
+#
 # N14 « Le sas » — on ne repasse pas prendre ce qu'on a oublie.
 #
 # IL EMPLOIE LE SENS UNIQUE POUR CE QU'IL FAIT DE MIEUX : rendre une decision
@@ -42,13 +58,13 @@
 id: ch4_02
 name: Le sas
 tutorial: false
-allowed_rules: [R01, R03, R05, R11, R12]
+allowed_rules: [R01, R03, R05, R11]
 slots: 3
 max_ticks: 180
 objective: collect 2
 lesson: "Un effet ne s'applique que si la cascade l'atteint : les effets se mettent en tete, sans exception."
-expected_wins: 5
-expected_classes: 3
+expected_wins: 10
+expected_classes: 2
 calibrated_on: a37acc8160738b91
 challenge: abstinence=R05 efficiency=6
 ---

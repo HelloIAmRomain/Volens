@@ -77,9 +77,13 @@ func test_the_one_way_passage_is_found_where_it_actually_lives() -> void:
 	# de case : il vit dans `grid.one_way`, une liste à part. Un inventaire qui
 	# n'interroge que `grid.cells` le déclare absent — c'est ce qui a failli le
 	# faire supprimer comme « mécanique morte » lors de l'audit du vocabulaire.
-	var data := LevelCatalog.load_level_data("ch4_02")
+	# LA CIBLE A CHANGÉ AVEC LE RETRAIT DE ch4_02 (21 août 2026, carnet 207) :
+	# le témoin était un niveau, et un niveau peut quitter le catalogue. ch6_05
+	# porte les mêmes sens uniques ; l'assertion ci-dessous refuse de le croire
+	# sur parole, si bien que le jour où lui aussi s'en va, le test le dit.
+	var data := LevelCatalog.load_level_data("ch6_05")
 	assert_gt((data["grid"]["one_way"] as Array).size(), 0,
-		"ch4_02 doit porter des sens uniques, sinon ce test est creux")
+		"ch6_05 doit porter des sens uniques, sinon ce test est creux")
 	var keys := PackedStringArray()
 	for entry in MechanicPrimer.present_in(data):
 		keys.append(String((entry as Dictionary)["key"]))
