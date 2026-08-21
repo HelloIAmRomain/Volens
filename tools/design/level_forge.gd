@@ -521,8 +521,8 @@ func _abstinence_options(minimal: Array) -> Array:
 ## n'évite serait un mur, pas un défi : `_abstinence_options` ne rend que celles
 ## qu'au moins une solution sait éviter.
 func _finish(shape: Dictionary, c: Dictionary, max_ticks: int,
-		library: Array) -> String:
-	var lines := _render(shape, max_ticks, library).split("\n")
+		library: Array, deadline: int = 0) -> String:
+	var lines := _render(shape, max_ticks, library, deadline).split("\n")
 	var out := PackedStringArray()
 	for line in lines:
 		if line == "---":
@@ -979,7 +979,8 @@ func _station_x(w: int, gx: int, where: String) -> int:
 ## réduite, et l'émission finale la reprend : le fichier écrit porte donc
 ## exactement les règles qui PORTENT une gagnante, pas celles qu'on avait
 ## offertes au départ.
-func _render(s: Dictionary, max_ticks: int = 300, library: Array = []) -> String:
+func _render(s: Dictionary, max_ticks: int = 300, library: Array = [],
+		deadline: int = 0) -> String:
 	var w := int(s["w"])
 	var h := int(s["h"])
 	var rows: Array = []
@@ -1147,6 +1148,8 @@ func _render(s: Dictionary, max_ticks: int = 300, library: Array = []) -> String
 	header.append("max_ticks: %d" % max_ticks)
 	for objective in _objective.split(";", false):
 		header.append("objective: %s" % objective.strip_edges())
+	if deadline > 0:
+		header.append("objective: celerity %d" % deadline)
 	header.append("---")
 	return "\n".join(header) + "\n" + "\n".join(lines) + "\n"
 
@@ -1244,13 +1247,30 @@ func _emit(kept: Array, reasons: Dictionary) -> void:
 		if (recheck["errors"] as PackedStringArray).is_empty():
 			var remeasured := _judge(recheck["level"], reasons)
 			if int(remeasured["score"]) > 0:
+				# SI L'ÉCHÉANCE CHANGE L'ISSUE, ELLE SE DÉCLARE.
+				#
+				# Un plafond de ticks est une borne de SÛRETÉ : il empêche une
+				# simulation immobile de tourner pour toujours, et il n'est
+				# annoncé nulle part. Dès qu'il écarte des piles, il ne fait plus
+				# de la sûreté : il tranche entre les solutions, c'est-à-dire
+				# qu'il fait de la conception.
+				#
+				# Signalé à l'essai sur ch2_06 : « ça a fail à cause du temps mais
+				# l'objectif temps n'était pas inscrit ». Le joueur perdait sur une
+				# horloge dont personne ne lui avait parlé. On compare donc le
+				# nombre de gagnantes avant et après serrage : s'il baisse,
+				# l'échéance devient un objectif, et le plafond se desserre pour
+				# redevenir une simple borne.
+				if int(remeasured["n_win"]) < int(c["n_win"]):
+					remeasured["deadline"] = calibrated
+					calibrated = mini(300, calibrated * 2)
 				remeasured["library"] = library
 				c = remeasured
 			else:
 				# L'échéance serrée fait tomber le niveau sous QN-01 : on garde
 				# celle de la recherche, sous laquelle il a été jugé bon.
 				calibrated = _probe_ticks
-		var text := _finish(s, c, calibrated, library)
+		var text := _finish(s, c, calibrated, library, int(c.get("deadline", 0)))
 		var path := "%s/forge_%02d.lvl" % [_out, shown]
 		var f := FileAccess.open(path, FileAccess.WRITE)
 		if f != null:

@@ -49,6 +49,7 @@ const LEVELS := [
 	{"id": "ch5_07", "name": "La bascule", "path": "res://data/levels/ch5_07.json", "ready": true},
 	{"id": "ch5_08", "name": "La ronde", "path": "res://data/levels/ch5_08.json", "ready": true},
 	{"id": "ch5_09", "name": "Le péage", "path": "res://data/levels/ch5_09.json", "ready": true},
+	{"id": "ch5_10", "name": "Le danger et la porte", "path": "res://data/levels/ch5_10.json", "ready": true},
 	{"id": "ch6_01", "name": "Le droit d'ignorer", "path": "res://data/levels/ch6_01.json", "ready": true},
 	{"id": "ch6_02", "name": "La piste interdite", "path": "res://data/levels/ch6_02.json", "ready": true},
 	{"id": "ch6_03", "name": "Personne ne reste", "path": "res://data/levels/ch6_03.json", "ready": true},

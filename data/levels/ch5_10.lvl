@@ -1,0 +1,57 @@
+# N29 « Le danger et la porte » — trois reponses au meme obstacle.
+#
+# NIVEAU FORGE. Deux mille geometries balayees, vingt-huit conformes, celle-ci
+# au meilleur score : quatre familles gagnantes, sept classes structurelles,
+# quinze piles gagnantes, et surtout DEUX ASSOCIATIONS INEDITES — R02 avec R13,
+# R13 avec R14. Sur les quatre-vingt-onze paires que la bibliotheque peut
+# former, vingt-sept seulement avaient deja gagne ensemble quelque part.
+#
+# LE DISPOSITIF. Une paroi barre la carte sous la sortie. Elle est percee de
+# deux fois : un DANGER a gauche, une ouverture LIBRE a droite, cote a cote.
+# « Vers la lumiere » mene la nuee droit sous la paroi, entre les deux, et s'y
+# arrete — ni l'un ni l'autre ne rapproche du but.
+#
+# TROIS FACONS D'EN SORTIR, ET AUCUNE N'EST UN DETAIL DE L'AUTRE :
+#
+#   · FUIR LE DANGER. La regle n'a jamais ete ecrite pour ouvrir un passage,
+#     mais fuir vers l'Est, ici, c'est aller vers l'ouverture. Le joueur ne
+#     resout pas le probleme, il se sert d'un effet de bord — et c'est
+#     exactement ce que Volens demande.
+#   · S'ECARTER. La nuee se desserre jusqu'a ce qu'une frange tombe en face du
+#     trou, puis passe.
+#   · BOUCHER. Un agent se consume dans le danger et ouvre une SECONDE porte,
+#     large de deux cases. Le plus court des trois, et le seul qui coute.
+#
+# VINGT-HUIT ECHECS PROCHES (QN-03). Presque toutes les piles perdantes echouent
+# de peu : on voit ce qui a manque, on recommence. Une carte dont les echecs
+# sont lointains ne se laisse pas explorer, on y gagne ou l'on n'y comprend rien.
+id: ch5_10
+name: Le danger et la porte
+tutorial: false
+allowed_rules: [R01, R02, R04, R13, R14]
+slots: 3
+max_ticks: 60
+objective: extraction 80
+objective: preservation 4
+lesson: "Fuir un danger peut ouvrir un chemin. Une regle sert souvent a autre chose qu'a son nom."
+expected_wins: 15
+expected_classes: 7
+calibrated_on: 62892a197f8362fe
+# LES DEUX DEFIS EXIGENT DEUX PILES DIFFERENTES. L'economie se gagne en deux
+# rangs par [R01, R02] ; l'abstinence de « Fuir le danger » interdit precisement
+# cette solution et force a s'ecarter ou a boucher.
+challenge: economy=2 abstinence=R02
+---
+. . L . . . . . . . .
+# # E # # # # # # # #
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+. . . . . . . . . . .
+# X # . # # # # # # #
+. . . . . . . . . . .
+. o o o o o . . . . .
+. o o o o o . . . . .
+. o o o o o . . . . .
+. o o o o o . . . . .
+. . . . . . . . . . .

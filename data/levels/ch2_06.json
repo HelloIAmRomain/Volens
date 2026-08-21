@@ -249,7 +249,7 @@
   },
   "id": "ch2_06",
   "lesson": "L'ouverture n'est pas sous la lumiere. Il faut une regle qui accepte de s'en ecarter.",
-  "max_ticks": 30,
+  "max_ticks": 60,
   "name": "L'ouverture decalee",
   "objectives": [
     {
@@ -259,6 +259,10 @@
     {
       "max_lost": 3,
       "type": "preservation"
+    },
+    {
+      "max_ticks": 30,
+      "type": "celerity"
     }
   ],
   "slots": 3

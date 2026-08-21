@@ -3402,6 +3402,107 @@ l'alphabet.
 > réattribuer, exactement comme les identifiants de R07 et R10 restent réservés.
 > C'est une opération à part entière, à décider.
 
+### 205. La récolte de la nuit — et ch5_10, où fuir un danger ouvre un chemin
+
+Cinq briefs enchaînés sur l'espace enfin étalé.
+
+| Brief | Balayées | Retenues |
+|---|---|---|
+| Chapitre 2, coordination | 2 000 | **33** |
+| Chapitre 5, sacrifice | 2 000 | **28** |
+| Transport (collecte) | 1 500 | 0 |
+
+**Soixante et un niveaux conformes là où le même outil rendait « 0 retenue » la
+veille.** Ce n'est pas le score qui a changé, ni les filtres : c'est que la
+recherche regarde enfin l'espace (décision 202).
+
+Le transport reste à zéro, et la raison est comprise depuis longtemps : porter
+sans déposer est inerte, déposer sans porter aussi, donc R11 et R12 sont
+obligatoires et seul le troisième rang varie. Trois classes structurelles y sont
+presque hors d'atteinte. **Ce zéro-là n'est pas un échec de la forge, c'est une
+propriété de la mécanique** — et la forge le montre en affichant ses manqués.
+
+#### ch5_10 « Le danger et la porte »
+
+Retenu au meilleur score du brief sacrifice, et promu tel quel.
+
+Une paroi barre la carte sous la sortie, percée deux fois : un **danger** à
+gauche, une **ouverture libre** à droite, côte à côte. « Vers la lumière » mène
+la nuée droit sous la paroi, entre les deux, et s'y arrête — ni l'un ni l'autre
+ne rapproche du but.
+
+**Trois façons d'en sortir, et aucune n'est un détail de l'autre :**
+
+- **Fuir le danger.** La règle n'a jamais été écrite pour ouvrir un passage,
+  mais fuir vers l'Est, ici, c'est aller vers l'ouverture. Le joueur ne résout
+  pas le problème : il se sert d'un effet de bord.
+- **S'écarter.** La nuée se desserre jusqu'à ce qu'une frange tombe en face du
+  trou.
+- **Boucher.** Un agent se consume et ouvre une seconde porte, large de deux
+  cases. Le plus court des trois, et le seul qui coûte.
+
+| Mesure | Valeur |
+|---|---|
+| Gagnantes / minimales | 15 / **6** |
+| Classes structurelles | **7** |
+| Associations inédites | **R02–R13 et R13–R14** |
+| Échecs proches (QN-03) | **28** |
+
+Les deux associations sont le point le plus important : sur les quatre-vingt-onze
+paires que la bibliothèque peut former, vingt-sept seulement avaient déjà gagné
+ensemble quelque part. **Deux de plus, et elles arrivent par une carte, pas par
+une règle nouvelle.**
+
+> **DEUX AVERTISSEMENTS D'INVARIANT N°14 ONT ÉTÉ ÉMIS PAR LE CONVERTISSEUR** —
+> danger plein Nord, fuite et entonnoir en sens opposés. La mesure les contredit :
+> quinze piles gagnantes, aucun sur-place perpétuel. Les contrôles G2 et G3 sont
+> des heuristiques calibrées sur des géométries passées ; ici la fuite vers l'Est
+> mène précisément à l'ouverture, ce qu'un contrôle de direction ne peut pas
+> voir. **On garde l'avertissement — il a plus souvent raison que tort — mais
+> c'est la simulation qui tranche.**
+
+### 204. Une horloge dont personne n'avait parlé — le plafond de ticks faisait de la conception
+
+« J'ai testé le niveau 10, ça a fail à cause du temps mais l'objectif temps
+n'était pas inscrit. »
+
+Le message de défaite disait vrai — « le temps imparti s'est écoulé » — mais le
+panneau d'ouverture n'avait jamais parlé de temps. Le joueur apprenait **après
+coup** qu'une horloge courait.
+
+**LA CAUSE EST UN GLISSEMENT DE RÔLE, ET C'EST MOI QUI L'AVAIS PROVOQUÉ.**
+`max_ticks` est une borne de SÛRETÉ : elle empêche une simulation immobile de
+tourner pour toujours, et à ce titre elle n'a pas à s'annoncer. J'avais serré
+celle de ch2_06 à **trente** pour écarter la pile `[R04, R06, R01]`, qui sans
+cela résolvait quatre niveaux du jeu — au-dessus du plafond QN-02 mesuré à
+trois. C'est-à-dire que je faisais un travail de **conception** avec un
+garde-fou technique.
+
+> **UN PLAFOND QUI DÉCIDE DU JEU DOIT SE DÉCLARER.** L'échéance est devenue un
+> `objective: celerity 30`, qui s'annonce à l'ouverture et s'explique à l'échec,
+> et `max_ticks` est remonté à 60 pour redevenir ce qu'il doit être. Le niveau se
+> joue à l'identique : quatre gagnantes, trois classes, avant comme après. Seule
+> la promesse faite au joueur a changé.
+
+**UN SEUL NIVEAU ÉTAIT CONCERNÉ**, vérification faite sur les douze qui déclarent
+un temps de référence — les autres ont des plafonds de 120 à 200 ticks pour des
+solutions de 6 à 41. Le défaut n'était pas répandu ; il était récent, et il
+venait de moi.
+
+#### Deux garde-fous, parce qu'un seul aurait laissé revenir le défaut
+
+**Côté catalogue** : un test compare le plafond au meilleur temps déclaré par le
+défi d'efficience. En deçà du double sans échéance annoncée, le plafond tranche
+entre les solutions et le test refuse. Il dit aussi ce qu'il ne voit pas — un
+niveau sans défi d'efficience ne déclare pas son meilleur temps, et le contrôle
+porte sur ce qui est écrit, pas sur ce qui est vrai.
+
+**Côté forge** : elle compare le nombre de gagnantes avant et après serrage de
+l'échéance. S'il baisse, l'échéance a écarté des piles — donc elle fait de la
+conception — et la forge la déclare en `celerity` puis desserre le plafond. Un
+outil qui produit des niveaux ne doit pas pouvoir fabriquer le défaut qu'on vient
+de corriger à la main.
+
 ### 203. ch2_07 « Le passage par la droite » — le premier niveau ENTIÈREMENT forgé
 
 Trois cents géométries, cinq conformes, celle-ci au meilleur score. Et c'est le
