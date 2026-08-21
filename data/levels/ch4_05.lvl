@@ -1,4 +1,4 @@
-# N34 « Le retour » — trois porteurs dans une nuee de vingt.
+# N34 « Le second depot » — la lumiere rassemble, et rassembles ils se bouchent.
 #
 # IL REMPLACE ch4_02, ET IL EN EST L'INVERSE. « Le sas » posait EXACTEMENT la
 # meme question que le niveau d'introduction : meme bibliotheque, memes trois
@@ -7,67 +7,70 @@
 #
 # CE NIVEAU DEMANDE TROIS REGLES, ET C'EST LA LA DIFFERENCE. Partout ailleurs
 # au chapitre 4, deux suffisent : « Porter et deposer » en tete, un moteur
-# dessous. Ici deux ne suffisent JAMAIS — il faut un troisieme rang, et ce rang
-# ne sert pas au transport.
+# dessous. Ici deux ne suffisent JAMAIS.
 #
-# POURQUOI. Trois ressources, vingt agents, et une paroi mediane percee de deux
-# ouvertures seulement. Le transport lui-meme est trivial : on ramasse au
-# premier tick, la ressource est sous les pieds. Le niveau est le RETOUR — vingt
-# agents qui remontent ensemble vers deux trous. La nuee se tasse sous la paroi
-# et les porteurs sont pris dedans, sans que rien dans leur pile ne sache qu'ils
-# portent quelque chose.
+# POURQUOI. Trois ressources, vingt agents, DEUX depots — et une seule lumiere,
+# posee a l'aplomb du depot de GAUCHE. « Vers la lumiere » est gloutonne : elle
+# ramene toute la nuee sur la meme colonne, et les vingt agents remontent en
+# file vers le meme depot. Le second, quatre cases a l'Est, ne sert jamais.
 #
-# IL FAUT DONC DESSERRER LA NUEE, et il y a deux facons de le faire — « S'ecarter
-# » relache tout le monde en permanence, « Disperser si dense » n'agit que la ou
-# ca se tasse. Deux familles, deux gestes qui ne se ressemblent pas :
+# « S'ECARTER » EST DANS TOUTES LES GAGNANTES, sans exception. Ce n'est pas un
+# hasard de mesure : c'est la seule regle de la bibliotheque qui defasse la
+# file. Desserree, la nuee se repartit sur les deux depots et les trois
+# ressources arrivent ; serree, elle en livre une et pietine.
 #
-#     [R11, R04, R01]  desserrer d'abord, puis viser
-#     [R11, R01, R14]  viser, et ne relacher que sous la paroi
+# DEUX FAMILLES, ET LA SECONDE SE PASSE DE LA LUMIERE :
 #
-# DEUX ASSOCIATIONS INEDITES AU CATALOGUE : R04-R11 et R11-R14. « Porter » ne
-# s'etait jamais associee qu'a des moteurs — la lumiere, les voisins, la piste.
-# C'est la premiere fois qu'elle a besoin d'une regle de FORME.
+#     [R11, R04, R01]  desserrer, puis viser la lumiere       — 14 ticks
+#     [R11, R04, R05]  desserrer, puis se suivre les uns les autres
 #
-# LES DEPOTS NE SONT PAS SOUS LES OUVERTURES, et c'est mesure, pas decoratif.
-# Les trous de la paroi tombent en colonnes 1 et 5 ; les depots en colonnes 2 et
-# 6. Un porteur qui franchit un trou arrive donc A COTE d'un depot, jamais
-# dessus — il depose au passage, sans s'arreter, exactement comme a « La
-# navette ». Ce qui s'agglutine sur un depot n'en repart plus.
+# La seconde est inedite au catalogue — {R04, R05, R11} n'y figurait nulle part,
+# et « Porter » ne s'etait encore jamais associee a « S'ecarter ».
+#
+# CE QUE CETTE CARTE A COUTE, ET LA LECON VAUT D'ETRE ECRITE. Sa premiere
+# version portait R14 « Disperser si dense », qui faisait le meme travail en
+# mieux — et R14 appartient au CHAPITRE 5. L'offrir ici, c'etait la donner au
+# joueur avant le chapitre qui l'enseigne, donc vider ch5_02 de son objet. Rien
+# ne l'a signale : le catalogue DEDUIT l'introduction d'une regle du premier
+# niveau qui l'offre, si bien que deplacer l'introduction n'etait pas une faute
+# detectable — c'etait une nouvelle verite. `tests/unit/test_rule_introduction_
+# order.gd` confronte desormais le catalogue au CDC, et non a lui-meme.
 #
 # IDIOME RESPECTE : la lumiere est derriere le mur de tete, la sortie en est
-# l'ouverture, et la paroi mediane est ce qui rend le retour cher. Sortie de la
-# forge par balayage de 400 geometries, 3 retenues.
+# l'ouverture, decalee de deux cases. Sortie de la forge par balayage.
 id: ch4_05
-name: Le retour
+name: Le second depot
 tutorial: false
-allowed_rules: [R01, R04, R11, R14]
+allowed_rules: [R01, R04, R05, R11]
 slots: 3
 max_ticks: 60
 objective: collect 3
-lesson: "Trois porteurs dans une nuee de vingt : ce n'est pas eux qu'il faut faire passer, c'est la nuee qu'il faut desserrer."
-expected_wins: 4
-expected_classes: 4
-calibrated_on: 33c685092a68f306
-# L'ABSTINENCE ET L'EFFICIENCE EXIGENT DEUX PILES DIFFERENTES. Se passer de
-# « S'ecarter » force la famille [R11, R01, R14], qui ne relache que sous la
-# paroi et met plus longtemps ; l'etalon de vingt-deux ticks n'est tenu que par
-# [R11, R04, R01]. Aucun des deux ne tombe avec l'autre.
-challenge: abstinence=R04 efficiency=22
+lesson: "La lumiere rassemble. Rassembles, les porteurs se bouchent le passage et le second depot ne sert jamais."
+expected_wins: 3
+expected_classes: 3
+calibrated_on: 4d7e7792136f1643
+# L'ABSTINENCE ET L'EFFICIENCE EXIGENT DEUX PILES DIFFERENTES. Se passer de la
+# lumiere force la famille [R11, R04, R05] ; l'etalon de quatorze ticks n'est
+# tenu que par [R11, R04, R01], qui vise. Aucun des deux ne tombe avec l'autre.
+#
+# L'ECONOMIE PROPOSEE PAR LA FORGE A ETE REFUSEE : les trois gagnantes tiennent
+# en trois rangs, donc « gagner en trois regles » s'obtient sans le viser.
+challenge: abstinence=R01 efficiency=14
 ---
-. . . . L . . . .
-# # # # E # # # #
-. . D . . . D . .
-. . . . . . . . .
-. . . . . . . . .
-. . . . . . . . .
-. . . . . . . . .
-. . . . . . . . .
-# . # # # . # # #
-. . . . . . . . .
-. . . . . . . . .
-. . . r . r . r .
-. . . o o o o o .
-. . . o o o o o .
-. . . o o o o o .
-. . . o o o o o .
-. . . . . . . . .
+. . . . L . . . . . . . .
+# # # # # # E # # # # # #
+. . . . D . . . D . . . .
+. . . . . . . . . . . . .
+. . . . . . . . . . . . .
+. . . . . . . . . . . . .
+. . . . . . . . . . . . .
+. . . . . . . . . . . . .
+. . . . . . . . . . . . .
+. . . . . . . . . . . . .
+. . . . . . . . . . . . .
+. r . r . r . . . . . . .
+. o o o o o . . . . . . .
+. o o o o o . . . . . . .
+. o o o o o . . . . . . .
+. o o o o o . . . . . . .
+. . . . . . . . . . . . .

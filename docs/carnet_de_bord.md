@@ -3032,7 +3032,14 @@ ch3_04 et demande la même autorisation.
 > d'une recherche ne vaut que ce que vaut la couverture de la recherche, et je
 > n'avais jamais vérifié la mienne.
 
-#### L'ATELIER À BOUCLIERS EST INERTE PAR CONSTRUCTION — et cette fois on sait pourquoi
+#### ~~L'ATELIER À BOUCLIERS EST INERTE PAR CONSTRUCTION~~ — **RÉFUTÉ le 21 août 2026, décision 208**
+
+> **CE QUI SUIT EST FAUX SUR SA CONCLUSION PRINCIPALE.** Une carte a été trouvée
+> où l'atelier porte **7 piles gagnantes contre 0 sans lui**, et où `[R01]` seule
+> ne gagne pas — le troisième cas que ce paragraphe déclarait inexistant. Le
+> raisonnement structurel ci-dessous oublie que **la pile décide où la nuée
+> marche** : un élément qu'aucune règle ne vise reste un élément qu'on peut
+> atteindre ou manquer. Lire la décision 208 avant de se fier à ce qui suit.
 
 **~4 900 géométries mesurées en quatre balayages, plus une dizaine de cartes
 dessinées à la main. Aucun niveau.** Ce n'est plus un échec de recherche, c'est
@@ -3401,6 +3408,58 @@ l'alphabet.
 > par leur valeur. La sortie propre est de réserver les valeurs mortes sans les
 > réattribuer, exactement comme les identifiants de R07 et R10 restent réservés.
 > C'est une opération à part entière, à décider.
+
+### 208. L'atelier à boucliers n'était pas inerte — il n'avait jamais été cherché au bon endroit
+
+**La décision 198 est FAUSSE, et je peux enfin le prouver au lieu de le
+soupçonner.** Elle affirmait, en titre : « l'atelier à boucliers est inerte PAR
+CONSTRUCTION ». Le balayage relancé sur l'espace correctement étalé (décision
+202) a rendu **cinq géométries conformes sur 1 200**, et deux d'entre elles
+portent un atelier. Restait la seule question qui vaille : **l'atelier y
+change-t-il quelque chose ?**
+
+L'expérience tient en une ligne — retirer les trois cases d'atelier, tout garder
+d'autre, et recompter les gagnantes.
+
+| Carte | Avec atelier | Sans atelier | Verdict |
+|---|---|---|---|
+| A — sortie au Nord | 3 gagnantes, 66 pertes cumulées | **3 gagnantes, 66 pertes** | décor |
+| B — sortie à l'Est | **7 gagnantes, 2 pertes** | **0 gagnante**, 33 pertes | **il porte** |
+
+Sur la carte B, l'atelier est la différence entre un niveau et un mur.
+
+#### Pourquoi la carte B échappe au piège que 198 décrivait
+
+L'argument de 198 était structurel, et il n'était pas idiot : *aucune règle ne
+peut viser l'atelier*, donc il est ramassé passivement, donc il protège tout le
+monde ou personne — décoratif, ou obligatoire, jamais une décision.
+
+**Ce qui manquait, c'est que la pile décide OÙ la nuée marche.** Un élément qu'on
+ne peut pas viser reste un élément qu'on peut atteindre ou manquer, et c'est
+l'ordre des règles qui tranche. La carte B le montre parce qu'elle offre **deux
+passages vers l'Est** : une brèche libre, et un raccourci gardé par un danger —
+avec l'atelier posé juste devant le raccourci.
+
+Et le contre-exemple décisif est là : **`[R01]` seule ne gagne PAS.** C'était le
+troisième cas que 198 déclarait inexistant — atelier porteur *et* niveau non
+trivial. Sept piles gagnent, trente-quatre perdent.
+
+#### Ce que 198 gardait de vrai, et ce qu'il faut en retenir
+
+Les deux bords qu'elle a mesurés tiennent : atelier dans l'entonnoir, le niveau
+se gagne d'une règle ; atelier à l'écart, rien ne se gagne. Ce qui tombe, c'est
+« la fenêtre entre les deux est vide » — une affirmation sur tout l'espace tirée
+de quatre passes dans la même région.
+
+> **C'est la deuxième fois en deux jours qu'une conclusion NÉGATIVE tombe pour la
+> même raison**, et c'est le vrai enseignement. « L'atelier est inerte » et « le
+> chapitre 4 est sain » étaient toutes deux des affirmations d'absence, et une
+> absence ne se constate jamais : elle se déduit d'une couverture. Je n'avais
+> vérifié la couverture ni dans un cas ni dans l'autre.
+
+L'élément est **absent du vocabulaire de neuf éléments du CDC §8.1**, déclaré
+fermé pour la v1.0. Il n'existait que dans le code. La mesure ci-dessus est ce
+qui manquait pour trancher entre l'inscrire et le retirer.
 
 ### 207. La fusion a fait ses dégâts ailleurs qu'où je l'ai faite — le chapitre 4 posait une question, quatre fois
 

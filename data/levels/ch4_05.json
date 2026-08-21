@@ -2,6 +2,18 @@
   "agents": [
     {
       "pos": [
+        1,
+        12
+      ]
+    },
+    {
+      "pos": [
+        2,
+        12
+      ]
+    },
+    {
+      "pos": [
         3,
         12
       ]
@@ -20,14 +32,14 @@
     },
     {
       "pos": [
-        6,
-        12
+        1,
+        13
       ]
     },
     {
       "pos": [
-        7,
-        12
+        2,
+        13
       ]
     },
     {
@@ -50,14 +62,14 @@
     },
     {
       "pos": [
-        6,
-        13
+        1,
+        14
       ]
     },
     {
       "pos": [
-        7,
-        13
+        2,
+        14
       ]
     },
     {
@@ -80,14 +92,14 @@
     },
     {
       "pos": [
-        6,
-        14
+        1,
+        15
       ]
     },
     {
       "pos": [
-        7,
-        14
+        2,
+        15
       ]
     },
     {
@@ -105,18 +117,6 @@
     {
       "pos": [
         5,
-        15
-      ]
-    },
-    {
-      "pos": [
-        6,
-        15
-      ]
-    },
-    {
-      "pos": [
-        7,
         15
       ]
     }
@@ -124,17 +124,17 @@
   "allowed_rules": [
     1,
     4,
-    11,
-    14
+    5,
+    11
   ],
-  "calibrated_on": "33c685092a68f306",
+  "calibrated_on": "4d7e7792136f1643",
   "challenges": {
-    "abstinence_rule": 4,
-    "efficiency_ticks": 22
+    "abstinence_rule": 1,
+    "efficiency_ticks": 14
   },
-  "expected_classes": 4,
-  "expected_wins": 4,
-  "geometry_hash": "33c685092a68f306",
+  "expected_classes": 3,
+  "expected_wins": 3,
+  "geometry_hash": "4d7e7792136f1643",
   "grid": {
     "cells": [
       0,
@@ -146,6 +146,12 @@
       0,
       0,
       0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
       1,
       1,
       1,
@@ -155,6 +161,10 @@
       1,
       1,
       1,
+      1,
+      1,
+      0,
+      0,
       0,
       0,
       6,
@@ -209,15 +219,47 @@
       0,
       0,
       0,
-      1,
       0,
-      1,
-      1,
-      1,
       0,
-      1,
-      1,
-      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
       0,
       0,
       0,
@@ -244,6 +286,32 @@
       5,
       0,
       5,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
       0,
       0,
       0,
@@ -297,15 +365,15 @@
     "one_way": [],
     "patrols": [],
     "size": [
-      9,
+      13,
       17
     ],
     "trail": []
   },
   "id": "ch4_05",
-  "lesson": "Trois porteurs dans une nuee de vingt : ce n'est pas eux qu'il faut faire passer, c'est la nuee qu'il faut desserrer.",
+  "lesson": "La lumiere rassemble. Rassembles, les porteurs se bouchent le passage et le second depot ne sert jamais.",
   "max_ticks": 60,
-  "name": "Le retour",
+  "name": "Le second depot",
   "objectives": [
     {
       "count": 3,

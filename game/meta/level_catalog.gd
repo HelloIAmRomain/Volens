@@ -57,11 +57,12 @@ const LEVELS := [
 	# obligé à régénérer des empreintes — c'est-à-dire à toucher la seule chose
 	# qui distingue « le code a régressé » de « l'entrée a changé ».
 	#
-	# ch4_05 « Le retour » le remplace, et pose l'inverse : trois rangs
-	# obligatoires, dont un qui ne sert pas au transport.
+	# ch4_05 « Le second dépôt » le remplace, et pose l'inverse : trois rangs
+	# obligatoires, dont un — « S'écarter » — ne sert pas au transport mais à
+	# défaire la file que la lumière forme devant un seul des deux dépôts.
 	{"id": "ch4_03", "name": "La navette", "path": "res://data/levels/ch4_03.json", "ready": true},
 	{"id": "ch4_04", "name": "Le tri", "path": "res://data/levels/ch4_04.json", "ready": true},
-	{"id": "ch4_05", "name": "Le retour", "path": "res://data/levels/ch4_05.json", "ready": true},
+	{"id": "ch4_05", "name": "Le second dépôt", "path": "res://data/levels/ch4_05.json", "ready": true},
 	{"id": "ch5_01", "name": "Le passage", "path": "res://data/levels/ch5_01.json", "ready": true},
 	{"id": "ch5_02", "name": "Les deux vigies", "path": "res://data/levels/ch5_02.json", "ready": true},
 	{"id": "ch5_03", "name": "La fenêtre", "path": "res://data/levels/ch5_03.json", "ready": true},
