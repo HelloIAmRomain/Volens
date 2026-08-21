@@ -175,24 +175,27 @@ func test_r11_does_not_take_a_second_resource() -> void:
 	assert_eq(after.grid.cell_type_at(Vector2i(1, 0)), GridState.CellType.RESOURCE,
 		"un porteur ne prend pas une seconde ressource")
 
-func test_r12_drops_on_an_ADJACENT_dropoff() -> void:
+func test_r11_drops_on_an_ADJACENT_dropoff() -> void:
 	# L'adjacence porte tout le chapitre : si le dépôt se faisait en marchant
-	# dessus, une case de dépôt serait une sortie de plus et R12 inutile.
+	# dessus, une case de dépôt serait une sortie de plus et le dépôt inutile.
+	#
+	# Le dépôt était porté par R12 jusqu'à la fusion du 21 août 2026 ; il vit
+	# maintenant dans R11 « Porter et déposer », dont c'est la seconde moitié.
 	var s := _state([".D.", "...", "..."], [Vector2i(1, 1)])
 	s.agents[0].flags |= AgentState.PORTEUR
-	var stack: Array[int] = [RuleRegistry.R12_DROP_AT_GOAL, RuleRegistry.R03_STAY_GROUPED]
+	var stack: Array[int] = [RuleRegistry.R11_CARRY, RuleRegistry.R03_STAY_GROUPED]
 	var after := SimCore.step(s, stack)
 	assert_true((after.agents[0].flags & AgentState.PORTEUR) == 0, "le porteur doit s'être délesté")
 	assert_eq(after.counters.delivered, 1, "une livraison doit être comptée")
 
-func test_r12_lets_every_carrier_around_one_dropoff_deliver() -> void:
+func test_r11_lets_every_carrier_around_one_dropoff_deliver() -> void:
 	# LE CAS D'ÉPREUVE : le dépôt encombré. Un dépôt n'a pas de capacité, et
 	# c'est ce qu'il faut vérifier — un porteur seul ne prouverait rien.
 	var s := _state(["...", ".D.", "..."],
 		[Vector2i(1, 0), Vector2i(0, 1), Vector2i(2, 1), Vector2i(1, 2)])
 	for a in s.agents:
 		a.flags |= AgentState.PORTEUR
-	var stack: Array[int] = [RuleRegistry.R12_DROP_AT_GOAL, RuleRegistry.R03_STAY_GROUPED]
+	var stack: Array[int] = [RuleRegistry.R11_CARRY, RuleRegistry.R03_STAY_GROUPED]
 	var after := SimCore.step(s, stack)
 	assert_eq(after.counters.delivered, 4, "les quatre porteurs adjacents doivent livrer")
 
@@ -373,8 +376,9 @@ func test_r16_costs_a_rank_and_proposes_nothing() -> void:
 # --- propriétés communes des seize règles ----------------------------------
 
 func test_every_declared_rule_is_registered() -> void:
-	assert_eq(RuleRegistry.ALL.size(), 14,
-		"quatorze règles depuis le retrait de R07 et R10 (carnet, décision 189)")
+	assert_eq(RuleRegistry.ALL.size(), 13,
+		("treize règles : retrait de R07 et R10 (carnet, 189), puis fusion de R12 "
+		+ "« Déposer au but » dans R11 « Porter et déposer » (carnet, 206)"))
 	for id in RuleRegistry.ALL:
 		assert_not_null(RuleRegistry.get_rule(id), "R%02d doit être enregistrée" % id)
 

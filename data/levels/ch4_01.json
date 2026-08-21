@@ -125,8 +125,7 @@
     1,
     3,
     5,
-    11,
-    12
+    11
   ],
   "calibrated_on": "136ada9f3b8efa7f",
   "challenges": {
@@ -134,7 +133,7 @@
     "efficiency_ticks": 10
   },
   "expected_classes": 1,
-  "expected_wins": 4,
+  "expected_wins": 10,
   "geometry_hash": "136ada9f3b8efa7f",
   "grid": {
     "cells": [

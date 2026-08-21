@@ -1,13 +1,18 @@
 extends GutTest
 
-## LE CDC ANNONCE SEIZE RÈGLES ; LE JEU EN COMPTE QUATORZE.
+## LE CDC ANNONCE SEIZE RÈGLES ; LE JEU EN COMPTE TREIZE.
 ##
 ## R07 « Attendre » et R10 « Rebrousser si seul » ont été retirées le 15 août
 ## 2026 sur décision du concepteur, après mesure : une règle est utile si elle
 ## PORTE — si la retirer d'une pile gagnante fait perdre cette pile. R07 était
 ## offerte dans quatorze niveaux et ne portait dans aucun ; R10 n'était offerte
 ## nulle part. **Divergence au CDC §7, à arbitrer** (carnet, décision 189).
-const RULE_COUNT_NOTE := "quatorze règles depuis le retrait de R07 et R10"
+##
+## R12 « Déposer au but » a été FUSIONNÉE dans R11 le 20 août 2026 : porter et
+## déposer sont devenus « Porter et déposer ». La séparation n'était jamais
+## décisive — mesurée sur les cinq niveaux qui les offraient, aucune pile
+## gagnante ne demandait une règle INTERPOSÉE entre les deux (carnet, 206).
+const RULE_COUNT_NOTE := "treize règles depuis le retrait de R07/R10 et la fusion R11+R12"
 ## DÉFIS RG-18/RG-19, et la présentation des seize règles.
 ##
 ## CE QUI EST VÉRIFIÉ ICI, ET POURQUOI. Les défis sont la seule partie du jeu
@@ -116,7 +121,7 @@ func test_efficiency_tolerates_the_exact_threshold() -> void:
 
 func test_every_registered_rule_has_a_name_a_glyph_and_a_sentence() -> void:
 	# Une règle sans libellé s'afficherait « règle 14 » dans la pile du joueur.
-	assert_eq(RuleRegistry.ALL.size(), 14, RULE_COUNT_NOTE)
+	assert_eq(RuleRegistry.ALL.size(), 13, RULE_COUNT_NOTE)
 	for id in RuleRegistry.ALL:
 		assert_ne(RuleCatalog.name_of(id), "règle %d" % id, "R%02d sans nom" % id)
 		assert_ne(RuleCatalog.glyph_of(id), "?", "R%02d sans glyphe" % id)
@@ -130,7 +135,7 @@ func test_two_rules_never_share_a_glyph() -> void:
 		var g := RuleCatalog.glyph_of(id)
 		assert_false(seen.has(g), "glyphe « %s » partagé par deux règles" % g)
 		seen.append(g)
-	assert_eq(seen.size(), 14, "un glyphe par règle vivante")
+	assert_eq(seen.size(), 13, "un glyphe par règle vivante — " + RULE_COUNT_NOTE)
 
 func test_a_joker_announces_what_it_neutralises() -> void:
 	# « Ignorer » tout court ne dit pas quoi, et deux jokers de cibles

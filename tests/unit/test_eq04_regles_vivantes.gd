@@ -101,7 +101,9 @@ func test_under_used_rules_do_not_multiply() -> void:
 func test_the_library_is_measured_in_full() -> void:
 	# Garde du balayage : si l'énumération se cassait, tout paraîtrait mort et
 	# les deux tests ci-dessus deviendraient des tautologies.
-	assert_eq(_alive.size(), 14, "les quatorze règles doivent être mesurées")
+	assert_eq(_alive.size(), 13,
+		("les treize règles doivent être mesurées — quatorze jusqu'à la fusion de "
+		+ "R12 « Déposer au but » dans R11 « Porter et déposer » (carnet, 206)"))
 	var total := 0
 	for id in _alive:
 		total += int(_alive[id])

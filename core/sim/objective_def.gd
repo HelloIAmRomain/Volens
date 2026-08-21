@@ -20,9 +20,10 @@ extends RefCounted
 ## gagné (défaut de conception que le validateur signale et que l'éditeur
 ## T-074 devra refuser d'enregistrer).
 ##
-## COLLECT est analysé et évalué, mais restera inatteignable tant que R11
-## (Porter) et R12 (Déposer) n'existent pas : `delivered` ne progresse pas.
-## Prévu pour le chapitre 4.
+## COLLECT est analysé et évalué, mais reste inatteignable tant que R11
+## « Porter et déposer » n'est pas offerte : `delivered` ne progresse pas.
+## Le ramassage et la livraison étaient portés par deux règles jusqu'au
+## 21 août 2026 ; ils n'en font plus qu'une (carnet, 206).
 
 enum Type { EXTRACTION, COLLECT, PRESERVATION, CELERITY, INTERDICTION }
 

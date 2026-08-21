@@ -102,20 +102,19 @@ static func _effect_note(rule_id: int, agent: AgentState, state: SimState) -> St
 		RuleRegistry.R08_MARK_TRAIL:
 			return "marque sa case s'il avance, puis rend la main"
 		RuleRegistry.R11_CARRY:
+			# LA RÈGLE FAIT DEUX CHOSES DEPUIS LA FUSION du 21 août 2026 : le
+			# diagnostic doit dire CELLE QUI S'APPLIQUE, sinon il décrit une règle
+			# que le joueur ne reconnaît pas dans ce qu'il voit.
 			if (agent.flags & AgentState.PORTEUR) != 0:
-				return "porte déjà : ne ramasse pas"
+				for d in Directions.ORDER:
+					var c: Vector2i = agent.pos + Directions.offset(d)
+					if state.grid.is_in_bounds(c) \
+							and state.grid.cell_type_at(c) == GridState.CellType.DROPOFF:
+						return "dépose sur le dépôt voisin, puis rend la main"
+				return "porte déjà, et aucun dépôt à portée de bras"
 			if state.grid.cell_type_at(agent.pos) == GridState.CellType.RESOURCE:
 				return "ramasse la ressource de sa case, puis rend la main"
 			return "rien à ramasser ici"
-		RuleRegistry.R12_DROP_AT_GOAL:
-			if (agent.flags & AgentState.PORTEUR) == 0:
-				return "ne porte rien"
-			for d in Directions.ORDER:
-				var c: Vector2i = agent.pos + Directions.offset(d)
-				if state.grid.is_in_bounds(c) \
-						and state.grid.cell_type_at(c) == GridState.CellType.DROPOFF:
-					return "dépose sur le dépôt voisin, puis rend la main"
-			return "aucun dépôt à portée de bras"
 	return "agit, puis rend la main"
 
 static func _nearest_cell(grid: GridState, cell_type: int, from: Vector2i) -> Vector2i:

@@ -32,14 +32,30 @@ const R06_HUG_WALL: int = 6
 ##   · R10 n'était offerte nulle part, et son remède demandait l'hystérésis,
 ##     gelée faute de joueurs.
 ##
-## Les quatorze autres portent toutes quelque part.
+## Les autres portent toutes quelque part. Elles étaient quatorze ; la fusion de
+## R12 dans R11 le 21 août 2026 les ramène à TREIZE.
 const _R07_WAIT_RETIRED: int = 7
 const R08_MARK_TRAIL: int = 8
 const R09_FOLLOW_TRAIL: int = 9
 # Chapitre 4 — le transport
 const _R10_TURN_BACK_IF_ALONE_RETIRED: int = 10
 const R11_CARRY: int = 11
-const R12_DROP_AT_GOAL: int = 12
+## RETIRÉE LE 21 AOÛT 2026, SON IDENTIFIANT RESTE RÉSERVÉ — comme R07 et R10.
+##
+## « Déposer au but » a été fusionnée dans R11, devenue « Porter et déposer ».
+## La contention RG-13 entre les deux valait ZÉRO sur les cinq niveaux qui les
+## employaient, et pour une raison structurelle : un agent est soit les mains
+## vides sur une ressource, soit chargé près d'un dépôt. Les deux gardes
+## s'excluent au même tick, donc leur ordre ne pouvait jamais se voir.
+##
+## Deux rangs de pile pour une seule décision, c'est un coût sans retour : le
+## joueur en a trois ou quatre, et les deux règles apparaissaient de toute façon
+## en MONOPOLE dans chaque famille gagnante du chapitre 4 — ensemble ou pas du
+## tout.
+##
+## Le numéro ne sera jamais réattribué : une sauvegarde ou une recette d'or qui
+## le porterait encore doit rester lisible comme ce qu'elle était.
+const _R12_DROP_AT_GOAL_RETIRED: int = 12
 # Chapitre 5 — le sacrifice et la régulation
 const R13_PLUG: int = 13
 const R14_SCATTER_IF_DENSE: int = 14
@@ -104,8 +120,6 @@ static func get_rule(rule_id: int) -> Rule:
 			rule = RuleFollowTrail.new()
 		R11_CARRY:
 			rule = RuleCarry.new()
-		R12_DROP_AT_GOAL:
-			rule = RuleDropAtGoal.new()
 		R13_PLUG:
 			rule = RulePlug.new()
 		R14_SCATTER_IF_DENSE:
@@ -123,7 +137,7 @@ const ALL: Array[int] = [
 	R01_TOWARD_LIGHT, R02_FLEE_DANGER, R03_STAY_GROUPED,
 	R04_SPREAD_OUT, R05_FOLLOW_NEIGHBOURS, R06_HUG_WALL,
 	R08_MARK_TRAIL, R09_FOLLOW_TRAIL,
-	R11_CARRY, R12_DROP_AT_GOAL,
+	R11_CARRY,
 	R13_PLUG, R14_SCATTER_IF_DENSE, R15_FOLLOW_THE_SLOWEST,
 	R16_IGNORE,
 ]

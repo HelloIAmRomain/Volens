@@ -4,7 +4,7 @@ extends RefCounted
 
 var exited: int = 0     # agents sortis (RG-14 Sortie)
 var lost: int = 0       # agents perdus (RG-14 danger)
-var delivered: int = 0  # ressources livrées (R12)
+var delivered: int = 0  # ressources livrées (R11 « Porter et déposer »)
 
 func clone() -> Counters:
 	var copy := Counters.new()

@@ -190,7 +190,7 @@ func test_a_carrier_without_a_dropoff_is_told_so() -> void:
 	var s := _bare_state(["...", "...", "..."], [Vector2i(1, 1)])
 	s.agents[0].flags |= AgentState.PORTEUR
 	var lines: Array = RuleExplainer.explain(s.agents[0], s,
-		[RuleRegistry.R12_DROP_AT_GOAL] as Array[int])["lines"]
+		[RuleRegistry.R11_CARRY] as Array[int])["lines"]
 	assert_true(String(lines[0]).contains("aucun dépôt"),
 		"un porteur sans dépôt voisin doit savoir pourquoi rien ne se passe : « %s »" % String(lines[0]))
 

@@ -18,7 +18,7 @@ const MIN_CYCLE_PERIOD_DEFAULT := 6
 ## Identifiants des règles de transport du chapitre 4 (pas encore dans
 ## RuleRegistry) : nécessaires pour que `delivered` puisse progresser.
 const R11_CARRY := 11
-const R12_DROP := 12
+## 12 était « Déposer au but », fusionnée dans R11 et RÉSERVÉE depuis.
 
 ## Détection du sur-place perpétuel (6 août 2026). Un agent peut rester
 ## bloqué dans un cycle court — typiquement un aller-retour de période 2 sur
@@ -368,8 +368,10 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 	for entry in level_data.get("objectives", []):
 		if String(entry.get("type", "")) == "collect":
 			has_collect = true
-	var collect_out_of_chapter: bool = has_collect \
-		and not (allowed.has(R11_CARRY) and allowed.has(R12_DROP))
+	# UNE SEULE RÈGLE SUFFIT DEPUIS LA FUSION du 21 août 2026 : « Porter » et
+	# « Déposer au but » ne font plus qu'une, R11 « Porter et déposer ». Exiger
+	# encore les deux aurait déclaré tout le chapitre 4 hors chapitre.
+	var collect_out_of_chapter: bool = has_collect and not allowed.has(R11_CARRY)
 
 	# Garde-fou universel (CDC §12.2.1) : si la pile vide gagne, le niveau
 	# se résout sans poser une seule règle — dégénéré, quel que soit le type.
@@ -405,7 +407,7 @@ static func validate_level(level_data: Dictionary, params: RuleParams, min_cycle
 	elif wins.is_empty():
 		verdict = "REJETÉ : insoluble (zéro pile gagnante)"
 		if collect_out_of_chapter:
-			verdict += " — collecte hors chapitre : R11/R12 non autorisées (attendu tant que le chapitre 4 n'existe pas, pas un niveau cassé)"
+			verdict += " — collecte hors chapitre : R11 non autorisée (attendu tant que le chapitre 4 n'existe pas, pas un niveau cassé)"
 	elif tutorial or has_expected:
 		if has_expected:
 			var gap := "" if wins.size() == expected_wins else " — ÉCART À LA FICHE"
