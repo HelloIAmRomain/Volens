@@ -1,0 +1,104 @@
+# N36 « Le quatrieme rang » — la pile s'allonge, et le voisinage s'ouvre.
+#
+# PREMIER NIVEAU A QUATRE RANGS AVANT LA FINALE. Le jeu en comptait UN SEUL,
+# ch6_05, tout au bout : le joueur passait de trois emplacements a quatre pour
+# le dernier tableau. Ce niveau fait la marche a la fin du chapitre 5, la ou
+# elle s'apprend encore.
+#
+# CE QU'UN RANG DE PLUS CHANGE, ET CE N'EST PAS « UNE REGLE DE PLUS ». Trois
+# rangs se lisent : une regle mene, une corrige, une rattrape. Au quatrieme, la
+# derniere n'est presque jamais atteinte — la cascade s'arrete avant — et le
+# joueur doit choisir CE QU'IL MET AU FOND en sachant que ca ne parlera que
+# rarement. C'est la regle d'or prise par l'autre bout.
+#
+# QUATRE ASSOCIATIONS INEDITES AU CATALOGUE, ET C'EST POUR ELLES QU'IL EXISTE :
+# R03-R04, R03-R06, R03-R14 et R06-R14. « Rester groupe » n'avait jamais gagne
+# avec autre chose que « Vers la lumiere » ; « Disperser si dense » n'avait
+# jamais gagne avec « Longer le mur ».
+#
+# LA FORGE EN PROPOSAIT SIX, avec R05 « Suivre les voisins » dans la
+# bibliotheque. L'echeance ci-dessous a ecarte toutes les gagnantes qui
+# l'employaient, et une regle qui ne porte plus rien n'est pas une fausse piste
+# interessante : c'est du temps perdu a l'essayer. Retiree.
+#
+# CINQ GAGNANTES, TOUTES MINIMALES — pas une rallonge. Aucun monopole hors
+# « S'ecarter », et pas une regle inerte dans la bibliotheque.
+#
+# CE QU'IL FAUT DIRE AVEC, SANS QUOI L'ANNONCE EST TROP BELLE : le validateur
+# signale que l'ORDRE entre R03 et les autres est INOBSERVABLE ici (RG-13) —
+# leurs zones d'action ne se recouvrent pas sur cette carte. Les associations
+# sont donc neuves comme ENSEMBLES, pas comme dilemmes d'ordonnancement. C'est
+# exactement ce qu'on cherchait — « que tout puisse aller avec tout » — et ce
+# n'est pas la meme chose qu'une contention. Le niveau ouvre le voisinage ; il
+# ne pretend pas trancher entre deux ordres de R03.
+#
+# LE DISPOSITIF EST L'IDIOME, ET IL SUFFIT. Lumiere derriere le mur de tete,
+# sortie en son ouverture, decalee de deux cases ; une paroi mediane percee de
+# DEUX trous, l'un sous la nuee, l'autre a l'Est. Vingt agents pour deux
+# passages : c'est le partage qui fait le niveau, et il y a cinq facons de
+# l'obtenir — toutes a quatre rangs.
+#
+# POURQUOI « LONGER LE MUR » PORTE ICI ALORS QU'IL Y A UNE LUMIERE. L'invariant
+# n°20 dit que R06 et R01 se contredisent structurellement, et que la seule
+# carte PROPRE pour R06 est une carte sans lumiere. Il parle de R06 comme SUJET
+# du niveau. Ici elle n'est pas le sujet : elle est une des sept reponses, et
+# elle gagne parce que la paroi mediane lui donne enfin une surface a suivre
+# jusqu'a un trou. Rien n'est contredit — c'est la difference entre « la regle
+# porte le niveau » et « la regle a une place dans le niveau ».
+#
+# Sortie de la forge par balayage de 1 500 geometries, 130 retenues, celle-ci
+# choisie pour etre la plus RESSERREE des candidates a associations neuves :
+# quinze gagnantes la ou la premiere en portait trente-cinq, cinq une fois
+# l'echeance posee. Une carte qui se gagne de trente-cinq facons ne se comprend
+# pas, elle se tombe dessus.
+id: ch5_12
+name: Le quatrieme rang
+tutorial: false
+allowed_rules: [R01, R03, R04, R06, R14]
+slots: 4
+max_ticks: 68
+objective: extraction 90
+objective: preservation 2
+# L'ECHEANCE EST CE QUI FAIT DE CE NIVEAU CE QUE SON NOM ANNONCE.
+#
+# Sans elle, [R04, R06, R01] gagne ici en quarante-six ticks — et cette pile
+# gagnait DEJA ch2_02, ch2_04 et ch2_07, les trois niveaux de coordination.
+# Quatre niveaux pour une pile, au-dessus du plafond de passe-partout mesure a
+# trois : {R01, R04, R06} est la reponse du chapitre 2, et la reprendre telle
+# quelle ici ne demande rien au joueur.
+#
+# QUARANTE-DEUX TICKS ECARTENT TOUTES LES PILES DE TROIS RANGS, et pas une de
+# plus par accident : les gagnantes se separent nettement en deux groupes,
+# trente-quatre a quarante-et-un d'un cote, quarante-six a soixante-et-un de
+# l'autre. Ce qui reste demande QUATRE rangs, sans exception — un niveau appele
+# « Le quatrieme rang » ou trois suffiraient serait un titre menteur.
+objective: celerity 42
+lesson: "Au quatrieme rang, la derniere regle ne parle presque jamais. Choisir ce qu'on met au fond, c'est choisir le cas rare."
+expected_wins: 5
+expected_classes: 4
+calibrated_on: a46d5f87005c91dd
+# LES DEUX DEFIS EXIGENT DEUX PILES DIFFERENTES. L'etalon de trente-quatre ticks
+# est tenu par [R03, R04, R01, R06] et [R04, R03, R01, R06], toutes deux menees
+# par « Longer le mur » au dernier rang ; s'en passer force [R04, R14, R03, R01],
+# la seule gagnante sans R06, et elle met quarante-et-un ticks.
+#
+# L'ECONOMIE PROPOSEE PAR LA FORGE EST DEVENUE IMPOSSIBLE, et c'est voulu : avec
+# l'echeance, les CINQ gagnantes tiennent en quatre rangs, aucune en trois. Un
+# defi inatteignable n'est pas un defi difficile, c'est une promesse fausse.
+challenge: abstinence=R06 efficiency=34
+---
+. . . . L . . . .
+# # # # # # E # #
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+# # # # . # # . #
+. . . . . . . . .
+. . o o o o . . .
+. . o o o o . . .
+. . o o o o . . .
+. . o o o o . . .
+. . o o o o . . .
+. . . . . . . . .

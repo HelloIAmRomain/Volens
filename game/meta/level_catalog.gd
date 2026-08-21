@@ -85,6 +85,18 @@ const LEVELS := [
 	# ne gagne pas — le troisième cas que 198 déclarait inexistant.
 	# Réfutation complète au carnet, décision 208.
 	{"id": "ch5_11", "name": "L'atelier", "path": "res://data/levels/ch5_11.json", "ready": true},
+	# ch5_12 EST LE PREMIER NIVEAU À QUATRE RANGS AVANT LA FINALE. Le jeu n'en
+	# comptait qu'un, ch6_05, tout au bout : le joueur passait de trois
+	# emplacements à quatre pour le dernier tableau. La marche se fait ici, à la
+	# fin du chapitre 5, là où elle s'apprend encore.
+	#
+	# Il apporte QUATRE associations de règles inédites au catalogue — R03 avec
+	# R04, R06 et R14, puis R06 avec R14 — et c'est pour elles qu'il existe.
+	#
+	# Ses CINQ gagnantes sont toutes minimales et toutes à quatre rangs : une
+	# échéance déclarée écarte les piles de trois, dont [R04, R06, R01] qui
+	# gagnait déjà les trois niveaux de coordination du chapitre 2.
+	{"id": "ch5_12", "name": "Le quatrième rang", "path": "res://data/levels/ch5_12.json", "ready": true},
 	{"id": "ch6_01", "name": "Le droit d'ignorer", "path": "res://data/levels/ch6_01.json", "ready": true},
 	{"id": "ch6_02", "name": "La piste interdite", "path": "res://data/levels/ch6_02.json", "ready": true},
 	{"id": "ch6_03", "name": "Personne ne reste", "path": "res://data/levels/ch6_03.json", "ready": true},
