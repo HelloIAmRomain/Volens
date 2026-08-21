@@ -73,6 +73,18 @@ const LEVELS := [
 	{"id": "ch5_08", "name": "La ronde", "path": "res://data/levels/ch5_08.json", "ready": true},
 	{"id": "ch5_09", "name": "Le péage", "path": "res://data/levels/ch5_09.json", "ready": true},
 	{"id": "ch5_10", "name": "Le danger et la porte", "path": "res://data/levels/ch5_10.json", "ready": true},
+	# ch5_11 « L'atelier » EST LE PREMIER NIVEAU OÙ LE BOUCLIER EXISTE.
+	#
+	# L'atelier à boucliers était le seul élément que le moteur connaissait et
+	# qu'aucun niveau n'employait — et le carnet avait conclu, en titre, qu'il
+	# était « inerte PAR CONSTRUCTION » (décision 198). La conclusion reposait
+	# sur ~4 900 géométries qui exploraient quatre fois la même région.
+	#
+	# Mesure qui a tranché, sur cette carte, les trois cases d'atelier retirées
+	# et RIEN d'autre : **7 piles gagnantes avec, ZÉRO sans**. Et `[R01]` seule
+	# ne gagne pas — le troisième cas que 198 déclarait inexistant.
+	# Réfutation complète au carnet, décision 208.
+	{"id": "ch5_11", "name": "L'atelier", "path": "res://data/levels/ch5_11.json", "ready": true},
 	{"id": "ch6_01", "name": "Le droit d'ignorer", "path": "res://data/levels/ch6_01.json", "ready": true},
 	{"id": "ch6_02", "name": "La piste interdite", "path": "res://data/levels/ch6_02.json", "ready": true},
 	{"id": "ch6_03", "name": "Personne ne reste", "path": "res://data/levels/ch6_03.json", "ready": true},

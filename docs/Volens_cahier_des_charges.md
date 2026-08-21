@@ -1,6 +1,6 @@
 # Volens — Cahier des charges fonctionnel
 
-**Version 2.6 — 21 août 2026**
+**Version 2.7 — 21 août 2026**
 *Document de spécification — jeu mobile de puzzle systémique*
 
 ---
@@ -318,8 +318,25 @@ Le dilemme archétypal que le level design doit constamment mettre en scène : *
 | Porte à pression | S'ouvre tant qu'un nombre requis d'agents `⚙️` occupe ses cases de commande. |
 | Sens unique | Franchissable dans une seule direction. |
 | Source de lumière | Cible de la règle R01 ; certains niveaux en comptent plusieurs. |
+| Patrouille *(v2.7)* | Danger qui **se déplace** sur un trajet fermé, fixe et visible. |
+| Bascule *(v2.7)* | Le premier agent qui la foule ouvre une porte **définitivement**. |
+| Atelier à boucliers *(v2.7)* | Tout agent qui la traverse en repart protégé contre **un seul** contact ; elle ne s'épuise pas. |
 
-Ce vocabulaire de neuf éléments est **fermé pour la v1.0** : la variété doit naître de la combinaison, pas de l'inflation.
+Ce vocabulaire de **douze éléments** est **fermé pour la v1.0** : la variété doit naître de la combinaison, pas de l'inflation. Il en comptait neuf jusqu'à la v2.7 — **voir §8.1 bis**, qui donne les trois ajouts, leur date et ce qui les a justifiés.
+
+#### 8.1 bis — Neuf éléments annoncés, douze en jeu *(v2.7, 21 août 2026)*
+
+Les trois derniers étaient **implémentés, testés et employés par des niveaux du catalogue** sans figurer dans ce document. L'écart s'est constaté en cherchant si l'atelier à boucliers y était : il n'y était pas, et deux autres non plus.
+
+| Élément | Niveau qui l'emploie | Ce qui l'a fait entrer |
+|---|---|---|
+| **Patrouille** | ch5_08 « La ronde » | Un danger cyclique clignote sur place ; une patrouille se déplace. Sa position au tick *t* vaut `trajet[t % longueur]` — elle se **déduit** du tick au lieu d'être mémorisée, donc le déterminisme est acquis par construction et le joueur peut prévoir. |
+| **Bascule** | ch5_07 « La bascule » | La plaque à pression coûte des agents **en permanence** ; la bascule coûte **un détour, une fois**. Les deux se définissent l'une par l'autre, et aucune ne remplace l'autre (carnet, décision 188). |
+| **Atelier à boucliers** | ch5_11 « L'atelier » | Le dernier arrivé, et le plus disputé : il a été déclaré « inerte par construction » avant d'être mesuré sur une géométrie où il porte **7 piles gagnantes contre 0 sans lui** — et où aucune règle seule ne gagne (carnet, décisions 191, 198 puis 208). |
+
+**AUCUN DES TROIS NE TOUCHE AU CORPUS D'OR, et ce n'est pas une chance.** Chacun range son état là où l'empreinte le voit déjà — le type de case pour la bascule — ou nulle part, la patrouille étant une donnée de niveau dont la position se recalcule. Une mécanique additive qui aurait exigé un nouveau champ d'état aurait invalidé les recettes des niveaux qui ne l'emploient pas ; celles-ci n'ont pas bougé d'un bit.
+
+**LA CLÔTURE DU VOCABULAIRE EST RÉAFFIRMÉE, pas assouplie.** Douze est un constat, pas une permission : ces trois éléments existaient déjà. Le principe — *la variété naît de la combinaison, pas de l'inflation* — vaut à l'identique pour un treizième, qui devra montrer, comme l'atelier, une mesure où il décide du résultat.
 
 ### 8.2 Types d'objectifs
 
@@ -813,7 +830,7 @@ Par ordre de priorité pressenti, sans engagement :
 
 ---
 
-## Historique des révisions *(v2.6)*
+## Historique des révisions *(v2.7)*
 
 | Version | Date | Changements | Motif |
 |---|---|---|---|
@@ -826,4 +843,6 @@ Par ordre de priorité pressenti, sans engagement :
 
 | 2.6 | 21 août 2026 | **RG-11 révisée : 16 → 13 règles**, avec le détail des trois retraits en §7.2 bis (nouveau) — R07 « Attendre » et R10 « Rebrousser si seul » retirées, R12 « Déposer au but » fusionnée dans R11 devenue « Porter et déposer » ; identifiants réservés, jamais réattribués ; tables §7.2 annotées ; §2.1, §15 (J3) et §18 mis en cohérence | **Le document annonçait seize règles quand le jeu en offrait treize, et l'écart durait depuis le 15 août.** Chaque retrait repose sur une mesure reproductible, pas sur un avis : R07 était offerte dans 14 niveaux sans porter dans aucun, R10 n'était offerte nulle part, et l'ordre entre R11 et R12 était **inobservable par construction** — ce qui les fait échouer au critère d'admission RG-13 énoncé par ce document lui-même. Le motif de fond est le joueur : deux rangs de pile pour une décision dont les moitiés ne se disputent jamais, sur des piles qui n'en comptent que trois ou quatre |
 
-*Fin du document — v2.6. Toute modification des principes (§4) ou des règles de gestion (§6) exige une révision de version majeure de ce cahier des charges.*
+| 2.7 | 21 août 2026 | **RG-14 : le vocabulaire d'éléments passe de 9 à 12**, avec le détail des trois ajouts en §8.1 bis (nouveau) — patrouille (danger mobile), bascule (ouverture définitive), atelier à boucliers. La clôture du vocabulaire est réaffirmée, pas assouplie | **Les trois étaient déjà implémentés, testés et employés par des niveaux du catalogue** ; seul ce document les ignorait, et l'écart s'est constaté en cherchant si l'atelier à boucliers y figurait. Le cas de l'atelier a demandé une mesure pour être tranché : déclaré « inerte par construction » sur un balayage qui n'explorait qu'un coin de l'espace, il porte en réalité 7 piles gagnantes contre 0 sans lui, sur une carte où aucune règle seule ne gagne (carnet, 208). Aucun des trois ne touche au corpus d'or — chacun range son état là où l'empreinte le voit déjà, ou nulle part |
+
+*Fin du document — v2.7. Toute modification des principes (§4) ou des règles de gestion (§6) exige une révision de version majeure de ce cahier des charges.*

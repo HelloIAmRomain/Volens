@@ -1,0 +1,95 @@
+# N35 « L'atelier » — le premier niveau ou le bouclier existe.
+#
+# IL REFUTE UNE CONCLUSION QUE J'AVAIS ECRITE EN TITRE. « L'atelier a boucliers
+# est inerte PAR CONSTRUCTION » (carnet, 198) : ~4 900 geometries mesurees,
+# aucun niveau, et un raisonnement structurel pour expliquer pourquoi il n'y en
+# aurait jamais. Les 4 900 geometries exploraient QUATRE FOIS LA MEME REGION de
+# l'espace — le balayage etait parcouru dans l'ordre de ses boucles (carnet,
+# 202). Relance sur l'espace etale, il a rendu cette carte.
+#
+# LA MESURE QUI TRANCHE, et c'est la seule qui compte : la meme carte, les trois
+# cases d'atelier retirees et RIEN D'AUTRE.
+#
+#     avec l'atelier :  7 piles gagnantes,  2 pertes cumulees
+#     sans l'atelier :  0 pile gagnante,   33 pertes cumulees
+#
+# L'atelier est ici la difference entre un niveau et un mur.
+#
+# (Ces deux lignes sont mesurees AVANT l'echeance de celerite ajoutee plus bas,
+# qui retire deux gagnantes. Avec elle : CINQ contre zero. L'ecart ne bouge pas
+# du cote qui compte — sans atelier, aucune pile ne gagne, echeance ou pas.)
+#
+# CE QUE L'ARGUMENT DE 198 AVAIT OUBLIE. Il disait : aucune regle ne peut VISER
+# l'atelier, donc on le ramasse passivement, donc il protege tout le monde ou
+# personne — decoratif, ou obligatoire, jamais une decision. Ce qui manquait :
+# **la pile decide OU la nuee marche.** Un element qu'on ne peut pas viser reste
+# un element qu'on peut atteindre ou manquer, et c'est l'ordre des regles qui
+# tranche. Le contre-exemple est net : [R01] SEULE NE GAGNE PAS.
+#
+# LE DISPOSITIF. Deux passages vers l'Est, et un seul mur les separe :
+#
+#   · la BRECHE LIBRE, a mi-hauteur, qui ne coute rien mais rallonge ;
+#   · le RACCOURCI, plus haut, garde par un danger statique — et l'atelier est
+#     pose juste devant, sur les trois cases qu'on foule pour y arriver.
+#
+# Qui passe par le raccourci ramasse un bouclier en marchant et encaisse le
+# danger ; qui s'y engage par un autre biais y laisse des agents. La lumiere est
+# derriere la sortie, a l'Est : « Vers la lumiere » tire toute la nuee vers le
+# raccourci, qui est le chemin le plus court — et c'est exactement ce qui la tue
+# si rien ne la fait passer par les bonnes cases.
+#
+# SORTIE A L'EST, ET CE N'EST PAS DECORATIF (invariant n°19). A egalite, toute
+# regle prefere le Nord puis l'Est : une nuee posee au Sud-Ouest qui doit
+# rejoindre le Nord-Est est tiree dans le bon sens par le departage lui-meme.
+# La carte miroir ne se joue pas pareil, et n'a pas ete construite.
+id: ch5_11
+name: L'atelier
+tutorial: false
+allowed_rules: [R01, R02, R04, R05]
+slots: 3
+max_ticks: 60
+objective: extraction 80
+objective: preservation 2
+# L'ECHEANCE EST UN OBJECTIF DECLARE, ET ELLE FAIT UN TRAVAIL DE CONCEPTION.
+#
+# Sans elle, [R04, R01] gagne ici — et cette paire gagnait DEJA ch2_01, ch5_07
+# et ch5_10. Quatre niveaux pour une pile, au-dessus du plafond de passe-partout
+# mesure a trois : une pile qui traverse le jeu le vide de son sujet.
+#
+# Les deux gagnantes menees par « S'ecarter » mettent QUARANTE-TROIS ticks ;
+# toutes les autres en mettent vingt-huit a trente-cinq. Desserrer d'abord, c'est
+# desserrer TOUTE la nuee avant de la mener — on paie le detour. Quarante les
+# exclut sans toucher a une seule autre.
+#
+# ELLE SE DECLARE PARCE QU'ELLE DECIDE. Serrer `max_ticks` aurait produit le meme
+# resultat en silence, et le joueur aurait perdu sur une horloge dont personne ne
+# lui a parle — c'est arrive sur ch2_06, signale a l'essai (carnet, 205).
+objective: celerity 40
+lesson: "Aucune regle ne vise l'atelier. C'est la pile qui decide par ou l'on passe, donc qui sort protege."
+expected_wins: 5
+expected_classes: 5
+calibrated_on: cbe44e59b2128412
+# L'ABSTINENCE ET L'EFFICIENCE EXIGENT DEUX PILES DIFFERENTES. L'etalon de
+# vingt-huit ticks est tenu par [R01, R05, R04], qui se suit ; se passer de
+# « Suivre les voisins » force [R01, R04, R02], la seule gagnante qui s'en
+# passe — et elle met trente-cinq ticks. Aucun des deux defis ne tombe avec
+# l'autre.
+#
+# « Fuir le danger » N'EST PAS LA CIBLE DE L'ABSTINENCE, et c'est mesure :
+# quatre des cinq gagnantes s'en passent deja. Un defi qu'on obtient sans le
+# viser n'en est pas un.
+challenge: abstinence=R05 efficiency=28
+---
+. . . . . # . . . # .
+. . . . B # . . . # .
+. . . . B X . . . # .
+. . . . B # . . . E L
+. . . . . . . . . # .
+. . . . . # . . . # .
+. . . . . # . . . # .
+o o o o . # . . . # .
+o o o o . # . . . # .
+o o o o . # . . . # .
+o o o o . # . . . # .
+o o o o . # . . . # .
+. . . . . # . . . # .
