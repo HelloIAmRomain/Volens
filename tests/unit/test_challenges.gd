@@ -6,7 +6,13 @@ extends GutTest
 ## 2026 sur décision du concepteur, après mesure : une règle est utile si elle
 ## PORTE — si la retirer d'une pile gagnante fait perdre cette pile. R07 était
 ## offerte dans quatorze niveaux et ne portait dans aucun ; R10 n'était offerte
-## nulle part. **Divergence au CDC §7, à arbitrer** (carnet, décision 189).
+## nulle part. (carnet, décision 189).
+##
+## LA DIVERGENCE AU CDC EST CLOSE : le cahier des charges annonçait seize règles
+## quand le jeu en offrait treize. Arbitrée par le concepteur le 21 août 2026 en
+## faveur de la mesure — **CDC v2.6, RG-11 et §7.2 bis** portent désormais les
+## trois retraits et leurs chiffres. Ce commentaire n'est plus un signalement,
+## c'est un renvoi.
 ##
 ## R12 « Déposer au but » a été FUSIONNÉE dans R11 le 20 août 2026 : porter et
 ## déposer sont devenus « Porter et déposer ». La séparation n'était jamais

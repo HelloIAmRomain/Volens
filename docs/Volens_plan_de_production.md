@@ -260,7 +260,7 @@ Ces créneaux sont intégrés au planning ; les jalons ont été positionnés po
 
 ## 8. Phase 3 — Production du contenu (S14-S23 : 2 nov. 2026 - 10 janv. 2027)
 
-**Objectif :** passer de 18 à 70+ niveaux et de 6 à 16 règles. C'est la phase la plus longue, la plus répétitive et la plus sous-estimée par les développeurs solo.
+**Objectif :** passer de 18 à 70+ niveaux et de 6 à **13 règles** *(seize au cadrage initial ; CDC v2.6 §7.2 bis)*. C'est la phase la plus longue, la plus répétitive et la plus sous-estimée par les développeurs solo.
 
 ### Cadence de production
 
@@ -294,7 +294,7 @@ Ces créneaux sont intégrés au planning ; les jalons ont été positionnés po
 
 ### ▲ J-3 — Contenu gelé (fin S23, 10 janvier 2027)
 
-- 70 niveaux minimum, 16 règles.
+- 70 niveaux minimum, **13 règles** *(CDC v2.6, RG-11)*.
 - **Rapport de validation conforme et à jour pour 100 % du catalogue** `[EQ-02]`.
 - Aucune stratégie dominante détectée sur aucun chapitre `[QN-02]`.
 - Aucune règle morte `[EQ-04]`.

@@ -126,10 +126,10 @@ durée ?
 - **P2, P3 et P4** du dossier des genres restent ouvertes, et l'hystérésis
   gelée. Deux résultats du chapitre 2 les confirment plutôt qu'ils ne les
   affaiblissent.
-- **R10 « Rebrousser si seul » est morte au sens d'EQ-04**, et le CDC autorise
-  deux issues : la retravailler — ce qui demande l'hystérésis, donc le dégel —
-  ou la retirer de la bibliothèque. Les deux sont une décision de conception,
-  pas un niveau de plus.
+- ~~**R10 « Rebrousser si seul » est morte au sens d'EQ-04**~~ — **TRANCHÉ** :
+  retirée le 15 août 2026, avec R07 « Attendre ». R12 « Déposer au but » l'a
+  suivie le 21 août, fusionnée dans R11. La bibliothèque compte treize règles,
+  et le CDC v2.6 (§7.2 bis) porte les trois mesures qui l'ont décidé.
 - **La localisation ENF-40** (français et anglais à parité) : les libellés sont
   en dur, avec des clés stables déjà prêtes dans `RuleCatalog`.
 - **La chaîne Android** (S9), l'appareil de référence (T-003) et le recrutement

@@ -1,6 +1,6 @@
 # Volens — Cahier des charges fonctionnel
 
-**Version 2.5 — 7 août 2026**
+**Version 2.6 — 21 août 2026**
 *Document de spécification — jeu mobile de puzzle systémique*
 
 ---
@@ -61,7 +61,7 @@ Le cumul maîtrise d'ouvrage / maîtrise d'œuvre est un risque identifié (pert
 
 ### 2.1 Inclus dans la v1.0
 
-- Le jeu complet solo hors ligne : 6 chapitres, 70 niveaux minimum, 16 règles de comportement.
+- Le jeu complet solo hors ligne : 6 chapitres, 70 niveaux minimum, **13 règles** de comportement *(seize à l'origine — voir §7.2 bis)*.
 - L'interface portrait une main, l'accessibilité de base, la localisation français et anglais.
 - La distribution sur **Android** en modèle *free-to-try* avec déblocage unique *(v2.1 : iOS retiré de la v1.0, voir §2.2 et §17)*.
 - L'outillage interne de validation des niveaux (exigence de qualité, voir §12.3).
@@ -199,7 +199,9 @@ Les règles de gestion décrivent le comportement observable de la simulation. E
 
 ### 7.1 Principes de constitution de la bibliothèque
 
-**RG-11.** La bibliothèque complète compte **16 règles** en v1.0, introduites progressivement (2 à 3 par chapitre). La progression du joueur est exclusivement l'expansion de cette bibliothèque : il n'existe ni points d'expérience, ni monnaie, ni objets.
+**RG-11.** La bibliothèque complète compte **13 règles** en v1.0, introduites progressivement (2 à 3 par chapitre). La progression du joueur est exclusivement l'expansion de cette bibliothèque : il n'existe ni points d'expérience, ni monnaie, ni objets.
+
+> *Révisée v2.6 : seize à l'origine. Deux règles retirées et deux fusionnées en une, sur mesure et non sur avis — **voir §7.2 bis**, qui donne les chiffres et la méthode. Le nombre n'a jamais été l'objectif : RG-13 l'énonce déjà, « la profondeur naît de l'ordonnancement, pas du nombre de règles ». Treize règles qui portent toutes valent mieux que seize dont trois ne décident jamais rien.*
 
 **RG-12.** Chaque règle est exprimable par une icône et une phrase de **six mots au plus**, et son effet doit être observable et compréhensible en une seule simulation de démonstration.
 
@@ -230,7 +232,7 @@ C'est le tournant du jeu : l'environnement devient une mémoire partagée, et la
 
 | Réf. | Nom de travail | Effet observable |
 |---|---|---|
-| R07 | Attendre | L'agent reste immobile. (Sert de plancher volontaire ou de bouchon.) |
+| ~~R07~~ | ~~Attendre~~ — **RETIRÉE v2.6**, identifiant réservé | *L'agent reste immobile. Voir §7.2 bis.* |
 | R08 | Marquer la piste | L'agent dépose sur sa case un marqueur qui s'estompe après un délai fixe `⚙️`. |
 | R09 | Suivre la piste | L'agent se dirige vers le marqueur voisin le plus intense. |
 
@@ -238,9 +240,9 @@ C'est le tournant du jeu : l'environnement devient une mémoire partagée, et la
 
 | Réf. | Nom de travail | Effet observable |
 |---|---|---|
-| R10 | Rebrousser si seul | L'agent fait demi-tour s'il ne perçoit aucun congénère. |
-| R11 | Porter | L'agent ramasse la ressource présente sur sa case s'il n'en porte pas déjà. |
-| R12 | Déposer au but | L'agent porteur dépose sa ressource sur une case de dépôt adjacente. |
+| ~~R10~~ | ~~Rebrousser si seul~~ — **RETIRÉE v2.6**, identifiant réservé | *L'agent fait demi-tour s'il ne perçoit aucun congénère. Voir §7.2 bis.* |
+| R11 | Porter et déposer *(v2.6 — fusion de R11 « Porter » et R12 « Déposer au but »)* | L'agent ramasse la ressource présente sur sa case s'il n'en porte pas déjà ; s'il en porte une, il la dépose sur une case de dépôt adjacente. Les deux se produisent **dans le même tick** quand la ressource est déjà bordée d'un dépôt. |
+| ~~R12~~ | ~~Déposer au but~~ — **FUSIONNÉE dans R11 en v2.6**, identifiant réservé | *Voir §7.2 bis.* |
 
 **Chapitre 5 — le sacrifice et la régulation.**
 
@@ -255,6 +257,32 @@ C'est le tournant du jeu : l'environnement devient une mémoire partagée, et la
 | Réf. | Nom de travail | Effet observable |
 |---|---|---|
 | R16 | Ignorer (joker) | Neutralise, pour l'agent, l'effet d'un type de case choisi au placement de la règle. |
+
+### 7.2 bis — Seize règles annoncées, treize en jeu *(v2.6, 21 août 2026)*
+
+**Trois références de la table ci-dessus ne sont plus offertes au joueur.** Aucune ne l'a été sur avis : chacune est tombée sur une mesure, et la mesure est reproductible.
+
+**Le critère commun — une règle utile PORTE.** Figurer dans une pile gagnante ne prouve rien : on peut allonger n'importe quelle solution avec n'importe quelle règle inerte, elle apparaîtra dans la liste sans y avoir contribué. Le seul critère opposable est le contrefactuel : *la retirer d'une pile gagnante fait-il perdre cette pile ?* C'est ce que mesure `tools/design/rule_usefulness.gd`, en rejouant l'espace complet des piles de tout le catalogue.
+
+| Réf. | Sort | Mesure qui a tranché | Date |
+|---|---|---|---|
+| R07 « Attendre » | Retirée | Offerte dans **14 niveaux**, ne portait dans **aucun**. Sous le genre proposeur, elle ne pouvait qu'occuper la décision — donc masquer toute la suite de la pile — ou ne rien faire. | 15 août 2026 |
+| R10 « Rebrousser si seul » | Retirée | **Offerte nulle part.** Son remède demandait un genre à hystérésis, gelé faute de joueurs pour l'éprouver. | 15 août 2026 |
+| R12 « Déposer au but » | Fusionnée dans R11 | Voir ci-dessous. | 21 août 2026 |
+
+**LA FUSION R11 + R12 EST D'UNE AUTRE NATURE : la règle n'était pas inutile, elle était mal découpée.** Trois mesures indépendantes, et il en fallait trois :
+
+1. **La contention RG-13/EQ-06 entre les deux vaut ZÉRO** sur les cinq niveaux qui les emploient — leur ordre relatif n'a jamais changé le moindre résultat. Et ce n'est pas un accident de cartes : un agent est soit les mains **vides sur une ressource**, soit **chargé près d'un dépôt**, jamais les deux au même tick. Les deux gardes s'excluent, donc l'ordre ne peut pas se voir — sur aucune carte concevable. **Deux règles dont l'ordre est inobservable échouent au critère d'admission RG-13.**
+
+2. **Les garder séparées permet toutefois d'INTERCALER un proposeur** — `[R11, R09, R12]` signifie « ramasse toujours ; suis la piste ; dépose seulement si la piste s'est tue ». C'est une différence expressive réelle, que la contention par paires ne peut pas voir, et la première mesure ne suffisait donc pas. Mesuré séparément sur les cinq niveaux : **zéro pile où séparer gagne là où coller perd.** La séparation n'est jamais décisive.
+
+3. **La fusion est fidèle au comportement observable**, et le corpus d'or le prouve : **72 recettes rejouées, aucune empreinte modifiée.** Seules les piles des recettes perdent leur `12`.
+
+**CE QUE LE JOUEUR Y GAGNE, ET C'EST LE MOTIF RÉEL.** Une pile compte trois ou quatre rangs. Dépenser deux rangs pour une décision dont les deux moitiés ne se disputent jamais, c'est prélever la moitié de la pile au chapitre 4 sans rien rendre en contrepartie. Le rang libéré retourne au joueur.
+
+**LES IDENTIFIANTS RETIRÉS RESTENT RÉSERVÉS.** Ils figurent dans des fiches de conception, des recettes d'or archivées et des sauvegardes. Les réattribuer rendrait ces traces mensongères sans qu'aucun contrôle ne le signale.
+
+**Conséquence sur QN-01 et sur §12.2.1** : l'espace des piles d'un niveau du chapitre 4 rétrécit d'une règle, donc `N_total` et `expected_wins` changent. Ils sont recalculés par le validateur, jamais recopiés — c'est déjà l'exigence en vigueur.
 
 ### 7.3 Dilemmes attendus
 
@@ -285,7 +313,7 @@ Le dilemme archétypal que le level design doit constamment mettre en scène : *
 | Sortie | Un agent qui l'atteint quitte le niveau (compté « sorti »). |
 | Danger statique | Un agent qui y entre est perdu. |
 | Danger cyclique | Actif/inactif selon un cycle fixe, **visible et prévisible** à l'écran. |
-| Ressource | Peut être portée (R11) et déposée (R12). |
+| Ressource | Peut être portée et déposée (R11 « Porter et déposer » ; deux règles distinctes jusqu'à la v2.6). |
 | Case de dépôt | Destination des ressources. |
 | Porte à pression | S'ouvre tant qu'un nombre requis d'agents `⚙️` occupe ses cases de commande. |
 | Sens unique | Franchissable dans une seule direction. |
@@ -685,7 +713,7 @@ Calendrier indicatif pour une personne seule à temps partiel (~15 h/semaine). L
 | **J0 — Cadrage** | Semaine 1 | Ce cahier des charges validé ; recherche d'antériorité du nom ; définition de l'appareil de référence | Engagement du prototype |
 | **J1 — Prototype** | Semaine 3 | Chapitre 1 jouable (5 niveaux, 3 règles) ; outil de validation opérationnel sur ces niveaux ; campagne 1 réalisée | **GO / PIVOT / STOP** selon §13.1 — interdiction de continuer « pour voir » |
 | **J2 — Tranche verticale** | Semaine 9 | Chapitres 1-2 complets et finis (interface définitive, audio, sauvegarde, accessibilité de base) ; campagne 2 ; test transport | GO production, ou révision du périmètre |
-| **J3 — Contenu complet** | Semaine 20 | 70+ niveaux, 16 règles, rapports de validation conformes sur 100 % du catalogue ; campagne 3 engagée | Gel du contenu |
+| **J3 — Contenu complet** | Semaine 20 | 70+ niveaux, 13 règles *(§7.2 bis)*, rapports de validation conformes sur 100 % du catalogue ; campagne 3 engagée | Gel du contenu |
 | **J4 — Candidate à la livraison** | Semaine 26 | Localisation, accessibilité complète, performance conforme, liste §16 tenue ; **décision explicite sur le modèle d'export sur mesure** (§17 n°7) — oui ou non, jamais un report tacite | Gel de la version |
 | **J5 — Publication** | Semaine 30 | Conformité stores validée, pages de store, lancement | — |
 
@@ -785,7 +813,7 @@ Par ordre de priorité pressenti, sans engagement :
 
 ---
 
-## Historique des révisions *(v2.5)*
+## Historique des révisions *(v2.6)*
 
 | Version | Date | Changements | Motif |
 |---|---|---|---|
@@ -796,4 +824,6 @@ Par ordre de priorité pressenti, sans engagement :
 | 2.4 | 7 août 2026 | **ENF-11 révisée : 60 → 90 Mo** ⚙️ avec sa justification chiffrée (§10.1 bis) — le seuil d'origine était irréalisable dès le premier jour, le moteur standard imposant un plancher de ~75 Mo quand les données du jeu pèsent 0,1 Mo ; nouvelle évolution §17 n°7 « modèle d'export sur mesure » (gains, coûts, mode d'échec, calendrier) ; **point de décision explicite ajouté au jalon J4** | Erreur de cadrage relevée par la mesure : l'exigence avait été fixée sans mesurer le plancher du moteur. L'intention de sobriété reste servie par ce qui compte — aucun rendu en pause, aucune dépendance, aucune collecte |
 | 2.5 | 7 août 2026 | **R02 renommée « Fuir le rouge » → « Fuir le danger »** (§7.2, libellé seul — l'identifiant R02 et la sémantique sont inchangés) | Deux raisons. On ne fuit pas une couleur, on fuit une menace. Et surtout : **nommer une règle par sa couleur contredit ENF-20** (« aucune information portée par le seul canal couleur ») — un joueur en mode contraste élevé, ou daltonien, ne pourrait pas relier le libellé à ce qu'il voit |
 
-*Fin du document — v2.5. Toute modification des principes (§4) ou des règles de gestion (§6) exige une révision de version majeure de ce cahier des charges.*
+| 2.6 | 21 août 2026 | **RG-11 révisée : 16 → 13 règles**, avec le détail des trois retraits en §7.2 bis (nouveau) — R07 « Attendre » et R10 « Rebrousser si seul » retirées, R12 « Déposer au but » fusionnée dans R11 devenue « Porter et déposer » ; identifiants réservés, jamais réattribués ; tables §7.2 annotées ; §2.1, §15 (J3) et §18 mis en cohérence | **Le document annonçait seize règles quand le jeu en offrait treize, et l'écart durait depuis le 15 août.** Chaque retrait repose sur une mesure reproductible, pas sur un avis : R07 était offerte dans 14 niveaux sans porter dans aucun, R10 n'était offerte nulle part, et l'ordre entre R11 et R12 était **inobservable par construction** — ce qui les fait échouer au critère d'admission RG-13 énoncé par ce document lui-même. Le motif de fond est le joueur : deux rangs de pile pour une décision dont les moitiés ne se disputent jamais, sur des piles qui n'en comptent que trois ou quatre |
+
+*Fin du document — v2.6. Toute modification des principes (§4) ou des règles de gestion (§6) exige une révision de version majeure de ce cahier des charges.*
