@@ -3409,6 +3409,67 @@ l'alphabet.
 > réattribuer, exactement comme les identifiants de R07 et R10 restent réservés.
 > C'est une opération à part entière, à décider.
 
+### 209. Un rappel de Google qui ne nous concerne pas, et un risque qu'il a révélé
+
+Courriel reçu : « enregistrez vos applications et vos clés de signature avant le
+**30 septembre 2026** ». Vérification faite à la source avant toute action.
+
+#### L'échéance ne s'applique pas à Volens
+
+Elle ouvre la validation des développeurs **pour les utilisateurs du Brésil,
+d'Indonésie, de Singapour et de Thaïlande**, l'extension mondiale étant annoncée
+pour 2027. Notre v1.0 sort en 2027 : nous tombons dans la fenêtre mondiale, pas
+dans celle de septembre. Et l'identité du compte développeur est vérifiée depuis
+J0, ce qui satisfait déjà l'exigence côté personne.
+
+**Il n'y avait donc rien à faire en urgence.** C'est le genre de courriel qui
+provoque une action précipitée sur un calendrier qui n'est pas le nôtre.
+
+#### Ce que la lecture attentive a trouvé, et qui compte
+
+Pour une application **nouvelle**, Google Play enregistre le nom de paquet **au
+moment où l'on CRÉE l'application dans la console** — pas à la publication.
+
+Or l'application n'existe pas, et **rien ne réserve `com.volensgame.volens`**.
+Le plan différait cette création à S24, mi-janvier 2027 : cinq mois pendant
+lesquels le nom peut être pris par n'importe qui. La console en imposerait alors
+un autre, et l'identifiant est déclaré **figé et irréversible** au contexte du
+dépôt, où la signature, le format de sauvegarde et l'URL de fiche s'y accrochent.
+
+Le geste est gratuit, prend quelques minutes, et un brouillon peut attendre
+indéfiniment. **Risque asymétrique : le fermer ne coûte rien, le laisser ouvert
+peut coûter l'identifiant.** Plan corrigé ; l'action elle-même demande un accès
+à la console, donc une main humaine.
+
+#### T-006 était en retard de cinq mois, et personne ne l'avait vu
+
+En vérifiant l'état réel : **aucun `.keystore`, aucun `.jks`, aucun bloc de
+signature.** DT-21 voulait la clé « auto-générée et archivée dès J1 » ; nous
+étions en septembre. Sans conséquence — rien n'avait encore été distribué —
+mais les campagnes de test prévoient des APK signés d'elle.
+
+Faite ce jour, et **vérifiée de bout en bout plutôt que déclarée faite** :
+
+| | |
+|---|---|
+| Clé | RSA 2048, PKCS#12, valide jusqu'en 2056 |
+| Mot de passe | tiré aléatoirement, **jamais affiché, jamais passé en argument** (donc absent de la liste des processus) |
+| Emplacements | deux, hors du dépôt |
+| Preuve | l'empreinte SHA-256 lue **dans un APK de release réel** est celle du trousseau |
+
+> **LA VÉRIFICATION EST LE POINT.** Une clé qui existe n'est pas une clé qui
+> signe. Le contrôle qui vaut est celui qu'on lit dans le PAQUET PRODUIT, pas
+> dans le trousseau — même raisonnement que pour les permissions et
+> l'orientation, où le contexte du dépôt exige déjà de lire l'APK et non un
+> intermédiaire. Les deux s'appliquaient d'ailleurs pour la première fois à un
+> build de *release* : `VIBRATE` seule, `screenOrientation=1`, `minSdk 33`,
+> `targetSdk 36`. Conformes.
+
+Restent **deux gestes que rien ne peut automatiser** : porter le mot de passe
+dans un gestionnaire puis effacer le fichier, et faire une troisième copie hors
+machine — les deux actuelles sont sur le même disque et ne protègent que de
+l'effacement accidentel.
+
 ### 208. L'atelier à boucliers n'était pas inerte — il n'avait jamais été cherché au bon endroit
 
 **La décision 198 est FAUSSE, et je peux enfin le prouver au lieu de le

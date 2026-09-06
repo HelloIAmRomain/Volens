@@ -119,7 +119,7 @@ Ces créneaux sont intégrés au planning ; les jalons ont été positionnés po
 | T-003 | Désigner l'appareil de référence | 1 h | Android milieu de gamme ~2022 ; noter modèle, version d'Android, définition, densité, fréquence d'écran. Toutes les cibles ENF-10→14 s'y rapportent |
 | T-004 | Installer la chaîne de développement | 3 h | Godot 4.7.x, OpenJDK 17, Android SDK command-line tools + plateforme API 36, débogage USB. **Critère de fin : un projet vide s'exécute sur l'appareil de référence** |
 | T-005 | Créer le dépôt Git et son squelette | 2 h | Arborescence du DCT §2.2 *(v1.1 : deux étages `core/`·`game/`)*, `.gitignore` Godot, branche `main` protégée, modèle de message de commit |
-| T-006 | Générer et sécuriser la clé de signature | 1 h | Clé de release auto-générée `[DT-21]`, **sauvegardée en deux emplacements distincts hors du dépôt**. Une clé perdue interdit toute mise à jour ultérieure de l'application |
+| ~~T-006~~ | ~~Générer et sécuriser la clé de signature~~ — **FAITE le 6 septembre 2026** | 1 h | Clé de release RSA 2048, valide jusqu'en 2056, en deux emplacements hors du dépôt ; mot de passe tiré aléatoirement, jamais affiché. **Vérifiée de bout en bout** : l'empreinte SHA-256 lue dans un APK de release réel est celle du trousseau. Procédure et emplacements dans `docs/environnement_dev.md`. Restent deux gestes humains — mot de passe au gestionnaire, troisième copie hors machine |
 | T-007 | Ouvrir le carnet de bord du projet | 30 min | Un fichier unique : décisions prises, écarts au plan, mesures. C'est la mémoire du projet et la matière première du devlog |
 | T-008 | Pré-recruter les testeurs | 2 h | Solliciter 10-12 personnes pour en retenir 5-8 pour la campagne 1 `[CDC §13.1]`. **À faire maintenant : le recrutement est le poste le plus souvent sous-estimé et il bloque J-1.** *(v1.1, C5)* Un second recrutement, distinct et plus large (**15 à 18 personnes**), sera nécessaire avant S25 pour la campagne 3 / test fermé `[CDC §13.3]` — à anticiper mais pas à lancer maintenant |
 
@@ -452,7 +452,7 @@ Par ordre, dès aujourd'hui :
 1. ~~T-001 — vérifier « Volens »~~ **Fait** : aucun dépôt trouvé, risque de référencement accepté.
 2. **T-008 — solliciter les testeurs.** Le recrutement met des semaines à aboutir et bloque J-1 ; l'engager maintenant, pas en septembre.
 3. **T-004 + T-005 — chaîne de développement et dépôt.** Critère de fin non négociable : un projet Godot vide s'exécute sur l'appareil de référence, et la CI passe au vert sur un dépôt encore quasi vide.
-4. **T-006 — générer et sauvegarder la clé de signature**, en deux endroits distincts.
+4. ~~**T-006 — générer et sauvegarder la clé de signature**, en deux endroits distincts.~~ **Faite le 6 septembre 2026** — avec cinq mois de retard sur l'intention de DT-21 (« dès J1 »), sans conséquence : rien n'avait encore été distribué à personne.
 
 Puis, semaine prochaine, la première ligne de `sim/` — et pas une ligne de rendu avant la semaine 4.
 

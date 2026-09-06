@@ -8,7 +8,8 @@
 | JDK 17 (Temurin) | `~/opt/jdk17` | **jamais dans le PATH** — le `java` système reste en 21 |
 | Android SDK | `~/Android/Sdk` | outils en ligne de commande seuls ; **pas besoin d'Android Studio** |
 | Modèles d'export Godot | `~/.local/share/godot/export_templates/4.7.1.stable/` | 35 fichiers, dont `android_source.zip` |
-| Clé de **débogage** | `~/.local/share/godot/keystores/debug.keystore` | ⚠ **ce n'est PAS la clé de release de T-006** |
+| Clé de **débogage** | `~/.local/share/godot/keystores/debug.keystore` | ⚠ **ce n'est PAS la clé de release** |
+| Clé de **release** *(T-006, 6 sept. 2026)* | `~/.local/share/volens/keystore/volens-release.keystore` | copie d'archive dans `~/Documents/Volens-cle-de-signature/` — voir §« Clé de signature » |
 
 Pas de sudo : tout vit dans `$HOME`.
 
@@ -101,6 +102,77 @@ Paramètres de l'éditeur → Export → Android :
 
 *(Ces réglages vivent dans `~/.config/godot/editor_settings-4.7.tres` et ne
 suivent pas le dépôt : à refaire sur chaque poste.)*
+
+---
+
+## Clé de signature de release — T-006, faite le 6 septembre 2026
+
+**Une clé de signature perdue interdit DÉFINITIVEMENT toute mise à jour de
+l'application.** Android identifie une application par son nom de paquet *et* sa
+signature ; resignée avec une autre clé, c'est une autre application. Aucun
+recours, aucun support à contacter. Tout ce qui suit découle de cette phrase.
+
+| | |
+|---|---|
+| Copie de travail | `~/.local/share/volens/keystore/volens-release.keystore` |
+| Copie d'archive | `~/Documents/Volens-cle-de-signature/` (avec son `LISEZ-MOI.md`) |
+| Mot de passe | `~/.local/share/volens/keystore-password.txt`, permissions `600` |
+| Alias | `volens` |
+| Format | PKCS#12, RSA 2048 bits, signature SHA-384 |
+| Validité | 10 950 jours — jusqu'en 2056 |
+| Titulaire | `CN=Volens, O=Draille, C=FR` |
+| Empreinte SHA-256 | `3B:42:1E:FE:77:BA:C8:80:E4:62:82:F7:16:4E:04:A6:82:24:D1:E8:E0:76:80:0C:06:03:99:F4:88:40:4E:30` |
+
+L'empreinte est **publique** — elle figure dans chaque APK signé — et sert à
+vérifier qu'un paquet vient bien de nous. Le mot de passe, lui, a été tiré
+aléatoirement et n'a jamais été affiché.
+
+> **DEUX CHOSES RESTENT À FAIRE À LA MAIN, et elles ne peuvent pas être
+> automatisées :**
+>
+> 1. **Recopier le mot de passe dans un gestionnaire de mots de passe, puis
+>    supprimer le fichier.** Un mot de passe en clair posé à côté de la clé
+>    qu'il protège annule l'essentiel de son intérêt.
+> 2. **Faire une troisième copie HORS MACHINE.** Les deux copies actuelles sont
+>    sur le même disque : elles protègent de l'effacement accidentel, pas d'une
+>    panne, d'un vol ou d'un incendie.
+
+### Signer un export sans écrire un chemin personnel dans le dépôt
+
+Godot lit la clé de release dans **trois variables d'environnement**. C'est la
+voie retenue : `export_presets.cfg` n'est pas versionné, mais y inscrire le
+chemin le figerait quand même sur ce poste, et le mot de passe s'y retrouverait
+en clair.
+
+```bash
+export ANDROID_HOME="$HOME/Android/Sdk"
+export GODOT_ANDROID_KEYSTORE_RELEASE_PATH="$HOME/.local/share/volens/keystore/volens-release.keystore"
+export GODOT_ANDROID_KEYSTORE_RELEASE_USER="volens"
+export GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD="$(cat "$HOME/.local/share/volens/keystore-password.txt")"
+
+godot --headless --path . --export-release "Android" build/volens-release.apk
+```
+
+### Vérifier que le paquet produit porte bien CETTE clé
+
+Le contrôle qui compte : l'empreinte lue **dans l'APK**, pas dans le trousseau.
+
+```bash
+~/Android/Sdk/build-tools/36.0.0/apksigner verify --print-certs build/volens-release.apk
+```
+
+Le `SHA-256 digest` du certificat doit être celui du tableau ci-dessus, aux
+deux-points près.
+
+### Ce que Play App Signing change, et ce qu'il ne change pas
+
+DT-21 prévoit que **la clé d'upload définitive soit gérée par Play App
+Signing** : Google détient alors la clé de signature de l'application, et cette
+clé-ci sert d'une part aux APK de test distribués hors store, d'autre part
+d'éventuelle clé d'upload. Cela réduit la portée d'une perte — Google peut
+réinitialiser une clé d'upload — mais **seulement une fois l'application créée
+dans la Play Console**. D'ici là, cette clé est la seule qui existe, et elle se
+traite comme irremplaçable.
 
 ---
 
