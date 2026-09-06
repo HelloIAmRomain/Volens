@@ -1,0 +1,55 @@
+# DIAGNOSTIC — R15 peut-elle porter avec un moteur qui n'est pas la lumiere ?
+#
+# TROISIEME ESSAI, ET LE PREMIER QUI POSE LA BONNE QUESTION.
+#
+# Essai 1 — balayage de 600 geometries, bibliotheque [R04, R05, R06, R15] : zero
+# retenue, mais 555 rejets pour « aucune pile gagnante ». Sans R01 cette
+# bibliotheque ne fait presque jamais avancer une nuee : on avait mesure la
+# solvabilite, pas R15.
+#
+# Essai 2 — carte a piste (`r15_piste.lvl`), moteur R09, lumiere derriere la
+# sortie pour donner a R15 un referentiel honnete. Treize gagnantes, et **R15
+# porteuse dans zero**. La lecon est ailleurs que dans l'echec : sous R09, rien
+# ne parle jamais — elle decide partout ou il y a une trace — et surtout **un
+# objectif d'extraction ne punit JAMAIS une nuee etiree**. R15 freine sans que
+# le freinage rapporte quoi que ce soit.
+#
+# CE QU'IL FAUT DONC, ET C'EST TOUT LE DISPOSITIF ICI : un mecanisme qui punit
+# la dispersion DANS LE TEMPS. La porte a pression en est un.
+#
+# TROIS PLAQUES ALIGNEES DANS LE COULOIR — 4,5 · 4,6 · 4,7 — et il en faut
+# TROIS enfoncees a la fois pour ouvrir le panneau en 4,3. Une file compacte
+# occupe les trois : la porte reste ouverte et la nuee s'ecoule. Une file etiree
+# n'en occupe qu'une ou deux : la porte reste close, et personne ne sort.
+#
+# Les plaques sont SUR la piste, pas a cote : R09 ne sait pas viser une plaque,
+# elle suit la trace. C'est le passage lui-meme qui appuie.
+#
+# LA QUESTION EST DONC : « rester groupe dans le sens de la marche » a-t-il une
+# valeur mesurable ? Si une pile gagnante porte R15 ici, R15 gagne son premier
+# partenaire qui ne soit pas la lumiere.
+id: r15_porte
+name: Diag R15 sur porte
+tutorial: false
+allowed_rules: [R04, R05, R09, R15]
+slots: 3
+max_ticks: 200
+objective: extraction 75
+door: required=3 plates=4,5;4,6;4,7 panels=4,3
+trail: 4,1=200 4,2=194 4,3=188 4,4=182 4,5=176 4,6=170 4,7=164 4,8=158 3,9=147 4,9=152 5,9=147 3,10=141 4,10=146 5,10=141 3,11=135 4,11=140 5,11=135 3,12=129 4,12=134 5,12=129 3,13=123 4,13=128 5,13=123
+---
+. . . . L . . . .
+# # # # E # # # #
+. . . . . . . . .
+# # # # P # # # #
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . o o o o o . .
+. . o o o o o . .
+. . o o o o o . .
+. . o o o o o . .
+. . . . . . . . .

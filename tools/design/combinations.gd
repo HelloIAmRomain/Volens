@@ -148,6 +148,12 @@ func _report_partners(partners: Dictionary, seen_in: Dictionary) -> void:
 			"   [rigidité STRUCTURELLE]" if STRUCTURALLY_PAIRED.has(rid) else ""])
 	print("\nRÈGLES RIGIDES (zéro ou un seul partenaire dans tout le jeu) : %s"
 		% (", ".join(rigid) if not rigid.is_empty() else "aucune"))
+	# CE QUI A DÉJÀ ÉTÉ CHERCHÉ EST DIT ICI, sinon on le recherche. Le rapport
+	# nomme le défaut à chaque exécution sans jamais dire ce qu'on en sait.
+	for entry in rigid:
+		var rid := int(String(entry).substr(1, 2))
+		if RIGIDITY_NOTES.has(rid):
+			print("    R%02d — %s" % [rid, String(RIGIDITY_NOTES[rid])])
 	if not STRUCTURALLY_PAIRED.is_empty():
 		print("\nRIGIDITÉS STRUCTURELLES — signalées, jamais comptées comme défauts")
 		var ids: Array = STRUCTURALLY_PAIRED.keys()
@@ -174,6 +180,29 @@ const STRUCTURALLY_PAIRED := {
 	RuleRegistry.R08_MARK_TRAIL:
 		"seule R09 lit la phéromone (`rule_follow_trail.gd`) — marquer une piste "
 		+ "que rien ne suit n'a aucun effet observable, sur aucune carte.",
+}
+
+## CE QU'ON SAIT DÉJÀ D'UNE RIGIDITÉ, SANS LA DÉCLARER RÉSOLUE.
+##
+## Différence avec `STRUCTURALLY_PAIRED`, et elle compte : là-haut, c'est PROUVÉ
+## dans le code et la règle sort du décompte des défauts. Ici, c'est EXPLIQUÉ et
+## mesuré, mais pas démontré impossible — la règle reste comptée comme rigide,
+## et l'on se contente de ne pas refaire trois fois la même recherche.
+##
+## Confondre les deux serait exactement l'erreur qui a fait écrire « l'atelier à
+## boucliers est inerte par construction » : une conclusion négative promue en
+## impossibilité, sur une couverture qu'on n'avait pas vérifiée.
+const RIGIDITY_NOTES := {
+	RuleRegistry.R15_FOLLOW_THE_SLOWEST:
+		("elle mesure le retard par la DISTANCE À LA LUMIÈRE, et c'est la seule "
+		+ "règle du jeu qui appelle le repère de R01 (`RuleTowardLight."
+		+ "nearest_light`) : son frein est défini sur la fonction objectif de "
+		+ "R01. Trois recherches menées, toutes négatives — 600 géométries sans "
+		+ "R01 (555 insolubles), une carte à piste et une carte à porte à "
+		+ "pression construites pour la solliciter (`data/levels/diag/r15_*`). "
+		+ "Sous R09 la nuée avance en FILE UNIQUE : aucun étirement, donc rien à "
+		+ "réguler. Piste à suivre si l'on y revient : un moteur qui produise une "
+		+ "progression DIFFÉRENTIELLE vers la lumière sans être R01."),
 }
 
 ## Un même jeu de règles qui gagne plusieurs niveaux : la solution se récite.

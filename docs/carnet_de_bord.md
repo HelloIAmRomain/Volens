@@ -3409,6 +3409,78 @@ l'alphabet.
 > réattribuer, exactement comme les identifiants de R07 et R10 restent réservés.
 > C'est une opération à part entière, à décider.
 
+### 210. Les deux dernières règles rigides — l'une est close, l'autre a une raison
+
+R08 et R15 étaient les deux seules règles du catalogue à n'avoir qu'**un
+partenaire**. C'était le reste de la demande d'origine : « que tout puisse aller
+avec tout ». Les deux cas se sont révélés de natures opposées.
+
+#### R08 « Marquer la piste » — clos, et vérifié dans le code
+
+**Seule R09 lit la phéromone** (`rule_follow_trail.gd`). Marquer une piste que
+rien ne suit n'a aucun effet observable, sur aucune carte concevable. Ce n'est
+pas une lacune de conception, c'est la nature du mécanisme — au même titre que
+le monopole R11 sur les niveaux de collecte.
+
+Une heure de balayage évitée en lisant le code avant de lancer l'outil.
+
+#### R15 « Suivre le plus lent » — trois recherches, trois échecs, et une raison
+
+**Ce que la lecture apprend en premier :** R15 mesure « le plus en retard » par
+la distance de Manhattan **à la lumière**, et s'abstient s'il n'y en a pas. Sa
+dépendance est donc à une lumière SUR LA CARTE, pas à R01 DANS LA PILE. Le
+voisinage paraissait donc ouvrable.
+
+| Recherche | Résultat |
+|---|---|
+| 600 géométries, bibliothèque `[R04, R05, R06, R15]` sans R01 | 0 retenue — mais **555 rejets pour « aucune pile gagnante »** |
+| Carte à piste, moteur R09, lumière derrière la sortie (`diag/r15_piste`) | 13 gagnantes, **R15 porteuse dans 0** |
+| Carte à porte à pression, trois plaques alignées (`diag/r15_porte`) | 10 gagnantes, **R15 porteuse dans 0** |
+
+> **LE PREMIER BALAYAGE N'A RIEN PROUVÉ, et il faut le dire.** 555 rejets sur
+> 600 pour insolubilité : sans R01, cette bibliothèque ne fait presque jamais
+> avancer une nuée. J'ai mesuré la solvabilité, pas R15. C'est la même erreur de
+> couverture que celle du bouclier (décision 208), attrapée cette fois **avant**
+> d'en tirer une conclusion.
+
+**CE QUE LES DEUX CARTES ONT APPRIS, ET C'EST LE VRAI RÉSULTAT.** Un objectif
+d'extraction ne punit JAMAIS une nuée étirée : R15 freine sans que le freinage
+rapporte rien. J'ai donc construit le mécanisme qui punit la dispersion dans le
+temps — trois plaques alignées dans le couloir, trois agents requis. La porte
+n'a rien contraint non plus, et pour une raison que je n'avais pas vue :
+**sous R09, la nuée avance en FILE UNIQUE.** Elle est déjà compacte par
+construction ; il n'y a pas d'étirement à réguler.
+
+**LA RAISON DE FOND EST DANS LE CODE.** `RuleFollowTheSlowest` appelle
+`RuleTowardLight.nearest_light` — **c'est la seule règle du jeu qui appelle le
+repère d'une autre.** Son frein est défini sur la fonction objectif de R01 :
+elle mesure le retard sur la quantité que R01 optimise. Les deux règles parlent
+de la même grandeur, ce qui explique qu'elles s'entendent et que R15 n'ait rien
+à dire ailleurs.
+
+**JE NE LA DÉCLARE PAS IMPOSSIBLE POUR AUTANT**, et la distinction est encodée
+dans l'outil : R08 sort du décompte des défauts (prouvé), R15 y reste avec ses
+notes attachées (expliqué, mesuré, non démontré). Promouvoir une conclusion
+négative en impossibilité est exactement ce qui a produit « l'atelier à
+boucliers est inerte par construction ».
+
+Piste laissée à qui y reviendra : **un moteur qui produise une progression
+DIFFÉRENTIELLE vers la lumière sans être R01.** C'est la seule forme qui reste
+à essayer.
+
+#### Deux pièges de construction des cartes à piste, trouvés en chemin
+
+Les deux ont coûté une itération chacun, et aucun n'était deviné — les deux se
+sont vus en regardant la nuée plutôt qu'en relisant la carte.
+
+1. **La piste doit couvrir la case de SORTIE.** R09 va vers la case voisine la
+   plus intense ; arrivés sous une sortie à phéromone nulle, les agents ne
+   voient plus rien de mieux que leur propre case et s'arrêtent. Zéro gagnante
+   sur toute l'énumération.
+2. **Une piste large à intensité ÉGALE fige ses bords.** R09 exige un voisin
+   *strictement* plus intense : l'agent au bord d'un plateau, mur au-dessus, ne
+   bouge plus jamais. Il faut un gradient latéral.
+
 ### 209. Un rappel de Google qui ne nous concerne pas, et un risque qu'il a révélé
 
 Courriel reçu : « enregistrez vos applications et vos clés de signature avant le

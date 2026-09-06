@@ -1,0 +1,77 @@
+# DIAGNOSTIC — R15 « Suivre le plus lent » peut-elle porter sans R01 ?
+#
+# LA QUESTION. R15 est la derniere regle du jeu a n'avoir qu'UN partenaire dans
+# tout le catalogue : R01. Est-ce une lacune de conception ou une propriete ?
+#
+# CE QUE LA LECTURE DE LA REGLE APPREND. R15 mesure « le plus en retard » par
+# la distance de Manhattan A LA LUMIERE, et s'abstient s'il n'y en a pas. Sa
+# dependance est donc a une lumiere SUR LA CARTE, pas a R01 DANS LA PILE. Mais
+# il y a une seconde condition, tacite : pour que le frein tombe juste, l'avance
+# mesuree vers la lumiere doit correspondre a l'avance REELLE vers la sortie.
+# Sous un moteur qui ne vise pas la lumiere, R15 retient des agents « en avance »
+# selon un critere sans rapport avec leur progression.
+#
+# POURQUOI LE BALAYAGE PRECEDENT N'A RIEN PROUVE. 600 geometries avec [R04, R05,
+# R06, R15] : zero retenue, mais 555 rejets pour « aucune pile gagnante ». Sans
+# R01, cette bibliotheque ne fait presque jamais avancer une nuee. On a mesure la
+# solvabilite, pas R15.
+#
+# LE DISPOSITIF DE CETTE CARTE lui donne donc les deux conditions a la fois :
+#
+#   · UN MOTEUR QUI N'EST PAS LA LUMIERE — R09 suit une piste heritee, comme a
+#     « La navette » ;
+#   · UNE LUMIERE PLACEE DERRIERE LA SORTIE, dans l'idiome, de sorte que la
+#     distance a la lumiere SUIVE la progression reelle. R15 a son referentiel
+#     et il est honnete.
+#
+# ET LE CAS D'EPREUVE DE R15 (invariant n°12) : la paroi mediane n'a qu'UNE
+# ouverture, a l'aplomb de la piste. Vingt agents, une case de passage : la nuee
+# s'etire, tete franchie, queue encore en bas. C'est exactement la situation ou
+# « regler son avance sur le dernier » a quelque chose a regler — sur une nuee
+# compacte, tous les ecarts sont nuls et R15 ne se declenche jamais.
+#
+# R01 EST ABSENTE DE LA BIBLIOTHEQUE, deliberement : c'est la seule facon que la
+# reponse soit lisible. Si une pile gagnante porte R15 ici, R15 a un partenaire
+# qui n'est pas la lumiere.
+id: r15_piste
+name: Diag R15 sur piste
+tutorial: false
+allowed_rules: [R04, R05, R09, R15]
+slots: 3
+max_ticks: 200
+objective: extraction 90
+# LA PISTE COUVRE LA CASE DE SORTIE, et l'oublier rendait la carte insoluble :
+# R09 va vers la case VOISINE LA PLUS INTENSE. Arrives en 4,2 sous une sortie a
+# phéromone nulle, les agents ne voyaient plus rien de mieux que leur propre
+# case et s'y arretaient. Zero gagnante sur toute l'enumeration — la carte etait
+# fausse, pas la question posee.
+# ELLE PORTE AUSSI UN GRADIENT LATERAL, et c'est la seconde correction. Une
+# piste large de trois colonnes A INTENSITE EGALE fige ses bords : R09 exige un
+# voisin STRICTEMENT plus intense, or l'agent en 3,9 a le mur au-dessus et la
+# colonne centrale a la meme valeur que lui. Il s'abstient, definitivement.
+# Quatre agents sortaient, seize restaient plantes sur place.
+#
+# Les colonnes laterales valent donc cinq de moins que la centrale : la nuee est
+# rabattue vers le goulot au lieu de s'echouer a cote.
+#
+# LES VALEURS SONT HAUTES (123 a 200) PARCE QUE LA PISTE S'EVAPORE d'un point
+# par tick. A 60, la queue de la nuee se retrouvait sans piste avant d'avoir
+# atteint l'ouverture — le niveau se serait resolu en une course contre
+# l'effacement, ce qui n'est pas la question posee ici.
+trail: 4,1=200 4,2=194 4,3=188 4,4=182 4,5=176 4,6=170 4,7=164 4,8=158 3,9=147 4,9=152 5,9=147 3,10=141 4,10=146 5,10=141 3,11=135 4,11=140 5,11=135 3,12=129 4,12=134 5,12=129 3,13=123 4,13=128 5,13=123
+---
+. . . . L . . . .
+# # # # E # # # #
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+. . . . . . . . .
+# # # # . # # # #
+. . . . . . . . .
+. . o o o o o . .
+. . o o o o o . .
+. . o o o o o . .
+. . o o o o o . .
+. . . . . . . . .
