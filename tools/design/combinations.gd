@@ -141,12 +141,40 @@ func _report_partners(partners: Dictionary, seen_in: Dictionary) -> void:
 			names.append("R%02d" % k)
 		if not seen_in.has(rid):
 			rigid.append("R%02d (jamais gagnante)" % rid)
-		elif set.size() <= 1:
+		elif set.size() <= 1 and not STRUCTURALLY_PAIRED.has(rid):
 			rigid.append("R%02d (%d partenaire)" % [rid, set.size()])
-		print("R%02d %-20s %11d  %s" % [
-			rid, RuleCatalog.name_of(rid), set.size(), ", ".join(names)])
+		print("R%02d %-20s %11d  %s%s" % [
+			rid, RuleCatalog.name_of(rid), set.size(), ", ".join(names),
+			"   [rigidité STRUCTURELLE]" if STRUCTURALLY_PAIRED.has(rid) else ""])
 	print("\nRÈGLES RIGIDES (zéro ou un seul partenaire dans tout le jeu) : %s"
 		% (", ".join(rigid) if not rigid.is_empty() else "aucune"))
+	if not STRUCTURALLY_PAIRED.is_empty():
+		print("\nRIGIDITÉS STRUCTURELLES — signalées, jamais comptées comme défauts")
+		var ids: Array = STRUCTURALLY_PAIRED.keys()
+		ids.sort()
+		for rid in ids:
+			print("  R%02d %-20s %s" % [
+				rid, RuleCatalog.name_of(int(rid)), String(STRUCTURALLY_PAIRED[rid])])
+
+## RÈGLES DONT LE VOISINAGE PAUVRE EST UNE PROPRIÉTÉ, PAS UN DÉFAUT.
+##
+## POURQUOI CETTE LISTE EXISTE. Le rapport signalait « R08 (1 partenaire) » à
+## chaque exécution, sur la même ligne que des rigidités réellement corrigeables.
+## Une alerte qu'on ne peut pas éteindre finit par s'ignorer — et avec elle les
+## voisines qui, elles, méritaient qu'on s'en occupe.
+##
+## LE CRITÈRE D'ENTRÉE EST EXIGEANT : il faut qu'AUCUNE carte concevable ne
+## puisse ouvrir le voisinage, et que la raison se lise dans le code, pas dans
+## les mesures. Une règle qu'on n'a pas su marier n'entre pas ici ; une règle
+## qu'on ne PEUT pas marier, si.
+##
+## Ne pas y inscrire une règle par lassitude de la voir signalée : ce serait
+## exactement le contraire de ce que ce fichier sert à mesurer.
+const STRUCTURALLY_PAIRED := {
+	RuleRegistry.R08_MARK_TRAIL:
+		"seule R09 lit la phéromone (`rule_follow_trail.gd`) — marquer une piste "
+		+ "que rien ne suit n'a aucun effet observable, sur aucune carte.",
+}
 
 ## Un même jeu de règles qui gagne plusieurs niveaux : la solution se récite.
 func _report_signatures(signatures: Dictionary) -> void:

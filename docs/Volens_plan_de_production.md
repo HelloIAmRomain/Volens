@@ -332,6 +332,24 @@ La liste d'acceptation v1.0 du CDC §16 est passée **point par point**, avec un
 >
 > **Le geste coûte quelques minutes, il est gratuit, et une application peut rester en brouillon indéfiniment.** Le différer ne fait courir aucun risque à la place de celui-ci : c'est un risque asymétrique, à fermer maintenant.
 >
+> **FAIT LE 6 SEPTEMBRE 2026.** L'application est créée dans la Play Console et
+> **`com.volensgame.volens` y apparaît comme enregistré**. Le risque est clos :
+> l'identifiant que le contexte du dépôt déclare figé est désormais réservé pour
+> de bon, cinq mois avant la date où ce plan prévoyait de s'en occuper. Les
+> trois déclarations de création — règlement du programme, conditions de
+> Signature d'application Play, lois américaines d'exportation — ont été signées
+> sur des faits vérifiés : aucune collecte, aucun SDK tiers, `VIBRATE` seule, et
+> **aucun chiffrement** (rien dans le code, `encrypt_pck=false`, aucun réseau).
+>
+> **RIEN D'AUTRE N'A ÉTÉ REMPLI, ET C'EST DÉLIBÉRÉ.** Fiche du Store, captures,
+> description, traductions : le contenu du jeu ne gèle qu'en janvier 2027, et
+> tout ce qui serait écrit aujourd'hui serait à refaire.
+>
+> **Reste au moment de la première release** — pas avant : choisir la clé de
+> signature de l'application. Laisser Google la générer, de sorte que la clé
+> T-006 devienne la **clé d'upload** : c'est ce qui rend une perte rattrapable.
+> Fournir T-006 comme clé de signature de l'application supprimerait ce filet.
+>
 > Reste ouvert, et ce n'est pas une formalité : **T-006, la clé de signature, n'a jamais été générée** — aucun `.keystore` ni `.jks` dans l'environnement, aucun bloc de signature dans `export_presets.cfg`. La DT-21 la voulait « auto-générée et archivée dès J1 », et les campagnes de test distribuent des APK signés d'elle. Une clé perdue interdit toute mise à jour ultérieure : sa génération et son archivage en deux endroits distincts demandent un geste humain explicite.
 
 ---
