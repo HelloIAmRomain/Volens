@@ -148,10 +148,25 @@ en clair.
 export ANDROID_HOME="$HOME/Android/Sdk"
 export GODOT_ANDROID_KEYSTORE_RELEASE_PATH="$HOME/.local/share/volens/keystore/volens-release.keystore"
 export GODOT_ANDROID_KEYSTORE_RELEASE_USER="volens"
-export GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD="$(cat "$HOME/.local/share/volens/keystore-password.txt")"
+
+# Le mot de passe se SAISIT, il ne se lit plus dans un fichier.
+# `read -rs` n'affiche rien, ne laisse rien dans l'historique du shell, et ne
+# passe pas par la ligne de commande (donc invisible dans `ps`).
+read -rs -p "Mot de passe de la clé : " GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD
+export GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD; echo
 
 godot --headless --path . --export-release "Android" build/volens-release.apk
 ```
+
+> **POURQUOI PAS `$(cat …)` SUR LE FICHIER DE MOT DE PASSE.** C'était la
+> première version de cette procédure, et elle se contredisait : elle dépendait
+> d'un fichier que la consigne juste au-dessus demande d'effacer une fois le
+> mot de passe rangé dans le gestionnaire. Une procédure qui suppose vivant ce
+> qu'on vient de lui dire de supprimer ne marche qu'une fois — et elle marche
+> précisément tant que la mesure de sécurité n'a PAS été appliquée.
+>
+> Tant que le fichier existe encore, `$(cat …)` fonctionne ; la saisie
+> ci-dessus, elle, fonctionne dans les deux cas.
 
 ### Vérifier que le paquet produit porte bien CETTE clé
 
