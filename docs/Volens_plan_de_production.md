@@ -322,6 +322,18 @@ La liste d'acceptation v1.0 du CDC §16 est passée **point par point**, avec un
 
 > *(v1.1, C1)* Le compte développeur Google Play est **déjà créé et vérifié** depuis J0 — il n'y a plus d'action de paiement à engager ici. Ce qui reste à faire dès S24 : créer l'**application** dans la Play Console (voir tableau ci-dessus) pour tenir le calendrier du test fermé.
 
+> ### ⚠ *(21 août 2026)* CRÉER L'APPLICATION EN S24 EST TROP TARD — mais pas pour la raison qu'annonce le courriel de Google
+>
+> **Un rappel Google est arrivé : « enregistrez vos applications et vos clés de signature avant le 30 septembre 2026 ».** Vérification faite à la source, **cette échéance ne s'applique pas à Volens** : elle ouvre la validation des développeurs pour les utilisateurs du Brésil, d'Indonésie, de Singapour et de Thaïlande, l'extension mondiale étant prévue en 2027. Le calendrier de ce plan place la v1.0 en 2027 — donc dans la fenêtre mondiale, pas dans celle de septembre. **Il n'y a pas d'urgence de conformité.**
+>
+> **CE QUE LA VÉRIFICATION A RÉVÉLÉ EST PLUS EMBÊTANT.** Pour une application nouvelle, Google Play **enregistre le nom de paquet au moment où l'on crée l'application dans la console** — pas à la publication. Or l'application n'existe pas, et **rien ne réserve aujourd'hui `com.volensgame.volens`**.
+>
+> Ce plan diffère cette création à **S24, mi-janvier 2027** : cinq mois pendant lesquels n'importe quel développeur peut créer ce nom de paquet. La console imposerait alors d'en choisir un autre — et l'identifiant est déclaré **figé et irréversible** au contexte permanent du dépôt, où il conditionne la signature, les sauvegardes et l'URL de la fiche.
+>
+> **Le geste coûte quelques minutes, il est gratuit, et une application peut rester en brouillon indéfiniment.** Le différer ne fait courir aucun risque à la place de celui-ci : c'est un risque asymétrique, à fermer maintenant.
+>
+> Reste ouvert, et ce n'est pas une formalité : **T-006, la clé de signature, n'a jamais été générée** — aucun `.keystore` ni `.jks` dans l'environnement, aucun bloc de signature dans `export_presets.cfg`. La DT-21 la voulait « auto-générée et archivée dès J1 », et les campagnes de test distribuent des APK signés d'elle. Une clé perdue interdit toute mise à jour ultérieure : sa génération et son archivage en deux endroits distincts demandent un geste humain explicite.
+
 ---
 
 ## 10. Phase 5 — Publication (S29-S30 : 15-28 févr. 2027)
