@@ -452,6 +452,14 @@ Les comptes développeur Google Play personnels créés après le **13 novembre 
 
 Data Safety : déclaration « aucune donnée collectée » — rendue vraie par construction (aucune permission, aucun SDK tiers, DT-18/19 sans télémétrie). Déclaration de contenu IA de Google Play : à remplir selon l'état réel des contenus livrés à J5. Politique de confidentialité une page : hébergement gratuit (GitHub Pages) — zéro coût.
 
+> **DT-21 bis *(6 septembre 2026)* — l'hébergement gratuit ne marche pas tel quel, et les déclarations sont désormais écrites.**
+>
+> **GitHub Pages sur un dépôt PRIVÉ est une fonctionnalité payante**, et le dépôt de Volens est privé. Le « zéro coût » ci-dessus supposait un dépôt public sans le dire. Trois issues, la première recommandée : un **second dépôt public ne contenant que les pages légales** (gratuit, n'expose pas le code) ; rendre public le dépôt du jeu (décision de fond, pas d'hébergement) ; un nom de domaine propre (payant, CDC §17).
+>
+> Le texte de la politique existe en français et en anglais (`docs/legal/`), et **toutes les déclarations « Contenu de l'application » sont établies avec le fait qui les justifie** dans `docs/legal/declarations-play-console.md`. Le piège principal y est nommé : Google définit « collecter » comme *transmettre hors de l'appareil*, si bien que les sauvegardes locales de Volens ne sont **pas** une collecte — la réponse est « non », et ce qui la rend solide est l'absence de permission réseau, vérifiable dans le paquet.
+>
+> Deux points restent au concepteur : la tranche d'âge visée (inclure les moins de 13 ans fait entrer l'application dans le programme Familles) et l'adresse de contact de la politique.
+
 ---
 
 ## 14. Matrice de traçabilité CDC → solutions techniques
