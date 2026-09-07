@@ -115,6 +115,36 @@ de préférence :
 | Rendre public le dépôt du jeu | gratuit | expose tout le code et l'historique — décision de fond, pas d'hébergement |
 | Nom de domaine propre | payant | envisagé au CDC §17 avec le devlog |
 
-Le contact de la politique porte encore un marqueur `CONTACT_À_COMPLÉTER` :
-publier une adresse personnelle est une décision qui appartient au concepteur,
-et une adresse dédiée vaut souvent mieux qu'une adresse privée.
+## 8. Coordonnées — ce qui devient public, et ce qui ne l'est pas
+
+**Vérifié le 6 septembre 2026** à la page « Contact information requirements for
+developer accounts » de l'aide Play Console, plutôt que supposé.
+
+| Donnée | Sort |
+|---|---|
+| **Adresse e-mail de développeur** | **PUBLIQUE** — affichée sur le profil développeur de la fiche Play. Obligatoire |
+| Numéro de téléphone | public **pour les comptes ORGANISATION uniquement**. Le compte de Volens est un compte personnel |
+| Nom légal, adresse légale, e-mail et téléphone de contact | collectés par Google, **non indiqués comme affichés publiquement** |
+
+**CONSÉQUENCE PRATIQUE, ET ELLE LÈVE L'INQUIÉTUDE : l'adresse publique
+obligatoire est une adresse e-mail, et rien n'oblige à ce que ce soit une
+adresse personnelle.** Une boîte dédiée, créée pour le jeu et ne servant qu'à
+cela, satisfait l'exigence sans exposer quoi que ce soit de privé. C'est la
+pratique courante, et elle a un second mérite : le jour où le projet change de
+mains ou de nom, l'adresse suit le jeu et non la personne.
+
+Le **nom** affiché publiquement est celui du développeur — **Draille** — déjà
+choisi et figé au contexte du dépôt. Ce n'est pas un nom civil.
+
+Cette même adresse dédiée sert alors aux deux endroits : le profil développeur
+et le contact de la politique de confidentialité. Le marqueur
+`CONTACT_À_COMPLÉTER` des deux fichiers de politique attend cette décision.
+
+> **UN POINT RESTE OUVERT, ET IL NE SE POSE PAS ENCORE.** Le règlement européen
+> sur les services numériques (DSA) impose aux « professionnels » — quiconque
+> vend, y compris par achat intégré — de publier des coordonnées de contact plus
+> complètes. Volens ne vend rien aujourd'hui : l'achat intégré n'est pas
+> implémenté, et la publication visée est un test fermé gratuit. **La question
+> se posera à l'activation de l'achat (J4/J5) et devra être revérifiée à ce
+> moment-là** — elle n'a pas été tranchée ici, faute de source qui l'établisse
+> clairement, et il vaut mieux le dire que le supposer.
