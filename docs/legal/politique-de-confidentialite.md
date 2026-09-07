@@ -98,4 +98,4 @@ page modifiée en conséquence.
 
 ## Contact
 
-Pour toute question relative à cette politique : `CONTACT_À_COMPLÉTER`
+Pour toute question relative à cette politique : **volens.game@proton.me**

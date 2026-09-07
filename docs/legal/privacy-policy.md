@@ -93,4 +93,4 @@ the top of this page changed accordingly.
 
 ## Contact
 
-For any question about this policy: `CONTACT_TO_BE_COMPLETED`
+For any question about this policy: **volens.game@proton.me**
