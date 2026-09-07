@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Volens — Politique de confidentialité</title>
+<meta name="description" content="Volens ne collecte aucune donnée. Politique de confidentialité complète, en français et en anglais.">
+
+<!--
+  PAGE AUTONOME, ET C'EST UNE EXIGENCE, PAS UN GOÛT.
+
+  Une politique de confidentialité qui chargerait une police Google, un script
+  d'analyse ou une feuille de style distante se contredirait à la première
+  ligne : elle transmettrait l'adresse IP du lecteur à un tiers pour lui
+  expliquer qu'on ne collecte rien.
+
+  Tout est donc dans ce fichier — styles compris, aucune requête sortante,
+  aucun cookie, aucun script. Les couleurs viennent de la palette du jeu
+  (`ViewPalette`), pour que la page appartienne visiblement au même objet.
+-->
+
+<style>
+  :root {
+    --fond:   #141625;   /* BG_CORE de la palette du jeu */
+    --bord:   #070810;   /* BG_EDGE */
+    --agent:  #d1edff;   /* AGENT */
+    --lumiere:#ffebad;   /* LIGHT */
+    --mur:    #414658;   /* WALL */
+    --sortie: #33c78f;   /* EXIT */
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: radial-gradient(ellipse at 50% 0%, var(--fond), var(--bord) 80%);
+    background-attachment: fixed;
+    color: var(--agent);
+    font: 16px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: 2.5rem 1.25rem 5rem;
+  }
+  main { max-width: 42rem; margin: 0 auto; }
+  h1 {
+    font-size: 1.75rem; line-height: 1.25; margin: 0 0 .35rem;
+    color: var(--lumiere); letter-spacing: -.01em;
+  }
+  .sous-titre { color: #8b93ad; margin: 0 0 2rem; font-size: .95rem; }
+  h2 {
+    font-size: 1.1rem; margin: 2.5rem 0 .75rem;
+    color: var(--lumiere); letter-spacing: .01em;
+  }
+  h2:first-of-type { margin-top: 1.5rem; }
+  p, li { color: #c4d2e6; }
+  strong { color: var(--agent); }
+  a { color: var(--sortie); }
+  code {
+    background: rgba(255,255,255,.06); padding: .1em .35em;
+    border-radius: 3px; font-size: .9em;
+  }
+  .resume {
+    border-left: 3px solid var(--lumiere);
+    background: rgba(255,235,173,.05);
+    padding: 1rem 1.15rem; margin: 1.5rem 0; border-radius: 0 4px 4px 0;
+  }
+  .resume p { margin: 0; color: var(--agent); font-size: 1.05rem; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .95rem; }
+  th, td {
+    text-align: left; padding: .5rem .6rem;
+    border-bottom: 1px solid var(--mur); vertical-align: top;
+  }
+  th { color: var(--lumiere); font-weight: 600; }
+  /* Le tableau devient une liste sur écran étroit : deux colonnes serrées
+     sur 320 px sont illisibles, et cette page se lit surtout au téléphone. */
+  @media (max-width: 30rem) {
+    table, tbody, tr, td, th { display: block; width: 100%; }
+    th { border: 0; padding-bottom: 0; }
+    td { border-bottom: 1px solid var(--mur); padding-top: .15rem; }
+  }
+  nav.langues { margin: 0 0 2rem; display: flex; gap: .5rem; }
+  nav.langues button {
+    font: inherit; font-size: .9rem; cursor: pointer;
+    background: transparent; color: #8b93ad;
+    border: 1px solid var(--mur); border-radius: 999px;
+    padding: .3rem .9rem;
+  }
+  nav.langues button[aria-current="true"] {
+    color: var(--fond); background: var(--lumiere); border-color: var(--lumiere);
+  }
+  footer {
+    margin-top: 3.5rem; padding-top: 1.25rem;
+    border-top: 1px solid var(--mur); color: #7b839b; font-size: .875rem;
+  }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+
+  <nav class="langues">
+    <button type="button" id="btn-fr" aria-current="true">Français</button>
+    <button type="button" id="btn-en" aria-current="false">English</button>
+  </nav>
+
+  <!-- ================================ FRANÇAIS ================================ -->
+  <section id="fr">
+    <h1>Politique de confidentialité</h1>
+    <p class="sous-titre">Volens — jeu de réflexion pour Android, développé par Draille.<br>
+       Dernière mise à jour : 6 septembre 2026.</p>
+
+    <div class="resume">
+      <p><strong>Volens ne collecte aucune donnée vous concernant, n'en transmet
+      aucune, et ne se connecte à aucun serveur.</strong></p>
+    </div>
+
+    <p>Ce n'est pas une intention : c'est une propriété de l'application, et elle
+    est vérifiable. Ce document explique ce que cela signifie concrètement.</p>
+
+    <h2>Quelles données sont collectées ?</h2>
+    <p><strong>Aucune.</strong> Volens ne demande ni nom, ni adresse e-mail, ni
+    compte, ni inscription. Il ne lit pas vos contacts, votre position, vos
+    fichiers ni votre identifiant publicitaire. Il ne sait pas qui vous êtes, et
+    n'a aucun moyen de l'apprendre.</p>
+
+    <h2>Quelles données sont enregistrées sur votre appareil ?</h2>
+    <p>Le jeu enregistre trois choses, <strong>sur votre appareil uniquement</strong>,
+    dans l'espace de stockage privé que le système Android réserve à
+    l'application :</p>
+    <table>
+      <tr><th>Fichier</th><th>Contenu</th></tr>
+      <tr><td><code>progress.json</code></td><td>les niveaux résolus et les défis obtenus</td></tr>
+      <tr><td><code>settings.json</code></td><td>vos réglages (thème, retour haptique, langue)</td></tr>
+      <tr><td><code>session.json</code></td><td>la partie en cours, pour la reprendre où vous l'avez laissée</td></tr>
+    </table>
+    <p>Ces fichiers ne quittent jamais votre appareil, et aucune autre
+    application ne peut les lire. <strong>Désinstaller Volens les supprime
+    définitivement</strong> — c'est la seule opération nécessaire pour effacer
+    toute trace du jeu.</p>
+
+    <h2>Connexion réseau</h2>
+    <p><strong>Volens n'accède jamais à Internet.</strong> L'application ne
+    demande pas la permission réseau d'Android, ce qui signifie que le système
+    lui-même l'empêche d'établir la moindre connexion — indépendamment de ce que
+    le code pourrait tenter. Le jeu fonctionne intégralement hors ligne, y
+    compris au premier lancement.</p>
+
+    <h2>Permissions demandées</h2>
+    <p>Une seule : <code>VIBRATE</code>, pour le retour haptique. C'est une
+    permission de niveau <em>normal</em> : Android l'accorde sans boîte de
+    dialogue et elle ne donne accès à aucune donnée. Le retour haptique peut
+    être désactivé dans les réglages du jeu.</p>
+    <p>Volens ne demande <strong>aucune autre permission</strong> : rien sur le
+    réseau, le stockage partagé, la caméra, le microphone, la position, les
+    contacts ou les notifications.</p>
+
+    <h2>Services tiers, publicité, mesure d'audience</h2>
+    <p><strong>Aucun.</strong> Ni kit de développement tiers, ni régie
+    publicitaire, ni outil de mesure d'audience, ni rapport de plantage. Rien
+    dans l'application ne rend compte de votre usage à qui que ce soit, pas même
+    à son auteur.</p>
+
+    <h2>Achats</h2>
+    <p>Si une version future propose un achat pour débloquer du contenu, la
+    transaction est traitée <strong>entièrement par Google Play</strong>. Le
+    développeur ne reçoit ni votre nom, ni votre adresse, ni aucune donnée de
+    paiement — seulement la confirmation, par Google, qu'un achat a eu lieu. Le
+    traitement de vos données par Google relève alors de
+    <a href="https://policies.google.com/privacy">sa propre politique de
+    confidentialité</a>, sur laquelle nous n'avons aucune prise.</p>
+
+    <h2>Enfants</h2>
+    <p>Volens ne collecte aucune donnée, de personne, quel que soit son âge. Le
+    jeu ne contient ni discussion, ni contenu généré par les utilisateurs, ni
+    lien vers l'extérieur.</p>
+
+    <h2>Vos droits</h2>
+    <p>Puisqu'aucune donnée personnelle n'est collectée ni conservée, il n'y a
+    rien à consulter, rectifier, exporter ou supprimer chez nous — le RGPD
+    n'ayant pas de prise sur des données qui n'existent pas. Les données locales
+    décrites plus haut sont sous votre contrôle exclusif et disparaissent avec
+    l'application.</p>
+
+    <h2>Modifications de cette politique</h2>
+    <p>Si l'application changeait au point de rendre ce document inexact, il
+    serait mis à jour <strong>avant</strong> la publication de la version
+    concernée, et la date en tête de page modifiée en conséquence.</p>
+
+    <h2>Contact</h2>
+    <p>Pour toute question relative à cette politique :
+    <strong>CONTACT_À_COMPLÉTER</strong></p>
+
+    <footer>
+      Cette page ne dépose aucun cookie, n'exécute aucun script de suivi et ne
+      charge aucune ressource extérieure. Elle serait mal placée pour faire
+      autrement.
+    </footer>
+  </section>
+
+  <!-- ================================= ENGLISH ================================ -->
+  <section id="en" hidden>
+    <h1>Privacy Policy</h1>
+    <p class="sous-titre">Volens — puzzle game for Android, developed by Draille.<br>
+       Last updated: 6 September 2026.</p>
+
+    <div class="resume">
+      <p><strong>Volens collects no data about you, transmits none, and connects
+      to no server.</strong></p>
+    </div>
+
+    <p>This is not a statement of intent: it is a property of the application,
+    and it can be verified. This document explains what that means in
+    practice.</p>
+
+    <h2>What data is collected?</h2>
+    <p><strong>None.</strong> Volens asks for no name, no email address, no
+    account, no sign-up. It does not read your contacts, your location, your
+    files or your advertising identifier. It does not know who you are, and has
+    no way of finding out.</p>
+
+    <h2>What is stored on your device?</h2>
+    <p>The game saves three things, <strong>on your device only</strong>, in the
+    private storage area Android reserves for the application:</p>
+    <table>
+      <tr><th>File</th><th>Contents</th></tr>
+      <tr><td><code>progress.json</code></td><td>levels solved and challenges earned</td></tr>
+      <tr><td><code>settings.json</code></td><td>your settings (theme, haptics, language)</td></tr>
+      <tr><td><code>session.json</code></td><td>the game in progress, so you can resume where you left off</td></tr>
+    </table>
+    <p>These files never leave your device, and no other application can read
+    them. <strong>Uninstalling Volens deletes them permanently</strong> — that is
+    the only action needed to erase every trace of the game.</p>
+
+    <h2>Network access</h2>
+    <p><strong>Volens never accesses the internet.</strong> The application does
+    not request Android's network permission, which means the operating system
+    itself prevents it from opening any connection — regardless of what the code
+    might attempt. The game runs entirely offline, including on first launch.</p>
+
+    <h2>Permissions requested</h2>
+    <p>One: <code>VIBRATE</code>, for haptic feedback. This is a
+    <em>normal</em>-level permission: Android grants it without a dialog and it
+    gives access to no data. Haptic feedback can be turned off in the game's
+    settings.</p>
+    <p>Volens requests <strong>no other permission</strong>: none for network,
+    shared storage, camera, microphone, location, contacts or notifications.</p>
+
+    <h2>Third-party services, advertising, analytics</h2>
+    <p><strong>None.</strong> No third-party SDK, no advertising network, no
+    analytics or telemetry tool, no crash reporting. Nothing in the application
+    reports your usage to anyone, not even to its author.</p>
+
+    <h2>Purchases</h2>
+    <p>If a future version offers a purchase to unlock content, the transaction
+    is handled <strong>entirely by Google Play</strong>. The developer receives
+    neither your name, nor your address, nor any payment data — only Google's
+    confirmation that a purchase took place. Google's handling of your data is
+    then governed by <a href="https://policies.google.com/privacy">its own
+    privacy policy</a>, over which we have no control.</p>
+
+    <h2>Children</h2>
+    <p>Volens collects no data, from anyone, of any age. The game contains no
+    chat, no user-generated content, and no links to the outside world.</p>
+
+    <h2>Your rights</h2>
+    <p>Since no personal data is collected or retained, there is nothing for us
+    to provide, correct, export or delete — data protection law has no purchase
+    on data that does not exist. The local files described above are under your
+    sole control and disappear with the application.</p>
+
+    <h2>Changes to this policy</h2>
+    <p>Should the application change in a way that makes this document
+    inaccurate, it will be updated <strong>before</strong> the affected version
+    is published, and the date at the top of this page changed accordingly.</p>
+
+    <h2>Contact</h2>
+    <p>For any question about this policy:
+    <strong>CONTACT_TO_BE_COMPLETED</strong></p>
+
+    <footer>
+      This page sets no cookies, runs no tracking script and loads no external
+      resource. It would be poorly placed to do otherwise.
+    </footer>
+  </section>
+
+</main>
+
+<script>
+  // LE SEUL SCRIPT DE LA PAGE, et il ne fait qu'une chose : montrer une des
+  // deux sections. Aucune requête, aucun stockage, aucune mesure.
+  (function () {
+    var fr = document.getElementById('fr'), en = document.getElementById('en');
+    var bfr = document.getElementById('btn-fr'), ben = document.getElementById('btn-en');
+    function show(lang) {
+      var isFr = lang === 'fr';
+      fr.hidden = !isFr; en.hidden = isFr;
+      bfr.setAttribute('aria-current', String(isFr));
+      ben.setAttribute('aria-current', String(!isFr));
+      document.documentElement.lang = lang;
+    }
+    bfr.addEventListener('click', function () { show('fr'); });
+    ben.addEventListener('click', function () { show('en'); });
+    // La langue du navigateur décide au premier affichage — sans rien retenir.
+    if ((navigator.language || 'fr').slice(0, 2).toLowerCase() !== 'fr') show('en');
+  })();
+</script>
+</body>
+</html>
