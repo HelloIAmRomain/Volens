@@ -51,6 +51,17 @@ func _ready() -> void:
 	_sub.add_child(_app)
 	_app.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	await get_tree().process_frame
+
+	# TOUTES LES LEGENDES SONT MARQUEES COMME VUES AVANT LA PREMIERE CAPTURE.
+	#
+	# Sans cela, chaque niveau ouvert s'affiche SOUS une carte de legende — la
+	# progression du banc est neuve, donc rien n'a jamais ete vu — et les images
+	# produites montrent la legende par-dessus le jeu. Constate en regardant la
+	# premiere capture : « Lumiere : ce que la nuee voit de loin » recouvrait la
+	# nuee qu'elle etait censee illustrer.
+	#
+	# La legende a SA capture dediee, plus bas. Ailleurs, elle est du bruit.
+	_app.progress.mark_seen(MechanicPrimer.all_keys())
 	await _capture_all()
 	print("\nCaptures écrites dans %s" % ProjectSettings.globalize_path(_out_dir))
 	get_tree().quit(0)

@@ -79,6 +79,17 @@ const ONE_WAY_ENTRY := {
 	"line": "On le franchit dans un sens, jamais dans l'autre.",
 }
 
+## TOUTES les clés du vocabulaire, dans l'ordre fixe. Sert à marquer d'un coup
+## l'ensemble des légendes comme vues — le banc de captures en a besoin : sans
+## cela, chaque écran qu'il ouvre s'affiche sous une carte de légende, et les
+## images produites montrent la légende au lieu du jeu.
+static func all_keys() -> PackedStringArray:
+	var keys := PackedStringArray()
+	for cell in ENTRIES:
+		keys.append(String((ENTRIES[cell] as Dictionary)["key"]))
+	keys.append(String(ONE_WAY_ENTRY["key"]))
+	return keys
+
 ## Les éléments présents sur cette carte, dans l'ordre fixe du vocabulaire —
 ## jamais dans l'ordre d'un `Dictionary`, qui varierait d'une exécution à
 ## l'autre et ferait apparaître les cartes dans un ordre différent à chaque
