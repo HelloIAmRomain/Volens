@@ -44,6 +44,39 @@ aapt2 dump permissions build/volens-release.apk
 dépend d'aucune bibliothèque externe (exigence du dépôt, testée en intégration
 continue).
 
+## 2 bis. Identifiant publicitaire
+
+| Question | Réponse |
+|---|---|
+| Votre appli utilise-t-elle un identifiant publicitaire ? *(y compris via un SDK importé)* | **Non** |
+
+**LA QUESTION PORTE SUR LES SDK, PAS SUR VOS INTENTIONS**, et c'est pourquoi
+elle se vérifie dans le paquet plutôt qu'en conscience — un SDK tiers peut
+réclamer l'identifiant sans que personne l'ait décidé. Contrôlé sur l'APK de
+release du 6 septembre 2026 :
+
+```bash
+aapt2 dump permissions build/volens-release.apk | grep -i AD_ID
+#  → rien : la permission com.google.android.gms.permission.AD_ID est ABSENTE
+
+unzip -l build/volens-release.apk | grep -icE "gms|admob|firebase|applovin|ironsource"
+#  → 0
+```
+
+Le paquet ne contient que trois éléments de code : `classes.dex` (la couche
+Java de Godot), `libc++_shared.so` et `libgodot_android.so`. **Ni Google Play
+Services, ni Firebase, ni la moindre régie.**
+
+**CE QUI REND LE « NON » OPPOSABLE PLUTÔT QUE DÉCLARATIF.** Depuis Android 13 —
+et `targetSdk` vaut 36 — une application qui veut lire l'identifiant
+publicitaire **doit** déclarer la permission `AD_ID`. Elle est absente : le
+système ne le fournirait pas, même si le code le demandait. La réponse n'est
+donc pas une promesse, elle est appliquée par la plateforme.
+
+> **Google recoupe cette déclaration avec le manifeste du paquet envoyé.**
+> Répondre « non » avec la permission `AD_ID` présente déclenche un signalement.
+> Ici les deux concordent.
+
 ## 3. Classification du contenu (questionnaire IARC)
 
 Le questionnaire est à remplir en ligne, mais la substance est connue :
