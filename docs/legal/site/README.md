@@ -16,17 +16,25 @@ Le dépôt public ne reçoit donc **qu'une copie de cette page**. Il ne contient
 code, ni fiches, ni historique. La source reste ici, versionnée avec le reste du
 projet : on modifie ici, on republie là-bas.
 
-## Publier ou republier
+## EN LIGNE depuis le 6 septembre 2026
 
-Prérequis : l'adresse de contact remplace les marqueurs `CONTACT_À_COMPLÉTER` et
-`CONTACT_TO_BE_COMPLETED` dans `index.html`.
+    https://helloiamromain.github.io/volens-legal/
+
+Dépôt vitrine `HelloIAmRomain/volens-legal`, public, contenant **un seul
+fichier**. Discussions, wiki et projets désactivés. Le commit est signé de
+l'adresse GitHub anonyme, pas de l'adresse professionnelle.
+
+## Republier après modification
+
+Les étapes 1, 3 et 4 sont faites une fois pour toutes ; seule l'étape 2 se
+rejoue à chaque modification de la page.
 
 ```bash
-# 1. Créer le dépôt vitrine — une seule fois.
+# 1. Créer le dépôt vitrine — FAIT.
 gh repo create volens-legal --public \
     --description "Politique de confidentialité de Volens"
 
-# 2. Copier la page et pousser.
+# 2. Copier la page et pousser — à REJOUER à chaque modification.
 tmp=$(mktemp -d) && git -C "$tmp" clone "git@github.com:$(gh api user -q .login)/volens-legal.git" .
 cp docs/legal/site/index.html "$tmp/index.html"
 cd "$tmp"
@@ -35,16 +43,25 @@ cd "$tmp"
 git config --local user.email "39194295+HelloIAmRomain@users.noreply.github.com"
 git add index.html && git commit -m "Politique de confidentialité de Volens" && git push
 
-# 3. Verrouiller ce qui peut l'être.
+# 3. Verrouiller ce qui peut l'être — FAIT.
 gh repo edit --enable-issues=false --enable-wiki=false --enable-projects=false
 
-# 4. Activer GitHub Pages sur la racine de la branche par défaut.
+# 4. Activer GitHub Pages sur la racine de la branche par défaut — FAIT.
 gh api -X POST "repos/$(gh api user -q .login)/volens-legal/pages" \
     -f "source[branch]=main" -f "source[path]=/"
 ```
 
-L'URL obtenue — `https://<compte>.github.io/volens-legal/` — est celle à donner
-à la Play Console.
+**Le contrôle qui compte se fait sur la page SERVIE, pas sur le fichier
+source** — c'est la même règle que pour les permissions de l'APK :
+
+```bash
+curl -s https://helloiamromain.github.io/volens-legal/ \
+  | grep -cE '<(script src|link rel="stylesheet"|img|iframe)'
+#  → doit rendre 0
+```
+
+Compter deux à trois minutes entre le `push` et la mise en ligne : GitHub
+reconstruit le site, et l'URL rend 404 en attendant.
 
 ## Ce qui ne peut PAS être verrouillé, et il faut le savoir
 

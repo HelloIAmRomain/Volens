@@ -104,16 +104,22 @@ et sans le moindre tirage aléatoire.
 - français — `docs/legal/politique-de-confidentialite.md`
 - anglais — `docs/legal/privacy-policy.md`
 
-**Il reste à l'héberger, et le plan initial ne tient pas.** Le DCT prévoyait
-« hébergement gratuit (GitHub Pages) », mais **le dépôt est privé** et GitHub
-Pages sur un dépôt privé est une fonctionnalité payante. Trois issues, par ordre
-de préférence :
+**HÉBERGÉE ET EN LIGNE depuis le 6 septembre 2026 :**
 
-| Issue | Coût | Remarque |
-|---|---|---|
-| **Un second dépôt PUBLIC ne contenant que les pages légales** | gratuit | n'expose pas le code du jeu ; l'URL est stable et propre |
-| Rendre public le dépôt du jeu | gratuit | expose tout le code et l'historique — décision de fond, pas d'hébergement |
-| Nom de domaine propre | payant | envisagé au CDC §17 avec le devlog |
+    https://helloiamromain.github.io/volens-legal/
+
+**L'URL À COLLER DANS LA PLAY CONSOLE, c'est celle-là.**
+
+Le plan initial du DCT ne tenait pas : il prévoyait « hébergement gratuit
+(GitHub Pages) » sans dire qu'il supposait un dépôt public, or celui du jeu est
+**privé** et Pages y est payant. Retenu : un **second dépôt public**,
+`volens-legal`, qui ne contient **que** `index.html` — ni code, ni fiches de
+niveau, ni historique. Le dépôt du jeu reste privé.
+
+Vérifié sur la page réellement servie, pas sur le fichier source : HTTP 200,
+l'adresse de contact présente, **zéro ressource externe chargée**, un seul lien
+sortant — celui, obligatoire, vers la politique de Google. Discussions, wiki et
+projets désactivés sur le dépôt vitrine.
 
 ## 8. Coordonnées — ce qui devient public, et ce qui ne l'est pas
 
