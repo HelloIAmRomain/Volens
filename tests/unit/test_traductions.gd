@@ -153,6 +153,32 @@ func test_every_level_has_an_english_name() -> void:
 		("niveaux sans nom anglais — le joueur anglophone y lirait du français : "
 		+ "%s") % ", ".join(untranslated))
 
+func test_zero_takes_the_singular_in_french_and_the_plural_in_english() -> void:
+	# LE CAS QUI PIÈGE, ET IL EST FRÉQUENT. Le code portait la règle française
+	# pour tout le monde — `"s" si n > 1` — ce qui donne « 0 agents » en français
+	# et « 0 agent » en anglais : faux dans les deux sens, sur le cas NORMAL
+	# d'une partie réussie, où l'on ne perd personne.
+	#
+	# Français : zéro et un au singulier. Anglais : seul un.
+	var previous := TranslationServer.get_locale()
+	var expected := {
+		"fr": {0: "0 agent.", 1: "1 agent.", 2: "2 agents."},
+		"en": {0: "0 agents.", 1: "1 agent.", 2: "2 agents."},
+	}
+	var wrong := PackedStringArray()
+	for locale in expected:
+		TranslationServer.set_locale(String(locale))
+		for n in (expected[locale] as Dictionary):
+			var line := RuleCatalog.objective_brief(
+				[{"type": "preservation", "max_lost": int(n)}], 20)[0]
+			var tail := String((expected[locale] as Dictionary)[n])
+			if not line.ends_with(tail):
+				wrong.append("[%s] n=%d → « %s », attendu une fin en « %s »"
+					% [locale, int(n), line, tail])
+	TranslationServer.set_locale(previous)
+	assert_eq(wrong, PackedStringArray(),
+		"accord du pluriel incorrect : %s" % ", ".join(wrong))
+
 func test_the_two_locales_actually_differ() -> void:
 	# GARDE CONTRE LA COLONNE RECOPIÉE. Remplir la colonne anglaise avec le
 	# français satisfait tous les tests ci-dessus et ne traduit rien — c'est la

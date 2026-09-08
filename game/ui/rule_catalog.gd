@@ -118,19 +118,38 @@ static func objective_brief(objectives: Array, total_agents: int) -> Array[Strin
 	for entry in objectives:
 		match String(entry.get("type", "")):
 			"extraction":
-				lines.append("Faire sortir %d agents sur %d." % [_needed(entry, total_agents), total_agents])
+				lines.append(TranslationServer.translate("obj.brief.extraction")
+					% [_needed(entry, total_agents), total_agents])
 			"collect":
-				lines.append("Livrer %d ressources." % int(entry.get("count", 1)))
+				lines.append(TranslationServer.translate("obj.brief.collect")
+					% int(entry.get("count", 1)))
 			"preservation":
 				var m: int = int(entry.get("max_lost", 0))
-				lines.append("Perdre au plus %d agent%s." % [m, "s" if m > 1 else ""])
+				lines.append(_plural("obj.brief.preservation", m) % m)
 			"celerity":
-				lines.append("Terminer en %d ticks au plus." % int(entry.get("max_ticks", 0)))
+				lines.append(TranslationServer.translate("obj.brief.celerity")
+					% int(entry.get("max_ticks", 0)))
 			"interdiction":
-				lines.append("Ne jamais entrer dans la zone interdite.")
+				lines.append(TranslationServer.translate("obj.brief.interdiction"))
 	if lines.is_empty():
-		lines.append("Observer la nuée.")
+		lines.append(TranslationServer.translate("obj.brief.none"))
 	return lines
+
+## LE PLURIEL N'OBÉIT PAS À LA MÊME RÈGLE DANS LES DEUX LANGUES, et le code
+## portait celle du français pour tout le monde : `"s" if n > 1`.
+##
+## En français, ZÉRO et UN prennent le singulier — « 0 agent », « 1 agent ». En
+## anglais, seul UN le prend : on écrit « 0 agents ». Une règle partagée est
+## donc fausse dans une langue sur deux, et elle l'est sur le cas le plus
+## fréquent — zéro perte est le cas NORMAL d'une partie réussie.
+##
+## Le format CSV ne sait pas exprimer de pluriel (le PO, si). On déclare donc
+## deux clés, `.one` et `.other`, et l'on choisit ici selon la langue courante.
+## C'est explicite, ça se lit dans le fichier de traduction, et ça se teste.
+static func _plural(base: String, n: int) -> String:
+	var singular := (n == 1) if TranslationServer.get_locale().begins_with("en") \
+		else (absi(n) < 2)
+	return TranslationServer.translate(base + (".one" if singular else ".other"))
 
 ## Pourquoi la partie s'est terminée, en une phrase — c'est ce qui manque le
 ## plus quand l'échec tombe avant qu'on ait rien vu (pilier P4).
