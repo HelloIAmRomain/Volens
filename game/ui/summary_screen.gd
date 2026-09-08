@@ -48,7 +48,7 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array,
 	column.add_child(lead)
 
 	var verdict := Label.new()
-	verdict.text = "Objectif atteint" if won else "Objectif manqué"
+	verdict.text = TranslationServer.translate("ui.summary.won") if won else TranslationServer.translate("ui.summary.lost")
 	verdict.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	verdict.add_theme_font_size_override("font_size", UiMetrics.font_size(52))
 	verdict.add_theme_color_override("font_color", ViewPalette.EXIT if won else ViewPalette.DANGER)
@@ -66,9 +66,9 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array,
 	spacer.custom_minimum_size = Vector2(0, UiMetrics.GAP)
 	column.add_child(spacer)
 
-	column.add_child(_stat("Ticks consommés", str(ticks)))
-	column.add_child(_stat("Agents perdus", str(lost)))
-	column.add_child(_stat("Pile utilisée", _stack_label(stack)))
+	column.add_child(_stat(TranslationServer.translate("ui.summary.ticks"), str(ticks)))
+	column.add_child(_stat(TranslationServer.translate("ui.summary.lost_agents"), str(lost)))
+	column.add_child(_stat(TranslationServer.translate("ui.summary.stack"), _stack_label(stack)))
 
 	# CDC §8.5 : le bilan d'un niveau OUVERT annonce le nombre de solutions
 	# connues — « il n'y a pas UNE bonne réponse » (P5). Le chiffre vient du
@@ -80,7 +80,7 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array,
 	# en cherche d'autres.
 	var known := _known_solutions(level_id)
 	if won and known > 1:
-		column.add_child(_stat("Solutions", str(known)))
+		column.add_child(_stat(TranslationServer.translate("ui.summary.solutions"), str(known)))
 
 	# DÉFIS RG-18 — ON MONTRE MAINTENANT CE QUI RESTE, ET C'EST UN CHANGEMENT
 	# D'INTENTION ASSUMÉ.
@@ -115,20 +115,22 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array,
 			var done: bool = bool(entry["earned"])
 			var key := String(entry["key"])
 			var label := String(entry["label"])
+			# L'AFFICHAGE PREND `title`, LA RECONNAISSANCE PREND `key`.
+			var title := String(entry.get("title", key))
 			var kept := _already_has(already, key)
 			# LA MENTION EST UN AJOUT, JAMAIS UN REMPLACEMENT : la condition reste
 			# lisible dans les trois cas. C'est elle qui dit quoi chercher, et un
 			# défi acquis reste une chose qu'on doit pouvoir relire.
 			if done:
-				label += "  ·  obtenu à l'instant"
+				label += TranslationServer.translate("ui.summary.just_earned")
 			elif kept:
-				label += "  ·  déjà acquis"
+				label += TranslationServer.translate("ui.summary.already")
 			# RG-19 TIENT : le losange plein marque les deux formes d'acquis. Un
 			# défi gagné avant ne redevient pas creux parce qu'on a rejoué
 			# autrement — ce serait le reprendre, et les défis ne se reprennent
 			# jamais.
 			column.add_child(_stat(
-				"%s  %s" % ["◆" if (done or kept) else "◇", key], label))
+				"%s  %s" % ["◆" if (done or kept) else "◇", title], label))
 
 	var grow := Control.new()
 	grow.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -144,12 +146,12 @@ func setup(level_id: String, won: bool, ticks: int, lost: int, stack: Array,
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", int(UiMetrics.GAP))
 	column.add_child(row)
-	row.add_child(_make_button("Rejouer", func() -> void: retry_requested.emit()))
+	row.add_child(_make_button(TranslationServer.translate("ui.summary.replay"), func() -> void: retry_requested.emit()))
 	var next_id := LevelCatalog.level_after(level_id)
 	if won and not next_id.is_empty():
-		row.add_child(_make_button("Niveau suivant",
+		row.add_child(_make_button(TranslationServer.translate("ui.summary.next"),
 			func() -> void: next_level_requested.emit(next_id)))
-	row.add_child(_make_button("Niveaux", func() -> void: select_requested.emit()))
+	row.add_child(_make_button(TranslationServer.translate("ui.summary.levels"), func() -> void: select_requested.emit()))
 
 ## Nombre de piles gagnantes d'un niveau non tutoriel, ou 0 si le niveau est
 ## un tutoriel ou si le chiffre n'est pas connu.
@@ -175,21 +177,37 @@ static func challenge_states(level_id: String, stack: Array, ticks: int) -> Arra
 	var economy_max := int(spec.get("economy_max", 0))
 	if economy_max > 0:
 		out.append({
+			# LA CLÉ EST UNE IDENTITÉ PERSISTÉE, PAS UN LIBELLÉ.
+			#
+			# Un défi obtenu est enregistré sous « <clé> — <libellé> » et se
+			# reconnaît PAR SON PRÉFIXE. Traduire la clé ferait qu'un défi gagné
+			# en français ne se reconnaîtrait plus en anglais : le joueur qui
+			# change de langue verrait sa collection se vider. Le libellé, lui,
+			# se traduit sans risque — il n'entre pas dans la reconnaissance.
+			#
+			# On ne touche donc PAS au format de sauvegarde (invariant : aucun
+			# changement sans migration ni incrément de `schema_version`), et
+			# `title` porte ce que l'écran affiche.
 			"key": "Économie",
-			"label": "%d règle%s au plus" % [
-				economy_max, "s" if economy_max > 1 else ""],
+			"title": TranslationServer.translate("ui.challenge.economy"),
+			"label": RuleCatalog.plural_of(
+				"ui.challenge.economy.label", economy_max) % economy_max,
 			"earned": used <= economy_max})
 	var abstinence := int(spec.get("abstinence_rule", 0))
 	if abstinence != 0:
 		out.append({
 			"key": "Abstinence",
-			"label": "sans « %s »" % RuleCatalog.name_of(abstinence),
+			"title": TranslationServer.translate("ui.challenge.abstinence"),
+			"label": TranslationServer.translate("ui.challenge.abstinence.label")
+				% RuleCatalog.name_of(abstinence),
 			"earned": not stack.has(abstinence)})
 	var deadline := int(spec.get("efficiency_ticks", 0))
 	if deadline > 0:
 		out.append({
 			"key": "Efficience",
-			"label": "%d ticks au plus" % deadline,
+			"title": TranslationServer.translate("ui.challenge.efficiency"),
+			"label": TranslationServer.translate("ui.challenge.efficiency.label")
+				% deadline,
 			"earned": ticks <= deadline})
 	return out
 
@@ -227,10 +245,12 @@ static func _known_solutions(level_id: String) -> int:
 
 func _reason(won: bool, lost: int) -> String:
 	if won:
-		return "La nuée a rempli l'objectif." if lost == 0 else "Objectif rempli, malgré des pertes."
+		if lost == 0:
+			return TranslationServer.translate("end.won")
+		return TranslationServer.translate("ui.summary.won_losses")
 	if lost > 0:
-		return "Trop d'agents perdus : l'objectif est devenu hors d'atteinte."
-	return "Le temps imparti s'est écoulé avant l'objectif."
+		return TranslationServer.translate("ui.summary.unreachable")
+	return TranslationServer.translate("end.timeout")
 
 ## UNE LIGNE DE BILAN NE POUSSE JAMAIS L'ECRAN.
 ##

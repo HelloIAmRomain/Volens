@@ -259,7 +259,13 @@ func _capture_all() -> void:
 
 
 	# Les deux bilans, gagné puis perdu.
-	_app._on_level_finished("ch1_01", true, 14, 0, [RuleRegistry.R01_TOWARD_LIGHT], "La nuée a rempli l'objectif.")
+	# LE MOTIF EST TRADUIT, PAS ÉCRIT EN DUR. Le banc passait ici une phrase
+	# française littérale : sur une capture en anglais, l'écran de bilan
+	# affichait « Objective met » surmontant « La nuee a rempli l'objectif. »
+	# — un mélange qui ne vient PAS du jeu, mais du harnais qui le photographie.
+	# Une capture qui montre un texte injecté ne montre pas le jeu.
+	_app._on_level_finished("ch1_01", true, 14, 0, [RuleRegistry.R01_TOWARD_LIGHT],
+		TranslationServer.translate("end.won"))
 	await _shot("08-bilan-gagne")
 
 	_app._on_level_finished("ch1_02", false, 6, 1, [RuleRegistry.R01_TOWARD_LIGHT], "1 agent perdu — l'objectif de 20 sur 20 est devenu inatteignable.")
@@ -271,7 +277,7 @@ func _capture_all() -> void:
 	# regles (economie), sans la Fuite (abstinence), pile au seuil (efficience).
 	_app._on_level_finished("ch1_05", true, 20, 0,
 		[RuleRegistry.R03_STAY_GROUPED, RuleRegistry.R01_TOWARD_LIGHT],
-		"La nuée a rempli l'objectif.")
+		TranslationServer.translate("end.won"))
 	await _shot("17-bilan-defis")
 
 func _shot(name: String) -> void:

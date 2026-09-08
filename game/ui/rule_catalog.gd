@@ -74,15 +74,15 @@ static func line_of(rule_id: int) -> String:
 ## « extraction 100 % » demande un calcul.
 static func objective_line(objectives: Array, state: SimState) -> String:
 	if objectives.is_empty():
-		return "Aucun objectif"
+		return TranslationServer.translate("obj.line.none")
 	var total: int = state.agents.size()
 	var parts := PackedStringArray()
 	for entry in objectives:
 		match String(entry.get("type", "")):
 			"extraction":
-				parts.append("%d/%d sortis" % [state.counters.exited, _needed(entry, total)])
+				parts.append(TranslationServer.translate("obj.line.extraction") % [state.counters.exited, _needed(entry, total)])
 			"collect":
-				parts.append("%d/%d livrés" % [state.counters.delivered, int(entry.get("count", 1))])
+				parts.append(TranslationServer.translate("obj.line.collect") % [state.counters.delivered, int(entry.get("count", 1))])
 			"preservation":
 				# « 1/1 perdus » SE LIT COMME UN BUT À ATTEINDRE, exactement comme
 				# « 14/20 sortis » juste à côté — alors que le second nombre est un
@@ -93,21 +93,19 @@ static func objective_line(objectives: Array, state: SimState) -> String:
 				var cap: int = int(entry.get("max_lost", 0))
 				var lost: int = state.counters.lost
 				if cap <= 0:
-					parts.append("%d perdu%s · aucune perte tolérée" % [
-						lost, "s" if lost > 1 else ""])
+					parts.append(plural_of("obj.line.lost_strict", lost) % lost)
 				else:
-					parts.append("%d perdu%s · %d max" % [
-						lost, "s" if lost > 1 else "", cap])
+					parts.append(plural_of("obj.line.lost_cap", lost) % [lost, cap])
 			"celerity":
-				parts.append("%d/%d ticks" % [state.tick, int(entry.get("max_ticks", 0))])
+				parts.append(TranslationServer.translate("obj.line.celerity") % [state.tick, int(entry.get("max_ticks", 0))])
 			"interdiction":
-				parts.append("zone interdite")
+				parts.append(TranslationServer.translate("obj.line.interdiction"))
 	# Un simple RELEVÉ, sur un niveau qui ne compte pas les pertes : « agent »
 	# est écrit en toutes lettres pour qu'on ne le lise pas comme un objectif
 	# chiffré accolé au précédent.
 	if state.counters.lost > 0 and not _has_type(objectives, "preservation"):
-		parts.append("%d agent%s perdu%s" % [state.counters.lost,
-			"s" if state.counters.lost > 1 else "", "s" if state.counters.lost > 1 else ""])
+		parts.append(plural_of("obj.line.lost_note", state.counters.lost)
+			% state.counters.lost)
 	return "   ·   ".join(parts)
 
 ## Énoncé EXPLICITE pour le panneau d'ouverture : ce que le joueur doit
@@ -125,7 +123,7 @@ static func objective_brief(objectives: Array, total_agents: int) -> Array[Strin
 					% int(entry.get("count", 1)))
 			"preservation":
 				var m: int = int(entry.get("max_lost", 0))
-				lines.append(_plural("obj.brief.preservation", m) % m)
+				lines.append(plural_of("obj.brief.preservation", m) % m)
 			"celerity":
 				lines.append(TranslationServer.translate("obj.brief.celerity")
 					% int(entry.get("max_ticks", 0)))
@@ -146,7 +144,7 @@ static func objective_brief(objectives: Array, total_agents: int) -> Array[Strin
 ## Le format CSV ne sait pas exprimer de pluriel (le PO, si). On déclare donc
 ## deux clés, `.one` et `.other`, et l'on choisit ici selon la langue courante.
 ## C'est explicite, ça se lit dans le fichier de traduction, et ça se teste.
-static func _plural(base: String, n: int) -> String:
+static func plural_of(base: String, n: int) -> String:
 	var singular := (n == 1) if TranslationServer.get_locale().begins_with("en") \
 		else (absi(n) < 2)
 	return TranslationServer.translate(base + (".one" if singular else ".other"))
@@ -156,29 +154,29 @@ static func _plural(base: String, n: int) -> String:
 static func outcome_reason(objectives: Array, state: SimState) -> String:
 	var total: int = state.agents.size()
 	if state.outcome == SimState.Outcome.WON:
-		return "La nuée a rempli l'objectif." if state.counters.lost == 0 \
-			else "Objectif rempli, malgré %d perte%s." % [state.counters.lost, "s" if state.counters.lost > 1 else ""]
+		if state.counters.lost == 0:
+			return TranslationServer.translate("end.won")
+		return plural_of("end.won_with_losses", state.counters.lost) % state.counters.lost
 	for entry in objectives:
 		var kind := String(entry.get("type", ""))
 		if kind == "preservation" and state.counters.lost > int(entry.get("max_lost", 0)):
-			return "%d agents perdus : la limite de %d est dépassée." % [
+			return TranslationServer.translate("end.preservation") % [
 				state.counters.lost, int(entry.get("max_lost", 0))]
 		if kind == "extraction":
 			var needed: int = _needed(entry, total)
 			var still_possible: int = state.counters.exited + _present(state)
 			if still_possible < needed:
-				return "%d agent%s perdu%s — l'objectif de %d sur %d est devenu inatteignable." % [
-					state.counters.lost, "s" if state.counters.lost > 1 else "",
-					"s" if state.counters.lost > 1 else "", needed, total]
+				return plural_of("end.extraction_lost", state.counters.lost) % [
+					state.counters.lost, needed, total]
 		if kind == "celerity" and state.tick >= int(entry.get("max_ticks", 0)):
-			return "Le délai de %d ticks est écoulé." % int(entry.get("max_ticks", 0))
+			return TranslationServer.translate("end.celerity") % int(entry.get("max_ticks", 0))
 		# INTERDICTION — le seul objectif dont la violation est INSTANTANÉE, et le
 		# seul dont l'échec ne se lit sur aucun compteur. Sans phrase dédiée, le
 		# joueur lisait « le temps imparti s'est écoulé » alors que la partie
 		# s'était arrêtée au troisième tick : un message faux vaut moins que pas
 		# de message.
 		if kind == "interdiction" and _anyone_on(entry, state):
-			return "La nuée est entrée dans la zone interdite."
+			return TranslationServer.translate("end.interdiction")
 		# COLLECTE — l'échec y est un compteur qui n'a pas assez avancé, jamais un
 		# événement. Le dire chiffré : « 1 sur 3 » situe l'écart, « objectif non
 		# rempli » ne dit rien de ce qu'il faut corriger.
@@ -186,11 +184,10 @@ static func outcome_reason(objectives: Array, state: SimState) -> String:
 			var goal: int = int(entry.get("count", 1))
 			if state.counters.delivered < goal:
 				if state.counters.delivered == 0:
-					return "Aucune ressource livrée : %d étaient demandées." % goal
-				return "%d ressource%s livrée%s sur %d." % [
-					state.counters.delivered, "s" if state.counters.delivered > 1 else "",
-					"s" if state.counters.delivered > 1 else "", goal]
-	return "Le temps imparti s'est écoulé avant l'objectif."
+					return TranslationServer.translate("end.collect.none") % goal
+				return plural_of("end.collect_partial", state.counters.delivered) % [
+					state.counters.delivered, goal]
+	return TranslationServer.translate("end.timeout")
 
 ## Un agent se trouve-t-il sur une case interdite ? Les indices sont
 ## pré-calculés au chargement du niveau (`ObjectiveDef.cells`) ; on les relit

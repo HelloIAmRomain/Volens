@@ -44,7 +44,7 @@ static func explain(agent: AgentState, state: SimState, stack: Array[int]) -> Di
 			lines.append("%s → %s" % [label, _direction_name(result)])
 			return {"slot": i, "rule_id": rule_id, "proposed": result, "lines": lines}
 		lines.append("%s — %s" % [label, _abstention_reason(rule_id, agent, state, params)])
-	lines.append("aucune règle ne s'applique → immobile")
+	lines.append(TranslationServer.translate("explain.none"))
 	return {"slot": -1, "rule_id": RuleRegistry.EMPTY, "proposed": Vector2i.ZERO, "lines": lines}
 
 ## Motif d'abstention, formulé pour le joueur. Déduit de requêtes sur l'état,
@@ -54,44 +54,44 @@ static func _abstention_reason(rule_id: int, agent: AgentState, state: SimState,
 		RuleRegistry.R01_TOWARD_LIGHT:
 			var light := _nearest_cell(state.grid, GridState.CellType.LIGHT_SOURCE, agent.pos)
 			if light.x < 0:
-				return "aucune lumière sur la carte"
+				return TranslationServer.translate("explain.r01.no_light")
 			if light == agent.pos:
-				return "déjà sur la lumière"
-			return "chemin vers la lumière bloqué"
+				return TranslationServer.translate("explain.r01.on_light")
+			return TranslationServer.translate("explain.r01.blocked")
 		RuleRegistry.R02_FLEE_DANGER:
 			var threat := _nearest_threat(state, agent.pos)
 			if threat.x < 0:
-				return "aucun danger menaçant"
+				return TranslationServer.translate("explain.r02.no_danger")
 			var dx: int = threat.x - agent.pos.x
 			var dy: int = threat.y - agent.pos.y
 			if dx * dx + dy * dy > params.flee_perception_range_sq:
-				return "danger trop loin pour être perçu"
-			return "nulle part où reculer"
+				return TranslationServer.translate("explain.r02.too_far")
+			return TranslationServer.translate("explain.r02.nowhere")
 		RuleRegistry.R03_STAY_GROUPED:
 			if _perceived_neighbours(state, agent, params) == 0:
-				return "aucun voisin perçu"
-			return "déjà groupé"
+				return TranslationServer.translate("explain.r03.no_neighbour")
+			return TranslationServer.translate("explain.r03.grouped")
 		RuleRegistry.R04_SPREAD_OUT:
-			return "pas assez serré, ou nulle part où se desserrer"
+			return TranslationServer.translate("explain.r04.not_tight")
 		RuleRegistry.R05_FOLLOW_NEIGHBOURS:
 			if state.tick == 0:
-				return "premier tick : personne n'a encore bougé"
-			return "aucun voisin en mouvement à copier"
+				return TranslationServer.translate("explain.r05.first_tick")
+			return TranslationServer.translate("explain.r05.no_mover")
 		RuleRegistry.R06_HUG_WALL:
-			return "aucun obstacle à longer"
+			return TranslationServer.translate("explain.r06.no_wall")
 		RuleRegistry.R09_FOLLOW_TRAIL:
 			if state.grid.pheromone[state.grid.index_of(agent.pos)] > 0:
-				return "aucune trace voisine plus intense que la sienne"
-			return "aucune trace à suivre"
+				return TranslationServer.translate("explain.r09.no_stronger")
+			return TranslationServer.translate("explain.r09.no_trail")
 		RuleRegistry.R13_PLUG:
-			return "aucun danger adjacent à boucher"
+			return TranslationServer.translate("explain.r13.no_danger")
 		RuleRegistry.R14_SCATTER_IF_DENSE:
-			return "zone pas assez dense, ou nulle part où respirer"
+			return TranslationServer.translate("explain.r14.not_dense")
 		RuleRegistry.R15_FOLLOW_THE_SLOWEST:
-			return "le groupe est resserré : rien à attendre"
+			return TranslationServer.translate("explain.r15.tight")
 		RuleRegistry.R16_IGNORE:
-			return "ne propose jamais de pas — elle agit sur tout le tick"
-	return "ne s'applique pas"
+			return TranslationServer.translate("explain.r16.never_moves")
+	return TranslationServer.translate("explain.generic")
 
 ## Ce qu'une règle d'EFFET fait ou ne fait pas pour cet agent, à ce tick. On
 ## décrit la CONDITION observable, jamais le résultat : l'effet s'applique
@@ -100,7 +100,7 @@ static func _abstention_reason(rule_id: int, agent: AgentState, state: SimState,
 static func _effect_note(rule_id: int, agent: AgentState, state: SimState) -> String:
 	match RuleRegistry.base_rule_id(rule_id):
 		RuleRegistry.R08_MARK_TRAIL:
-			return "marque sa case s'il avance, puis rend la main"
+			return TranslationServer.translate("explain.effect.mark")
 		RuleRegistry.R11_CARRY:
 			# LA RÈGLE FAIT DEUX CHOSES DEPUIS LA FUSION du 21 août 2026 : le
 			# diagnostic doit dire CELLE QUI S'APPLIQUE, sinon il décrit une règle
@@ -110,12 +110,12 @@ static func _effect_note(rule_id: int, agent: AgentState, state: SimState) -> St
 					var c: Vector2i = agent.pos + Directions.offset(d)
 					if state.grid.is_in_bounds(c) \
 							and state.grid.cell_type_at(c) == GridState.CellType.DROPOFF:
-						return "dépose sur le dépôt voisin, puis rend la main"
-				return "porte déjà, et aucun dépôt à portée de bras"
+						return TranslationServer.translate("explain.effect.drop")
+				return TranslationServer.translate("explain.effect.carrying")
 			if state.grid.cell_type_at(agent.pos) == GridState.CellType.RESOURCE:
-				return "ramasse la ressource de sa case, puis rend la main"
-			return "rien à ramasser ici"
-	return "agit, puis rend la main"
+				return TranslationServer.translate("explain.effect.pick")
+			return TranslationServer.translate("explain.effect.nothing")
+	return TranslationServer.translate("explain.effect.generic")
 
 static func _nearest_cell(grid: GridState, cell_type: int, from: Vector2i) -> Vector2i:
 	var best := Vector2i(-1, -1)
@@ -160,15 +160,15 @@ static func _perceived_neighbours(state: SimState, agent: AgentState, params: Ru
 
 static func _direction_name(dir: Vector2i) -> String:
 	if dir == Vector2i.ZERO:
-		return "reste sur place"
+		return TranslationServer.translate("dir.still")
 	if dir == Vector2i(0, -1):
-		return "vers le haut"
+		return TranslationServer.translate("dir.north")
 	if dir == Vector2i(1, 0):
-		return "vers la droite"
+		return TranslationServer.translate("dir.east")
 	if dir == Vector2i(0, 1):
-		return "vers le bas"
+		return TranslationServer.translate("dir.south")
 	if dir == Vector2i(-1, 0):
-		return "vers la gauche"
+		return TranslationServer.translate("dir.west")
 	return str(dir)
 
 ## Complète le diagnostic par le sort réel du mouvement : la règle a proposé,
@@ -181,5 +181,5 @@ static func movement_note(proposed: Vector2i, actual: Vector2i) -> String:
 	if proposed == actual:
 		return ""
 	if actual == Vector2i.ZERO:
-		return "mouvement refusé : la case était occupée"
-	return "mouvement modifié par la résolution des conflits"
+		return TranslationServer.translate("explain.refused")
+	return TranslationServer.translate("explain.altered")

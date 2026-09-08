@@ -50,7 +50,7 @@ func _build() -> void:
 		Control.PRESET_MODE_MINSIZE, int(UiMetrics.MARGIN))
 
 	var title := Label.new()
-	title.text = "Réglages"
+	title.text = TranslationServer.translate("ui.settings.title")
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", UiMetrics.font_size(44))
 	title.add_theme_color_override("font_color", ViewPalette.AGENT_PLAIN)
@@ -80,12 +80,12 @@ func _build() -> void:
 	# dynamique : nommer la classe statiquement empêcherait la build de
 	# production de démarrer.
 	if OS.has_feature("test_build") and ResourceLoader.exists(SELF_CHECK_PATH):
-		var check := UiButtons.make("Auto-vérification", UiButtons.Rank.PLAIN, 26)
+		var check := UiButtons.make(TranslationServer.translate("ui.settings.selfcheck"), UiButtons.Rank.PLAIN, 26)
 		check.pressed.connect(_on_self_check)
 		column.add_child(check)
 		column.add_child(_spacer(UiMetrics.GAP))
 
-	var back := UiButtons.make("Retour")
+	var back := UiButtons.make(TranslationServer.translate("ui.back2"))
 	back.pressed.connect(func() -> void: back_requested.emit())
 	column.add_child(back)
 
@@ -105,7 +105,7 @@ func _on_toggle() -> void:
 func _on_reset_pressed() -> void:
 	if not _confirming_reset:
 		_confirming_reset = true
-		_reset_button.text = "Confirmer l'effacement"
+		_reset_button.text = TranslationServer.translate("ui.settings.confirm_wipe")
 		_reset_button.add_theme_color_override("font_color", Color(0.95, 0.40, 0.40))
 		return
 	reset_requested.emit()
@@ -117,10 +117,10 @@ func _refresh() -> void:
 	if _toggle == null:
 		return
 	if _reset_button != null and not _confirming_reset:
-		_reset_button.text = "Effacer la progression"
+		_reset_button.text = TranslationServer.translate("ui.settings.wipe")
 	# L'état se lit dans le TEXTE, pas dans une nuance de fond : ENF-20
 	# interdit qu'une information tienne à la seule couleur.
-	_toggle.text = "Vibrations : activées" if _settings.haptics else "Vibrations : coupées"
+	_toggle.text = TranslationServer.translate("ui.settings.haptics_on") if _settings.haptics else TranslationServer.translate("ui.settings.haptics_off")
 	_toggle.add_theme_color_override("font_color",
 		ViewPalette.AGENT_PLAIN if _settings.haptics else Color(0.55, 0.59, 0.68))
 

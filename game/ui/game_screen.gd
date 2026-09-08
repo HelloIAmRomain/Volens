@@ -179,10 +179,10 @@ func _build() -> void:
 	left_row.name = "LeftBar"
 	left_row.add_theme_constant_override("separation", int(UiMetrics.GAP))
 	add_child(left_row)
-	var quit := _make_button("✕", "Retour aux niveaux")
+	var quit := _make_button("✕", TranslationServer.translate("ui.game.back"))
 	quit.pressed.connect(func() -> void: quit_requested.emit())
 	left_row.add_child(quit)
-	var reset := _make_button("↺", "Réinitialiser l'essai")
+	var reset := _make_button("↺", TranslationServer.translate("ui.game.reset"))
 	reset.pressed.connect(func() -> void: _pause(); _view.reset(); _hide_explain(); _notify_state())
 	left_row.add_child(reset)
 
@@ -192,10 +192,10 @@ func _build() -> void:
 	right_row.name = "RightBar"
 	right_row.add_theme_constant_override("separation", int(UiMetrics.GAP))
 	add_child(right_row)
-	_play_button = _make_button("▶", "Marche / pause — ou appui sur la grille", UiButtons.Rank.PRIMARY)
+	_play_button = _make_button("▶", TranslationServer.translate("ui.game.playpause"), UiButtons.Rank.PRIMARY)
 	_play_button.pressed.connect(_toggle_play)
 	right_row.add_child(_play_button)
-	_speed_button = _make_button("▷", "Vitesse de lecture", UiButtons.Rank.SECONDARY)
+	_speed_button = _make_button("▷", TranslationServer.translate("ui.game.speed"), UiButtons.Rank.SECONDARY)
 	_speed_button.pressed.connect(_cycle_speed)
 	right_row.add_child(_speed_button)
 
@@ -349,7 +349,7 @@ func _build_objective_panel() -> void:
 
 	var title := Label.new()
 	title.name = "Title"
-	title.text = "Objectif"
+	title.text = TranslationServer.translate("ui.game.objective")
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", UiMetrics.font_size(30))
 	title.add_theme_color_override("font_color", Color(0.55, 0.80, 1.0))
@@ -569,14 +569,14 @@ func _close_panel() -> void:
 
 func _on_chip_long_pressed(rule_id: int) -> void:
 	if rule_id == RuleRegistry.EMPTY:
-		_show_note("Retirer — vide l'emplacement choisi.")
+		_show_note(TranslationServer.translate("ui.game.remove"))
 	else:
 		_show_note("%s — %s" % [RuleCatalog.name_of(rule_id), RuleCatalog.line_of(rule_id)])
 
 func _on_slot_long_pressed(slot_index: int) -> void:
 	var rule_id: int = _stack[slot_index]
 	if rule_id == RuleRegistry.EMPTY:
-		_show_note("Emplacement %d — vide. Appuyez pour y poser une règle." % (slot_index + 1))
+		_show_note(TranslationServer.translate("ui.game.empty_slot") % (slot_index + 1))
 	else:
 		_show_note("%d. %s — %s" % [slot_index + 1, RuleCatalog.name_of(rule_id), RuleCatalog.line_of(rule_id)])
 

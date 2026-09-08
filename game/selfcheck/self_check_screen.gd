@@ -71,9 +71,9 @@ func _build() -> void:
 	column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT,
 		Control.PRESET_MODE_MINSIZE, int(UiMetrics.MARGIN))
 
-	_title = _label("Auto-vérification", 40, ViewPalette.AGENT_PLAIN)
+	_title = _label(TranslationServer.translate("ui.selfcheck.title"), 40, ViewPalette.AGENT_PLAIN)
 	column.add_child(_title)
-	_progress = _label("préparation…", 26, Color(0.55, 0.60, 0.72))
+	_progress = _label(TranslationServer.translate("ui.selfcheck.preparing"), 26, Color(0.55, 0.60, 0.72))
 	column.add_child(_progress)
 	column.add_child(_spacer(UiMetrics.GAP))
 	_verdict = _label("", 44, ViewPalette.AGENT_PLAIN)
@@ -90,7 +90,7 @@ func _build() -> void:
 	var grow := Control.new()
 	grow.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_child(grow)
-	var back := UiButtons.make("Retour")
+	var back := UiButtons.make(TranslationServer.translate("ui.back3"))
 	back.pressed.connect(func() -> void: back_requested.emit())
 	column.add_child(back)
 
@@ -111,7 +111,7 @@ func _load_corpus() -> void:
 	var golden: Variant = JSON.parse_string(FileAccess.get_file_as_string(GOLDEN_PATH))
 	var rules: Variant = JSON.parse_string(FileAccess.get_file_as_string(RULES_PATH))
 	if not (golden is Dictionary) or not (rules is Dictionary):
-		_progress.text = "corpus introuvable — build mal composée"
+		_progress.text = TranslationServer.translate("ui.selfcheck.no_corpus")
 		set_process(false)
 		return
 	_recipes = (golden as Dictionary).get("recipes", [])
@@ -149,17 +149,17 @@ func _verify(recipe: Dictionary) -> void:
 				level_path.get_file().get_basename(), str(recipe["stack"]), key])
 
 func _finish() -> void:
-	_progress.text = "%d recettes rejouées" % _recipes.size()
+	_progress.text = TranslationServer.translate("ui.selfcheck.replayed") % _recipes.size()
 	_code.text = short_code(_accumulator)
 	_context.text = context_line()
 
 	if _mismatches.is_empty():
-		_verdict.text = "CONFORME"
+		_verdict.text = TranslationServer.translate("ui.selfcheck.ok")
 		_verdict.add_theme_color_override("font_color", ViewPalette.EXIT)
-		_detail.text = ("Cet appareil reproduit le corpus à l'identique.\n"
-			+ "Recopiez le code et les deux lignes au-dessus dans le canal de retour.")
+		_detail.text = (TranslationServer.translate("ui.selfcheck.identical") + "\n"
+			+ TranslationServer.translate("ui.selfcheck.copy"))
 	else:
-		_verdict.text = "ÉCART DÉTECTÉ"
+		_verdict.text = TranslationServer.translate("ui.selfcheck.mismatch")
 		_verdict.add_theme_color_override("font_color", ViewPalette.DANGER)
 		var head := PackedStringArray()
 		for i in range(mini(_mismatches.size(), 4)):

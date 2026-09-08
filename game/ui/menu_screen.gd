@@ -50,15 +50,15 @@ func _build() -> void:
 	# « Continuer » quand une partie est en cours, « Jouer » sinon : un seul
 	# bouton, jamais les deux — le menu ne pose pas de question inutile.
 	var resuming: bool = _session != null and _session.is_valid()
-	var primary := _make_button("Continuer" if resuming else "Jouer", 40)
+	var primary := _make_button(TranslationServer.translate("ui.menu.resume") if resuming else TranslationServer.translate("ui.menu.play"), 40)
 	primary.pressed.connect(func() -> void: play_requested.emit())
 	column.add_child(primary)
 
-	var levels := _make_button("Niveaux", 32)
+	var levels := _make_button(TranslationServer.translate("ui.menu.levels"), 32)
 	levels.pressed.connect(func() -> void: select_requested.emit())
 	column.add_child(levels)
 
-	var settings := _make_button("Réglages", 32)
+	var settings := _make_button(TranslationServer.translate("ui.menu.settings"), 32)
 	settings.pressed.connect(func() -> void: settings_requested.emit())
 	column.add_child(settings)
 
@@ -83,4 +83,5 @@ func _spacer(height: float) -> Control:
 ## ce qui tourne sur le téléphone.
 static func _version_string() -> String:
 	var v: Variant = ProjectSettings.get_setting("application/config/version", "")
-	return String(v) if String(v) != "" else "développement"
+	return String(v) if String(v) != "" \
+		else TranslationServer.translate("ui.menu.dev_version")

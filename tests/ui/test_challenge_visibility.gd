@@ -1,4 +1,16 @@
 extends GutTest
+
+## CE FICHIER VÉRIFIE DU TEXTE FRANÇAIS : IL FIXE DONC LA LANGUE (carnet, 211).
+## Ce qui est éprouvé ici est le CONTENU, pas la langue — la parité des deux
+## langues a son propre fichier, `test_traductions.gd`.
+var _locale_avant := ""
+
+func before_all() -> void:
+	_locale_avant = TranslationServer.get_locale()
+	TranslationServer.set_locale("fr")
+
+func after_all() -> void:
+	TranslationServer.set_locale(_locale_avant)
 ## LE JOUEUR DOIT SAVOIR CE QUI EST FAIT, ET CE QU'IL RESTE À FAIRE.
 ##
 ## POURQUOI CE FICHIER EXISTE. Deux angles morts signalés à l'essai : « à la fin

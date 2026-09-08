@@ -50,7 +50,7 @@ func setup(progress: Progress) -> void:
 			list.add_child(_make_tile(entry, i, progress))
 			index += 1
 
-	var back := UiButtons.make("Retour")
+	var back := UiButtons.make(TranslationServer.translate("ui.back"))
 	back.pressed.connect(func() -> void: back_requested.emit())
 	column.add_child(back)
 
@@ -76,8 +76,9 @@ func _chapter_header(chapter: int, progress: Progress) -> Control:
 
 	var done := LevelCatalog.chapter_progress(chapter, progress)
 	var status := Label.new()
-	status.text = ("%d / %d résolus" % [done.x, done.y]) if \
-		LevelCatalog.is_chapter_unlocked(chapter, progress) else "verrouillé"
+	status.text = (TranslationServer.translate("ui.select.solved") % [done.x, done.y]) if \
+		LevelCatalog.is_chapter_unlocked(chapter, progress) \
+		else TranslationServer.translate("ui.select.locked")
 	status.add_theme_font_size_override("font_size", UiMetrics.font_size(22))
 	status.add_theme_color_override("font_color", Color(0.55, 0.60, 0.72))
 	box.add_child(status)
@@ -220,10 +221,11 @@ static func _remaining_challenges(spec: Dictionary, earned: PackedStringArray) -
 	var out := PackedStringArray()
 	var economy := int(spec.get("economy_max", 0))
 	if economy > 0 and not _has_challenge(earned, "Économie"):
-		out.append("%d règle%s au plus" % [economy, "s" if economy > 1 else ""])
+		out.append(RuleCatalog.plural_of("ui.challenge.economy.label", economy) % economy)
 	var abstinence := int(spec.get("abstinence_rule", 0))
 	if abstinence != 0 and not _has_challenge(earned, "Abstinence"):
-		out.append("sans « %s »" % RuleCatalog.name_of(abstinence))
+		out.append(TranslationServer.translate("ui.challenge.abstinence.label")
+			% RuleCatalog.name_of(abstinence))
 	var deadline := int(spec.get("efficiency_ticks", 0))
 	if deadline > 0 and not _has_challenge(earned, "Efficience"):
 		out.append("%d ticks au plus" % deadline)

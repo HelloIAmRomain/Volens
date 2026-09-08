@@ -3409,6 +3409,51 @@ l'alphabet.
 > réattribuer, exactement comme les identifiants de R07 et R10 restent réservés.
 > C'est une opération à part entière, à décider.
 
+### 212. La localisation est finie — et le piège n'était pas où je l'attendais
+
+Cent quarante-quatre clés, tout le texte joueur du jeu, français et anglais.
+`grep` ne trouve plus une chaîne française affichable hors des sources
+déclarées. **476 tests verts sous `LANG=fr_FR` ET sous `LANG=en_US`**, les 72
+recettes d'or intactes, et les vingt-huit écrans capturés en anglais pour être
+REGARDÉS plutôt que supposés.
+
+#### Le défaut que j'ai introduit, et failli livrer
+
+En traduisant l'écran de bilan, j'ai traduit la **clé** des défis — « Économie »
+devenait « Economy ». Une ligne de plus dans un lot de quarante-deux.
+
+Or un défi obtenu est **enregistré** sous « *clé* — *libellé* » et se reconnaît
+**par son préfixe**. Traduire la clé signifie qu'un défi gagné en français ne se
+reconnaît plus en anglais : *le joueur qui change de langue voit sa collection
+se vider.* Et l'inverse — le format de sauvegarde changeant sans migration ni
+incrément de `schema_version` — est interdit au contexte du dépôt.
+
+> **UNE CLÉ N'EST PAS UN LIBELLÉ, MÊME QUAND ELLE S'AFFICHE.** C'est la
+> confusion qui rend la faute invisible : le mot « Économie » servait aux deux
+> usages, et rien dans le code ne disait lequel comptait. `key` reste désormais
+> l'identité persistée, en français figé ; `title` porte ce que l'écran montre.
+> Le libellé, lui, se traduit sans risque : il n'entre pas dans la
+> reconnaissance.
+
+Aucun test ne l'a signalé. Je l'ai vu en **relisant ce que la sauvegarde
+comparait**, en cherchant tout autre chose.
+
+#### Ce que les captures ont attrapé, encore
+
+Le bilan en anglais affichait « Objective met » surmontant « La nuée a rempli
+l'objectif. » La phrase ne venait pas du jeu — **le banc de captures la passait
+en dur**. Le code était juste ; le harnais qui le photographie mentait.
+
+C'est la deuxième fois dans la même session qu'une capture révèle un défaut du
+banc plutôt que du jeu. Une capture qui montre un texte injecté ne montre pas le
+jeu, et l'on ne s'en aperçoit qu'en la REGARDANT.
+
+#### Ce qui n'a délibérément pas été traduit
+
+Les messages de `game/save/save_store.gd` : ce sont des **journaux**, lus en
+débogage. Les traduire ferait chercher un message anglais dans une trace
+française. Le banc de captures non plus — aucun joueur ne le voit.
+
 ### 211. La localisation commence, et le premier test écrit a trouvé son propre défaut
 
 ENF-40/41 — « français et anglais livrés ensemble » — était **obligatoire au CDC
