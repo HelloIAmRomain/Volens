@@ -21,24 +21,46 @@ func test_the_catalogue_never_tells_the_player_what_to_do() -> void:
 	# refusées : « postez deux agents dessus » retirerait au joueur le travail
 	# qu'on lui demande, et une seule phrase suffit à faire basculer la légende
 	# en tutoriel.
+	# LE TEXTE VIT DÉSORMAIS DANS LE FICHIER DE TRADUCTION (ENF-40/41), plus dans
+	# le dictionnaire : on l'y demande. Et l'on FIXE LA LANGUE, puisque les
+	# tournures refusées ci-dessous sont françaises — un test dont le verdict
+	# dépend de la locale du poste ne vérifie rien (carnet, 211).
+	var previous := TranslationServer.get_locale()
+	TranslationServer.set_locale("fr")
 	var bossy := PackedStringArray()
 	for key in MechanicPrimer.ENTRIES:
-		var line := String((MechanicPrimer.ENTRIES[key] as Dictionary)["line"])
+		var entry: Dictionary = MechanicPrimer.ENTRIES[key]
+		var line := TranslationServer.translate(
+			"mech." + String(entry["key"]) + ".line")
 		for verb in ["posez", "placez", "mettez", "utilisez", "il faut", "vous devez"]:
 			if line.to_lower().contains(verb):
 				bossy.append("%s : « %s »" % [key, line])
+	TranslationServer.set_locale(previous)
 	assert_eq(bossy, PackedStringArray(),
 		"légendes qui conseillent au lieu de décrire : %s" % ", ".join(bossy))
 
 func test_every_entry_has_a_name_and_a_single_line() -> void:
 	assert_gt(MechanicPrimer.ENTRIES.size(), 0, "le catalogue ne doit pas être vide")
+	# ÉPROUVÉ DANS LES DEUX LANGUES, et c'est le point : une légende peut être
+	# complète en français et vide en anglais, ce qui afficherait la clé brute au
+	# joueur anglophone. Le test de parité le voit sur le fichier ; celui-ci le
+	# voit sur ce que le jeu rend vraiment.
+	var previous := TranslationServer.get_locale()
 	var faulty := PackedStringArray()
-	for key in MechanicPrimer.ENTRIES:
-		var e: Dictionary = MechanicPrimer.ENTRIES[key]
-		if String(e.get("name", "")).is_empty() or String(e.get("line", "")).is_empty():
-			faulty.append(str(key))
-		elif String(e["line"]).contains("\n"):
-			faulty.append("%s (plusieurs lignes)" % key)
+	for locale in ["fr", "en"]:
+		TranslationServer.set_locale(locale)
+		for key in MechanicPrimer.ENTRIES:
+			var e: Dictionary = MechanicPrimer.ENTRIES[key]
+			var label := TranslationServer.translate("mech." + String(e["key"]))
+			var line := TranslationServer.translate("mech." + String(e["key"]) + ".line")
+			# Une clé non traduite revient telle quelle, préfixée « mech. ».
+			if label.is_empty() or label.begins_with("mech."):
+				faulty.append("%s nom [%s]" % [key, locale])
+			elif line.is_empty() or line.begins_with("mech."):
+				faulty.append("%s phrase [%s]" % [key, locale])
+			elif line.contains("\n"):
+				faulty.append("%s (plusieurs lignes) [%s]" % [key, locale])
+	TranslationServer.set_locale(previous)
 	assert_eq(faulty, PackedStringArray(), "entrées incomplètes : %s" % ", ".join(faulty))
 
 func test_a_level_without_novelty_shows_nothing() -> void:

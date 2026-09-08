@@ -102,6 +102,57 @@ func test_every_living_rule_has_a_name_and_a_sentence_in_both_locales() -> void:
 	assert_eq(faults, PackedStringArray(),
 		"règles sans libellé utilisable : %s" % ", ".join(faults))
 
+func test_the_french_column_still_matches_the_catalogue() -> void:
+	# DEUX SOURCES POUR UNE MÊME CHAÎNE, ET C'EST ASSUMÉ — mais surveillé.
+	#
+	# `LevelCatalog.LEVELS` garde le nom français : c'est là que le concepteur
+	# écrit, et une table dont les entrées seraient des clés nues
+	# (`level.ch3_02.name`) ne se relirait plus. Le CSV en porte une copie, parce
+	# que c'est lui qui sert l'affichage.
+	#
+	# Une copie non surveillée finit TOUJOURS par diverger — c'est l'invariant
+	# n°16, écrit après trois divergences sur trois champs différents. Ici, le
+	# jour où l'on renomme un niveau dans le catalogue sans toucher au CSV, le
+	# joueur francophone verrait l'ANCIEN nom, et rien ne le dirait.
+	var drift := PackedStringArray()
+	var rows := _rows()
+	var by_key := {}
+	for i in range(1, rows.size()):
+		var row: PackedStringArray = rows[i]
+		by_key[String(row[0])] = String(row[1]) if row.size() > 1 else ""
+	var checked := 0
+	for i in range(LevelCatalog.count()):
+		var entry: Dictionary = LevelCatalog.entry(i)
+		var level_id := String(entry["id"])
+		var key := "level.%s.name" % level_id
+		if not by_key.has(key):
+			drift.append("%s : aucune clé %s" % [level_id, key])
+			continue
+		checked += 1
+		if String(by_key[key]) != String(entry["name"]):
+			drift.append("%s : catalogue « %s » vs CSV « %s »"
+				% [level_id, String(entry["name"]), String(by_key[key])])
+	assert_gt(checked, 0, "aucun niveau confronté : le balayage est cassé")
+	assert_eq(drift, PackedStringArray(),
+		"le nom français a divergé entre le catalogue et le fichier de traduction : %s"
+		% ", ".join(drift))
+
+func test_every_level_has_an_english_name() -> void:
+	var previous := TranslationServer.get_locale()
+	TranslationServer.set_locale("en")
+	var untranslated := PackedStringArray()
+	for i in range(LevelCatalog.count()):
+		var level_id := String((LevelCatalog.entry(i))["id"])
+		var shown := LevelCatalog.name_of(level_id)
+		# `name_of` retombe sur le français quand la clé manque : on compare donc
+		# à la table plutôt que de guetter un préfixe de clé.
+		if shown == String((LevelCatalog.entry(i))["name"]):
+			untranslated.append(level_id)
+	TranslationServer.set_locale(previous)
+	assert_eq(untranslated, PackedStringArray(),
+		("niveaux sans nom anglais — le joueur anglophone y lirait du français : "
+		+ "%s") % ", ".join(untranslated))
+
 func test_the_two_locales_actually_differ() -> void:
 	# GARDE CONTRE LA COLONNE RECOPIÉE. Remplir la colonne anglaise avec le
 	# français satisfait tous les tests ci-dessus et ne traduit rien — c'est la

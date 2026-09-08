@@ -118,6 +118,25 @@ static func index_of(level_id: String) -> int:
 			return i
 	return -1
 
+## LE NOM AFFICHÉ, TRADUIT (ENF-40/41). La table ci-dessus garde le français :
+## c'est là que le concepteur écrit, et un catalogue dont les entrées seraient
+## des clés nues (`level.ch3_02.name`) ne se relirait plus. Le français y est
+## donc la SOURCE, et `data/i18n/volens.csv` la couche d'affichage —
+## `test_traductions.gd` refuse que les deux divergent.
+##
+## Tout ce qui montre un nom de niveau au joueur passe par ici, jamais par
+## `entry["name"]` : sinon la moitié de l'écran se traduit et l'autre pas.
+static func name_of(level_id: String) -> String:
+	var i := index_of(level_id)
+	if i < 0:
+		return ""
+	var translated := TranslationServer.translate("level.%s.name" % level_id)
+	# Une clé non traduite revient telle quelle : on retombe alors sur le
+	# français de la table plutôt que d'afficher « level.ch3_02.name ».
+	if translated.begins_with("level."):
+		return String(LEVELS[i]["name"])
+	return translated
+
 static func path_of(level_id: String) -> String:
 	var i := index_of(level_id)
 	return "" if i < 0 else String(LEVELS[i]["path"])

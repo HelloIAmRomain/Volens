@@ -129,12 +129,13 @@ func _make_tile(entry: Dictionary, index: int, progress: Progress) -> Control:
 		var previous_id := String(LevelCatalog.entry(index - 1)["id"])
 		if progress.is_solved(previous_id) or LevelCatalog.is_unlocked(previous_id, progress):
 			button.text = "  🔒   %d.  terminez « %s »" % [
-				index + 1, String(LevelCatalog.entry(index - 1)["name"])]
+				index + 1, LevelCatalog.name_of(previous_id)]
 		else:
 			button.text = "  🔒   %d." % [index + 1]
 	else:
 		var mark := "✓" if solved else "·"
-		button.text = "  %s   %d.  %s" % [mark, index + 1, String(entry["name"])]
+		button.text = "  %s   %d.  %s" % [mark, index + 1,
+			LevelCatalog.name_of(level_id)]
 		if solved:
 			button.text += "      %d ticks" % progress.best_ticks(level_id)
 			# DÉFIS : UNE PASTILLE PAR DÉFI QUE LE NIVEAU PROPOSE, jamais trois.

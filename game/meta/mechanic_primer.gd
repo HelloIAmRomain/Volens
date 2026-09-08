@@ -28,43 +28,27 @@ extends RefCounted
 const ENTRIES := {
 	GridState.CellType.STATIC_DANGER: {
 		"key": "danger",
-		"name": "Danger",
-		"line": "Un agent qui entre ici est perdu.",
 	},
 	GridState.CellType.CYCLIC_DANGER: {
 		"key": "danger_cyclique",
-		"name": "Danger intermittent",
-		"line": "Marqué aux quatre coins : celui-ci s'éteint, puis se rallume.",
 	},
 	GridState.CellType.RESOURCE: {
 		"key": "ressource",
-		"name": "Ressource",
-		"line": "Un agent qui passe dessus l'emporte avec lui.",
 	},
 	GridState.CellType.DROPOFF: {
 		"key": "depot",
-		"name": "Dépôt",
-		"line": "Un agent qui porte une ressource la laisse ici.",
 	},
 	GridState.CellType.PRESSURE_DOOR: {
 		"key": "plaque",
-		"name": "Plaque à pression",
-		"line": "La porte reste ouverte tant que des agents sont dessus.",
 	},
 	GridState.CellType.SWITCH: {
 		"key": "bascule",
-		"name": "Bascule",
-		"line": "Le premier agent qui la foule ouvre la porte pour de bon.",
 	},
 	GridState.CellType.SHIELD: {
 		"key": "atelier",
-		"name": "Atelier",
-		"line": "Un agent qui traverse en repart protégé, pour un seul contact.",
 	},
 	GridState.CellType.LIGHT_SOURCE: {
 		"key": "lumiere",
-		"name": "Lumière",
-		"line": "Ce que la nuée voit de loin. Ce n'est pas la sortie.",
 	},
 }
 
@@ -75,8 +59,6 @@ const ENTRIES := {
 ## ailleurs.
 const ONE_WAY_ENTRY := {
 	"key": "sens_unique",
-	"name": "Passage à sens unique",
-	"line": "On le franchit dans un sens, jamais dans l'autre.",
 }
 
 ## TOUTES les clés du vocabulaire, dans l'ordre fixe. Sert à marquer d'un coup
@@ -94,6 +76,16 @@ static func all_keys() -> PackedStringArray:
 ## jamais dans l'ordre d'un `Dictionary`, qui varierait d'une exécution à
 ## l'autre et ferait apparaître les cartes dans un ordre différent à chaque
 ## partie.
+## LE TEXTE EST RÉSOLU À LA LECTURE, PAS STOCKÉ (ENF-40/41). Chaque entrée ne
+## porte qu'une clé ; le libellé et la phrase viennent du serveur de traduction
+## au moment où on les demande. C'est ce qui permet de changer de langue sans
+## reconstruire quoi que ce soit — et ce qui évite d'avoir le français à la fois
+## ici et dans `data/i18n/volens.csv` (invariant n°16).
+static func _translate(entry: Dictionary) -> void:
+	var key := "mech." + String(entry.get("key", ""))
+	entry["name"] = TranslationServer.translate(key)
+	entry["line"] = TranslationServer.translate(key + ".line")
+
 static func present_in(level_data: Dictionary) -> Array:
 	var grid: Dictionary = level_data.get("grid", {})
 	var cells: Array = grid.get("cells", [])
@@ -121,6 +113,7 @@ static func present_in(level_data: Dictionary) -> Array:
 		# le joueur lit un mot et cherche à quoi il correspond parmi huit
 		# marques colorées.
 		var entry: Dictionary = (ENTRIES[t] as Dictionary).duplicate()
+		_translate(entry)
 		# LE TYPE VOYAGE AVEC L'ENTRÉE, et pas seulement ses coordonnées : la
 		# surbrillance doit rendre à la case SA teinte. Un halo blanc uniforme
 		# désigne bien, mais il montre au joueur une couleur qu'il ne reverra
@@ -137,6 +130,7 @@ static func present_in(level_data: Dictionary) -> Array:
 	var one_way: Array = grid.get("one_way", [])
 	if not one_way.is_empty():
 		var ow: Dictionary = ONE_WAY_ENTRY.duplicate()
+		_translate(ow)
 		ow["cell"] = GridState.CellType.ONE_WAY
 		var ow_cells: Array = []
 		for triplet in one_way:
