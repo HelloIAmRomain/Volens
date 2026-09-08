@@ -1,4 +1,24 @@
 extends GutTest
+
+## CE FICHIER VÉRIFIE DU TEXTE FRANÇAIS : IL FIXE DONC LA LANGUE.
+##
+## Depuis la localisation (ENF-40/41), les libellés passent par le serveur de
+## traduction, qui suit la locale du SYSTÈME. Sans le préambule ci-dessous, ces
+## assertions passent sur une machine française et échouent sur une machine
+## anglaise — mesuré : deux échecs sous `LANG=en_US.UTF-8`, sur une suite par
+## ailleurs verte. Un test dont le verdict dépend du poste qui l'exécute ne
+## vérifie plus rien.
+##
+## Ce qui est éprouvé ici est le CONTENU, pas la langue ; la parité des deux
+## langues a son propre fichier, `test_traductions.gd`.
+var _locale_avant := ""
+
+func before_all() -> void:
+	_locale_avant = TranslationServer.get_locale()
+	TranslationServer.set_locale("fr")
+
+func after_all() -> void:
+	TranslationServer.set_locale(_locale_avant)
 ## Diagnostic EF-05 — le pilier P4 rendu tangible.
 ##
 ## Ce que ces tests protègent : qu'un joueur qui échoue puisse TOUJOURS

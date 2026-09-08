@@ -3409,6 +3409,49 @@ l'alphabet.
 > réattribuer, exactement comme les identifiants de R07 et R10 restent réservés.
 > C'est une opération à part entière, à décider.
 
+### 211. La localisation commence, et le premier test écrit a trouvé son propre défaut
+
+ENF-40/41 — « français et anglais livrés ensemble » — était **obligatoire au CDC
+et non commencé** : aucun fichier de traduction, rien dans `project.godot`, les
+libellés en dur en français. Le DCT §9.3 prescrivait pourtant la voie depuis le
+début, et `RuleCatalog` portait déjà des clés stables en attente d'extraction.
+
+**LE FRANÇAIS A ÉTÉ EXTRAIT DU CODE, PAS RECOPIÉ.** Une transcription à la main
+de trente chaînes introduit des écarts qu'aucune relecture ne voit — un accent,
+une espace insécable. Le CSV est généré depuis `rule_catalog.gd`, et le
+dictionnaire perd ensuite ses textes : les garder aux deux endroits aurait fait
+deux sources pour une même chaîne (invariant n°16).
+
+Le format CSV n'est pas un détail : **une ligne par clé, les deux langues côte à
+côte.** La parité se lit dans un diff, et `test_traductions.gd` la refuse si une
+case manque — y compris le cas le plus courant de fausse localisation, la colonne
+anglaise remplie avec du français, qu'un test compare explicitement.
+
+#### Le défaut que la localisation a introduit, et qui ne se voyait pas
+
+La suite est restée **verte** après la migration. Elle l'était par chance : la
+machine est en français, donc `TranslationServer` rendait le français, donc les
+tests qui vérifient des libellés français passaient.
+
+Relancée sous `LANG=en_US.UTF-8` : **deux échecs**. Un test dont le verdict
+dépend du poste qui l'exécute ne vérifie plus rien — et celui-là serait tombé à
+la première CI configurée autrement, longtemps après la cause.
+
+> **CE QUI EST ÉPROUVÉ N'EST PAS UNE LANGUE, C'EST UN CONTENU.** Les deux
+> fichiers concernés fixent désormais la locale explicitement, et le disent en
+> en-tête. La parité, elle, a son propre fichier.
+
+L'un des deux échecs était instructif au-delà du test : il affichait
+« 1. Toward the light → vers le haut ». Le nom de la règle traduit, la direction
+encore en dur. C'est l'état exact du chantier, et il se voit d'un coup d'œil.
+
+#### Ce qui reste
+
+Trente chaînes migrées sur environ trois cents. Le reste — l'habillage des
+écrans, puis les trente-sept noms de niveaux et leurs trente-sept leçons — est
+mécanique, et désormais gardé : toute clé ajoutée sans son anglais fait échouer
+la suite.
+
 ### 210. Les deux dernières règles rigides — l'une est close, l'autre a une raison
 
 R08 et R15 étaient les deux seules règles du catalogue à n'avoir qu'**un

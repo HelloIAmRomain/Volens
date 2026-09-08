@@ -19,40 +19,44 @@ extends RefCounted
 ## s'applique pas à elles de la même façon : « puis rend la main » est la
 ## moitié de ce que le joueur doit savoir pour les placer.
 const RULES := {
-	1: {"key": "rule.r01", "name": "Vers la lumière", "glyph": "☀", "line": "L'agent se rapproche de la lumière la plus proche. Il refuse tout pas qui l'en éloigne."},
-	2: {"key": "rule.r02", "name": "Fuir le danger", "glyph": "⚠", "line": "L'agent s'éloigne du danger perçu."},
-	3: {"key": "rule.r03", "name": "Rester groupé", "glyph": "◍", "line": "L'agent isolé rejoint le centre de ses voisins. Groupé, il laisse la main."},
-	4: {"key": "rule.r04", "name": "S'écarter", "glyph": "⤢", "line": "Au contact de trop de voisins, l'agent prend le pas qui l'en éloigne le plus."},
-	5: {"key": "rule.r05", "name": "Suivre les voisins", "glyph": "⇉", "line": "L'agent adopte la direction majoritaire des voisins qui ont bougé."},
-	6: {"key": "rule.r06", "name": "Longer le mur", "glyph": "⌐", "line": "Contre un obstacle : à droite, sinon tout droit, sinon à gauche, sinon demi-tour."},
-	8: {"key": "rule.r08", "name": "Marquer la piste", "glyph": "✦", "line": "EFFET — en avançant, l'agent marque la case quittée, puis rend la main. La marque s'estompe."},
-	9: {"key": "rule.r09", "name": "Suivre la piste", "glyph": "⋯", "line": "L'agent va vers le marqueur voisin plus intense que le sien."},
-	11: {"key": "rule.r11", "name": "Porter et déposer", "glyph": "◆", "line": "EFFET — l'agent ramasse l'objet de sa case, et le pose dans un dépôt voisin s'il en porte un. Un porteur ne sort pas du niveau."},
-	13: {"key": "rule.r13", "name": "Boucher", "glyph": "✚", "line": "L'agent entre dans un danger adjacent et s'y consume, le neutralisant définitivement."},
-	14: {"key": "rule.r14", "name": "Disperser si dense", "glyph": "⁘", "line": "Dans une zone trop peuplée, l'agent va vers la case la moins entourée."},
-	15: {"key": "rule.r15", "name": "Suivre le plus lent", "glyph": "⧗", "line": "Trop en avance sur le dernier qu'il perçoit, l'agent s'arrête et l'attend."},
-	16: {"key": "rule.r16", "name": "Ignorer", "glyph": "⊘", "line": "L'agent cesse de subir un type de case, choisi au placement. Son rang ne change rien, mais il coûte une place."},
+	1:  {"key": "rule.r01", "glyph": "☀"},
+	2:  {"key": "rule.r02", "glyph": "⚠"},
+	3:  {"key": "rule.r03", "glyph": "◍"},
+	4:  {"key": "rule.r04", "glyph": "⤢"},
+	5:  {"key": "rule.r05", "glyph": "⇉"},
+	6:  {"key": "rule.r06", "glyph": "⌐"},
+	8:  {"key": "rule.r08", "glyph": "✦"},
+	9:  {"key": "rule.r09", "glyph": "⋯"},
+	11: {"key": "rule.r11", "glyph": "◆"},
+	13: {"key": "rule.r13", "glyph": "✚"},
+	14: {"key": "rule.r14", "glyph": "⁘"},
+	15: {"key": "rule.r15", "glyph": "⧗"},
+	16: {"key": "rule.r16", "glyph": "⊘"},
 }
 
 ## Nom du type de case neutralisé par un joker. Le vocabulaire est celui de
 ## RG-14, mot pour mot : le joueur doit reconnaître ce qu'il a vu sur la carte.
 const IGNORABLE := {
-	GridState.CellType.STATIC_DANGER: "le feu",
-	GridState.CellType.CYCLIC_DANGER: "le feu cyclique",
-	GridState.CellType.ONE_WAY: "les sens uniques",
-	GridState.CellType.PRESSURE_DOOR: "les portes",
+	GridState.CellType.STATIC_DANGER: "rule.ignorable.static_danger",
+	GridState.CellType.CYCLIC_DANGER: "rule.ignorable.cyclic_danger",
+	GridState.CellType.ONE_WAY: "rule.ignorable.one_way",
+	GridState.CellType.PRESSURE_DOOR: "rule.ignorable.pressure_door",
 }
 
 static func name_of(rule_id: int) -> String:
 	var base := RuleRegistry.base_rule_id(rule_id)
 	var entry: Dictionary = RULES.get(base, {})
-	var label := String(entry.get("name", "règle %d" % base))
+	if not entry.has("key"):
+		return "règle %d" % base
+	# `tr()` EST UNE MÉTHODE D'INSTANCE : inutilisable depuis une fonction
+	# statique. On passe donc par le serveur de traduction directement.
+	var label := TranslationServer.translate(String(entry["key"]))
 	# UN JOKER SANS SON ARGUMENT EST ILLISIBLE : « Ignorer » ne dit pas quoi.
 	# Le nom porte donc la cible, et deux jokers de cibles différentes se
 	# distinguent à l'œil sans qu'on ait à les sélectionner.
 	var ignored := RuleRegistry.ignored_cell_of(rule_id)
 	if ignored >= 0 and IGNORABLE.has(ignored):
-		return "%s %s" % [label, IGNORABLE[ignored]]
+		return "%s %s" % [label, TranslationServer.translate(String(IGNORABLE[ignored]))]
 	return label
 
 static func glyph_of(rule_id: int) -> String:
@@ -61,7 +65,9 @@ static func glyph_of(rule_id: int) -> String:
 
 static func line_of(rule_id: int) -> String:
 	var entry: Dictionary = RULES.get(RuleRegistry.base_rule_id(rule_id), {})
-	return String(entry.get("line", ""))
+	if not entry.has("key"):
+		return ""
+	return TranslationServer.translate(String(entry["key"]) + ".line")
 
 ## Avancement en continu dans le bandeau (RG-17) : chiffré, jamais en
 ## pourcentage abstrait. « 14/20 sortis · 0 perdu » se lit d'un coup d'œil,

@@ -41,6 +41,17 @@ window/stretch/aspect="expand"
 ; 1 = DisplayServer.SCREEN_PORTRAIT. Verifie par tests/arch/test_project_settings.gd.
 window/handheld/orientation=1
 
+[internationalization]
+
+; ENF-40/41 — FRANÇAIS ET ANGLAIS LIVRÉS ENSEMBLE, jamais l'un après l'autre.
+; Les deux traductions sont produites par l'import de `data/i18n/volens.csv`,
+; dont chaque ligne porte les deux langues côte à côte : la parité s'y lit d'un
+; coup d'œil, et `tests/unit/test_traductions.gd` la refuse si une case manque.
+;
+; La locale de démarrage suit celle du système ; le repli est le français.
+locale/translations=PackedStringArray("res://data/i18n/volens.en.translation", "res://data/i18n/volens.fr.translation")
+locale/fallback="fr"
+
 [rendering]
 
 textures/vram_compression/import_etc2_astc=true

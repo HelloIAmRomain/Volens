@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://cwgnyuklofo42"
+
+[deps]
+
+files=["res://data/i18n/volens.fr.translation", "res://data/i18n/volens.en.translation"]
+
+source_file="res://data/i18n/volens.csv"
+dest_files=["res://data/i18n/volens.fr.translation", "res://data/i18n/volens.en.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true
