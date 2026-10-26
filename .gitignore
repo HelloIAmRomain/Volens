@@ -22,3 +22,9 @@ Thumbs.db
 # avec elle. Ils vivent ici par commodite locale, jamais dans l'historique.
 /platform-tools/
 /platform-tools-*.zip
+
+# Clés et certificats
+*.p12
+*.pem
+*.pfx
+*-password*

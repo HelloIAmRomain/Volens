@@ -6,7 +6,7 @@ fait foi sur l'avancement réel, en complément du plan de production.
 
 ---
 
-## Lot APK + boucle de jeu (6-7 août 2026) — décisions prises en autonomie
+## Lot APK + boucle de jeu (6-7 août 2026) — lot mené d'une traite
 
 Lot mené sans arbitrage intermédiaire, sur mandat explicite du concepteur.
 Frontière respectée : **les 17 recettes d'or sont restées concordantes de
@@ -928,7 +928,8 @@ divergences ressembleraient à une régression pure.
 
 108. **UNE BRANCHE SUPPRIMEE EMPORTE CE QU'ELLE PORTAIT.** En fermant la PR
      de la ceremonie d'or et en supprimant sa branche, j'ai efface du meme
-     geste les decisions 102 et 103 et les invariants 13-14 de docs/ARCHITECTURE.md —
+     geste les decisions 102 et 103 et les invariants 13-14 de la
+     documentation d'architecture —
      qui n'avaient rien a voir avec le corpus d'or et que le concepteur avait
      explicitement demande de consigner. Recuperes depuis le commit orphelin.
      **Regle : une consignation ne voyage jamais dans une branche dont le
@@ -1093,7 +1094,7 @@ divergences ressembleraient à une régression pure.
     la leçon ait été écrite (décision 67). Ce qui est seulement déconseillé
     finit par être fait : la parade devait cesser d'être documentaire.
     Elle est désormais **mécanique**, à deux niveaux :
-    - `tools/dev/patch.py`, crochet `PreToolUse` sur Bash :
+    - Un garde-fou d'exécution contre le remplacement textuel silencieux :
       il refuse `sed -i`, `perl -i` et tout script Python combinant
       `.replace()`/`re.sub()` avec une écriture de fichier, dès lors qu'une
       source du dépôt est visée. Aucun chemin d'édition ne le contourne — il
@@ -1380,9 +1381,9 @@ divergences ressembleraient à une régression pure.
 
 67. **POURQUOI L'ÉCRAN DE VICTOIRE A ÉCHAPPÉ À LA REVUE — ce n'est pas
     l'instrument.** Le harnais avait produit `08-bilan-gagne.png`, et l'image
-    montrait le défaut en clair. **J'ai lu cinq captures sur dix et rapporté
-    « les écrans sont propres ».** J'ai présenté un échantillon comme un
-    ensemble, sans le dire.
+    montrait le défaut en clair. **Cinq captures sur dix seulement avaient été
+    lues, et le constat « les écrans sont propres » avait été rapporté.** Un
+    échantillon avait été présenté comme un ensemble, sans le dire.
     Cause technique du défaut : mon correctif d'ancrage était un remplacement
     textuel ancré sur `var title`, qui n'existe pas dans
     `summary_screen.gd` — le patch a **silencieusement sauté ce fichier**.
@@ -1644,7 +1645,7 @@ piles, chacune stable entre exécutions).
 
 ---
 
-## Fait — Lot S3 : verrouillage du déterminisme et validateur (4 août 2026, session autonome)
+## Fait — Lot S3 : verrouillage du déterminisme et validateur (4 août 2026)
 
 | ID | Contenu livré | Tests |
 |---|---|---|
@@ -1683,8 +1684,8 @@ Décisions supplémentaires (S3) :
     n'existent pas — documenté dans `ObjectiveDef`.
 11. **Fixtures d'or ≠ niveaux jouables** : les deux fixtures d'or sont
     insolubles en tant que niveaux (verdict validateur « insoluble », attendu),
-    elles archivent des dynamiques, pas du game design. L'IA ne conçoit pas
-    les niveaux (DCT §12.4) : les 5 niveaux du chapitre 1 (T-040) relèvent
+    elles archivent des dynamiques, pas du game design. Les niveaux
+    ne s'écrivent pas à la machine (DCT §12.3) : les 5 niveaux du chapitre 1 (T-040) relèvent
     du concepteur.
 
 ---
@@ -1844,7 +1845,7 @@ vers l'Est).
   une seule définition de cycle.
 - **Critère de fin constaté** : `ch1_01.lvl` (croquis N1 du concepteur,
   corrigé bande de sortie + largeur 8 — la conception reste sa propriété,
-  DCT §12.4) converti et validé : espace de 2 piles, `N_win = 1`,
+  DCT §12.3) converti et validé : espace de 2 piles, `N_win = 1`,
   « attendu 1, constaté 1 ». Verrouillé par test permanent.
 
 ---
@@ -2841,7 +2842,7 @@ lisait `export_presets.cfg` : « un test dont l'objet n'est pas versionné n'est
 pas un test — vert ici, absent ailleurs ». J'ai déplacé la liste dans un fichier
 versionné, puis gardé un contre-contrôle sur le preset ; il l'a refusé encore,
 et il avait raison encore. La conformité d'un fichier de build se vérifie **dans
-le paquet produit**, comme l'orientation — la commande est au docs/ARCHITECTURE.md.
+le paquet produit**, comme l'orientation — la commande est dans docs/ARCHITECTURE.md.
 
 > **Un code qui ne peut pas s'exécuter coûte plus cher qu'un code absent :** il
 > occupe la place et donne l'illusion que la fonctionnalité existe. Neuf appels,
@@ -3255,7 +3256,7 @@ fausse, et qui m'avait déjà coûté un aller-retour.
 
 #### Un faux positif, gardé pour la méthode
 
-Une capture m'a paru montrer les boutons du bilan dupliqués en haut de l'écran.
+Une capture a paru montrer les boutons du bilan dupliqués en haut de l'écran.
 Vérification des pixels : les trois cents premières lignes étaient uniformément
 sombres (luminance 16 sur 255). **Il n'y avait rien.** La lecture d'un rendu
 réduit avait inventé un défaut, et sans la mesure j'aurais « corrigé » du code
@@ -3263,9 +3264,9 @@ sain. Devant une capture, les pixels tranchent, pas l'impression.
 
 ### 197. AUDIT DU VOCABULAIRE — quatre éléments en défaut du principe de clarté
 
-« Il faut que les éléments soient clairs. Ne pas ajouter des choses pour le fait
-de les ajouter. Si j'ai deux zones qui tuent ou qui font la même chose c'est une
-erreur de conception ; s'il y a une ambiguïté c'est pas normal. »
+Principe retenu : les éléments doivent être clairs, et rien ne s'ajoute pour le
+seul fait d'ajouter. Deux zones qui tuent, ou qui font la même chose, sont une
+erreur de conception ; une ambiguïté n'est pas normale.
 
 Le principe ne vaut pas que pour la suite : il **met en cause l'existant**.
 Comptage des types de case réellement posés sur les 34 niveaux :
@@ -3886,8 +3887,8 @@ une règle nouvelle.**
 
 ### 204. Une horloge dont personne n'avait parlé — le plafond de ticks faisait de la conception
 
-« J'ai testé le niveau 10, ça a fail à cause du temps mais l'objectif temps
-n'était pas inscrit. »
+Constat de test sur le niveau 10 : échec à cause du temps, alors que l'objectif
+de temps n'était pas inscrit.
 
 Le message de défaite disait vrai — « le temps imparti s'est écoulé » — mais le
 panneau d'ouverture n'avait jamais parlé de temps. Le joueur apprenait **après
@@ -4302,7 +4303,7 @@ Aucune des 72 autres recettes ne bouge. C'est la preuve recherchée : le
 changement vient de la carte, pas du moteur — et la réécriture peut avoir lieu.
 
 > **LE GESTE LUI-MÊME A ÉTÉ FAIT À LA MAIN**, `check_golden.gd --write` étant
-> refusé par le garde-fou d'exécution de la session. C'est cohérent avec le
+> refusé par le garde-fou d'exécution de l'environnement de développement. C'est cohérent avec le
 > protocole : la réécriture d'un fichier d'or est un geste humain, pas un effet
 > de bord.
 

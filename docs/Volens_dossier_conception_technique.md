@@ -29,7 +29,7 @@ Les identifiants **DT-xx** désignent les décisions techniques de ce document. 
 
 ### 1.1 Critères d'évaluation
 
-Pondération issue du CDC et du contexte (développeur solo, assisté par IA) :
+Pondération issue du CDC et du contexte (développeur solo) :
 
 | Critère | Poids | Origine |
 |---|---|---|
@@ -37,24 +37,24 @@ Pondération issue du CDC et du contexte (développeur solo, assisté par IA) :
 | B. Capacité à garantir le **déterminisme strict** | ★★★ | RG-03, ENF-05 |
 | C. Exécution **headless** de la logique de jeu (outil de validation) | ★★★ | EQ-01 |
 | D. Maturité, pérennité, licence | ★★ | O4, budget zéro |
-| E. Qualité de l'assistance IA sur la pile (corpus d'entraînement, fiabilité du code généré) | ★★ | Contexte solo-dev assisté |
+| E. Documentation et communauté de la pile (ressources, exemples, réponses disponibles) | ★★ | Contexte solo-dev |
 | F. Coût | ★★ | Décision de cadrage |
 | G. Courbe d'apprentissage pour un ingénieur logiciel non-spécialiste jeu | ★★ | Profil du porteur |
 | H. Réversibilité / portabilité future (iOS, PC) | ★ | §1.6 |
 
 ### 1.2 Candidats évalués
 
-**Godot 4.7 (GDScript)** — moteur libre (MIT), rendu 2D dédié, export Android mûr, exécution headless native (`--headless`), langage proche de Python. Corpus IA abondant ; risque connu : les assistants mélangent les syntaxes Godot 3/4, ce qui se neutralise par une consigne systématique (§12). Coût : 0 €.
+**Godot 4.7 (GDScript)** — moteur libre (MIT), rendu 2D dédié, export Android mûr, exécution headless native (`--headless`), langage proche de Python. Documentation et communauté abondantes ; risque connu : la coexistence des syntaxes Godot 3 et 4 dans les ressources en ligne, neutralisée par le typage statique et la CI (§12). Coût : 0 €.
 
 **Godot 4.7 (C#/.NET)** — écarté malgré l'attrait du langage : le support Android de C# dans Godot 4 est **officiellement expérimental et limité** (architectures restreintes, API manquantes pouvant planter à l'exécution). Inacceptable pour un produit dont la fiabilité de reprise (EF-20/21) est le cœur de la promesse.
 
 **Unity 2D** — mûr et documenté, mais : runtime plus lourd (poids d'APK de base supérieur, ENF-11 sous tension), éditeur propriétaire avec historique récent de changements de licence unilatéraux (risque D), déterminisme flottant plus délicat à verrouiller, exécution headless de la seule logique de jeu moins naturelle. Aucun avantage décisif pour un jeu de cette simplicité graphique.
 
-**Flutter + Flame** — excellent pour l'UI, corpus IA très riche ; mais Flame reste jeune pour du jeu à simulation, l'écosystème « jeu » est mince (pas d'éditeur de scène, tooling niveau/animation à construire soi-même), et le couple UI déclarative + boucle de simulation est moins éprouvé. Coût d'intégration supérieur pour un bénéfice nul ici.
+**Flutter + Flame** — excellent pour l'UI, documentation très riche ; mais Flame reste jeune pour du jeu à simulation, l'écosystème « jeu » est mince (pas d'éditeur de scène, tooling niveau/animation à construire soi-même), et le couple UI déclarative + boucle de simulation est moins éprouvé. Coût d'intégration supérieur pour un bénéfice nul ici.
 
-**LibGDX (Java/Kotlin)** — robuste et véritablement headless par nature, mais framework bas niveau : tout l'outillage (scènes, UI tactile, thèmes, export) est à assembler à la main. Productivité solo nettement inférieure ; corpus IA vieillissant.
+**LibGDX (Java/Kotlin)** — robuste et véritablement headless par nature, mais framework bas niveau : tout l'outillage (scènes, UI tactile, thèmes, export) est à assembler à la main. Productivité solo nettement inférieure ; documentation vieillissante.
 
-**Defold** — léger, orienté 2D mobile, gratuit ; mais communauté restreinte, corpus IA faible (le langage Lua y est très spécifique au moteur), et dépendance à un éditeur/écosystème étroit. Risque E et D.
+**Defold** — léger, orienté 2D mobile, gratuit ; mais communauté restreinte, ressources d'apprentissage rares (le langage Lua y est très spécifique au moteur), et dépendance à un éditeur/écosystème étroit. Risque E et D.
 
 **Natif Kotlin + Jetpack Compose** — maîtrise totale d'Android, poids minimal ; mais tout le moteur de jeu (boucle, rendu canvas performant, interpolation, particules, audio) serait à écrire. Pertinent pour une app, disproportionné pour un jeu, même minimaliste.
 
@@ -66,7 +66,7 @@ Pondération issue du CDC et du contexte (développeur solo, assisté par IA) :
 | B. Déterminisme (×3) | ✔✔✔ | ✔✔✔ | ✔✔ | ✔✔ | ✔✔✔ | ✔✔ | ✔✔✔ |
 | C. Headless (×3) | ✔✔✔ | ✔✔ | ✔ | ✔✔ | ✔✔✔ | ✔ | ✔✔✔ |
 | D. Maturité/licence (×2) | ✔✔✔ | ✔ | ✔✔ | ✔✔ | ✔✔ | ✔ | ✔✔✔ |
-| E. Assistance IA (×2) | ✔✔ | ✔✔ | ✔✔✔ | ✔✔✔ | ✔ | ✗ | ✔✔✔ |
+| E. Documentation/communauté (×2) | ✔✔ | ✔✔ | ✔✔✔ | ✔✔✔ | ✔ | ✗ | ✔✔✔ |
 | F. Coût (×2) | ✔✔✔ | ✔✔✔ | ✔✔ | ✔✔✔ | ✔✔✔ | ✔✔✔ | ✔✔✔ |
 | G. Apprentissage (×2) | ✔✔✔ | ✔✔ | ✔✔ | ✔✔ | ✔ | ✔✔ | ✔ |
 | H. Portabilité (×1) | ✔✔✔ | ✔ | ✔✔✔ | ✔✔ | ✔✔ | ✔✔ | ✗ |
@@ -399,15 +399,14 @@ L'indice structurel (« une règle présente dans au moins une solution ») est 
 
 ---
 
-## 12. Méthode de travail avec l'assistance IA
+## 12. Revue et admission des contenus
 
-Règles d'usage, tirées des risques identifiés en amont du projet :
+Règles de revue, tirées des risques identifiés en amont du projet :
 
-1. **Tout prompt de code commence par le contexte figé** : « Godot 4.7, GDScript typé statique — pas de syntaxe Godot 3 » + les invariants de la zone touchée (pour `sim/` : « entiers uniquement, pas d'aléatoire, itération par id croissant, décisions sur cliché immuable »).
-2. **La CI est le juge, pas l'assistant** : aucun code généré n'atteint `main` sans passer tests unitaires, tests d'or et tests d'architecture. Les interdits lexicaux (DT-04) attrapent mécaniquement les fautes typiques des assistants (un `randf()` ou un `float` glissé dans une règle).
-3. **Zones à relecture renforcée** (relecture humaine ligne à ligne obligatoire) : `sim/`, `save/`, tout ce qui touche au cycle de vie Android. Zones à relecture légère : `view/`, `ui/`, où un défaut est visible et sans conséquence sur l'intégrité.
-4. **L'IA ne conçoit pas les niveaux** : elle peut proposer des candidats, mais seul le verdict du validateur (§8) et le jugement du concepteur les admettent.
-5. Les textes du jeu (libellés, énoncés) sont écrits ou validés humainement — volume minimal, enjeu de ton maximal.
+1. **La CI est le juge** : aucun code n'atteint `main` sans passer tests unitaires, tests d'or et tests d'architecture. Les interdits lexicaux (DT-04) attrapent mécaniquement les fautes typiques (un `randf()` ou un `float` glissé dans une règle).
+2. **Zones à relecture renforcée** (relecture ligne à ligne obligatoire) : `sim/`, `save/`, tout ce qui touche au cycle de vie Android. Zones à relecture légère : `view/`, `ui/`, où un défaut est visible et sans conséquence sur l'intégrité.
+3. **Admission des niveaux** : un niveau n'est admis que sur le verdict du validateur (§8) et le jugement du concepteur.
+4. Les textes du jeu (libellés, énoncés) sont écrits ou validés par le concepteur — volume minimal, enjeu de ton maximal.
 
 ---
 
@@ -450,7 +449,7 @@ Les comptes développeur Google Play personnels créés après le **13 novembre 
 
 ### 13.4 Conformité (rappel d'implémentation)
 
-Data Safety : déclaration « aucune donnée collectée » — rendue vraie par construction (aucune permission, aucun SDK tiers, DT-18/19 sans télémétrie). Déclaration de contenu IA de Google Play : à remplir selon l'état réel des contenus livrés à J5. Politique de confidentialité une page : hébergement gratuit (GitHub Pages) — zéro coût.
+Data Safety : déclaration « aucune donnée collectée » — rendue vraie par construction (aucune permission, aucun SDK tiers, DT-18/19 sans télémétrie). Déclarations de contenu de Google Play : à remplir selon l'état réel des contenus livrés à J5. Politique de confidentialité une page : hébergement gratuit (GitHub Pages) — zéro coût.
 
 > **DT-21 bis *(6 septembre 2026)* — l'hébergement gratuit ne marche pas tel quel, et les déclarations sont désormais écrites.**
 >
@@ -506,7 +505,7 @@ Couverture exhaustive ; « — » signale un point de pure conduite de projet sa
 | CDC §12.2.1 + calibration des paramètres | Chaque niveau archive `calibrated_on`, empreinte de sa géométrie ; le convertisseur refuse un niveau dont la carte a changé depuis la mesure de ses paramètres — même dispositif que le `rules_hash` des recettes d'or | §8.2, §11.2 |
 | DA-01→04 *(dont DA-02 bis, charte des couleurs v2.5)*, DS-01→03 | Rendu procédural par shaders, décomposition en régions, teintes réservées par entrée du vocabulaire RG-14 ; moteur sonore événementiel | §6, DT-17 |
 | CDC §13 (campagnes de test) | Builds de test APK hors store (coût zéro), scripts de scénarios | DT-21, §11.2 |
-| CDC §14.4 (API 36, Data Safety, contenu IA) | Cibles §13.1, conformité §13.4 | §13 |
+| CDC §14.4 (API 36, Data Safety, déclarations de contenu) | Cibles §13.1, conformité §13.4 | §13 |
 | CDC §15 (jalons) | Alignement des paiements et de la CI sur J1→J5 | DT-19, DT-21 |
 | CDC §17.1 (partage de solutions, futur) | Déjà permis par la recette (DT-11) — aucun coût anticipé | §5.1 |
 
@@ -527,7 +526,7 @@ Couverture exhaustive ; « — » signale un point de pure conduite de projet sa
 | T1 | Divergence jeu/validateur | — | **Éliminé par construction** (DT-15 : même code) |
 | T2 | Validateur trop lent en GDScript | Moyenne | Étages DT-16 ; le portage C++ partagé reste disponible sans refonte |
 | T3 | Non-déterminisme introduit par inadvertance | Moyenne | Interdits lexicaux + tests d'or à chaque fusion (§11.2) — détection au commit fautif, pas en production |
-| T4 | Assistants IA produisant du Godot 3 ou du code flottant | Élevée | Prompt-contexte figé (§12) + CI juge de paix |
+| T4 | Syntaxe Godot 3 ou code flottant introduits par inadvertance | Élevée | Typage statique, interdits lexicaux (DT-04) + CI juge de paix (§12) |
 | T5 | Démarrage à froid > 3 s sur l'appareil de référence | Faible | Boot minimal spécifié (§7.3) ; mesure dès J1, pas à J4 |
 | T6 | Poids AAB > 60 Mo | Faible | Visuel/audio procéduraux ; arbitrage v7a (§13.1) en dernier recours |
 | T7 | Godot 4.7.x : régression sur correctif | Faible | Version épinglée, montée de version testée sur branche dédiée |
@@ -540,7 +539,7 @@ Couverture exhaustive ; « — » signale un point de pure conduite de projet sa
 | Élément | Choix | Coût |
 |---|---|---|
 | Moteur + éditeur | Godot 4.7.x | 0 € |
-| IDE d'appoint / assistance IA | Éditeur au choix + assistant existant | 0 € (abonnements déjà détenus) |
+| IDE d'appoint | Éditeur au choix | 0 € |
 | Chaîne Android | OpenJDK 17 + Android SDK command-line tools | 0 € |
 | Hébergement code + CI | GitHub privé + Actions | 0 € |
 | Tests | GUT, scripts headless | 0 € |

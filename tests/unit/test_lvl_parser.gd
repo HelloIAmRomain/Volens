@@ -246,7 +246,7 @@ func test_rejects_interdiction_cell_out_of_bounds() -> void:
 
 func test_ch1_01_converts_and_validates_at_exactly_one_win() -> void:
 	# Le croquis N1 corrigé (bande de sortie, largeur 8) : converti, validé,
-	# N_win == 1 — le critère de fin du prompt §9, verrouillé en permanence.
+	# N_win == 1 — le critère de fin du niveau N1, verrouillé en permanence.
 	var text := FileAccess.get_file_as_string("res://data/levels/ch1_01.lvl")
 	var result := LvlParser.parse(text, FLOOR)
 	assert_eq((result["errors"] as PackedStringArray).size(), 0, _errors_joined(result))

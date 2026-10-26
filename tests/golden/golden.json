@@ -1,5 +1,5 @@
 {
-  "_comment": "Recettes d'or (T-021, DCT §11.2). Empreintes FNV-1a archivées aux ticks de contrôle. Une empreinte qui change signale une régression du déterminisme : c'est un défaut à corriger, JAMAIS une valeur à mettre à jour sans décision humaine explicite (docs/ARCHITECTURE.md règle 1).",
+  "_comment": "Recettes d'or (T-021, DCT §11.2). Empreintes FNV-1a archivées aux ticks de contrôle. Une empreinte qui change signale une régression du déterminisme : c'est un défaut à corriger, JAMAIS une valeur à mettre à jour sans décision humaine explicite (docs/ARCHITECTURE.md, règle 1).",
   "checkpoints": [
     50.0,
     150.0,
