@@ -169,7 +169,7 @@ godot --headless --path . --export-debug "Android" build/volens-debug.apk
 
 ## Vie privée
 
-Volens est **hors ligne** : aucun compte, aucune publicité, aucune télémétrie, aucune permission réseau, aucune collecte de données. Les sauvegardes restent sur l'appareil. La [politique de confidentialité](https://helloiamromain.github.io/volens-legal/) est publiée, et ses sources sont dans [`docs/legal/`](docs/legal/).
+Volens est **hors ligne** : aucun compte, aucune publicité, aucune télémétrie, aucune permission réseau, aucune collecte de données. Les sauvegardes restent sur l'appareil. La politique de confidentialité (français et anglais) est dans [`docs/legal/`](docs/legal/).
 
 ## Documentation
 

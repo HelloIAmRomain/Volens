@@ -146,7 +146,9 @@ pour produire des éléments livrés —, relire cette note avant de répondre.
 - français — `docs/legal/politique-de-confidentialite.md`
 - anglais — `docs/legal/privacy-policy.md`
 
-**HÉBERGÉE ET EN LIGNE depuis le 6 septembre 2026 :**
+> **MISE À JOUR — la page en ligne a été retirée** (le dépôt `volens-legal` est supprimé). L'URL ci-dessous ne répond plus ; la politique doit être republiée avant la publication sur le Play Store. Le reste de cette section est l'historique de l'ancien hébergement.
+
+**HÉBERGÉE ET EN LIGNE depuis le 6 septembre 2026 (retirée depuis) :**
 
     https://helloiamromain.github.io/volens-legal/
 
