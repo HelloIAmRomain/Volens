@@ -146,19 +146,17 @@ pour produire des éléments livrés —, relire cette note avant de répondre.
 - français — `docs/legal/politique-de-confidentialite.md`
 - anglais — `docs/legal/privacy-policy.md`
 
-> **MISE À JOUR — la page en ligne a été retirée** (le dépôt `volens-legal` est supprimé). L'URL ci-dessous ne répond plus ; la politique doit être republiée avant la publication sur le Play Store. Le reste de cette section est l'historique de l'ancien hébergement.
+**HÉBERGÉE ET EN LIGNE (republiée le 26 octobre 2026) :**
 
-**HÉBERGÉE ET EN LIGNE depuis le 6 septembre 2026 (retirée depuis) :**
+    https://helloiamromain.github.io/Volens/
 
-    https://helloiamromain.github.io/volens-legal/
+**L'URL À COLLER DANS LA PLAY CONSOLE, c'est celle-là.** Si l'ancienne adresse
+(`…/volens-legal/`) y a déjà été saisie, la remplacer : elle ne répond plus.
 
-**L'URL À COLLER DANS LA PLAY CONSOLE, c'est celle-là.**
-
-Le plan initial du DCT ne tenait pas : il prévoyait « hébergement gratuit
-(GitHub Pages) » sans dire qu'il supposait un dépôt public, or celui du jeu est
-**privé** et Pages y est payant. Retenu : un **second dépôt public**,
-`volens-legal`, qui ne contient **que** `index.html` — ni code, ni fiches de
-niveau, ni historique. Le dépôt du jeu reste privé.
+La page est servie par GitHub Pages depuis ce dépôt (désormais public), par le
+workflow `.github/workflows/pages.yml` ; seul `docs/legal/site/` est publié. Un
+second dépôt `volens-legal` avait servi tant que le dépôt du jeu était privé :
+il est supprimé. Voir `docs/legal/site/README.md`.
 
 Vérifié sur la page réellement servie, pas sur le fichier source : HTTP 200,
 l'adresse de contact présente, **zéro ressource externe chargée**, un seul lien

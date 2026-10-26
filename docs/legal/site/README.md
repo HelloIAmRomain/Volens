@@ -4,79 +4,47 @@
 publiée. Les fichiers `.md` du dossier parent en sont la version lisible dans le
 dépôt ; c'est cette page-ci qui est mise en ligne.
 
-## Pourquoi elle vit ici et pas dans le dépôt public
+## En ligne
 
-Le dépôt du jeu est **privé, et le reste** — décision du 6 septembre 2026, pour
-trois raisons mesurées : 185 des 222 commits portent une adresse professionnelle,
-les piles gagnantes de tous les niveaux figurent en clair dans les fiches de
-conception, et le déblocage payant sera local donc contournable à la lecture du
-code.
+    https://helloiamromain.github.io/Volens/
 
-Le dépôt public ne reçoit donc **qu'une copie de cette page**. Il ne contient ni
-code, ni fiches, ni historique. La source reste ici, versionnée avec le reste du
-projet : on modifie ici, on republie là-bas.
+C'est l'URL à déclarer dans la Play Console. Elle est servie par **GitHub Pages
+depuis ce dépôt**, par le workflow `.github/workflows/pages.yml`. Seul le dossier
+`docs/legal/site/` est publié : ni le code, ni le reste de `docs/`.
 
-> **MISE À JOUR — page retirée :** le dépôt `volens-legal` a été supprimé et l'URL ci-dessous ne répond plus. Cette procédure reste valable pour republier la page (ici ou ailleurs) ; la source `index.html` est conservée dans ce dossier.
-
-## EN LIGNE depuis le 6 septembre 2026 (retirée depuis)
-
-    https://helloiamromain.github.io/volens-legal/
-
-Dépôt vitrine `HelloIAmRomain/volens-legal`, public, contenant **un seul
-fichier**. Discussions, wiki et projets désactivés. Le commit est signé de
-l'adresse GitHub anonyme, pas de l'adresse professionnelle.
+*Historique.* Jusqu'au 26 octobre 2026, la page vivait dans un second dépôt
+public, `volens-legal`, parce que le dépôt du jeu était alors privé (Pages y est
+payant). Le dépôt du jeu étant devenu public, ce second dépôt n'avait plus de
+raison d'être ; il a été supprimé et l'ancienne URL ne répond plus.
 
 ## Republier après modification
 
-Les étapes 1, 3 et 4 sont faites une fois pour toutes ; seule l'étape 2 se
-rejoue à chaque modification de la page.
+Modifier `docs/legal/site/index.html`, puis fusionner dans `main` : le workflow
+se déclenche tout seul sur tout changement de ce dossier. Pour forcer une
+republication sans modification :
 
 ```bash
-# 1. Créer le dépôt vitrine — FAIT.
-gh repo create volens-legal --public \
-    --description "Politique de confidentialité de Volens"
-
-# 2. Copier la page et pousser — à REJOUER à chaque modification.
-tmp=$(mktemp -d) && git -C "$tmp" clone "git@github.com:$(gh api user -q .login)/volens-legal.git" .
-cp docs/legal/site/index.html "$tmp/index.html"
-cd "$tmp"
-#    L'IDENTITÉ EST FIXÉE LOCALEMENT, sinon le commit part sous l'adresse
-#    professionnelle de la configuration globale — sur un dépôt PUBLIC.
-git config --local user.email "39194295+HelloIAmRomain@users.noreply.github.com"
-git add index.html && git commit -m "Politique de confidentialité de Volens" && git push
-
-# 3. Verrouiller ce qui peut l'être — FAIT.
-gh repo edit --enable-issues=false --enable-wiki=false --enable-projects=false
-
-# 4. Activer GitHub Pages sur la racine de la branche par défaut — FAIT.
-gh api -X POST "repos/$(gh api user -q .login)/volens-legal/pages" \
-    -f "source[branch]=main" -f "source[path]=/"
+gh workflow run pages.yml
 ```
 
 **Le contrôle qui compte se fait sur la page SERVIE, pas sur le fichier
 source** — c'est la même règle que pour les permissions de l'APK :
 
 ```bash
-curl -s https://helloiamromain.github.io/volens-legal/ \
+curl -s https://helloiamromain.github.io/Volens/ \
   | grep -cE '<(script src|link rel="stylesheet"|img|iframe)'
 #  → doit rendre 0
 ```
 
-Compter deux à trois minutes entre le `push` et la mise en ligne : GitHub
-reconstruit le site, et l'URL rend 404 en attendant.
-
-## Ce qui ne peut PAS être verrouillé, et il faut le savoir
-
-**Un dépôt public est toujours forkable.** GitHub ne permet de l'interdire que
-sur les comptes d'organisation avec une règle dédiée. Ce n'est pas grave ici :
-le dépôt ne contient qu'une page HTML publique par destination. Il n'y a rien à
-protéger — c'est précisément pourquoi on n'y met rien d'autre.
+Le workflow refuse déjà de publier une page qui contiendrait une telle
+ressource. Compter une à deux minutes entre la fusion et la mise en ligne.
 
 ## Contraintes à ne pas oublier
 
 - **L'URL doit rester accessible tant que l'application est publiée.** Si la
   page disparaît, Google peut suspendre la fiche. Ce n'est pas une formalité de
-  lancement.
+  lancement. Ne pas renommer le dépôt ni désactiver Pages sans republier ailleurs
+  et mettre à jour la Play Console.
 - **La date en tête de page** se met à jour à chaque modification de fond, et la
   page se republie **avant** la version d'application concernée.
 - **Aucune ressource externe** ne doit être ajoutée à cette page : ni police
