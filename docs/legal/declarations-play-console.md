@@ -130,6 +130,15 @@ dialogue à l'exécution — et non sur les outils employés pour la développer
 Volens ne génère rien à l'exécution : sa simulation est déterministe, entière,
 et sans le moindre tirage aléatoire.
 
+**Transparence sur le développement.** Un assistant d'IA a été employé pendant
+le développement pour aider à structurer le projet et à synthétiser les idées
+du concepteur. Le code est vérifié par une suite de tests automatisés.
+L'application livrée ne contient aucune fonctionnalité d'IA, ne
+transmet rien à un service tiers et n'affiche aucun contenu produit à
+l'exécution par un modèle : la réponse **Non** reste exacte. Si la console
+formule un jour la question autrement — par exemple sur l'usage d'outils d'IA
+pour produire des éléments livrés —, relire cette note avant de répondre.
+
 ## 7. Politique de confidentialité
 
 **Une URL publique est obligatoire.** Le texte est écrit et versionné :

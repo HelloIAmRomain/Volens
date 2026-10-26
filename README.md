@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/screenshots/banniere-1024x500.png" alt="Volens" width="720"></p>
+
 # Volens
 
 > *Vous ne commandez personne. Vous écrivez les règles qui gouvernent la nuée.*
@@ -7,6 +9,21 @@ Volens est un jeu mobile de **puzzle systémique** (Android, portrait, une main)
 *English, in short: Volens is an offline, deterministic swarm puzzle game for Android. You never steer an agent — you stack a few behaviour rules, order them by priority, run the simulation and watch what emerges. No ads, no tracking, no network. The project documentation is in French; the game itself is available in French and English.*
 
 **Statut : pré-version 0.1.0, en développement actif.** Le jeu est jouable de bout en bout (38 niveaux, 6 chapitres, 13 règles). Il n'est pas encore publié sur le Play Store ; la cible est la v1.0 en 2027.
+
+## Aperçu
+
+<table>
+  <tr>
+    <td align="center" width="33%"><img src="docs/screenshots/1-l-ordre-decide.png" alt="L'ordre décide"><br><sub><b>L'ordre décide</b><br>« Fuir le danger » avant « Vers la lumière » : la nuée contourne.</sub></td>
+    <td align="center" width="33%"><img src="docs/screenshots/2-composer-la-pile.png" alt="Composer la pile"><br><sub><b>Composer la pile</b><br>Trois rangs à remplir parmi les règles débloquées.</sub></td>
+    <td align="center" width="33%"><img src="docs/screenshots/3-la-memoire-du-monde.png" alt="La mémoire du monde"><br><sub><b>La mémoire du monde</b><br>Marquer et suivre une piste : l'environnement devient une mémoire partagée.</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/4-transporter.png" alt="Transporter"><br><sub><b>Transporter</b><br>Porter une ressource jusqu'à un dépôt.</sub></td>
+    <td align="center"><img src="docs/screenshots/5-le-danger-qui-bouge.png" alt="Le danger qui bouge"><br><sub><b>Le danger qui bouge</b><br>Un danger cyclique, à période fixe et visible.</sub></td>
+    <td align="center"><img src="docs/screenshots/6-les-defis.png" alt="Les défis"><br><sub><b>Le bilan et les défis</b><br>Ticks, pertes, pile utilisée et défis optionnels.</sub></td>
+  </tr>
+</table>
 
 ---
 
