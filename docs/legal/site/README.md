@@ -16,7 +16,9 @@ Le dépôt public ne reçoit donc **qu'une copie de cette page**. Il ne contient
 code, ni fiches, ni historique. La source reste ici, versionnée avec le reste du
 projet : on modifie ici, on republie là-bas.
 
-## EN LIGNE depuis le 6 septembre 2026
+> **MISE À JOUR — page retirée :** le dépôt `volens-legal` a été supprimé et l'URL ci-dessous ne répond plus. Cette procédure reste valable pour republier la page (ici ou ailleurs) ; la source `index.html` est conservée dans ce dossier.
+
+## EN LIGNE depuis le 6 septembre 2026 (retirée depuis)
 
     https://helloiamromain.github.io/volens-legal/
 
